@@ -1,0 +1,2 @@
+repeat,deflection_mm,dt_s,duration_s,steps,wall_s,setup_s,accepted,subdivisions,evaluations,newton,probe_calls,surface_evaluations,probe_misses,bvh_nodes,triangle_tests,triangles,max_residual_Nm
+0,0,1.0000000000000001e-05,0.59999999999999998,60000,2.0213504000000002,0.014389000000000001,60000,0,131281,71281,2629800,9313977,0,0,0,0,3.867216192166012e-06

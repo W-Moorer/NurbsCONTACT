@@ -1,0 +1,37 @@
+[
+  {
+    "label": "cad",
+    "deflection_mm": 0.0,
+    "dt_s": 2e-05,
+    "duration_s": 0.36,
+    "repeats": 3
+  },
+  {
+    "label": "mesh-medium",
+    "deflection_mm": 0.002,
+    "dt_s": 2e-05,
+    "duration_s": 0.36,
+    "repeats": 3
+  },
+  {
+    "label": "mesh-fine",
+    "deflection_mm": 0.0005,
+    "dt_s": 2e-05,
+    "duration_s": 0.36,
+    "repeats": 3
+  },
+  {
+    "label": "mesh-coarse",
+    "deflection_mm": 0.008,
+    "dt_s": 2e-05,
+    "duration_s": 0.36,
+    "repeats": 3
+  },
+  {
+    "label": "cad-dt10",
+    "deflection_mm": 0.0,
+    "dt_s": 1e-05,
+    "duration_s": 0.36,
+    "repeats": 1
+  }
+]

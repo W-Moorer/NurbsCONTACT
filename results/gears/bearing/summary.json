@@ -1,0 +1,100 @@
+{
+  "cad": {
+    "median_s": 0.1390803,
+    "min_s": 0.1326737,
+    "max_s": 0.1396901,
+    "min_native_interval_radial_gap_um": 44.69765970620595,
+    "nominal_steps": 18000,
+    "peak_roller_N": 1897.711629767578,
+    "mean_loaded_rollers": 3.22165435253597,
+    "triangles": 0,
+    "setup_s": 0.0174993,
+    "relative_to_cad_dt10": {
+      "orbit_rms_um": 0.5901336008168808,
+      "orbit_max_um": 2.685477963182444,
+      "peak_roller_rms_N": 65.04028795440908
+    }
+  },
+  "mesh-medium": {
+    "median_s": 3.1653025,
+    "min_s": 2.7602766,
+    "max_s": 3.2113038,
+    "min_native_interval_radial_gap_um": 42.15793793310741,
+    "nominal_steps": 18000,
+    "peak_roller_N": 2403.4198315520252,
+    "mean_loaded_rollers": 3.0828287317371257,
+    "triangles": 1870,
+    "setup_s": 0.0365385,
+    "relative_to_cad_dt10": {
+      "orbit_rms_um": 1.5668648260488225,
+      "orbit_max_um": 3.7217957591505186,
+      "peak_roller_rms_N": 148.38561805415316
+    },
+    "relative_to_matched_cad": {
+      "orbit_rms_um": 1.521226331875823,
+      "orbit_max_um": 3.6504848014636972,
+      "peak_roller_rms_N": 143.1033161323307
+    },
+    "speed_ratio": 22.758812714669155
+  },
+  "mesh-fine": {
+    "median_s": 3.7803662,
+    "min_s": 3.7018364,
+    "max_s": 3.8237994,
+    "min_native_interval_radial_gap_um": 44.04362660734218,
+    "nominal_steps": 18000,
+    "peak_roller_N": 2033.0025499136364,
+    "mean_loaded_rollers": 3.1824898616743513,
+    "triangles": 3736,
+    "setup_s": 0.0979447,
+    "relative_to_cad_dt10": {
+      "orbit_rms_um": 0.7498135372395601,
+      "orbit_max_um": 3.1561503017200163,
+      "peak_roller_rms_N": 57.59372012113989
+    },
+    "relative_to_matched_cad": {
+      "orbit_rms_um": 0.7538184899058726,
+      "orbit_max_um": 3.0453280684201856,
+      "peak_roller_rms_N": 66.89934903930539
+    },
+    "speed_ratio": 27.18117662961613
+  },
+  "mesh-coarse": {
+    "median_s": 2.6383607,
+    "min_s": 2.4432452,
+    "max_s": 2.8093626,
+    "min_native_interval_radial_gap_um": 13.64011223375052,
+    "nominal_steps": 18000,
+    "peak_roller_N": 9604.402739928002,
+    "mean_loaded_rollers": 2.1909893894783625,
+    "triangles": 936,
+    "setup_s": 0.0284732,
+    "relative_to_cad_dt10": {
+      "orbit_rms_um": 27.011464456286355,
+      "orbit_max_um": 62.15247957787414,
+      "peak_roller_rms_N": 2006.1323371744006
+    },
+    "relative_to_matched_cad": {
+      "orbit_rms_um": 27.01139106378091,
+      "orbit_max_um": 62.136233536453965,
+      "peak_roller_rms_N": 2005.2957244299696
+    },
+    "speed_ratio": 18.97005327138351
+  },
+  "cad-dt10": {
+    "median_s": 0.2727313,
+    "min_s": 0.2727313,
+    "max_s": 0.2727313,
+    "min_native_interval_radial_gap_um": 44.6899171387632,
+    "nominal_steps": 36000,
+    "peak_roller_N": 1899.1677502285854,
+    "mean_loaded_rollers": 3.2096052887419795,
+    "triangles": 0,
+    "setup_s": 0.015103,
+    "relative_to_cad_dt10": {
+      "orbit_rms_um": 0.0,
+      "orbit_max_um": 0.0,
+      "peak_roller_rms_N": 0.0
+    }
+  }
+}

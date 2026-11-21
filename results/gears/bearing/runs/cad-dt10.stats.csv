@@ -1,0 +1,2 @@
+repeat,deflection_mm,dt_s,duration_s,steps,wall_s,setup_s,accepted,subdivisions,queries,misses,bvh_nodes,triangle_tests,triangles,min_interval_gap_mm
+0,0,1.0000000000000001e-05,0.35999999999999999,36000,0.27273130000000001,0.015103,36000,0,0,0,0,0,0,0.044689917138763198

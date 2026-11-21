@@ -1,0 +1,290 @@
+[
+  {
+    "case": "spur",
+    "label": "mesh-medium",
+    "deflection_mm": 0.00625,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "spur",
+    "label": "cad",
+    "deflection_mm": 0,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "spur",
+    "label": "mesh-fine",
+    "deflection_mm": 0.0015625,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "spur",
+    "label": "mesh-coarse",
+    "deflection_mm": 0.025,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "spur",
+    "label": "cad-dt10",
+    "deflection_mm": 0,
+    "dt_s": 1e-05,
+    "duration_s": 0.6,
+    "repeats": 1,
+    "stations": 7
+  },
+  {
+    "case": "helical",
+    "label": "mesh-medium",
+    "deflection_mm": 0.00625,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "helical",
+    "label": "cad",
+    "deflection_mm": 0,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "helical",
+    "label": "mesh-fine",
+    "deflection_mm": 0.0015625,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "helical",
+    "label": "mesh-coarse",
+    "deflection_mm": 0.025,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "helical",
+    "label": "cad-dt10",
+    "deflection_mm": 0,
+    "dt_s": 1e-05,
+    "duration_s": 0.6,
+    "repeats": 1,
+    "stations": 7
+  },
+  {
+    "case": "rig28",
+    "label": "mesh-medium",
+    "deflection_mm": 0.00625,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "rig28",
+    "label": "cad",
+    "deflection_mm": 0,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "rig28",
+    "label": "mesh-fine",
+    "deflection_mm": 0.0015625,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "rig28",
+    "label": "mesh-coarse",
+    "deflection_mm": 0.025,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "rig28",
+    "label": "cad-dt10",
+    "deflection_mm": 0,
+    "dt_s": 1e-05,
+    "duration_s": 0.6,
+    "repeats": 1,
+    "stations": 7
+  },
+  {
+    "case": "reducer",
+    "label": "mesh-medium",
+    "deflection_mm": 0.00625,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "reducer",
+    "label": "cad",
+    "deflection_mm": 0,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "reducer",
+    "label": "mesh-fine",
+    "deflection_mm": 0.0015625,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "reducer",
+    "label": "mesh-coarse",
+    "deflection_mm": 0.025,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "reducer",
+    "label": "cad-dt10",
+    "deflection_mm": 0,
+    "dt_s": 1e-05,
+    "duration_s": 0.6,
+    "repeats": 1,
+    "stations": 7
+  },
+  {
+    "case": "helical",
+    "label": "cad-section",
+    "deflection_mm": 0,
+    "dt_s": 2e-05,
+    "duration_s": 0.12,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "helical",
+    "label": "cad-direct",
+    "deflection_mm": -1,
+    "dt_s": 2e-05,
+    "duration_s": 0.12,
+    "repeats": 3,
+    "stations": 7
+  },
+  {
+    "case": "helical",
+    "label": "cad-axial15",
+    "deflection_mm": 0,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 1,
+    "stations": 15
+  },
+  {
+    "case": "reducer",
+    "label": "cad-axial15",
+    "deflection_mm": 0,
+    "dt_s": 2e-05,
+    "duration_s": 0.6,
+    "repeats": 1,
+    "stations": 15
+  },
+  {
+    "case": "reducer",
+    "label": "cad-duty",
+    "deflection_mm": 0,
+    "dt_s": 2e-05,
+    "duration_s": 3,
+    "repeats": 1,
+    "stations": 7
+  },
+  {
+    "case": "reducer",
+    "label": "mesh-duty",
+    "deflection_mm": 0.0015625,
+    "dt_s": 2e-05,
+    "duration_s": 3,
+    "repeats": 1,
+    "stations": 7
+  },
+  {
+    "case": "helical",
+    "label": "cad-axial31",
+    "deflection_mm": 0,
+    "dt_s": 2e-05,
+    "duration_s": 0.36,
+    "repeats": 3,
+    "stations": 31
+  },
+  {
+    "case": "helical",
+    "label": "mesh-axial31",
+    "deflection_mm": 0.0015625,
+    "dt_s": 2e-05,
+    "duration_s": 0.36,
+    "repeats": 3,
+    "stations": 31
+  },
+  {
+    "case": "helical",
+    "label": "cad-axial63",
+    "deflection_mm": 0,
+    "dt_s": 2e-05,
+    "duration_s": 0.36,
+    "repeats": 1,
+    "stations": 63
+  },
+  {
+    "case": "reducer",
+    "label": "cad-axial31",
+    "deflection_mm": 0,
+    "dt_s": 2e-05,
+    "duration_s": 0.36,
+    "repeats": 3,
+    "stations": 31
+  },
+  {
+    "case": "reducer",
+    "label": "mesh-axial31",
+    "deflection_mm": 0.0015625,
+    "dt_s": 2e-05,
+    "duration_s": 0.36,
+    "repeats": 3,
+    "stations": 31
+  },
+  {
+    "case": "reducer",
+    "label": "cad-axial63",
+    "deflection_mm": 0,
+    "dt_s": 2e-05,
+    "duration_s": 0.36,
+    "repeats": 1,
+    "stations": 63
+  }
+]

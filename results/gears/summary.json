@@ -1,0 +1,1428 @@
+{
+  "comparison": {
+    "spur": {
+      "fine_mesh_speed_ratio": 6.988044419931169,
+      "fine_mesh_ratio_with_setup": 7.722951970768316,
+      "cad_s": 0.2986137,
+      "fine_mesh_s": 2.0867258,
+      "cad_nominal_step_rms_um": 1.3260402177389068,
+      "mesh_geometry_rms_um": 2.4211445128762663,
+      "mesh_force_rms_pct": 57.06797081273505
+    },
+    "helical": {
+      "fine_mesh_speed_ratio": 4.683612870207167,
+      "fine_mesh_ratio_with_setup": 5.160550894323711,
+      "cad_s": 1.1684505,
+      "fine_mesh_s": 5.4725698,
+      "cad_nominal_step_rms_um": 0.29853256965934655,
+      "mesh_geometry_rms_um": 0.8592382472583939,
+      "mesh_force_rms_pct": 3.527486655931565
+    },
+    "rig28": {
+      "fine_mesh_speed_ratio": 3.7857565519683987,
+      "fine_mesh_ratio_with_setup": 4.072643142881933,
+      "cad_s": 0.3729757,
+      "fine_mesh_s": 1.4119952,
+      "cad_nominal_step_rms_um": 0.33644390133162705,
+      "mesh_geometry_rms_um": 1.2838374338399894,
+      "mesh_force_rms_pct": 9.295012584629948
+    },
+    "reducer": {
+      "fine_mesh_speed_ratio": 4.202518569353994,
+      "fine_mesh_ratio_with_setup": 4.934154177662732,
+      "cad_s": 1.8042227,
+      "fine_mesh_s": 7.5822794,
+      "cad_nominal_step_rms_um": 1.8544351291648669,
+      "mesh_geometry_rms_um": 2.1172845186656657,
+      "mesh_force_rms_pct": 32.001656860606964
+    }
+  },
+  "section_ablation": {
+    "transmission_rms_um": 2.3767605104598368e-11,
+    "transmission_max_um": 8.918732419260778e-11,
+    "transmission_mean_bias_um": 2.7931398237472403e-13,
+    "normal_force_rms_N": 5.295387859607228e-09,
+    "normal_force_rms_pct": 3.6767683708704227e-10,
+    "speed_ratio": 5.491919811465931
+  },
+  "axial_sensitivity": {
+    "helical": [
+      {
+        "transmission_rms_um": 1.4769949551442425,
+        "transmission_max_um": 3.13541058415597,
+        "transmission_mean_bias_um": 0.03205467891672505,
+        "normal_force_rms_N": 332.6662927259602,
+        "normal_force_rms_pct": 24.117090482025386
+      }
+    ],
+    "reducer": [
+      {
+        "transmission_rms_um": 0.836541477061766,
+        "transmission_max_um": 3.893659957596377,
+        "transmission_mean_bias_um": 0.004699213919919694,
+        "normal_force_rms_N": 181.52536934002683,
+        "normal_force_rms_pct": 13.658469442855829
+      },
+      {
+        "transmission_rms_um": 2.3936443254428137,
+        "transmission_max_um": 6.594281418421453,
+        "transmission_mean_bias_um": -0.0042227492876973265,
+        "normal_force_rms_N": 503.01851288171264,
+        "normal_force_rms_pct": 20.816193122033084
+      }
+    ]
+  },
+  "dense_axial": {
+    "helical": {
+      "cad_s": 2.3801997,
+      "mesh_s": 7.6885945,
+      "speed_ratio": 3.2302308499576737,
+      "matched_geometry": [
+        {
+          "transmission_rms_um": 0.8250095634021557,
+          "transmission_max_um": 0.9324038152944567,
+          "transmission_mean_bias_um": -0.8232080354190143,
+          "normal_force_rms_N": 13.521166656783251,
+          "normal_force_rms_pct": 0.9194117870880365
+        }
+      ],
+      "cad_31_vs_63": [
+        {
+          "transmission_rms_um": 0.008202330836719557,
+          "transmission_max_um": 0.021017072982346008,
+          "transmission_mean_bias_um": -0.00014059643508335912,
+          "normal_force_rms_N": 2.1279519616437677,
+          "normal_force_rms_pct": 0.144696328532843
+        }
+      ],
+      "fine_mesh_31_vs_cad_63": [
+        {
+          "transmission_rms_um": 0.8250498182943852,
+          "transmission_max_um": 0.9177825276209362,
+          "transmission_mean_bias_um": -0.8233486318540978,
+          "normal_force_rms_N": 13.22414881163449,
+          "normal_force_rms_pct": 0.8992147452132189
+        }
+      ]
+    },
+    "reducer": {
+      "cad_s": 2.5766277,
+      "mesh_s": 9.6999841,
+      "speed_ratio": 3.764604447899089,
+      "matched_geometry": [
+        {
+          "transmission_rms_um": 1.7470454205651815,
+          "transmission_max_um": 3.8704356848509818,
+          "transmission_mean_bias_um": -0.8097658113131866,
+          "normal_force_rms_N": 400.44059761572646,
+          "normal_force_rms_pct": 28.25908660071821
+        },
+        {
+          "transmission_rms_um": 0.8992772984496171,
+          "transmission_max_um": 1.8980782949615858,
+          "transmission_mean_bias_um": -0.8068262507988969,
+          "normal_force_rms_N": 82.8176229371399,
+          "normal_force_rms_pct": 3.2146198338431518
+        }
+      ],
+      "cad_31_vs_63": [
+        {
+          "transmission_rms_um": 0.0042910826953394396,
+          "transmission_max_um": 0.01915128204034744,
+          "transmission_mean_bias_um": 2.3897425492607986e-07,
+          "normal_force_rms_N": 0.9698522539468062,
+          "normal_force_rms_pct": 0.06844243839947466
+        },
+        {
+          "transmission_rms_um": 0.010807949923836387,
+          "transmission_max_um": 0.03039362501737486,
+          "transmission_mean_bias_um": -0.00020790068652807705,
+          "normal_force_rms_N": 3.000409666958645,
+          "normal_force_rms_pct": 0.11646282247740959
+        }
+      ],
+      "fine_mesh_31_vs_cad_63": [
+        {
+          "transmission_rms_um": 1.7472290536340844,
+          "transmission_max_um": 3.8687091620115552,
+          "transmission_mean_bias_um": -0.8097655723389316,
+          "normal_force_rms_N": 400.49134172053346,
+          "normal_force_rms_pct": 28.262659465586978
+        },
+        {
+          "transmission_rms_um": 0.8991097689202182,
+          "transmission_max_um": 1.8899058053194366,
+          "transmission_mean_bias_um": -0.8070341514854251,
+          "normal_force_rms_N": 82.68159405072969,
+          "normal_force_rms_pct": 3.209339016641723
+        }
+      ]
+    }
+  },
+  "runs": {
+    "spur-mesh-medium": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 1.2698246,
+      "min_s": 1.2324143,
+      "max_s": 1.2937383,
+      "setup_s": 0.0930276,
+      "median_including_setup_s": 1.3628522,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 80903,
+      "probe_calls": 265026,
+      "probe_misses": 0,
+      "triangle_tests": 8411477,
+      "unique_flank_triangles": 2768,
+      "stage": [
+        {
+          "native_minimum_sample_um": 27.472198580493615,
+          "backend_minimum_sample_um": 30.252188630074393,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 5672.661043965965,
+          "normal_rms_N": 1492.6613645342559,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.024932502249925
+        }
+      ],
+      "relative_to_10us_cad": [
+        {
+          "transmission_rms_um": 8.090195180565102,
+          "transmission_max_um": 29.3042720899033,
+          "transmission_mean_bias_um": -0.8588216939490322,
+          "normal_force_rms_N": 1102.4819343873519,
+          "normal_force_rms_pct": 109.61674662131809
+        }
+      ],
+      "relative_to_matched_cad": [
+        {
+          "transmission_rms_um": 7.994756495352192,
+          "transmission_max_um": 30.93849071502767,
+          "transmission_mean_bias_um": -0.8732669261716877,
+          "normal_force_rms_N": 1120.810817984695,
+          "normal_force_rms_pct": 111.44040400593855
+        }
+      ]
+    },
+    "spur-cad": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 0.2986137,
+      "min_s": 0.2935608,
+      "max_s": 0.3050915,
+      "setup_s": 0.0144165,
+      "median_including_setup_s": 0.3130302,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 61747,
+      "probe_calls": 203858,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 42.288436779325906,
+          "backend_minimum_sample_um": 42.288436779325906,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 2518.7238956329147,
+          "normal_rms_N": 1144.4120121710364,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.6405453151561615
+        }
+      ],
+      "relative_to_10us_cad": [
+        {
+          "transmission_rms_um": 1.3260402177389068,
+          "transmission_max_um": 2.764944784149776,
+          "transmission_mean_bias_um": 0.014445232222655395,
+          "normal_force_rms_N": 319.9250419406435,
+          "normal_force_rms_pct": 31.809267042284883
+        }
+      ]
+    },
+    "spur-mesh-fine": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 2.0867258,
+      "min_s": 2.0235497,
+      "max_s": 2.0884314,
+      "setup_s": 0.3307914,
+      "median_including_setup_s": 2.4175172,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 87545,
+      "probe_calls": 285608,
+      "probe_misses": 0,
+      "triangle_tests": 10730888,
+      "unique_flank_triangles": 13770,
+      "stage": [
+        {
+          "native_minimum_sample_um": 42.776697350701916,
+          "backend_minimum_sample_um": 43.59464752298203,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 2912.2260849437453,
+          "normal_rms_N": 1189.9294552267386,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.4334855504816506
+        }
+      ],
+      "relative_to_10us_cad": [
+        {
+          "transmission_rms_um": 2.962478073585449,
+          "transmission_max_um": 5.743530479450079,
+          "transmission_mean_bias_um": -0.7507192428300711,
+          "normal_force_rms_N": 711.8896999704828,
+          "normal_force_rms_pct": 70.78123498445764
+        }
+      ],
+      "relative_to_matched_cad": [
+        {
+          "transmission_rms_um": 2.4211445128762663,
+          "transmission_max_um": 4.883788823854793,
+          "transmission_mean_bias_um": -0.7651644750527266,
+          "normal_force_rms_N": 573.9605811545674,
+          "normal_force_rms_pct": 57.06797081273505
+        }
+      ]
+    },
+    "spur-mesh-coarse": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 0.6463492,
+      "min_s": 0.6450825,
+      "max_s": 0.6493933,
+      "setup_s": 0.0243382,
+      "median_including_setup_s": 0.6706873999999999,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 78926,
+      "probe_calls": 255620,
+      "probe_misses": 0,
+      "triangle_tests": 3125190,
+      "unique_flank_triangles": 546,
+      "stage": [
+        {
+          "native_minimum_sample_um": 27.712653689797932,
+          "backend_minimum_sample_um": 29.265899579616892,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 4710.725500650191,
+          "normal_rms_N": 1530.512656545014,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 0.8793706876437453
+        }
+      ],
+      "relative_to_10us_cad": [
+        {
+          "transmission_rms_um": 7.154311404971777,
+          "transmission_max_um": 17.968480193051445,
+          "transmission_mean_bias_um": -1.37527153205599,
+          "normal_force_rms_N": 1078.3713870866477,
+          "normal_force_rms_pct": 107.21950121354524
+        }
+      ],
+      "relative_to_matched_cad": [
+        {
+          "transmission_rms_um": 7.290829753439953,
+          "transmission_max_um": 20.092848260651927,
+          "transmission_mean_bias_um": -1.3897167642786457,
+          "normal_force_rms_N": 1109.7298541482544,
+          "normal_force_rms_pct": 110.33864172198011
+        }
+      ]
+    },
+    "spur-cad-dt10": {
+      "nominal_steps": 60000,
+      "duration_s": 0.6,
+      "median_integration_s": 0.4425677,
+      "min_s": 0.4425677,
+      "max_s": 0.4425677,
+      "setup_s": 0.0108593,
+      "median_including_setup_s": 0.453427,
+      "repeats": 1,
+      "retries": 0,
+      "solver_evaluations": 123345,
+      "probe_calls": 407102,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 42.45620112932488,
+          "backend_minimum_sample_um": 42.45620112932488,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 2007.0078193080187,
+          "normal_rms_N": 1072.8923898432897,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.6404893251779138
+        }
+      ]
+    },
+    "helical-mesh-medium": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 3.4832956,
+      "min_s": 3.3974292,
+      "max_s": 3.5413707,
+      "setup_s": 0.1164381,
+      "median_including_setup_s": 3.5997337,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 89513,
+      "probe_calls": 1788524,
+      "probe_misses": 0,
+      "triangle_tests": 13722143,
+      "unique_flank_triangles": 4104,
+      "stage": [
+        {
+          "native_minimum_sample_um": 38.95939250179036,
+          "backend_minimum_sample_um": 39.257938834241365,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 2711.651707544365,
+          "normal_rms_N": 1444.3067784298155,
+          "peak_axial_N": 1076.8816646323428,
+          "mean_active_weight": 1.4267238711090577
+        }
+      ],
+      "relative_to_10us_cad": [
+        {
+          "transmission_rms_um": 3.3201197996744405,
+          "transmission_max_um": 5.317265320580368,
+          "transmission_mean_bias_um": -3.171363477479198,
+          "normal_force_rms_N": 176.09491738487606,
+          "normal_force_rms_pct": 12.765460847859156
+        }
+      ],
+      "relative_to_matched_cad": [
+        {
+          "transmission_rms_um": 3.3297181824925035,
+          "transmission_max_um": 5.249286092827255,
+          "transmission_mean_bias_um": -3.1639289861710647,
+          "normal_force_rms_N": 188.7838820653505,
+          "normal_force_rms_pct": 13.685436092124725
+        }
+      ]
+    },
+    "helical-cad": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 1.1684505,
+      "min_s": 1.064625,
+      "max_s": 1.1877258,
+      "setup_s": 0.0162268,
+      "median_including_setup_s": 1.1846773000000002,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 68849,
+      "probe_calls": 1381866,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 43.28878929798471,
+          "backend_minimum_sample_um": 43.28878929798471,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 2447.5417451514454,
+          "normal_rms_N": 1424.3822493427845,
+          "peak_axial_N": 971.9953419691586,
+          "mean_active_weight": 1.4270714785697611
+        }
+      ],
+      "relative_to_10us_cad": [
+        {
+          "transmission_rms_um": 0.29853256965934655,
+          "transmission_max_um": 0.5920379488040695,
+          "transmission_mean_bias_um": -0.007434491308132732,
+          "normal_force_rms_N": 58.40777162687809,
+          "normal_force_rms_pct": 4.234092232679324
+        }
+      ]
+    },
+    "helical-mesh-fine": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 5.4725698,
+      "min_s": 5.2851125,
+      "max_s": 5.5646912,
+      "setup_s": 0.6410177,
+      "median_including_setup_s": 6.1135874999999995,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 89165,
+      "probe_calls": 1781552,
+      "probe_misses": 0,
+      "triangle_tests": 11759126,
+      "unique_flank_triangles": 16527,
+      "stage": [
+        {
+          "native_minimum_sample_um": 42.54390732260422,
+          "backend_minimum_sample_um": 42.768801723043616,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 2451.279332150312,
+          "normal_rms_N": 1430.8206474350238,
+          "peak_axial_N": 973.4796546107302,
+          "mean_active_weight": 1.427038146347502
+        }
+      ],
+      "relative_to_10us_cad": [
+        {
+          "transmission_rms_um": 0.8881034457627281,
+          "transmission_max_um": 1.6037627910025307,
+          "transmission_mean_bias_um": -0.8392698909952123,
+          "normal_force_rms_N": 59.81720663035566,
+          "normal_force_rms_pct": 4.336264899680107
+        }
+      ],
+      "relative_to_matched_cad": [
+        {
+          "transmission_rms_um": 0.8592382472583939,
+          "transmission_max_um": 1.2247353777875603,
+          "transmission_mean_bias_um": -0.8318353996870795,
+          "normal_force_rms_N": 48.65994918668997,
+          "normal_force_rms_pct": 3.527486655931565
+        }
+      ]
+    },
+    "helical-mesh-coarse": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 3.9993686,
+      "min_s": 3.7174162,
+      "max_s": 4.2771215,
+      "setup_s": 0.065349,
+      "median_including_setup_s": 4.0647176,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 89536,
+      "probe_calls": 1788632,
+      "probe_misses": 0,
+      "triangle_tests": 16184048,
+      "unique_flank_triangles": 1185,
+      "stage": [
+        {
+          "native_minimum_sample_um": 35.22236155915369,
+          "backend_minimum_sample_um": 37.386235979108314,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 2602.143148173018,
+          "normal_rms_N": 1421.680004035417,
+          "peak_axial_N": 1033.3923922530003,
+          "mean_active_weight": 1.2797668649140264
+        }
+      ],
+      "relative_to_10us_cad": [
+        {
+          "transmission_rms_um": 8.678768564948944,
+          "transmission_max_um": 15.044231967219488,
+          "transmission_mean_bias_um": -8.337859498127635,
+          "normal_force_rms_N": 363.1801724479067,
+          "normal_force_rms_pct": 26.32763251178689
+        }
+      ],
+      "relative_to_matched_cad": [
+        {
+          "transmission_rms_um": 8.64216622198241,
+          "transmission_max_um": 14.569107003989608,
+          "transmission_mean_bias_um": -8.330425006819501,
+          "normal_force_rms_N": 328.2932469628475,
+          "normal_force_rms_pct": 23.79883389213759
+        }
+      ]
+    },
+    "helical-cad-dt10": {
+      "nominal_steps": 60000,
+      "duration_s": 0.6,
+      "median_integration_s": 2.0213504,
+      "min_s": 2.0213504,
+      "max_s": 2.0213504,
+      "setup_s": 0.014389,
+      "median_including_setup_s": 2.0357394,
+      "repeats": 1,
+      "retries": 0,
+      "solver_evaluations": 131281,
+      "probe_calls": 2629800,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 42.77069212673921,
+          "backend_minimum_sample_um": 42.77069212673921,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 2566.295451314316,
+          "normal_rms_N": 1437.3762606347505,
+          "peak_axial_N": 1019.1561511608899,
+          "mean_active_weight": 1.427123833650391
+        }
+      ]
+    },
+    "rig28-mesh-medium": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 0.9706293,
+      "min_s": 0.9300423,
+      "max_s": 1.0018181,
+      "setup_s": 0.0408739,
+      "median_including_setup_s": 1.0115032,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 83903,
+      "probe_calls": 267692,
+      "probe_misses": 0,
+      "triangle_tests": 5491480,
+      "unique_flank_triangles": 1004,
+      "stage": [
+        {
+          "native_minimum_sample_um": 4.570762414748852,
+          "backend_minimum_sample_um": 7.949478079194439,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 9750.55513029956,
+          "normal_rms_N": 2633.6010242778702,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 0.8418719376020799
+        }
+      ],
+      "relative_to_10us_cad": [
+        {
+          "transmission_rms_um": 15.999834631558537,
+          "transmission_max_um": 56.26286720107797,
+          "transmission_mean_bias_um": 0.28235768918915843,
+          "normal_force_rms_N": 1982.8912218297105,
+          "normal_force_rms_pct": 113.9611203549986
+        }
+      ],
+      "relative_to_matched_cad": [
+        {
+          "transmission_rms_um": 15.988739081164816,
+          "transmission_max_um": 55.77417216488463,
+          "transmission_mean_bias_um": 0.28571382697383024,
+          "normal_force_rms_N": 1975.9675409943225,
+          "normal_force_rms_pct": 113.56349922610822
+        }
+      ]
+    },
+    "rig28-cad": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 0.3729757,
+      "min_s": 0.3631506,
+      "max_s": 0.4019843,
+      "setup_s": 0.0131158,
+      "median_including_setup_s": 0.38609150000000003,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 89892,
+      "probe_calls": 294330,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 39.22902299754982,
+          "backend_minimum_sample_um": 39.22902299754982,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 2523.3563203920285,
+          "normal_rms_N": 1762.2547352092993,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.2494916836105463
+        }
+      ],
+      "relative_to_10us_cad": [
+        {
+          "transmission_rms_um": 0.33644390133162705,
+          "transmission_max_um": 0.942152307094112,
+          "transmission_mean_bias_um": -0.0033561377846718357,
+          "normal_force_rms_N": 70.96668984715129,
+          "normal_force_rms_pct": 4.0786117734710565
+        }
+      ]
+    },
+    "rig28-mesh-fine": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 1.4119952,
+      "min_s": 1.3374567,
+      "max_s": 1.4271125,
+      "setup_s": 0.1604177,
+      "median_including_setup_s": 1.5724129,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 93211,
+      "probe_calls": 300766,
+      "probe_misses": 0,
+      "triangle_tests": 5409879,
+      "unique_flank_triangles": 4880,
+      "stage": [
+        {
+          "native_minimum_sample_um": 37.81064661222866,
+          "backend_minimum_sample_um": 38.43410005623671,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 2725.4739201455686,
+          "normal_rms_N": 1769.7572071476884,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.2468251058298057
+        }
+      ],
+      "relative_to_10us_cad": [
+        {
+          "transmission_rms_um": 1.2883516160063833,
+          "transmission_max_um": 3.666453164006697,
+          "transmission_mean_bias_um": -0.9798478039885146,
+          "normal_force_rms_N": 168.8597212155078,
+          "normal_force_rms_pct": 9.704739624998254
+        }
+      ],
+      "relative_to_matched_cad": [
+        {
+          "transmission_rms_um": 1.2838374338399894,
+          "transmission_max_um": 2.983311078882501,
+          "transmission_mean_bias_um": -0.9764916662038425,
+          "normal_force_rms_N": 161.7301622926747,
+          "normal_force_rms_pct": 9.295012584629948
+        }
+      ]
+    },
+    "rig28-mesh-coarse": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 0.73429,
+      "min_s": 0.7202003,
+      "max_s": 0.7411353,
+      "setup_s": 0.0156047,
+      "median_including_setup_s": 0.7498947,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 99788,
+      "probe_calls": 317516,
+      "probe_misses": 0,
+      "triangle_tests": 4267586,
+      "unique_flank_triangles": 252,
+      "stage": [
+        {
+          "native_minimum_sample_um": 26.024136126786683,
+          "backend_minimum_sample_um": 34.05118483016856,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 4149.223105394261,
+          "normal_rms_N": 1800.4576229393963,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.2409586347121762
+        }
+      ],
+      "relative_to_10us_cad": [
+        {
+          "transmission_rms_um": 7.579072003957163,
+          "transmission_max_um": 13.863503398546882,
+          "transmission_mean_bias_um": -6.604672696650858,
+          "normal_force_rms_N": 495.4291262372386,
+          "normal_force_rms_pct": 28.47340169794875
+        }
+      ],
+      "relative_to_matched_cad": [
+        {
+          "transmission_rms_um": 7.542308944725938,
+          "transmission_max_um": 13.530634516564483,
+          "transmission_mean_bias_um": -6.601316558866186,
+          "normal_force_rms_N": 469.1901168542997,
+          "normal_force_rms_pct": 26.965458878675978
+        }
+      ]
+    },
+    "rig28-cad-dt10": {
+      "nominal_steps": 60000,
+      "duration_s": 0.6,
+      "median_integration_s": 0.7490892,
+      "min_s": 0.7490892,
+      "max_s": 0.7490892,
+      "setup_s": 0.0082739,
+      "median_including_setup_s": 0.7573631000000001,
+      "repeats": 1,
+      "retries": 0,
+      "solver_evaluations": 164309,
+      "probe_calls": 543326,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 38.74743605731468,
+          "backend_minimum_sample_um": 38.74743605731468,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 2600.410230829652,
+          "normal_rms_N": 1767.0143076551,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.2373293778437027
+        }
+      ]
+    },
+    "reducer-mesh-medium": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 5.8474535,
+      "min_s": 5.2546827,
+      "max_s": 6.4074188,
+      "setup_s": 0.209179,
+      "median_including_setup_s": 6.0566325,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 88865,
+      "probe_calls": 2116838,
+      "probe_misses": 0,
+      "triangle_tests": 26445770,
+      "unique_flank_triangles": 7727,
+      "stage": [
+        {
+          "native_minimum_sample_um": 20.511670130457738,
+          "backend_minimum_sample_um": 23.127408038982942,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 7327.093368387506,
+          "normal_rms_N": 1991.8457125252241,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.0031665611146294
+        },
+        {
+          "native_minimum_sample_um": 24.214663987657932,
+          "backend_minimum_sample_um": 25.23071699238581,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 6360.498624323056,
+          "normal_rms_N": 2595.4441401703766,
+          "peak_axial_N": 2238.991251001897,
+          "mean_active_weight": 1.46101320432176
+        }
+      ],
+      "relative_to_10us_cad": [
+        {
+          "transmission_rms_um": 10.49701669087367,
+          "transmission_max_um": 42.396916972188635,
+          "transmission_mean_bias_um": -0.131083108793313,
+          "normal_force_rms_N": 1531.709896031286,
+          "normal_force_rms_pct": 115.24893675315717
+        },
+        {
+          "transmission_rms_um": 6.234803152134228,
+          "transmission_max_um": 21.824072018683523,
+          "transmission_mean_bias_um": -2.924926334135949,
+          "normal_force_rms_N": 1143.5049150076593,
+          "normal_force_rms_pct": 47.32021487814913
+        }
+      ],
+      "relative_to_matched_cad": [
+        {
+          "transmission_rms_um": 10.304234657997181,
+          "transmission_max_um": 44.04330130107637,
+          "transmission_mean_bias_um": -0.1540042188966708,
+          "normal_force_rms_N": 1560.9987936997832,
+          "normal_force_rms_pct": 117.452479570537
+        },
+        {
+          "transmission_rms_um": 6.3457205519086415,
+          "transmission_max_um": 22.6156052916376,
+          "transmission_mean_bias_um": -2.9268425472463933,
+          "normal_force_rms_N": 1172.3163614276825,
+          "normal_force_rms_pct": 48.512906891852275
+        }
+      ]
+    },
+    "reducer-cad": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 1.8042227,
+      "min_s": 1.7548482,
+      "max_s": 1.8825778,
+      "setup_s": 0.0285162,
+      "median_including_setup_s": 1.8327389,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 68658,
+      "probe_calls": 1640532,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 38.08683234287308,
+          "backend_minimum_sample_um": 38.08683234287308,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 3572.0444135997664,
+          "normal_rms_N": 1486.8001334485552,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.618412719576014
+        },
+        {
+          "native_minimum_sample_um": 32.268204290111555,
+          "backend_minimum_sample_um": 32.268204290111555,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 4907.064596718104,
+          "normal_rms_N": 2501.2890544039774,
+          "peak_axial_N": 1727.3605968780969,
+          "mean_active_weight": 1.4669796721061674
+        }
+      ],
+      "relative_to_10us_cad": [
+        {
+          "transmission_rms_um": 1.8544351291648669,
+          "transmission_max_um": 5.012230057984468,
+          "transmission_mean_bias_um": 0.022921110103357796,
+          "normal_force_rms_N": 456.60869802343285,
+          "normal_force_rms_pct": 34.356157844115145
+        },
+        {
+          "transmission_rms_um": 0.7963412450597488,
+          "transmission_max_um": 2.56799429594723,
+          "transmission_mean_bias_um": 0.0019162131104444923,
+          "normal_force_rms_N": 165.70497582844382,
+          "normal_force_rms_pct": 6.857159037683671
+        }
+      ]
+    },
+    "reducer-mesh-fine": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 7.5822794,
+      "min_s": 6.5557141,
+      "max_s": 8.1021795,
+      "setup_s": 1.4607369,
+      "median_including_setup_s": 9.0430163,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 89944,
+      "probe_calls": 2142180,
+      "probe_misses": 0,
+      "triangle_tests": 24648949,
+      "unique_flank_triangles": 33727,
+      "stage": [
+        {
+          "native_minimum_sample_um": 38.55017234732967,
+          "backend_minimum_sample_um": 39.42158184295486,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 3668.893686659251,
+          "normal_rms_N": 1533.2753292562493,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.526915769474351
+        },
+        {
+          "native_minimum_sample_um": 34.06200221689504,
+          "backend_minimum_sample_um": 34.182319042537024,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 4349.698740623622,
+          "normal_rms_N": 2457.2338768874506,
+          "peak_axial_N": 1531.1594263235563,
+          "mean_active_weight": 1.466960625122019
+        }
+      ],
+      "relative_to_10us_cad": [
+        {
+          "transmission_rms_um": 3.1499517791866336,
+          "transmission_max_um": 7.87828958058914,
+          "transmission_mean_bias_um": -0.7819240503996441,
+          "normal_force_rms_N": 765.863629850058,
+          "normal_force_rms_pct": 57.62512161528129
+        },
+        {
+          "transmission_rms_um": 2.0779160897015565,
+          "transmission_max_um": 5.543953019116998,
+          "transmission_mean_bias_um": -0.831918701815693,
+          "normal_force_rms_N": 388.0302845498732,
+          "normal_force_rms_pct": 16.057365563668228
+        }
+      ],
+      "relative_to_matched_cad": [
+        {
+          "transmission_rms_um": 1.8709856022316798,
+          "transmission_max_um": 5.248543525235419,
+          "transmission_mean_bias_um": -0.8048451605030019,
+          "normal_force_rms_N": 425.3170979315194,
+          "normal_force_rms_pct": 32.001656860606964
+        },
+        {
+          "transmission_rms_um": 2.1172845186656657,
+          "transmission_max_um": 4.8049529902543995,
+          "transmission_mean_bias_um": -0.8338349149261376,
+          "normal_force_rms_N": 399.6776301933013,
+          "normal_force_rms_pct": 16.539497611984736
+        }
+      ]
+    },
+    "reducer-mesh-coarse": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 4.4686793,
+      "min_s": 4.4359729,
+      "max_s": 4.6689834,
+      "setup_s": 0.0755944,
+      "median_including_setup_s": 4.5442737,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 90534,
+      "probe_calls": 2156864,
+      "probe_misses": 0,
+      "triangle_tests": 23491220,
+      "unique_flank_triangles": 1852,
+      "stage": [
+        {
+          "native_minimum_sample_um": 21.206319847042966,
+          "backend_minimum_sample_um": 23.809010626321346,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 6112.956979444049,
+          "normal_rms_N": 1775.6497242566222,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.2445918469384354
+        },
+        {
+          "native_minimum_sample_um": 19.975588081849953,
+          "backend_minimum_sample_um": 22.74443221447508,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 6084.253432586203,
+          "normal_rms_N": 2544.931655737629,
+          "peak_axial_N": 2141.7487855975464,
+          "mean_active_weight": 1.4173194226859098
+        }
+      ],
+      "relative_to_10us_cad": [
+        {
+          "transmission_rms_um": 7.912874212420002,
+          "transmission_max_um": 24.697114884500557,
+          "transmission_mean_bias_um": -3.1236046464807123,
+          "normal_force_rms_N": 1415.6878360068436,
+          "normal_force_rms_pct": 106.51920334060051
+        },
+        {
+          "transmission_rms_um": 9.46721667439424,
+          "transmission_max_um": 23.40308340813985,
+          "transmission_mean_bias_um": -8.382087293581751,
+          "normal_force_rms_N": 796.1629957207978,
+          "normal_force_rms_pct": 32.946604374924554
+        }
+      ],
+      "relative_to_matched_cad": [
+        {
+          "transmission_rms_um": 8.31085497189161,
+          "transmission_max_um": 26.336127884093624,
+          "transmission_mean_bias_um": -3.1465257565840705,
+          "normal_force_rms_N": 1539.7145659851642,
+          "normal_force_rms_pct": 115.85101432218732
+        },
+        {
+          "transmission_rms_um": 9.403399464898042,
+          "transmission_max_um": 22.671428417012727,
+          "transmission_mean_bias_um": -8.384003506692197,
+          "normal_force_rms_N": 762.5978043536472,
+          "normal_force_rms_pct": 31.557894691058312
+        }
+      ]
+    },
+    "reducer-cad-dt10": {
+      "nominal_steps": 60000,
+      "duration_s": 0.6,
+      "median_integration_s": 2.0040699,
+      "min_s": 2.0040699,
+      "max_s": 2.0040699,
+      "setup_s": 0.0180962,
+      "median_including_setup_s": 2.0221661,
+      "repeats": 1,
+      "retries": 0,
+      "solver_evaluations": 130389,
+      "probe_calls": 3110362,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 36.94627520614638,
+          "backend_minimum_sample_um": 36.94627520614638,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 2939.0995493944083,
+          "normal_rms_N": 1416.735997707373,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.6391893468442194
+        },
+        {
+          "native_minimum_sample_um": 32.51689325938616,
+          "backend_minimum_sample_um": 32.51689325938616,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 4863.12669024354,
+          "normal_rms_N": 2487.9170543901437,
+          "peak_axial_N": 1711.893792466303,
+          "mean_active_weight": 1.466994597709085
+        }
+      ]
+    },
+    "helical-cad-section": {
+      "nominal_steps": 6000,
+      "duration_s": 0.12,
+      "median_integration_s": 0.1819512,
+      "min_s": 0.176072,
+      "max_s": 0.1873558,
+      "setup_s": 0.0134654,
+      "median_including_setup_s": 0.1954166,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 13786,
+      "probe_calls": 276900,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 44.20081538917535,
+          "backend_minimum_sample_um": 44.20081538917535,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 2256.6807851743915,
+          "normal_rms_N": 1478.6808391691784,
+          "peak_axial_N": 896.1984880732185,
+          "mean_active_weight": 1.4280477063346584
+        }
+      ]
+    },
+    "helical-cad-direct": {
+      "nominal_steps": 6000,
+      "duration_s": 0.12,
+      "median_integration_s": 0.9992614,
+      "min_s": 0.9370161,
+      "max_s": 1.0096386,
+      "setup_s": 0.0099092,
+      "median_including_setup_s": 1.0091706,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 13786,
+      "probe_calls": 276900,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 44.200815389182125,
+          "backend_minimum_sample_um": 44.20081538918103,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 2256.6807851744115,
+          "normal_rms_N": 1478.6808391690897,
+          "peak_axial_N": 896.1984880732265,
+          "mean_active_weight": 1.4280477063346584
+        }
+      ]
+    },
+    "helical-cad-axial15": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 1.6160335,
+      "min_s": 1.6160335,
+      "max_s": 1.6160335,
+      "setup_s": 0.0102399,
+      "median_including_setup_s": 1.6262733999999999,
+      "repeats": 1,
+      "retries": 0,
+      "solver_evaluations": 69970,
+      "probe_calls": 3010618,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 45.422103415784925,
+          "backend_minimum_sample_um": 45.422103415784925,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 1968.9276178560858,
+          "normal_rms_N": 1392.93945880796,
+          "peak_axial_N": 781.9227096010688,
+          "mean_active_weight": 1.4282657244758505
+        }
+      ]
+    },
+    "reducer-cad-axial15": {
+      "nominal_steps": 30000,
+      "duration_s": 0.6,
+      "median_integration_s": 2.4372941,
+      "min_s": 2.4372941,
+      "max_s": 2.4372941,
+      "setup_s": 0.0185494,
+      "median_including_setup_s": 2.4558435,
+      "repeats": 1,
+      "retries": 0,
+      "solver_evaluations": 71361,
+      "probe_calls": 3383988,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 39.67027975376636,
+          "backend_minimum_sample_um": 39.67027975376636,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 3154.1853092748725,
+          "normal_rms_N": 1478.551680961388,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.6392453584880504
+        },
+        {
+          "native_minimum_sample_um": 37.89775845561664,
+          "backend_minimum_sample_um": 37.89775845561664,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 3678.667891578204,
+          "normal_rms_N": 2445.372352684827,
+          "peak_axial_N": 1294.946467418158,
+          "mean_active_weight": 1.4671222070375431
+        }
+      ]
+    },
+    "reducer-cad-duty": {
+      "nominal_steps": 150000,
+      "duration_s": 3,
+      "median_integration_s": 5.8722461,
+      "min_s": 5.8722461,
+      "max_s": 5.8722461,
+      "setup_s": 0.020564,
+      "median_including_setup_s": 5.8928101,
+      "repeats": 1,
+      "retries": 0,
+      "solver_evaluations": 343493,
+      "probe_calls": 8213328,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 38.08683234287308,
+          "backend_minimum_sample_um": 38.08683234287308,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 3572.0444135997664,
+          "normal_rms_N": 1375.1664930014826,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.6201225325164499
+        },
+        {
+          "native_minimum_sample_um": 32.268204290111555,
+          "backend_minimum_sample_um": 32.268204290111555,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 4907.064596718104,
+          "normal_rms_N": 2300.3080815884737,
+          "peak_axial_N": 1727.3605968780969,
+          "mean_active_weight": 1.467864499950952
+        }
+      ]
+    },
+    "reducer-mesh-duty": {
+      "nominal_steps": 150000,
+      "duration_s": 3,
+      "median_integration_s": 27.7461509,
+      "min_s": 27.7461509,
+      "max_s": 27.7461509,
+      "setup_s": 0.9779853,
+      "median_including_setup_s": 28.7241362,
+      "repeats": 1,
+      "retries": 0,
+      "solver_evaluations": 449417,
+      "probe_calls": 10710548,
+      "probe_misses": 0,
+      "triangle_tests": 123196964,
+      "unique_flank_triangles": 33727,
+      "stage": [
+        {
+          "native_minimum_sample_um": 38.55017234732967,
+          "backend_minimum_sample_um": 39.42158184295486,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 3668.893686659251,
+          "normal_rms_N": 1430.1850415241931,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.504383304111306
+        },
+        {
+          "native_minimum_sample_um": 34.06200221689504,
+          "backend_minimum_sample_um": 34.182319042537024,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 4349.698740623622,
+          "normal_rms_N": 2263.210218638592,
+          "peak_axial_N": 1531.1594263235563,
+          "mean_active_weight": 1.4678606904525393
+        }
+      ]
+    },
+    "helical-cad-axial31": {
+      "nominal_steps": 18000,
+      "duration_s": 0.36,
+      "median_integration_s": 2.3801997,
+      "min_s": 2.3724778,
+      "max_s": 2.475248,
+      "setup_s": 0.0151622,
+      "median_including_setup_s": 2.3953618999999997,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 49476,
+      "probe_calls": 4377180,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 45.488216871782434,
+          "backend_minimum_sample_um": 45.488216871782434,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 1969.489710693147,
+          "normal_rms_N": 1479.0887477039014,
+          "peak_axial_N": 782.1459342387936,
+          "mean_active_weight": 1.425205768138328
+        }
+      ]
+    },
+    "helical-mesh-axial31": {
+      "nominal_steps": 18000,
+      "duration_s": 0.36,
+      "median_integration_s": 7.6885945,
+      "min_s": 7.6090213,
+      "max_s": 8.15063,
+      "setup_s": 0.399511,
+      "median_including_setup_s": 8.0881055,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 51730,
+      "probe_calls": 4570014,
+      "probe_misses": 0,
+      "triangle_tests": 29063280,
+      "unique_flank_triangles": 16527,
+      "stage": [
+        {
+          "native_minimum_sample_um": 44.70306845161239,
+          "backend_minimum_sample_um": 44.74582917424038,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 1860.7593476733234,
+          "normal_rms_N": 1478.9498915301822,
+          "peak_axial_N": 738.96570795859,
+          "mean_active_weight": 1.4251663438052713
+        }
+      ]
+    },
+    "helical-cad-axial63": {
+      "nominal_steps": 18000,
+      "duration_s": 0.36,
+      "median_integration_s": 4.6540777,
+      "min_s": 4.6540777,
+      "max_s": 4.6540777,
+      "setup_s": 0.0100922,
+      "median_including_setup_s": 4.6641699,
+      "repeats": 1,
+      "retries": 0,
+      "solver_evaluations": 50784,
+      "probe_calls": 9124018,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 45.507201910877754,
+          "backend_minimum_sample_um": 45.507201910877754,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 1970.1129779773248,
+          "normal_rms_N": 1479.058025754924,
+          "peak_axial_N": 782.393453161902,
+          "mean_active_weight": 1.4254499088674937
+        }
+      ]
+    },
+    "reducer-cad-axial31": {
+      "nominal_steps": 18000,
+      "duration_s": 0.36,
+      "median_integration_s": 2.5766277,
+      "min_s": 2.3584039,
+      "max_s": 2.9297488,
+      "setup_s": 0.0129542,
+      "median_including_setup_s": 2.5895818999999998,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 46362,
+      "probe_calls": 4367332,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 39.863342077559125,
+          "backend_minimum_sample_um": 39.863342077559125,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 3160.8137728224883,
+          "normal_rms_N": 1566.6631738447998,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.6375756902394312
+        },
+        {
+          "native_minimum_sample_um": 38.094054638085865,
+          "backend_minimum_sample_um": 38.094054638085865,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 3623.7178941463208,
+          "normal_rms_N": 2596.852185772075,
+          "peak_axial_N": 1275.6032412405627,
+          "mean_active_weight": 1.4661855703356972
+        }
+      ]
+    },
+    "reducer-mesh-axial31": {
+      "nominal_steps": 18000,
+      "duration_s": 0.36,
+      "median_integration_s": 9.6999841,
+      "min_s": 9.2396931,
+      "max_s": 10.1200805,
+      "setup_s": 0.7668049,
+      "median_including_setup_s": 10.466789,
+      "repeats": 3,
+      "retries": 0,
+      "solver_evaluations": 53857,
+      "probe_calls": 5072032,
+      "probe_misses": 0,
+      "triangle_tests": 42371373,
+      "unique_flank_triangles": 33727,
+      "stage": [
+        {
+          "native_minimum_sample_um": 39.3664380665954,
+          "backend_minimum_sample_um": 40.254165522076505,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 3420.734197873634,
+          "normal_rms_N": 1619.1630626070091,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.5455808010666074
+        },
+        {
+          "native_minimum_sample_um": 37.732086341880326,
+          "backend_minimum_sample_um": 37.82779121441981,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 3560.0661239897495,
+          "normal_rms_N": 2596.419977277987,
+          "peak_axial_N": 1253.1968600888783,
+          "mean_active_weight": 1.4661192657755562
+        }
+      ]
+    },
+    "reducer-cad-axial63": {
+      "nominal_steps": 18000,
+      "duration_s": 0.36,
+      "median_integration_s": 5.4293121,
+      "min_s": 5.4293121,
+      "max_s": 5.4293121,
+      "setup_s": 0.0209005,
+      "median_including_setup_s": 5.4502125999999995,
+      "repeats": 1,
+      "retries": 0,
+      "solver_evaluations": 47293,
+      "probe_calls": 8894470,
+      "probe_misses": 0,
+      "triangle_tests": 0,
+      "unique_flank_triangles": 0,
+      "stage": [
+        {
+          "native_minimum_sample_um": 39.86848599812716,
+          "backend_minimum_sample_um": 39.86848599812716,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 3160.0033019723805,
+          "normal_rms_N": 1566.6982768605792,
+          "peak_axial_N": 0.0,
+          "mean_active_weight": 1.6375756902394312
+        },
+        {
+          "native_minimum_sample_um": 38.11286609063532,
+          "backend_minimum_sample_um": 38.11286609063532,
+          "overlapping_native_samples": 0,
+          "peak_normal_N": 3623.7663920905816,
+          "normal_rms_N": 2596.8170671738017,
+          "peak_axial_N": 1275.6203132469109,
+          "mean_active_weight": 1.4661689870844883
+        }
+      ]
+    }
+  }
+}
