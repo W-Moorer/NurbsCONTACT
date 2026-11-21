@@ -60,6 +60,13 @@ time dx dy dz
 ...
 ~~~
 
+An optional resistance block follows the v2 drives. A sliding resistance projects the relative velocity at two material points into the specified world-space plane and applies regularized Coulomb friction with a prescribed preload. Its tangential force acts on the two bodies through their velocity Jacobians. The contact probes evaluate their own normal forces independently. The slider-crank deck uses this block for the support plate and sets the guide viscosity in its translational coordinate.
+
+~~~text
+resistances count
+slide body_a body_b anchor_a_xyz anchor_b_xyz plane_normal_xyz force_limit_N slip_speed_m_s
+~~~
+
 ## Reproduce
 
 Set the OCCT runtime path using the [project build instructions](../../README.md#step-queries-on-windows). Run the commands from the workspace root.

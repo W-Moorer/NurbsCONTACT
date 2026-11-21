@@ -78,3 +78,43 @@ contributors to the response differences. Their normal force law also
 scales dissipation by the approach speed at each impact. Our law uses
 a fixed rate coefficient. The comparison supports gross travel and
 identifies a discrepancy in the contact transitions.
+
+\ifdefined\ExternalDampedAfter
+The \href{https://doi.org/10.1007/s11071-013-0787-x}{follow-up description of the rig}
+identifies viscous resistance in the lubricated slider guide and a
+friction plate between the rod and slider. We modeled the guide with
+a viscous force and the plate with planar sliding resistance under
+prescribed preload. The plate remains active while the pin is clear
+of the bore. The effective normal law uses exponent 1.35 and
+0.533\% of the nominal Hertz force at \(0.3\,\mu\mathrm m\) of compression.
+This effective compliance represents additional deformation in the load path.
+The elastic scale, contact rate and two resistances were selected on the 200 rpm,
+0.25 mm waveform. The parameters stayed fixed for the step refinement,
+mesh comparison, and independent speed and clearance conditions.
+
+Relative to the corrected-mounting control, the acceleration RMSE at the
+integration times decreased
+from \ExternalDampedBefore{} to \ExternalDampedAfter{} m/s\(^{2}\).
+Over \(90^\circ\)--\(180^\circ\) in the last two revolutions it decreased
+from \ExternalDampedQuietBefore{} to \ExternalDampedQuietAfter{} m/s\(^{2}\).
+The largest absolute acceleration in that window falls from
+\ExternalDampedPeakBefore{} to \ExternalDampedPeakAfter{} m/s\(^{2}\).
+The maximum equivalent compression increases from
+\ExternalDampedDepthBefore{} to \ExternalDampedDepthAfter{} micrometers.
+Halving the step from 10 to 5 microseconds changes the waveform by
+\ExternalDampedHalfStep{} m/s\(^{2}\) RMS on the common phase grid.
+At 150 rpm and the same clearance, the transferred model gives
+\ExternalDampedIndependent{} m/s\(^{2}\) RMSE. The 200 rpm primary
+negative peak and inferred separation remain unresolved.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{\ContactValidationPath ../clearance/revised/dissipation-comparison.pdf}
+\caption{Acceleration before and after adding dissipation on the physical mounting.
+The impact interval exposes the remaining event mismatch. The last panel
+shows the reduced oscillation amplitude under sustained loading.
+Shading spans the minimum and maximum integration samples within each
+half-degree bin. The plotted phase follows the published encoder.}
+\label{fig:clearance-dissipation}
+\end{figure}
+\fi

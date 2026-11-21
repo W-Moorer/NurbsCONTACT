@@ -63,6 +63,7 @@ struct Input {
     std::vector<Coordinate> coordinates;
     std::vector<Body> bodies;
     std::vector<ContactPair> pairs;
+    std::vector<PointResistance> resistances;
 };
 
 template<class T> T take(std::istream& in) {
@@ -182,6 +183,20 @@ Input read_scene(const Path& path,double deflection) {
             }
         }
     }
+    if (has_drives && !(in>>std::ws).eof()) {
+        expect(in,"resistances");
+        const auto resistances=take<unsigned>(in);
+        if (resistances>16384) throw std::invalid_argument("too many resistances");
+        for (unsigned i=0;i<resistances;++i) {
+            expect(in,"slide");
+            const auto a=take<unsigned>(in),b=take<unsigned>(in);
+            if (a>=bodies || b>=bodies || a==b) throw std::invalid_argument("invalid resistance pair");
+            PointResistance item{a,b,vector(in),vector(in),unit(vector(in)),number(in),number(in)};
+            if (item.force_limit<0 || item.slip_speed<=0)
+                throw std::invalid_argument("invalid resistance force or slip speed");
+            input.resistances.push_back(item);
+        }
+    }
     if (!(in>>std::ws).eof()) throw std::invalid_argument("extra fields in scene");
     return input;
 }
@@ -274,6 +289,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                                              state[j].derivative[i].at(offset));
             }
         }
+        if (!input.resistances.empty()) add_point_resistances(out,state,input.resistances,v_);
         if (!add_contact_forces(&out,state,input.pairs,v_,work))
             out.value[0]=std::numeric_limits<double>::quiet_NaN();
         return out;

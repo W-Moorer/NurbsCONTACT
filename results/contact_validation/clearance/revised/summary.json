@@ -1,0 +1,492 @@
+{
+  "sources": [
+    "https://doi.org/10.1007/s11071-010-9899-8",
+    "https://doi.org/10.1007/s11071-013-0787-x"
+  ],
+  "calibration": {
+    "rpm": 200,
+    "clearance_mm": 0.25,
+    "published_phase_shift_deg": 0,
+    "output_filter": null
+  },
+  "half_step_waveform_delta_rmse_m_s2": 0.001493694031663798,
+  "runs": [
+    {
+      "variant": "mounted",
+      "rpm": 200,
+      "clearance_mm": 0.25,
+      "mesh_deflection_m": 0.0,
+      "parameters": {
+        "contact_exponent": 1.5,
+        "normal_rate_multiplier": 1.0,
+        "guide_damping": 0.0,
+        "plate_friction": 0.0,
+        "stiffness_scale": 1.0
+      },
+      "measured_positive_peak_m_s2": 25.86710842249053,
+      "simulated_positive_peak_m_s2": 52.09438712380248,
+      "measured_negative_peak_m_s2": -52.20022398886843,
+      "simulated_negative_peak_m_s2": -70.00625610918829,
+      "measured_first_negative_peak_angle_deg": 46.63339828565423,
+      "simulated_first_negative_peak_angle_deg": 0.299999999274867,
+      "simulated_peak_at_measured_vertices_m_s2": 51.689938430637284,
+      "uniform_phase_acceleration_rmse_m_s2": 13.06666462399963,
+      "ideal_joint_acceleration_rmse_m_s2": 6.606440691378944,
+      "minimum_gap_um": -0.7681494291963964,
+      "max_geometric_gap_error_um": 7.535205098774256e-12,
+      "raw_sample_rmse_m_s2": 13.046328861615049,
+      "quiet_window_rmse_m_s2": 11.574412612003437,
+      "quiet_window_max_abs_acceleration_m_s2": 52.09438712380248,
+      "position_rmse_mm": 0.6528616696423015,
+      "cycles": [
+        {
+          "full_half_cycle_peak": {
+            "angle_deg": 0.299999999274867,
+            "acceleration_m_s2": -51.42731676232636,
+            "interior": true
+          },
+          "experiment_window_peak": {
+            "angle_deg": 37.475999999518415,
+            "acceleration_m_s2": -34.73124560937661,
+            "interior": true
+          },
+          "fraction_open_in_published_window": 0.0
+        },
+        {
+          "full_half_cycle_peak": {
+            "angle_deg": 4.14000000165845,
+            "acceleration_m_s2": -55.20879053426898,
+            "interior": true
+          },
+          "experiment_window_peak": {
+            "angle_deg": 42.852000001912074,
+            "acceleration_m_s2": -34.40085334386515,
+            "interior": true
+          },
+          "fraction_open_in_published_window": 0.0
+        }
+      ],
+      "step_s": 9.999999999999999e-06,
+      "accepted": 180000.0,
+      "subdivisions": 0.0,
+      "missing": 0.0
+    },
+    {
+      "variant": "revised",
+      "rpm": 200,
+      "clearance_mm": 0.25,
+      "mesh_deflection_m": 0.0,
+      "parameters": {
+        "contact_exponent": 1.35,
+        "normal_rate_multiplier": 5.0,
+        "guide_damping": 2.0,
+        "plate_friction": 1.5,
+        "stiffness_scale": 0.00533
+      },
+      "measured_positive_peak_m_s2": 25.86710842249053,
+      "simulated_positive_peak_m_s2": 36.95314482814036,
+      "measured_negative_peak_m_s2": -52.20022398886843,
+      "simulated_negative_peak_m_s2": -42.96590857386115,
+      "measured_first_negative_peak_angle_deg": 46.63339828565423,
+      "simulated_first_negative_peak_angle_deg": 0.011999999272980233,
+      "simulated_peak_at_measured_vertices_m_s2": 35.707500469243,
+      "uniform_phase_acceleration_rmse_m_s2": 7.857602868250301,
+      "ideal_joint_acceleration_rmse_m_s2": 6.606440691378944,
+      "minimum_gap_um": -21.777395538279816,
+      "max_geometric_gap_error_um": 6.830473686658678e-12,
+      "raw_sample_rmse_m_s2": 7.855719376138965,
+      "quiet_window_rmse_m_s2": 5.9946334279158515,
+      "quiet_window_max_abs_acceleration_m_s2": 36.95314482814036,
+      "position_rmse_mm": 0.6842707549324322,
+      "cycles": [
+        {
+          "full_half_cycle_peak": {
+            "angle_deg": 0.011999999272980233,
+            "acceleration_m_s2": -25.592569436092443,
+            "interior": false
+          },
+          "experiment_window_peak": {
+            "angle_deg": 36.011999999508824,
+            "acceleration_m_s2": -18.908114131030153,
+            "interior": false
+          },
+          "fraction_open_in_published_window": 0.0
+        },
+        {
+          "full_half_cycle_peak": {
+            "angle_deg": 1.6313492778863292e-09,
+            "acceleration_m_s2": -25.59257278761852,
+            "interior": false
+          },
+          "experiment_window_peak": {
+            "angle_deg": 36.00000000186719,
+            "acceleration_m_s2": -18.91226730883554,
+            "interior": false
+          },
+          "fraction_open_in_published_window": 0.0
+        }
+      ],
+      "step_s": 9.999999999999999e-06,
+      "accepted": 180000.0,
+      "subdivisions": 0.0,
+      "missing": 0.0
+    },
+    {
+      "variant": "revised-half",
+      "rpm": 200,
+      "clearance_mm": 0.25,
+      "mesh_deflection_m": 0.0,
+      "parameters": {
+        "contact_exponent": 1.35,
+        "normal_rate_multiplier": 5.0,
+        "guide_damping": 2.0,
+        "plate_friction": 1.5,
+        "stiffness_scale": 0.00533
+      },
+      "measured_positive_peak_m_s2": 25.86710842249053,
+      "simulated_positive_peak_m_s2": 36.9534822817715,
+      "measured_negative_peak_m_s2": -52.20022398886843,
+      "simulated_negative_peak_m_s2": -42.96632670793743,
+      "measured_first_negative_peak_angle_deg": 46.63339828565423,
+      "simulated_first_negative_peak_angle_deg": 4.353317706318194e-09,
+      "simulated_peak_at_measured_vertices_m_s2": 35.70402588013363,
+      "uniform_phase_acceleration_rmse_m_s2": 7.857637180033227,
+      "ideal_joint_acceleration_rmse_m_s2": 6.606440691378944,
+      "minimum_gap_um": -21.777431320816472,
+      "max_geometric_gap_error_um": 7.2099444470286045e-12,
+      "raw_sample_rmse_m_s2": 7.855700162666571,
+      "quiet_window_rmse_m_s2": 5.99536003923501,
+      "quiet_window_max_abs_acceleration_m_s2": 36.9534822817715,
+      "position_rmse_mm": 0.6842707734920941,
+      "cycles": [
+        {
+          "full_half_cycle_peak": {
+            "angle_deg": 4.353317706318194e-09,
+            "acceleration_m_s2": -25.592572567983144,
+            "interior": false
+          },
+          "experiment_window_peak": {
+            "angle_deg": 36.00000000458916,
+            "acceleration_m_s2": -18.91205956650403,
+            "interior": false
+          },
+          "fraction_open_in_published_window": 0.0
+        },
+        {
+          "full_half_cycle_peak": {
+            "angle_deg": 6.7117298385710455e-09,
+            "acceleration_m_s2": -25.592572567937093,
+            "interior": false
+          },
+          "experiment_window_peak": {
+            "angle_deg": 36.00000000694757,
+            "acceleration_m_s2": -18.912059565793342,
+            "interior": false
+          },
+          "fraction_open_in_published_window": 0.0
+        }
+      ],
+      "step_s": 4.9999999999999996e-06,
+      "accepted": 360000.0,
+      "subdivisions": 0.0,
+      "missing": 0.0
+    },
+    {
+      "variant": "revised-mesh",
+      "rpm": 200,
+      "clearance_mm": 0.25,
+      "mesh_deflection_m": 5e-06,
+      "parameters": {
+        "contact_exponent": 1.35,
+        "normal_rate_multiplier": 5.0,
+        "guide_damping": 2.0,
+        "plate_friction": 1.5,
+        "stiffness_scale": 0.00533
+      },
+      "measured_positive_peak_m_s2": 25.86710842249053,
+      "simulated_positive_peak_m_s2": 40.608395444121655,
+      "measured_negative_peak_m_s2": -52.20022398886843,
+      "simulated_negative_peak_m_s2": -45.27010582003899,
+      "measured_first_negative_peak_angle_deg": 46.63339828565423,
+      "simulated_first_negative_peak_angle_deg": 0.011999999272980233,
+      "simulated_peak_at_measured_vertices_m_s2": 37.57002241333082,
+      "uniform_phase_acceleration_rmse_m_s2": 7.906808704162466,
+      "ideal_joint_acceleration_rmse_m_s2": 6.606440691378944,
+      "minimum_gap_um": -23.32863700842125,
+      "max_geometric_gap_error_um": 2.4803831086273043,
+      "raw_sample_rmse_m_s2": 7.898147475246566,
+      "quiet_window_rmse_m_s2": 6.071868102850402,
+      "quiet_window_max_abs_acceleration_m_s2": 40.608395444121655,
+      "position_rmse_mm": 0.6842019067155993,
+      "cycles": [
+        {
+          "full_half_cycle_peak": {
+            "angle_deg": 0.011999999272980233,
+            "acceleration_m_s2": -25.877992081778395,
+            "interior": false
+          },
+          "experiment_window_peak": {
+            "angle_deg": 36.011999999508824,
+            "acceleration_m_s2": -19.135307008711113,
+            "interior": false
+          },
+          "fraction_open_in_published_window": 0.0
+        },
+        {
+          "full_half_cycle_peak": {
+            "angle_deg": 1.6313492778863292e-09,
+            "acceleration_m_s2": -25.879463562817143,
+            "interior": false
+          },
+          "experiment_window_peak": {
+            "angle_deg": 36.00000000186719,
+            "acceleration_m_s2": -19.138925716599353,
+            "interior": false
+          },
+          "fraction_open_in_published_window": 0.0
+        }
+      ],
+      "step_s": 9.999999999999999e-06,
+      "accepted": 180000.0,
+      "subdivisions": 0.0,
+      "missing": 0.0
+    },
+    {
+      "variant": "event-trial",
+      "rpm": 200,
+      "clearance_mm": 0.25,
+      "mesh_deflection_m": 0.0,
+      "parameters": {
+        "contact_exponent": 1.35,
+        "normal_rate_multiplier": 5.0,
+        "guide_damping": 30.0,
+        "plate_friction": 0.5,
+        "stiffness_scale": 1.0
+      },
+      "measured_positive_peak_m_s2": 25.86710842249053,
+      "simulated_positive_peak_m_s2": 963.98309874661,
+      "measured_negative_peak_m_s2": -52.20022398886843,
+      "simulated_negative_peak_m_s2": -77.14963017913767,
+      "measured_first_negative_peak_angle_deg": 46.63339828565423,
+      "simulated_first_negative_peak_angle_deg": 5.423999999308435,
+      "simulated_peak_at_measured_vertices_m_s2": 47.58333742690156,
+      "uniform_phase_acceleration_rmse_m_s2": 12.117851975433888,
+      "ideal_joint_acceleration_rmse_m_s2": 6.606440691378944,
+      "minimum_gap_um": -1.3354255141741211,
+      "max_geometric_gap_error_um": 5.800481622797449e-12,
+      "raw_sample_rmse_m_s2": 15.239631433190603,
+      "quiet_window_rmse_m_s2": 19.87739412092873,
+      "quiet_window_max_abs_acceleration_m_s2": 963.98309874661,
+      "position_rmse_mm": 0.7037730487403726,
+      "cycles": [
+        {
+          "full_half_cycle_peak": {
+            "angle_deg": 5.423999999308435,
+            "acceleration_m_s2": -71.71756315514912,
+            "interior": true
+          },
+          "experiment_window_peak": {
+            "angle_deg": 36.083999999509295,
+            "acceleration_m_s2": -42.81320584173712,
+            "interior": true
+          },
+          "fraction_open_in_published_window": 0.0
+        },
+        {
+          "full_half_cycle_peak": {
+            "angle_deg": 5.424000001666855,
+            "acceleration_m_s2": -71.71756315395852,
+            "interior": true
+          },
+          "experiment_window_peak": {
+            "angle_deg": 36.08400000186771,
+            "acceleration_m_s2": -42.81320582684104,
+            "interior": true
+          },
+          "fraction_open_in_published_window": 0.0
+        }
+      ],
+      "step_s": 9.999999999999999e-06,
+      "accepted": 180000.0,
+      "subdivisions": 0.0,
+      "missing": 0.0
+    },
+    {
+      "variant": "revised",
+      "rpm": 150,
+      "clearance_mm": 0.25,
+      "mesh_deflection_m": 0.0,
+      "parameters": {
+        "contact_exponent": 1.35,
+        "normal_rate_multiplier": 5.0,
+        "guide_damping": 2.0,
+        "plate_friction": 1.5,
+        "stiffness_scale": 0.00533
+      },
+      "measured_positive_peak_m_s2": 11.07338527823913,
+      "simulated_positive_peak_m_s2": 36.88797997330473,
+      "measured_negative_peak_m_s2": -14.836542087745329,
+      "simulated_negative_peak_m_s2": -28.478911765290558,
+      "measured_first_negative_peak_angle_deg": 1.8841525558162393,
+      "simulated_first_negative_peak_angle_deg": 1.8129497902918956e-09,
+      "simulated_peak_at_measured_vertices_m_s2": 21.101203278747853,
+      "uniform_phase_acceleration_rmse_m_s2": 2.7507311471955287,
+      "ideal_joint_acceleration_rmse_m_s2": 1.1054229944635796,
+      "minimum_gap_um": -16.57766865007654,
+      "max_geometric_gap_error_um": 4.119968255444917e-12,
+      "raw_sample_rmse_m_s2": 2.669124164044283,
+      "quiet_window_rmse_m_s2": 3.424335699480697,
+      "quiet_window_max_abs_acceleration_m_s2": 36.88797997330473,
+      "cycles": [
+        {
+          "full_half_cycle_peak": {
+            "angle_deg": 1.8129497902918956e-09,
+            "acceleration_m_s2": -14.393090836930051,
+            "interior": false
+          },
+          "experiment_window_peak": {
+            "angle_deg": 36.00000000204879,
+            "acceleration_m_s2": -10.636126397826516,
+            "interior": false
+          },
+          "fraction_open_in_published_window": 0.0
+        },
+        {
+          "full_half_cycle_peak": {
+            "angle_deg": 4.171397449681535e-09,
+            "acceleration_m_s2": -14.393090837140807,
+            "interior": false
+          },
+          "experiment_window_peak": {
+            "angle_deg": 36.00000000440724,
+            "acceleration_m_s2": -10.636126397102077,
+            "interior": false
+          },
+          "fraction_open_in_published_window": 0.0
+        }
+      ],
+      "step_s": 1e-05,
+      "accepted": 240000.0,
+      "subdivisions": 0.0,
+      "missing": 0.0
+    },
+    {
+      "variant": "revised",
+      "rpm": 200,
+      "clearance_mm": 0.5,
+      "mesh_deflection_m": 0.0,
+      "parameters": {
+        "contact_exponent": 1.35,
+        "normal_rate_multiplier": 5.0,
+        "guide_damping": 2.0,
+        "plate_friction": 1.5,
+        "stiffness_scale": 0.00533
+      },
+      "measured_positive_peak_m_s2": 50.24913482654742,
+      "simulated_positive_peak_m_s2": 52.08175894057144,
+      "measured_negative_peak_m_s2": -96.25104626331068,
+      "simulated_negative_peak_m_s2": -64.73855543639738,
+      "measured_first_negative_peak_angle_deg": 46.633457798307965,
+      "simulated_first_negative_peak_angle_deg": 8.783999999330447,
+      "simulated_peak_at_measured_vertices_m_s2": 49.735399027882295,
+      "uniform_phase_acceleration_rmse_m_s2": 13.532895457112158,
+      "ideal_joint_acceleration_rmse_m_s2": 11.769131533035951,
+      "minimum_gap_um": -38.90453350618821,
+      "max_geometric_gap_error_um": 3.903127820947816e-12,
+      "raw_sample_rmse_m_s2": 13.525040941499084,
+      "quiet_window_rmse_m_s2": 10.340019260103862,
+      "quiet_window_max_abs_acceleration_m_s2": 52.08175894057144,
+      "cycles": [
+        {
+          "full_half_cycle_peak": {
+            "angle_deg": 8.783999999330447,
+            "acceleration_m_s2": -29.866986766148777,
+            "interior": true
+          },
+          "experiment_window_peak": {
+            "angle_deg": 36.011999999508824,
+            "acceleration_m_s2": -18.91672433564864,
+            "interior": false
+          },
+          "fraction_open_in_published_window": 0.0
+        },
+        {
+          "full_half_cycle_peak": {
+            "angle_deg": 8.784000001688867,
+            "acceleration_m_s2": -29.866986765991026,
+            "interior": true
+          },
+          "experiment_window_peak": {
+            "angle_deg": 36.00000000186719,
+            "acceleration_m_s2": -18.921108076725137,
+            "interior": false
+          },
+          "fraction_open_in_published_window": 0.0
+        }
+      ],
+      "step_s": 9.999999999999999e-06,
+      "accepted": 180000.0,
+      "subdivisions": 0.0,
+      "missing": 0.0
+    },
+    {
+      "variant": "revised",
+      "rpm": 250,
+      "clearance_mm": 0.25,
+      "mesh_deflection_m": 0.0,
+      "parameters": {
+        "contact_exponent": 1.35,
+        "normal_rate_multiplier": 5.0,
+        "guide_damping": 2.0,
+        "plate_friction": 1.5,
+        "stiffness_scale": 0.00533
+      },
+      "measured_positive_peak_m_s2": 69.80256499063015,
+      "simulated_positive_peak_m_s2": 50.781032643194614,
+      "measured_negative_peak_m_s2": -107.68047856077948,
+      "simulated_negative_peak_m_s2": -58.69326631370406,
+      "measured_first_negative_peak_angle_deg": 87.20754014502842,
+      "simulated_first_negative_peak_angle_deg": 2.6699999973864763,
+      "simulated_peak_at_measured_vertices_m_s2": 50.41019711779754,
+      "uniform_phase_acceleration_rmse_m_s2": 20.882602416268412,
+      "ideal_joint_acceleration_rmse_m_s2": 20.17248780264668,
+      "minimum_gap_um": -27.293036882702904,
+      "max_geometric_gap_error_um": 5.204170427930421e-12,
+      "raw_sample_rmse_m_s2": 20.84614767436497,
+      "quiet_window_rmse_m_s2": 16.226992478598635,
+      "quiet_window_max_abs_acceleration_m_s2": 50.781032643194614,
+      "cycles": [
+        {
+          "full_half_cycle_peak": {
+            "angle_deg": 2.6699999973864763,
+            "acceleration_m_s2": -40.42833747432597,
+            "interior": true
+          },
+          "experiment_window_peak": {
+            "angle_deg": 36.0149999972349,
+            "acceleration_m_s2": -29.55336295278875,
+            "interior": false
+          },
+          "fraction_open_in_published_window": 0.0
+        },
+        {
+          "full_half_cycle_peak": {
+            "angle_deg": 2.6699999991085974,
+            "acceleration_m_s2": -40.42833747632011,
+            "interior": true
+          },
+          "experiment_window_peak": {
+            "angle_deg": 36.01499999932696,
+            "acceleration_m_s2": -29.553362951945687,
+            "interior": false
+          },
+          "fraction_open_in_published_window": 0.0
+        }
+      ],
+      "step_s": 9.999999999999999e-06,
+      "accepted": 144000.0,
+      "subdivisions": 0.0,
+      "missing": 0.0
+    }
+  ]
+}

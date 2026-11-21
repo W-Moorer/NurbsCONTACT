@@ -25,6 +25,18 @@ The published rig mounts the sleeve on the rod and the journal on the slider. Th
 - [STEP fixtures and scene decks](clearance/models)
 - [Plan-view animation](animations/clearance-slider-plan.mp4) · [Isometric animation](animations/clearance-slider-isometric.mp4)
 
+### Dissipation and compliance revision
+
+The follow-up publication describes a friction plate between the rod and slider and viscous resistance from the guide lubricant. The revised STEP scene uses the physical pin and sleeve mounting, a linear guide resistance of 2 N·s/m, and 1.5 N of planar sliding resistance under prescribed preload. The contact rate is five times the reference rate computed with the scaled stiffness. The normal exponent is 1.35 and the effective elastic force at 0.3 µm is 0.533% of the bare Hertz value. This fitted compliance represents the rest of the load path. The geometry queries and depth rejection rule are the same as in the corrected-mounting control. [Koshy et al., Sections 2–3](https://doi.org/10.1007/s11071-013-0787-x)
+
+The model was selected on the 200 rpm, 0.25 mm curve, with attention to the full-rate peaks and the 90–180° response. The parameters are unchanged at the three other speed and clearance settings marked by their separate runs. Each run scores the last two of six revolutions. The RMSE at the integration times uses a piecewise linear reconstruction of the published accelerometer trace. The comparison figure shows the full-rate acceleration envelope for each plotted half-degree bin. The revision improves the broad response while the primary negative peak at 46.6° and the inferred separation still differ at 200 rpm.
+
+On the calibration curve the full-rate RMSE falls from 13.05 to 7.86 m/s² relative to the corrected-mounting control. The 90–180° RMSE falls from 11.57 to 5.99 m/s² and the raw peak in that interval falls from 52.09 to 36.95 m/s². The travel RMSE changes from 0.65 to 0.68 mm, while maximum equivalent compression rises from 0.77 to 21.78 µm. Halving the step changes the waveform by 0.0015 m/s² RMS on the phase grid. The 5 µm BVH run has 7.90 m/s² full-rate RMSE. The three transfer cases have full-rate RMSEs of 2.67, 13.53 and 20.85 m/s² at 150 rpm and 0.25 mm, 200 rpm and 0.50 mm, and 250 rpm and 0.25 mm, respectively. The 150 rpm simulation still has a 36.89 m/s² positive peak, compared with 11.07 m/s² on the published trace.
+
+The published negative peak lies inside the interval the authors inferred to be open. If the joint were open at that sample, the revised model at its sliding speed of −0.85 m/s would have at least +0.20 m/s² of axial acceleration from the guide and support plate alone. The experimental acceleration near −50.7 m/s² requires additional load in this reduced model. The published trace cannot establish whether the contact was open at the peak or quantify the response of another mechanical load path.
+
+- [Revision metrics and fixed parameters](clearance/revised/summary.json) · [Acceleration comparison and full-rate envelopes](clearance/revised/dissipation-comparison.pdf)
+
 ## Archived robot copper-ring insertion
 
 The archived records provide commanded and measured wrist pose and wrist force/torque for 300 attempts. The dataset covers four tooling slots and 13 commanded lateral offsets. The paired CSV includes transformed measurements from Mihael Simonič and Matevž Majcen Horvat's *Copper Rings Insertion Attempts Dataset*, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Each trial is registered to the first minimum of commanded Z. The model uses measured axial position relative to that command target. The measured tool-frame axial force is centered on the median of the first 35 samples. The evaluation window covers sample offsets −28 through +23. The files contain no timestamps, so the curves use sample index and the model uses rate-independent compliance.
@@ -45,6 +57,7 @@ Run these commands with the [OCCT release runtime on PATH](../../README.md#step-
 cmake --build build/occt --config Release --target nc_contact nc_step_tests
 ctest --test-dir build/occt -C Release --output-on-failure
 python benchmarks/contact_validation/clearance.py build/occt/Release/nc_contact.exe build/external-validation/source/springer.pdf build/external-validation/clearance results/contact_validation/clearance --extended
+python benchmarks/contact_validation/clearance_revision.py build/occt/Release/nc_contact.exe build/external-validation/slider-revision results/contact_validation/clearance results/contact_validation/clearance/revised
 python benchmarks/contact_validation/insertion.py build/occt/Release/nc_contact.exe build/external-validation/source/insertion-dataset.zip build/external-validation/insertion results/contact_validation/insertion
 python benchmarks/contact_validation/external_plots.py results/contact_validation --animate
 python benchmarks/hht/paper.py results/hht

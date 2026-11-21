@@ -136,6 +136,25 @@ def external_validation_macros(root):
         extended = slider["extended_run"]
         macros["ExternalSliderExtendedSteps"] = f"{int(extended['accepted']):,}"
         macros["ExternalSliderExtendedPhase"] = f"{extended['simulated_first_negative_peak_angle_deg']:.1f}"
+    revised_file = slider_file.parent / "revised" / "summary.json"
+    if revised_file.is_file():
+        revision = json.loads(revised_file.read_text(encoding="utf-8"))
+        comparison = {(run["rpm"], run["clearance_mm"], run["variant"]): run for run in revision["runs"]}
+        mounted = comparison[200, .25, "mounted"]
+        candidate = comparison[200, .25, "revised"]
+        transferred = comparison[150, .25, "revised"]
+        macros.update({
+            "ExternalDampedBefore": f"{mounted['raw_sample_rmse_m_s2']:.2f}",
+            "ExternalDampedAfter": f"{candidate['raw_sample_rmse_m_s2']:.2f}",
+            "ExternalDampedQuietBefore": f"{mounted['quiet_window_rmse_m_s2']:.2f}",
+            "ExternalDampedQuietAfter": f"{candidate['quiet_window_rmse_m_s2']:.2f}",
+            "ExternalDampedPeakBefore": f"{mounted['quiet_window_max_abs_acceleration_m_s2']:.1f}",
+            "ExternalDampedPeakAfter": f"{candidate['quiet_window_max_abs_acceleration_m_s2']:.1f}",
+            "ExternalDampedDepthBefore": f"{-mounted['minimum_gap_um']:.2f}",
+            "ExternalDampedDepthAfter": f"{-candidate['minimum_gap_um']:.2f}",
+            "ExternalDampedHalfStep": f"{revision['half_step_waveform_delta_rmse_m_s2']:.4f}",
+            "ExternalDampedIndependent": f"{transferred['raw_sample_rmse_m_s2']:.2f}",
+        })
     return macros
 
 

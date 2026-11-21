@@ -168,6 +168,40 @@ Vec ContactPose::inverse_rotate(Vec world) const {
     return angle==0 ? world : rotated(world,axis,-angle);
 }
 
+void add_point_resistances(Forces& forces, std::span<const ContactBodyState> bodies,
+                           std::span<const PointResistance> resistances, const Vector& velocity) {
+    const auto n = velocity.size();
+    Vector projections(n);
+    std::vector<Vec> jacobian(n);
+    for (const auto& item:resistances) {
+        const auto& a = bodies[item.a];
+        const auto& b = bodies[item.b];
+        const Vec arm_a = a.pose.rotate(item.anchor_a);
+        const Vec arm_b = b.pose.rotate(item.anchor_b);
+        const auto relative = [&](const Twist& da, const Twist& db) {
+            return tangential(sub(db.at(arm_b),da.at(arm_a)),item.normal);
+        };
+        Vec slip = relative(a.prescribed,b.prescribed);
+        for (std::size_t i=0;i<n;++i) {
+            jacobian[i] = relative(a.derivative[i],b.derivative[i]);
+            slip = add(slip,scale(jacobian[i],velocity[i]));
+        }
+        const double speed = std::hypot(length(slip),item.slip_speed);
+        const double coefficient = item.force_limit/speed;
+        for (std::size_t i=0;i<n;++i) {
+            const double along = dot3(jacobian[i],slip);
+            projections[i] = along/speed;
+            forces.value[i] -= coefficient*along;
+        }
+        for (std::size_t i=0;i<n;++i) {
+            for (std::size_t j=0;j<n;++j) {
+                forces.damping[i*n+j] += coefficient*
+                    (dot3(jacobian[i],jacobian[j])-projections[i]*projections[j]);
+            }
+        }
+    }
+}
+
 bool add_contact_forces(Forces* forces, std::span<const ContactBodyState> bodies,
                         std::span<const ContactPair> pairs, const Vector& velocity,
                         ContactWork& work, std::vector<ContactSample>* observations) {

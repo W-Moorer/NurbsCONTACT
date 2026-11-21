@@ -7,6 +7,7 @@ import json
 import math
 import shutil
 import subprocess
+from dataclasses import dataclass
 from pathlib import Path
 
 import fitz
@@ -90,7 +91,16 @@ def restitution_scale():
     return brentq(residual, 0, 3)
 
 
-def write_deck(exe, directory, rpm, clearance, damping_scale):
+@dataclass(frozen=True)
+class RigDissipation:
+    contact_exponent: float
+    normal_rate_multiplier: float
+    guide_damping: float
+    plate_friction: float
+    stiffness_scale: float = 1.
+
+
+def write_deck(exe, directory, rpm, clearance, damping_scale, dissipation=None):
     radius = 11.125
     pin = radius - clearance
     label = f"{rpm}rpm-{clearance:.2f}mm"
@@ -111,19 +121,37 @@ def write_deck(exe, directory, rpm, clearance, damping_scale):
     rod_mass = 1.13
     slider_mass = 1.013
     inertia = .0153 + rod_mass*offset**2
+    power = 1.5
+    guide = 0
+    plate = ""
+    slider_fields = '0 0 0 0 0 0 1 0 0 0 0 -1 0 0 0 1 1 1 0 0'
+    rod_fields = f'{rod_mass} .3 0 0 0 0 1 0 {offset-.3} 0 0 0 0 0 0 0'
+    mount = (slider_fields, rod_fields)
+    orbit_body = 1
+    if dissipation is not None:
+        mount = (rod_fields, slider_fields)
+        orbit_body = 0
+        power = dissipation.contact_exponent
+        guide = dissipation.guide_damping
+        # Express the curvature-dependent coefficient at a common reference
+        # compression so the scale retains its meaning when power changes.
+        stiffness *= dissipation.stiffness_scale*(.3e-6)**(1.5-power)
+        damping_scale *= dissipation.normal_rate_multiplier
+        if dissipation.plate_friction:
+            plate = f'resistances 1\nslide 0 1 0 0 0 0 0 0 0 0 1 {dissipation.plate_friction} .001\n'
     damping = damping_scale*math.sqrt(stiffness*slider_mass)
     path = directory / f"{label}.scene"
     path.write_text(
         f"""nc-contact-v2
 gravity 0 0 0 2 2 1
 coordinate {inertia} 0 {-omega/6} 0 0 0 0
-coordinate {slider_mass} .35 0 0 0 0 0
-body "{sleeve_file.name}" 0 0 0 0 0 0 1 0 0 0 0 -1 0 0 0 1 1 1 0 0
-body "{journal_file.name}" {rod_mass} .3 0 0 0 0 1 0 {offset-.3} 0 0 0 0 0 0 0
-probe 0 1 contained-radial 0 0 0 0 0 0 -1 0 0 {stiffness} 1.5 {damping} .01 .001 .0005
+coordinate {slider_mass} .35 0 0 {guide} 0 0
+body "{sleeve_file.name}" {mount[0]}
+body "{journal_file.name}" {mount[1]}
+probe 0 1 contained-radial 0 0 0 0 0 0 -1 0 0 {stiffness} {power} {damping} .01 .001 .0005
 drives 1
-1 orbit .05 0 0 0 0 1 {omega}
-""", encoding="ascii")
+{orbit_body} orbit .05 0 0 0 0 1 {omega}
+{plate}""", encoding="ascii")
     return path
 
 

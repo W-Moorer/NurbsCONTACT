@@ -79,6 +79,16 @@ struct ContactSample {
     bool resolved{};
 };
 
+// Sliding friction with a prescribed preload. The normal is in world space.
+struct PointResistance {
+    std::size_t a, b;
+    Vec anchor_a, anchor_b, normal;
+    double force_limit, slip_speed;
+};
+
+void add_point_resistances(Forces& forces, std::span<const ContactBodyState> bodies,
+                           std::span<const PointResistance> resistances, const Vector& velocity);
+
 // Exterior probes treat an absent hit as open. A contained probe starts at
 // the cavity and part anchors and rejects a missing wall or part. The radial
 // mode uses the centerline for the force differential of circular sections.

@@ -1,4 +1,5 @@
 #include "nurbscontact/hht.hpp"
+#include "nurbscontact/contact_dynamics.hpp"
 #include "nurbscontact/triangle_bvh.hpp"
 
 #include <iostream>
@@ -54,6 +55,26 @@ void check_rollback() {
             "HHT could not continue after rejected step");
 }
 
+void check_point_resistance() {
+    const auto reference = ContactPose{};
+    const std::vector<ContactBodyState> bodies{
+        {nullptr,reference,{{{1,0,0},{}}}},
+        {nullptr,reference,{{{0,0,7},{}}},{{0,1,0},{}}}
+    };
+    const PointResistance plate{0,1,{},{},{0,0,1},3,.1};
+    const auto force = [&](double speed) {
+        Forces output{{0},{0},{0}};
+        add_point_resistances(output,bodies,{&plate,1},{speed});
+        return output;
+    };
+    const auto value=force(2);
+    require(std::abs(value.value[0]+6/std::sqrt(5.01))<1e-12,
+            "sliding resistance did not project the relative planar velocity");
+    const double slope=(force(2+1e-5).value[0]-force(2-1e-5).value[0])/2e-5;
+    require(std::abs(value.damping[0]+slope)<1e-8,
+            "sliding resistance tangent disagrees with virtual work");
+}
+
 void check_triangle_bvh() {
     const Triangle plate{{{0,0,0},{2,0,0},{0,2,0}}};
     const Triangle through{{{0.5,0.5,-1},{0.5,0.5,1},{1,1,1}}};
@@ -106,6 +127,7 @@ int main() {
     try {
         check_oscillator();
         check_rollback();
+        check_point_resistance();
         check_triangle_bvh();
         std::cout<<"HHT and triangle BVH tests passed\n";
     } catch (const std::exception& e) {
