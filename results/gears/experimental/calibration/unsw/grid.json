@@ -1,0 +1,110 @@
+[
+  {
+    "stiffness_N_m": 35000000.0,
+    "damping_ratio": 0.05,
+    "phase_shift_bins": 64,
+    "calibration_rms": 2.1278489278146817
+  },
+  {
+    "stiffness_N_m": 35000000.0,
+    "damping_ratio": 0.1,
+    "phase_shift_bins": 64,
+    "calibration_rms": 2.1235640632823936
+  },
+  {
+    "stiffness_N_m": 35000000.0,
+    "damping_ratio": 0.2,
+    "phase_shift_bins": 64,
+    "calibration_rms": 2.1194236488819707
+  },
+  {
+    "stiffness_N_m": 50000000.0,
+    "damping_ratio": 0.05,
+    "phase_shift_bins": 64,
+    "calibration_rms": 1.950459290417585
+  },
+  {
+    "stiffness_N_m": 50000000.0,
+    "damping_ratio": 0.1,
+    "phase_shift_bins": 64,
+    "calibration_rms": 1.949072850591131
+  },
+  {
+    "stiffness_N_m": 50000000.0,
+    "damping_ratio": 0.2,
+    "phase_shift_bins": 64,
+    "calibration_rms": 1.9477820506741617
+  },
+  {
+    "stiffness_N_m": 75000000.0,
+    "damping_ratio": 0.05,
+    "phase_shift_bins": 64,
+    "calibration_rms": 2.052014449960437
+  },
+  {
+    "stiffness_N_m": 75000000.0,
+    "damping_ratio": 0.1,
+    "phase_shift_bins": 64,
+    "calibration_rms": 2.05160330088629
+  },
+  {
+    "stiffness_N_m": 75000000.0,
+    "damping_ratio": 0.2,
+    "phase_shift_bins": 64,
+    "calibration_rms": 2.051215218014325
+  },
+  {
+    "stiffness_N_m": 100000000.0,
+    "damping_ratio": 0.05,
+    "phase_shift_bins": 64,
+    "calibration_rms": 2.1739043594501193
+  },
+  {
+    "stiffness_N_m": 100000000.0,
+    "damping_ratio": 0.1,
+    "phase_shift_bins": 64,
+    "calibration_rms": 2.173701421149919
+  },
+  {
+    "stiffness_N_m": 100000000.0,
+    "damping_ratio": 0.2,
+    "phase_shift_bins": 64,
+    "calibration_rms": 2.1734885101917922
+  },
+  {
+    "stiffness_N_m": 150000000.0,
+    "damping_ratio": 0.05,
+    "phase_shift_bins": 65,
+    "calibration_rms": 2.3336180764896977
+  },
+  {
+    "stiffness_N_m": 150000000.0,
+    "damping_ratio": 0.1,
+    "phase_shift_bins": 64,
+    "calibration_rms": 2.3335845811851037
+  },
+  {
+    "stiffness_N_m": 150000000.0,
+    "damping_ratio": 0.2,
+    "phase_shift_bins": 64,
+    "calibration_rms": 2.3334648054368685
+  },
+  {
+    "stiffness_N_m": 220000000.0,
+    "damping_ratio": 0.05,
+    "phase_shift_bins": 65,
+    "calibration_rms": 2.451485004691757
+  },
+  {
+    "stiffness_N_m": 220000000.0,
+    "damping_ratio": 0.1,
+    "phase_shift_bins": 64,
+    "calibration_rms": 2.4515206306669177
+  },
+  {
+    "stiffness_N_m": 220000000.0,
+    "damping_ratio": 0.2,
+    "phase_shift_bins": 64,
+    "calibration_rms": 2.451445206656965
+  }
+]

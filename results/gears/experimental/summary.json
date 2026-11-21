@@ -1,0 +1,608 @@
+{
+  "calibration": {
+    "nasa": {
+      "stiffness_N_m": 60000000.0,
+      "damping_ratio": 0.2,
+      "phase_shift_bins": 0,
+      "calibration_rms": 63.05519010317873
+    },
+    "unsw": {
+      "stiffness_N_m": 50000000.0,
+      "damping_ratio": 0.2,
+      "phase_shift_bins": 64,
+      "calibration_rms": 1.9477820506741617
+    }
+  },
+  "comparisons": {
+    "nasa-a": {
+      "rpm": 2000,
+      "input_torque_Nm": 33.731899999999996,
+      "role": "calibration",
+      "brep": {
+        "error": {
+          "rms": 63.05519010317873,
+          "data_rms": 638.3975186667719,
+          "test_peak": 908.8713020676923,
+          "prediction_peak": 826.2134296725604,
+          "test_peak_to_peak": 908.8713020676923,
+          "prediction_peak_to_peak": 826.2134296725604,
+          "peak_angle_error_deg": 4.625
+        },
+        "timing": {
+          "rpm": 2000.0,
+          "input_torque_Nm": 33.731899999999996,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.16,
+          "steps": 160000.0,
+          "accepted": 160001.0,
+          "subdivisions": 1.0,
+          "wall_s": 1.1848096,
+          "setup_s": 0.0075315,
+          "stiffness_N_m": 60000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0,
+          "probe_calls": 1080970.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 2.586260033354826e-07
+        }
+      },
+      "mesh": {
+        "error": {
+          "rms": 66.74653333352697,
+          "data_rms": 638.3975186667719,
+          "test_peak": 908.8713020676923,
+          "prediction_peak": 854.7333668097497,
+          "test_peak_to_peak": 908.8713020676923,
+          "prediction_peak_to_peak": 854.7333668097497,
+          "peak_angle_error_deg": 1.25
+        },
+        "timing": {
+          "rpm": 2000.0,
+          "input_torque_Nm": 33.731899999999996,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.16,
+          "steps": 160000.0,
+          "accepted": 160003.0,
+          "subdivisions": 3.0,
+          "wall_s": 4.2700119,
+          "setup_s": 0.117571,
+          "stiffness_N_m": 60000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0015625,
+          "probe_calls": 1285054.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 23186802.0,
+          "max_residual_Nm": 3.6129705849319294e-07
+        },
+        "delta_to_nominal_cad_rms": 23.47456877978405
+      }
+    },
+    "nasa-b": {
+      "rpm": 4000,
+      "input_torque_Nm": 11.4832,
+      "role": "held_out",
+      "brep": {
+        "error": {
+          "rms": 146.71207220312093,
+          "data_rms": 195.0282837996433,
+          "test_peak": 462.29813760041776,
+          "prediction_peak": 348.110238723034,
+          "test_peak_to_peak": 462.29813760041776,
+          "prediction_peak_to_peak": 348.110238723034,
+          "peak_angle_error_deg": 1.0
+        },
+        "timing": {
+          "rpm": 4000.0,
+          "input_torque_Nm": 11.4832,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.16,
+          "steps": 160000.0,
+          "accepted": 160000.0,
+          "subdivisions": 0.0,
+          "wall_s": 1.2418548,
+          "setup_s": 0.0099017,
+          "stiffness_N_m": 60000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0,
+          "probe_calls": 1133594.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 4.16355660684542e-07
+        }
+      },
+      "mesh": {
+        "error": {
+          "rms": 150.00087727554876,
+          "data_rms": 195.0282837996433,
+          "test_peak": 462.29813760041776,
+          "prediction_peak": 362.36318716667716,
+          "test_peak_to_peak": 462.29813760041776,
+          "prediction_peak_to_peak": 362.36318716667716,
+          "peak_angle_error_deg": -5.375
+        },
+        "timing": {
+          "rpm": 4000.0,
+          "input_torque_Nm": 11.4832,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.16,
+          "steps": 160000.0,
+          "accepted": 160000.0,
+          "subdivisions": 0.0,
+          "wall_s": 4.0828022,
+          "setup_s": 0.1238525,
+          "stiffness_N_m": 60000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0015625,
+          "probe_calls": 1285510.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 22972036.0,
+          "max_residual_Nm": 7.026252649700027e-07
+        },
+        "delta_to_nominal_cad_rms": 36.28672311535708
+      }
+    },
+    "nasa-c": {
+      "rpm": 6000,
+      "input_torque_Nm": 33.731899999999996,
+      "role": "held_out",
+      "brep": {
+        "error": {
+          "rms": 148.78789983429203,
+          "data_rms": 678.4588579796017,
+          "test_peak": 1078.26087,
+          "prediction_peak": 866.2611468063387,
+          "test_peak_to_peak": 1078.26087,
+          "prediction_peak_to_peak": 866.2611468063387,
+          "peak_angle_error_deg": 1.5
+        },
+        "timing": {
+          "rpm": 6000.0,
+          "input_torque_Nm": 33.731899999999996,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.16,
+          "steps": 160000.0,
+          "accepted": 160000.0,
+          "subdivisions": 0.0,
+          "wall_s": 1.2652385,
+          "setup_s": 0.0082632,
+          "stiffness_N_m": 60000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0,
+          "probe_calls": 1235654.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 6.764249528834476e-07
+        }
+      },
+      "mesh": {
+        "error": {
+          "rms": 151.67799266102307,
+          "data_rms": 678.4588579796017,
+          "test_peak": 1078.26087,
+          "prediction_peak": 920.132941536451,
+          "test_peak_to_peak": 1078.26087,
+          "prediction_peak_to_peak": 920.132941536451,
+          "peak_angle_error_deg": -2.125
+        },
+        "timing": {
+          "rpm": 6000.0,
+          "input_torque_Nm": 33.731899999999996,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.16,
+          "steps": 160000.0,
+          "accepted": 160000.0,
+          "subdivisions": 0.0,
+          "wall_s": 4.4738191,
+          "setup_s": 0.1239494,
+          "stiffness_N_m": 60000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0015625,
+          "probe_calls": 1407362.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 25275594.0,
+          "max_residual_Nm": 6.910351461053565e-07
+        },
+        "delta_to_nominal_cad_rms": 31.640450969896623
+      },
+      "nasa_inertia_times10": {
+        "error": {
+          "rms": 164.65966727359725,
+          "data_rms": 678.4588579796017,
+          "test_peak": 1078.26087,
+          "prediction_peak": 904.9480636829346,
+          "test_peak_to_peak": 1078.26087,
+          "prediction_peak_to_peak": 904.9480636829346,
+          "peak_angle_error_deg": 1.125
+        },
+        "timing": {
+          "rpm": 6000.0,
+          "input_torque_Nm": 33.731899999999996,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.16,
+          "steps": 160000.0,
+          "accepted": 160000.0,
+          "subdivisions": 0.0,
+          "wall_s": 1.0974114,
+          "setup_s": 0.009316,
+          "stiffness_N_m": 60000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0,
+          "probe_calls": 1048070.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 5.900155896076953e-07
+        },
+        "delta_to_nominal_cad_rms": 76.44199844910548
+      }
+    },
+    "nasa-d": {
+      "rpm": 6000,
+      "input_torque_Nm": 67.46379999999999,
+      "role": "held_out",
+      "brep": {
+        "error": {
+          "rms": 90.76815333922073,
+          "data_rms": 1258.4932820154781,
+          "test_peak": 1785.1637787909444,
+          "prediction_peak": 1708.847334095542,
+          "test_peak_to_peak": 1661.9185226018508,
+          "prediction_peak_to_peak": 1420.1463441878047,
+          "peak_angle_error_deg": 0.625
+        },
+        "timing": {
+          "rpm": 6000.0,
+          "input_torque_Nm": 67.46379999999999,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.16,
+          "steps": 160000.0,
+          "accepted": 160000.0,
+          "subdivisions": 0.0,
+          "wall_s": 1.1595353,
+          "setup_s": 0.0096711,
+          "stiffness_N_m": 60000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0,
+          "probe_calls": 1245714.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 5.569028988516855e-07
+        }
+      },
+      "mesh": {
+        "error": {
+          "rms": 96.44796679568019,
+          "data_rms": 1258.4932820154781,
+          "test_peak": 1785.1637787909444,
+          "prediction_peak": 1700.6162432344338,
+          "test_peak_to_peak": 1661.9185226018508,
+          "prediction_peak_to_peak": 1381.962699057744,
+          "peak_angle_error_deg": 0.375
+        },
+        "timing": {
+          "rpm": 6000.0,
+          "input_torque_Nm": 67.46379999999999,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.16,
+          "steps": 160000.0,
+          "accepted": 160000.0,
+          "subdivisions": 0.0,
+          "wall_s": 4.8598612,
+          "setup_s": 0.1091355,
+          "stiffness_N_m": 60000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0015625,
+          "probe_calls": 1408164.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 25317256.0,
+          "max_residual_Nm": 6.370924043874737e-07
+        },
+        "delta_to_nominal_cad_rms": 30.553338434315286
+      },
+      "brep_fine_step": {
+        "error": {
+          "rms": 90.85175770798705,
+          "data_rms": 1258.4932820154781,
+          "test_peak": 1785.1637787909444,
+          "prediction_peak": 1709.5069743041129,
+          "test_peak_to_peak": 1661.9185226018508,
+          "prediction_peak_to_peak": 1421.1332056478886,
+          "peak_angle_error_deg": 0.625
+        },
+        "timing": {
+          "rpm": 6000.0,
+          "input_torque_Nm": 67.46379999999999,
+          "axial_stations": 1.0,
+          "dt_s": 5e-07,
+          "duration_s": 0.16,
+          "steps": 320000.0,
+          "accepted": 320000.0,
+          "subdivisions": 0.0,
+          "wall_s": 2.1865679,
+          "setup_s": 0.0098957,
+          "stiffness_N_m": 60000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0,
+          "probe_calls": 2119130.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 3.743509419951163e-07
+        },
+        "delta_to_nominal_cad_rms": 0.28410614654025057
+      }
+    },
+    "Data_05Hz_05Nm_H": {
+      "rpm": 298.924150682424,
+      "input_torque_Nm": 5.382086753845215,
+      "role": "held_out",
+      "brep": {
+        "error": {
+          "rms": 1.4589285781140555,
+          "data_rms": 1.9184090771729407,
+          "test_peak": 3.390053725,
+          "prediction_peak": 1.0026327958433967,
+          "test_peak_to_peak": 6.898717761,
+          "prediction_peak_to_peak": 2.2556556529322904,
+          "harmonic_error_um": [
+            -0.42823451152922143,
+            -0.21967922106279036,
+            0.06562177637122046,
+            -1.8826486184081779
+          ]
+        },
+        "timing": {
+          "rpm": 298.924150682424,
+          "input_torque_Nm": 5.382086753845215,
+          "axial_stations": 1.0,
+          "dt_s": 1e-05,
+          "duration_s": 0.72,
+          "steps": 72000.0,
+          "accepted": 72000.0,
+          "subdivisions": 0.0,
+          "wall_s": 0.5032641,
+          "setup_s": 0.0100824,
+          "stiffness_N_m": 50000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0,
+          "probe_calls": 479016.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 1.307032245420614e-07
+        }
+      },
+      "mesh": {
+        "error": {
+          "rms": 1.4516464684863004,
+          "data_rms": 1.9184090771729407,
+          "test_peak": 3.390053725,
+          "prediction_peak": 1.4523046427188575,
+          "test_peak_to_peak": 6.898717761,
+          "prediction_peak_to_peak": 3.2690917680841665,
+          "harmonic_error_um": [
+            -0.47011239481357814,
+            -0.19379417598800355,
+            0.19752151170858978,
+            -1.7910552535174007
+          ]
+        },
+        "timing": {
+          "rpm": 298.924150682424,
+          "input_torque_Nm": 5.382086753845215,
+          "axial_stations": 1.0,
+          "dt_s": 1e-05,
+          "duration_s": 0.72,
+          "steps": 72000.0,
+          "accepted": 72000.0,
+          "subdivisions": 0.0,
+          "wall_s": 1.8375995,
+          "setup_s": 0.0811459,
+          "stiffness_N_m": 50000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0015625,
+          "probe_calls": 597282.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 13760324.0,
+          "max_residual_Nm": 1.6422469169274923e-07
+        },
+        "delta_to_nominal_cad_rms": 0.3123905108581882
+      }
+    },
+    "Data_05Hz_10Nm_H": {
+      "rpm": 297.76544087684545,
+      "input_torque_Nm": 10.358298301696777,
+      "role": "calibration",
+      "brep": {
+        "error": {
+          "rms": 1.9477820506741617,
+          "data_rms": 2.7374701484640473,
+          "test_peak": 5.428303514,
+          "prediction_peak": 1.9295713215285133,
+          "test_peak_to_peak": 10.130837852,
+          "prediction_peak_to_peak": 4.3397468090639535,
+          "harmonic_error_um": [
+            -0.004812357656414523,
+            -0.23340240330362838,
+            0.5467298986498296,
+            -2.563093081424946
+          ]
+        },
+        "timing": {
+          "rpm": 297.76544087684545,
+          "input_torque_Nm": 10.358298301696777,
+          "axial_stations": 1.0,
+          "dt_s": 1e-05,
+          "duration_s": 0.72,
+          "steps": 72000.0,
+          "accepted": 72000.0,
+          "subdivisions": 0.0,
+          "wall_s": 0.4724942,
+          "setup_s": 0.0093595,
+          "stiffness_N_m": 50000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0,
+          "probe_calls": 486252.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 1.6025704849959022e-07
+        }
+      },
+      "mesh": {
+        "error": {
+          "rms": 1.9475828633939771,
+          "data_rms": 2.7374701484640473,
+          "test_peak": 5.428303514,
+          "prediction_peak": 2.375477823755311,
+          "test_peak_to_peak": 10.130837852,
+          "prediction_peak_to_peak": 5.231214252725721,
+          "harmonic_error_um": [
+            -0.04659127249136086,
+            -0.2086457582489662,
+            0.6784935248382868,
+            -2.472164235778321
+          ]
+        },
+        "timing": {
+          "rpm": 297.76544087684545,
+          "input_torque_Nm": 10.358298301696777,
+          "axial_stations": 1.0,
+          "dt_s": 1e-05,
+          "duration_s": 0.72,
+          "steps": 72000.0,
+          "accepted": 72000.0,
+          "subdivisions": 0.0,
+          "wall_s": 1.9982254,
+          "setup_s": 0.0808927,
+          "stiffness_N_m": 50000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0015625,
+          "probe_calls": 602464.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 13867968.0,
+          "max_residual_Nm": 1.7602293138352376e-07
+        },
+        "delta_to_nominal_cad_rms": 0.3121549725959449
+      }
+    },
+    "Data_10Hz_15Nm_H": {
+      "rpm": 596.1564107706167,
+      "input_torque_Nm": 15.324945449829102,
+      "role": "held_out",
+      "brep": {
+        "error": {
+          "rms": 4.348801094040033,
+          "data_rms": 5.174568303187544,
+          "test_peak": 7.216751385,
+          "prediction_peak": 2.877893778833318,
+          "test_peak_to_peak": 17.309989075,
+          "prediction_peak_to_peak": 6.990708449662961,
+          "harmonic_error_um": [
+            -0.10288084833490663,
+            -5.71502309623617,
+            0.15881419202541625,
+            0.039389961642319726
+          ]
+        },
+        "timing": {
+          "rpm": 596.1564107706167,
+          "input_torque_Nm": 15.324945449829102,
+          "axial_stations": 1.0,
+          "dt_s": 1e-05,
+          "duration_s": 0.72,
+          "steps": 72000.0,
+          "accepted": 72000.0,
+          "subdivisions": 0.0,
+          "wall_s": 0.5681687,
+          "setup_s": 0.0115512,
+          "stiffness_N_m": 50000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0,
+          "probe_calls": 490806.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 3.828711456210776e-07
+        }
+      },
+      "mesh": {
+        "error": {
+          "rms": 4.392406092165301,
+          "data_rms": 5.174568303187544,
+          "test_peak": 7.216751385,
+          "prediction_peak": 3.3951103553414796,
+          "test_peak_to_peak": 17.309989075,
+          "prediction_peak_to_peak": 7.509968194760276,
+          "harmonic_error_um": [
+            -0.14456814225007486,
+            -5.698392491088267,
+            0.29890991319097404,
+            0.12882886508665348
+          ]
+        },
+        "timing": {
+          "rpm": 596.1564107706167,
+          "input_torque_Nm": 15.324945449829102,
+          "axial_stations": 1.0,
+          "dt_s": 1e-05,
+          "duration_s": 0.72,
+          "steps": 72000.0,
+          "accepted": 72000.0,
+          "subdivisions": 0.0,
+          "wall_s": 2.2737666,
+          "setup_s": 0.0933664,
+          "stiffness_N_m": 50000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0015625,
+          "probe_calls": 659816.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 15097824.0,
+          "max_residual_Nm": 5.741469273345956e-07
+        },
+        "delta_to_nominal_cad_rms": 0.4029844145965197
+      },
+      "brep_fine_step": {
+        "error": {
+          "rms": 4.349982678461794,
+          "data_rms": 5.174568303187544,
+          "test_peak": 7.216751385,
+          "prediction_peak": 2.881111571608308,
+          "test_peak_to_peak": 17.309989075,
+          "prediction_peak_to_peak": 7.018932959292329,
+          "harmonic_error_um": [
+            -0.10179294980973541,
+            -5.714583241309617,
+            0.16171983104335275,
+            0.04100522900800713
+          ]
+        },
+        "timing": {
+          "rpm": 596.1564107706167,
+          "input_torque_Nm": 15.324945449829102,
+          "axial_stations": 1.0,
+          "dt_s": 5e-06,
+          "duration_s": 0.72,
+          "steps": 144000.0,
+          "accepted": 144000.0,
+          "subdivisions": 0.0,
+          "wall_s": 1.0035672,
+          "setup_s": 0.0096018,
+          "stiffness_N_m": 50000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0,
+          "probe_calls": 964260.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 3.821421485361576e-07
+        },
+        "delta_to_nominal_cad_rms": 0.009350691980116422
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "nasa": {
+    "url": "https://ntrs.nasa.gov/api/citations/19910013253/downloads/19910013253.pdf",
+    "sha256": "171b3d29836d37624c004653f6911c65407993fb2b449cb281902933cff67ff2"
+  },
+  "unsw": {
+    "Data_05Hz_05Nm_H.mat": {
+      "url": "https://data.mendeley.com/public-files/datasets/p72x3m92cv/files/1805eb70-6881-49e4-9eef-3e641b321750/file_downloaded",
+      "sha256": "1f87b7041e078cdf13bb258ffd5733b92e0553e5fcf135a5f197597d5c0b5369"
+    },
+    "Data_05Hz_10Nm_H.mat": {
+      "url": "https://data.mendeley.com/public-files/datasets/p72x3m92cv/files/fa5a8036-f073-44ff-a46b-690db7d552fd/file_downloaded",
+      "sha256": "5719328d9e859837d27d6e271fee53f7b1e4517d5602d4da7a2950100184a15e"
+    },
+    "Data_10Hz_15Nm_H.mat": {
+      "url": "https://data.mendeley.com/public-files/datasets/p72x3m92cv/files/ce1b5cbf-2207-448d-9c61-5acf962a0dec/file_downloaded",
+      "sha256": "e4452ff10648bee6f49d819ac627db8f6557dd6371ed3eb15d11e1df73bd08a4"
+    }
+  },
+  "unsw_dataset": "10.17632/p72x3m92cv.1",
+  "unsw_license": "CC BY 4.0"
+}

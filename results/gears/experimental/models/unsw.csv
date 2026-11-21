@@ -1,0 +1,3 @@
+stage,side,shaft,direction,center_x_mm,z_mm,teeth,normal_module_mm,helix_deg,width_mm,angle_zero_rad,start_rpm,pitch_radius_mm,base_radius_mm,center_distance_mm,transverse_ratio,overlap_ratio,step
+1,a,0,1,0,0,27,2,0,5,-0.058177641733144318,300,27,25.371700761219529,71,1.6806791773193026,0,unsw-1a.step
+1,b,1,-1,71,0,44,2,-0,5,3.1058927370717271,184.09090909090909,44,41.346475314579969,71,1.6806791773193026,0,unsw-1b.step

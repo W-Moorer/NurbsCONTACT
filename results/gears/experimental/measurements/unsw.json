@@ -1,0 +1,104 @@
+{
+  "Data_05Hz_05Nm_H": {
+    "source_file": "Data_05Hz_05Nm_H.mat",
+    "input_rpm": 298.924150682424,
+    "torque_Nm": 5.382086753845215,
+    "sample_Hz": 200000.0,
+    "blocks": 2,
+    "input_turns_per_block": 44,
+    "mesh_cycles_per_block": 1188,
+    "input_edges_max_delta_per_revolution": [
+      0,
+      0
+    ],
+    "edge_counts": [
+      [
+        376630,
+        231115
+      ],
+      [
+        376631,
+        231115
+      ]
+    ],
+    "rising_falling_rms_um": 0.008666356346070268,
+    "wave_rms_um": 1.9184090771799456,
+    "peak_to_peak_um": 6.898717761638263,
+    "amplitudes_um": [
+      1.7577833379622858,
+      0.35311180901450456,
+      0.3166949844714264,
+      1.9994737131890672,
+      0.07772660182322214,
+      0.17603041452584214
+    ]
+  },
+  "Data_05Hz_10Nm_H": {
+    "source_file": "Data_05Hz_10Nm_H.mat",
+    "input_rpm": 297.76544087684545,
+    "torque_Nm": 10.358298301696777,
+    "sample_Hz": 200000.0,
+    "blocks": 2,
+    "input_turns_per_block": 44,
+    "mesh_cycles_per_block": 1188,
+    "input_edges_max_delta_per_revolution": [
+      1,
+      0
+    ],
+    "edge_counts": [
+      [
+        375303,
+        230300
+      ],
+      [
+        375304,
+        230300
+      ]
+    ],
+    "rising_falling_rms_um": 0.011721626233828157,
+    "wave_rms_um": 2.737470148458032,
+    "peak_to_peak_um": 10.130837852033201,
+    "amplitudes_um": [
+      2.5636889099747875,
+      0.4900362725346036,
+      0.18933800246556334,
+      2.78790674536922,
+      0.46748971212361007,
+      0.32676127936415217
+    ]
+  },
+  "Data_10Hz_15Nm_H": {
+    "source_file": "Data_10Hz_15Nm_H.mat",
+    "input_rpm": 596.1564107706167,
+    "torque_Nm": 15.324945449829102,
+    "sample_Hz": 200000.0,
+    "blocks": 4,
+    "input_turns_per_block": 44,
+    "mesh_cycles_per_block": 1188,
+    "input_edges_max_delta_per_revolution": [
+      1,
+      0
+    ],
+    "edge_counts": [
+      [
+        751155,
+        460935
+      ],
+      [
+        751154,
+        460935
+      ]
+    ],
+    "rising_falling_rms_um": 0.0084714368085907,
+    "wave_rms_um": 5.1745683032047065,
+    "peak_to_peak_um": 17.30998907781008,
+    "amplitudes_um": [
+      3.930299313510182,
+      6.084667103253444,
+      0.9880292108748718,
+      0.31395996916103214,
+      0.020037138303472802,
+      0.01841287859513231
+    ]
+  }
+}

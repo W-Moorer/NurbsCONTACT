@@ -1,0 +1,2 @@
+rpm,input_torque_Nm,axial_stations,dt_s,duration_s,steps,accepted,subdivisions,wall_s,setup_s,stiffness_N_m,damping_ratio,deflection_mm,probe_calls,probe_misses,triangles_tested,max_residual_Nm
+297.76544087684545,10.358298301696777,1,1.0000000000000001e-05,0.71999999999999997,72000,72000,0,0.47249419999999998,0.0093594999999999998,50000000,0.20000000000000001,0,486252,0,0,1.6025704849959022e-07
