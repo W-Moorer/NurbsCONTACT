@@ -1,0 +1,351 @@
+{
+  "revision": "f95bb06e7d11142f88ffd3b6b56c7258deb8fff6",
+  "repository": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset",
+  "license": "MIT",
+  "files": {
+    "metadata/rigid/bouncing ball.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/metadata/rigid/bouncing%20ball.json",
+      "sha256": "d2156173ae82f40cd730657d84df173eae058a0f7372a4f119dcf0b97587c180"
+    },
+    "metadata/rigid/slope slider.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/metadata/rigid/slope%20slider.json",
+      "sha256": "7c5a8a551e1fedf407a3a68524bcf4f2ecc50a27bfad40e2a586d0ca92fa5b43"
+    },
+    "assets/obj/ball-6.obj": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/assets/obj/ball-6.obj",
+      "sha256": "6923590deb1b1a8cc91b982e09eead04ff3fa1237641ae4093bfaf57773b6183"
+    },
+    "assets/obj/board.obj": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/assets/obj/board.obj",
+      "sha256": "a54bb64f2f7a818137e579c33b82becf50f82cade40f67202cc159d83c5544e6"
+    },
+    "assets/obj/cube.obj": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/assets/obj/cube.obj",
+      "sha256": "976df1b24fd977f375ad0702df07921d1cd75040ad238d60f0d449caad0a57f6"
+    },
+    "data/rigid/bouncing ball/json/1.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/1.json",
+      "sha256": "20b7fab6efbb86eda8072aee716a3bc518924e013a0c8b2d0d9ca73df1c15ead"
+    },
+    "data/rigid/bouncing ball/json/2.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/2.json",
+      "sha256": "6de1078df3697e4d3d5720a4090b757ba99a9ba92aa2349bf24d532885eb7a89"
+    },
+    "data/rigid/bouncing ball/json/3.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/3.json",
+      "sha256": "eb3ca00e3f9f77c770da80d3287eacd3c3ee1ab00b8c16f869663397890cd13e"
+    },
+    "data/rigid/bouncing ball/json/4.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/4.json",
+      "sha256": "afd67d9b576a0d43b129c78c3b79b7b5d1e534d35166ab241fa0980d9a6bb0f2"
+    },
+    "data/rigid/bouncing ball/json/5.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/5.json",
+      "sha256": "9ce47b81d116e9dabd126489589e146fa544ba6584c2420419cb052025638d57"
+    },
+    "data/rigid/bouncing ball/json/6.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/6.json",
+      "sha256": "389ebb2d103764b9e1ffe4c0894db2a8648015474f95f952256ac38e7311bb66"
+    },
+    "data/rigid/bouncing ball/json/7.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/7.json",
+      "sha256": "86126e660c250fabd6387b5a2179d96697fdf180c2013f729a4aa4d9a7418d3b"
+    },
+    "data/rigid/bouncing ball/json/8.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/8.json",
+      "sha256": "4193f293620f35080f91ec4970a9cb4088a275fd67bf40368573a1c6765e4a13"
+    },
+    "data/rigid/bouncing ball/json/9.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/9.json",
+      "sha256": "0557e4569dd84be0a284d2cf1abad931ca756a102486e543b776ec8fa24fc9b6"
+    },
+    "data/rigid/bouncing ball/json/10.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/10.json",
+      "sha256": "114f6464dae25ff7dd753af0d947b6b42f316479498d8b09ef7a12be4f532cf1"
+    },
+    "data/rigid/bouncing ball/json/11.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/11.json",
+      "sha256": "79e16c36ed29aeca20f6d133250bdf61ca8768b8d4d66f5ca63902b7faea37d3"
+    },
+    "data/rigid/bouncing ball/json/12.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/12.json",
+      "sha256": "2b3865fd531d221feb302054c530ad6fdd1b2045dae70339ecd4ac9fdd1895fc"
+    },
+    "data/rigid/bouncing ball/json/13.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/13.json",
+      "sha256": "d030ea6f53a022dadef9719e3c892a75af5a236c33339d5b4b74db968fa770be"
+    },
+    "data/rigid/bouncing ball/json/14.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/14.json",
+      "sha256": "fab93dc65e4930c0329e013c0912a72c6daa4d6466bc61b38096662708f5c820"
+    },
+    "data/rigid/bouncing ball/json/15.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/15.json",
+      "sha256": "34cba2e4d52e60611f2f712a5dd71cb5ae4b51982c5c5b50ad338b9ea8d81947"
+    },
+    "data/rigid/bouncing ball/json/16.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/16.json",
+      "sha256": "0321baa38d649ffd1e6d513e276d8f77e7cab9e98a99be958cffc2c00b7878aa"
+    },
+    "data/rigid/bouncing ball/json/17.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/17.json",
+      "sha256": "fa1f519175b3e26156d09af9bf64ee743779cee1858aeab0eae8b77b90c5feaf"
+    },
+    "data/rigid/bouncing ball/json/18.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/18.json",
+      "sha256": "ae05966794bd12e64e228b5b011573a0496119bc99674e2e03b798dc84a6b118"
+    },
+    "data/rigid/bouncing ball/json/19.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/19.json",
+      "sha256": "2e10f28a27c5cae3c5f73ac53088d29299c7431f5303f9fa836421e7555a791a"
+    },
+    "data/rigid/bouncing ball/json/20.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/20.json",
+      "sha256": "7f4c1fc2cbcf8659249ccfbedaa7e41aaf2c30358be62c3eb50d6e0def744555"
+    },
+    "data/rigid/bouncing ball/json/21.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/21.json",
+      "sha256": "dfaa7886ccc266dfca5fe2028ae618c0f3dbcb142dc15a2d8378561f248e3f32"
+    },
+    "data/rigid/bouncing ball/json/22.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/bouncing%20ball/json/22.json",
+      "sha256": "2c153abe432d3b4ce0460d87928f8f886748687647c8cc9961d02a0953b94264"
+    },
+    "data/rigid/slope slider/json/wood/task-2/1.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/1.json",
+      "sha256": "5c88932642bf9de0ff3c0785a0271d542b0fbc4a8f7da1f5ebf5af95dd6cb887"
+    },
+    "data/rigid/slope slider/json/wood/task-2/2.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/2.json",
+      "sha256": "e64da0339d572745edeb01cadf441b2f0f1b18256ad73204e0ba5170257bdc86"
+    },
+    "data/rigid/slope slider/json/wood/task-2/3.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/3.json",
+      "sha256": "891b4525e125e92c184a7a3348657e65890098d4269356903080966a120be9bf"
+    },
+    "data/rigid/slope slider/json/wood/task-2/4.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/4.json",
+      "sha256": "13f14deb84d02d14f09d1bf8cdb2f510b49de3e7f8aae3655ddbda5e79a38429"
+    },
+    "data/rigid/slope slider/json/wood/task-2/5.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/5.json",
+      "sha256": "73db00734e5ecc0a78906ca55e09f331be00eba795f311723cadb1f558d5d35e"
+    },
+    "data/rigid/slope slider/json/wood/task-2/6.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/6.json",
+      "sha256": "381fc2386e2a56150d308faa7ea384c76f0d8fab315cb1e0bd0da2388b9d1913"
+    },
+    "data/rigid/slope slider/json/wood/task-2/7.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/7.json",
+      "sha256": "1b90dcf96fbd43cdd498b65767eb5aefd467f11cc94afc7f6924f79a6171aaa8"
+    },
+    "data/rigid/slope slider/json/wood/task-2/8.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/8.json",
+      "sha256": "1ae825df9ea995c8b1bdcce2b31d75f39df61bb977144766775eacbc5de21480"
+    },
+    "data/rigid/slope slider/json/wood/task-2/9.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/9.json",
+      "sha256": "f953046374b6a287b78a9e8efa33b40a04cc5a7751602dfeb71a05ee4e1b2a1a"
+    },
+    "data/rigid/slope slider/json/wood/task-2/10.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/10.json",
+      "sha256": "a85dcbb1f98f273c5ce1d2de74c73789c9925e1e8795c3475c71578d7cd1fc6d"
+    },
+    "data/rigid/slope slider/json/wood/task-2/11.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/11.json",
+      "sha256": "22d3ded442bfcc3664923f3bddb4ecb401ba6b7e36613f077f207c7b0d15fa6f"
+    },
+    "data/rigid/slope slider/json/wood/task-2/12.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/12.json",
+      "sha256": "48b7d60c517292431ca3d67a36f7b8941a9621fa70f2411f14d6b23fd2a6eb60"
+    },
+    "data/rigid/slope slider/json/wood/task-2/13.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/13.json",
+      "sha256": "d35aa97164d660896bd91f393b3964c4fc8348989c9387fd32c8f8106e9ef64a"
+    },
+    "data/rigid/slope slider/json/wood/task-2/14.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/14.json",
+      "sha256": "853ed31781f6cd934fdf59ef145211b49e23da9f7198b522b4b5f0fd9ccb7e20"
+    },
+    "data/rigid/slope slider/json/wood/task-2/15.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/15.json",
+      "sha256": "ba48148c48777d72aa5e4055b9f61d87d1ea7bbfba26f7bc2ae6f986839f2faa"
+    },
+    "data/rigid/slope slider/json/wood/task-2/16.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/16.json",
+      "sha256": "8f5847579567a0c2d8e84fc404a3d27046b57a62cad3303e5c3d99a8dd3397c4"
+    },
+    "data/rigid/slope slider/json/wood/task-2/17.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/17.json",
+      "sha256": "43f69af6ddc8f49a746411e617f4787e390434eed1ed73aa34fbd172c7f1d678"
+    },
+    "data/rigid/slope slider/json/wood/task-2/18.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/18.json",
+      "sha256": "6e002aaa850a07da93a6b8ef6b55fcd77b6c445643aaa09e5de53497eef2933a"
+    },
+    "data/rigid/slope slider/json/wood/task-2/19.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/19.json",
+      "sha256": "faba6ca741b7e507c634fc8b7d9852376e416b3b62a4fa3c6d3a621b46ec9f53"
+    },
+    "data/rigid/slope slider/json/wood/task-2/20.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/wood/task-2/20.json",
+      "sha256": "48ed0f80f4e83a0209b577a5d289a7e4d475c64e8e1cbf42a0725a109c9cf72f"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/1.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/1.json",
+      "sha256": "afeef5ec35d85908b1b9680b5d03dbd8e5d54e38510bd6f52c586e7a7c5f56f8"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/2.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/2.json",
+      "sha256": "54759e3a2ea8170c43ff03a3fd0226fe1307e8f2842309414e6c2348f09a927b"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/3.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/3.json",
+      "sha256": "411d55a0080bf98cdd6fc21cf69e24a53bf6171e3af2410cbaec486cdd9ed540"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/4.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/4.json",
+      "sha256": "70ed1bfbb9682804146a4a0d508c1c0e29d91e46cbb800ab0517d25288ef69bc"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/5.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/5.json",
+      "sha256": "7f206b6188f986f33aa1fc15f6651914ebaecbacfc4cd6168b92c177e2d0b4e0"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/6.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/6.json",
+      "sha256": "ebdf29d4a8a5fe46d60ac51bbfaedfabe500313234ff10b1411c30862b8843de"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/7.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/7.json",
+      "sha256": "415442c863e1019dda0a021ca39a6716a721e3af64fbaff6cdbc5c13dabd8edb"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/8.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/8.json",
+      "sha256": "5027f23ab9e6731344dbb35fcd559d70cb4604bd21e62c84711f77ce7b558eba"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/9.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/9.json",
+      "sha256": "eb8eff0c9e81212217b859ff190a7c20ced7092674c1ff83ee43ea1013a9d5a5"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/10.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/10.json",
+      "sha256": "11b9e9ce143ba792fadb50c469f2adf83a52821db5f61221f1ec474b556eeba4"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/11.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/11.json",
+      "sha256": "d7cbb3d430a7e1849bc21f6f074f90192246745cb70339d2e66473ba02df0925"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/12.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/12.json",
+      "sha256": "1b36044f61172842d48af581dbdfdf85a8eef17a710ec591ba087941927519cb"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/13.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/13.json",
+      "sha256": "ebe6342b2d171770db54a4c12dbbd26f22309442482fa8643da29252509d992d"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/14.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/14.json",
+      "sha256": "d118ae15791ef798aaecff42593f9d6ca86c44ac87bc0030a915a51557169142"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/15.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/15.json",
+      "sha256": "1d48d04bf6fdbed85a0c52cba843f4db8e0e9b3fec319387bf1a3778a4f2db97"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/16.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/16.json",
+      "sha256": "19dccf11d1943e037ec09c6df15d7cf876f3a411c12eacdccaa2c524af834fbc"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/17.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/17.json",
+      "sha256": "7f366083f05bd4acf77cb32810e9b2d1153b802fce689974cdeba42e385c49fe"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/18.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/18.json",
+      "sha256": "620fc1cd9a0478a3b4a4e8ef9a860345b602f3420b417c17e99639b64cb0614e"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/19.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/19.json",
+      "sha256": "a7230ed5bca1d4a28e21a50c4dee3e451995b21d49111f61f2c3f2547a60b8c8"
+    },
+    "data/rigid/slope slider/json/plastic/task-2/20.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/plastic/task-2/20.json",
+      "sha256": "83f22ced9e6efb9ff640b3171dda7d551c77a7b00515af53e946de8e42835c6e"
+    },
+    "data/rigid/slope slider/json/metal/task-2/1.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/1.json",
+      "sha256": "1648176bc7f30200c2b261b60cf214022a2b5b3b7d4989235511e52030e0b96d"
+    },
+    "data/rigid/slope slider/json/metal/task-2/2.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/2.json",
+      "sha256": "04a78ae1a390a9f5ecf3c081055df1536b25d0af4377f1e797870ad3a87ce1ec"
+    },
+    "data/rigid/slope slider/json/metal/task-2/3.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/3.json",
+      "sha256": "25a28bc0f5eb863fb1617e7dd89dfb00a7db3813cd53b2d3418017b87f1a84aa"
+    },
+    "data/rigid/slope slider/json/metal/task-2/4.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/4.json",
+      "sha256": "d64435f3819553d8e5fa009c2ba4dd58690ea03021d3f87b4283713173ce3e18"
+    },
+    "data/rigid/slope slider/json/metal/task-2/5.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/5.json",
+      "sha256": "95cf0f64984035b165c04fedfb01c8acba57f48db9060cc6820f68cf20483d8c"
+    },
+    "data/rigid/slope slider/json/metal/task-2/6.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/6.json",
+      "sha256": "dd837678b08be08dfcc5adf33fcf6e7ec64b7f8768efe8af118204690962890d"
+    },
+    "data/rigid/slope slider/json/metal/task-2/7.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/7.json",
+      "sha256": "d7b23dfae9b2a7c281101ff5ce6775c3ff4f719d364c1dcb270bf7a802ef52f8"
+    },
+    "data/rigid/slope slider/json/metal/task-2/8.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/8.json",
+      "sha256": "4ef7d25dcb283521a4b5b6a5da078619f00cba90834a9eb0a955b58d38fb616d"
+    },
+    "data/rigid/slope slider/json/metal/task-2/9.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/9.json",
+      "sha256": "1e1a9a5379afd7ab3aae9aba1fc8ab7669fa57d961c5d7baa6674a11e42257ca"
+    },
+    "data/rigid/slope slider/json/metal/task-2/10.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/10.json",
+      "sha256": "e92bedb478a2bc30f9c6aa141424d8655c58ac0ebd34b0d88fb8ad8ce26804cf"
+    },
+    "data/rigid/slope slider/json/metal/task-2/11.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/11.json",
+      "sha256": "3952893ac3d9e2301f6fd07486ae46b5d7fb8f54ba6135342d4b74497994064e"
+    },
+    "data/rigid/slope slider/json/metal/task-2/12.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/12.json",
+      "sha256": "83dc4f09b10f99779ac297a1dd641aec4ab62c2103bc07497edb5a5138469dfc"
+    },
+    "data/rigid/slope slider/json/metal/task-2/13.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/13.json",
+      "sha256": "9b4d3be70e42f7e7b21e80866f97439207b1e51ede392a4c3b087dba4ac96ca2"
+    },
+    "data/rigid/slope slider/json/metal/task-2/14.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/14.json",
+      "sha256": "227e55eb385cd664cbf46f053a855c67889666fa0005acf3623d9e516e3aaee2"
+    },
+    "data/rigid/slope slider/json/metal/task-2/15.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/15.json",
+      "sha256": "72a618405c6c727f008d1691b44d8ba8cd600ab1be41f8ab33a076493b1cbf3a"
+    },
+    "data/rigid/slope slider/json/metal/task-2/16.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/16.json",
+      "sha256": "79a12b679cc05e320a57c122c764709ad1abca3c9790d0dea0fe4a042a56044f"
+    },
+    "data/rigid/slope slider/json/metal/task-2/18.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/18.json",
+      "sha256": "e54daf8af7ff77f33e8f2bc518b724abe2ffbab74c38a1afd600759cc46f5901"
+    },
+    "data/rigid/slope slider/json/metal/task-2/19.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/19.json",
+      "sha256": "2471573d092b384f30023ebee84eaa38ed4ab3d70ad621dcd58b25863b23b70d"
+    },
+    "data/rigid/slope slider/json/metal/task-2/20.json": {
+      "url": "https://huggingface.co/datasets/InternRobotics/GAUGE-Dataset/resolve/f95bb06e7d11142f88ffd3b6b56c7258deb8fff6/data/rigid/slope%20slider/json/metal/task-2/20.json",
+      "sha256": "a14900aad9601eed56598b8d445bcfd36d56842d17ffd05f76039a2283b46d61"
+    }
+  }
+}

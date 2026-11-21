@@ -1,0 +1,2 @@
+wall_s,setup_s,steps,accepted,subdivisions,force_evaluations,max_residual,pairs,culled,rays,missing,triangle_tests
+0.1808969,0.022145600000000001,80000,80000,0,80336,6.8808696163102923e-07,80337,79641,1392,0,0

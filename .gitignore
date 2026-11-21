@@ -5,3 +5,6 @@
 /manuscript/*.out
 /manuscript/*.pdf
 __pycache__/
+
+# Source-figure overlay generated locally for digitization review.
+/results/contact_validation/beam/digitization-qa.png

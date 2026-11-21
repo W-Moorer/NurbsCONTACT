@@ -1,0 +1,35 @@
+{
+  "radius": 0.03,
+  "cube": [
+    0.05,
+    0.05,
+    0.05
+  ],
+  "board": [
+    0.5,
+    0.15,
+    0.01
+  ],
+  "ball_mass": 0.121,
+  "floor_top": 0.013297,
+  "slider_materials": {
+    "wood": {
+      "mass": 0.0903,
+      "density": 722.4,
+      "friction": 0.273673,
+      "restitution": 0.223583
+    },
+    "plastic": {
+      "mass": 0.1469,
+      "density": 1175.2,
+      "friction": 0.275018,
+      "restitution": 0.373862
+    },
+    "metal": {
+      "mass": 0.3397,
+      "density": 2717.6,
+      "friction": 0.262758,
+      "restitution": 0.333623
+    }
+  }
+}

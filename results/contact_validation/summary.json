@@ -1,0 +1,5273 @@
+{
+  "settings": {
+    "slider_dt_s": 0.0002,
+    "bounce_dt_s": 1.25e-05,
+    "mesh_deflection_m": 2.5e-05,
+    "ball_stiffness": 20000000.0,
+    "slider_stiffness": 10000000.0,
+    "normal_exponent": 1.5,
+    "ball_damping_ratio": 0.12,
+    "friction": {
+      "wood": 0.24444348015239128,
+      "plastic": 0.2266219771962218,
+      "metal": 0.25096907575024935
+    },
+    "calibration_ids": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "bounce_calibration": [
+    {
+      "zeta": 0.055,
+      "mean_rmse_m": 0.09588740758395337
+    },
+    {
+      "zeta": 0.06,
+      "mean_rmse_m": 0.08712831279574093
+    },
+    {
+      "zeta": 0.065,
+      "mean_rmse_m": 0.07883582711924424
+    },
+    {
+      "zeta": 0.07,
+      "mean_rmse_m": 0.07093907545242892
+    },
+    {
+      "zeta": 0.075,
+      "mean_rmse_m": 0.06363936969855673
+    },
+    {
+      "zeta": 0.08,
+      "mean_rmse_m": 0.05659260394084966
+    },
+    {
+      "zeta": 0.08499999999999999,
+      "mean_rmse_m": 0.04993301405089973
+    },
+    {
+      "zeta": 0.09,
+      "mean_rmse_m": 0.0430610961863999
+    },
+    {
+      "zeta": 0.095,
+      "mean_rmse_m": 0.03644059670450278
+    },
+    {
+      "zeta": 0.1,
+      "mean_rmse_m": 0.02951124429744787
+    },
+    {
+      "zeta": 0.10500000000000001,
+      "mean_rmse_m": 0.022909631954759944
+    },
+    {
+      "zeta": 0.11,
+      "mean_rmse_m": 0.016338860597686237
+    },
+    {
+      "zeta": 0.11499999999999999,
+      "mean_rmse_m": 0.01002155463778109
+    },
+    {
+      "zeta": 0.12,
+      "mean_rmse_m": 0.006852913032281497
+    },
+    {
+      "zeta": 0.125,
+      "mean_rmse_m": 0.00978324064158885
+    },
+    {
+      "zeta": 0.13,
+      "mean_rmse_m": 0.015369866328091564
+    },
+    {
+      "zeta": 0.135,
+      "mean_rmse_m": 0.02089433876727658
+    },
+    {
+      "zeta": 0.14,
+      "mean_rmse_m": 0.025404280783161183
+    },
+    {
+      "zeta": 0.145,
+      "mean_rmse_m": 0.0297663842952747
+    },
+    {
+      "zeta": 0.15,
+      "mean_rmse_m": 0.033446252470751725
+    },
+    {
+      "zeta": 0.155,
+      "mean_rmse_m": 0.03639720463374443
+    },
+    {
+      "zeta": 0.16,
+      "mean_rmse_m": 0.039529108961917324
+    },
+    {
+      "zeta": 0.165,
+      "mean_rmse_m": 0.04231839835213684
+    },
+    {
+      "zeta": 0.17,
+      "mean_rmse_m": 0.044750630103846764
+    },
+    {
+      "zeta": 0.175,
+      "mean_rmse_m": 0.047422848551247364
+    },
+    {
+      "zeta": 0.18,
+      "mean_rmse_m": 0.0500891001455309
+    },
+    {
+      "zeta": 0.185,
+      "mean_rmse_m": 0.05237303119040822
+    }
+  ],
+  "omitted": [
+    {
+      "family": "metal",
+      "id": 17,
+      "reason": "absent in pinned publication"
+    }
+  ],
+  "trials": [
+    {
+      "key": "bounce-01",
+      "family": "bounce",
+      "id": 1,
+      "split": "calibration",
+      "initial_frame": 7,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.0067010190723580335,
+        "normalized_rmse": 0.027834839567814542,
+        "frames": 30,
+        "end_error_m": 0.010990307838658162,
+        "max_depth_m": 0.0011329056295714367,
+        "peak_predicted_force_N": 755.6712762515414,
+        "observed_apices_s_m": [
+          [
+            0.3333333333333333,
+            0.21113807399999998
+          ],
+          [
+            0.6666666666666666,
+            0.10533747600000001
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21062794585513664
+          ],
+          [
+            0.6666666666666666,
+            0.1120599903463782
+          ]
+        ],
+        "first_apex_time_error_s": -0.033333333333333326,
+        "first_apex_height_error_m": -0.0005101281448633421,
+        "wall_s": 0.1808969,
+        "setup_s": 0.0221456,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80336.0,
+        "max_residual": 6.880869616310292e-07,
+        "pairs": 80337.0,
+        "culled": 79641.0,
+        "rays": 1392.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.006508700554040089,
+        "normalized_rmse": 0.027035982700598368,
+        "frames": 30,
+        "end_error_m": 0.011202349043132345,
+        "max_depth_m": 0.0011343175230769803,
+        "peak_predicted_force_N": 758.9035651677736,
+        "observed_apices_s_m": [
+          [
+            0.3333333333333333,
+            0.21113807399999998
+          ],
+          [
+            0.6666666666666666,
+            0.10533747600000001
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.2110558882897981
+          ],
+          [
+            0.6666666666666666,
+            0.1120127731984867
+          ]
+        ],
+        "first_apex_time_error_s": -0.033333333333333326,
+        "first_apex_height_error_m": -8.218571020188192e-05,
+        "wall_s": 0.1981986,
+        "setup_s": 0.175231,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 7.921482474415598e-07,
+        "pairs": 80338.0,
+        "culled": 79636.0,
+        "rays": 1404.0,
+        "missing": 0.0,
+        "triangle_tests": 14742.0,
+        "delta_to_brep_m": 0.0004184226606410598
+      }
+    },
+    {
+      "key": "bounce-02",
+      "family": "bounce",
+      "id": 2,
+      "split": "calibration",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.006678570718343513,
+        "normalized_rmse": 0.03504740098244548,
+        "frames": 30,
+        "end_error_m": 0.009231623285759473,
+        "max_depth_m": 0.0011136682722256673,
+        "peak_predicted_force_N": 769.3472909472861,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21268119500000002
+          ],
+          [
+            0.6666666666666666,
+            0.10588393899999998
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21089633015642942
+          ],
+          [
+            0.6333333333333333,
+            0.11096850731394171
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0017848648435705994,
+        "wall_s": 0.1948992,
+        "setup_s": 0.0243175,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80336.0,
+        "max_residual": 1.0814951796334071e-06,
+        "pairs": 80337.0,
+        "culled": 79641.0,
+        "rays": 1392.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.006582814064701507,
+        "normalized_rmse": 0.034544894985509514,
+        "frames": 30,
+        "end_error_m": 0.010361864376014364,
+        "max_depth_m": 0.0011168606429977218,
+        "peak_predicted_force_N": 769.0874128921478,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21268119500000002
+          ],
+          [
+            0.6666666666666666,
+            0.10588393899999998
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21145675988932153
+          ],
+          [
+            0.6333333333333333,
+            0.11113283205645562
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.00122443511067849,
+        "wall_s": 0.2175357,
+        "setup_s": 0.1393621,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80334.0,
+        "max_residual": 7.534415420451523e-07,
+        "pairs": 80335.0,
+        "culled": 79638.0,
+        "rays": 1394.0,
+        "missing": 0.0,
+        "triangle_tests": 14637.0,
+        "delta_to_brep_m": 0.0006301214098406981
+      }
+    },
+    {
+      "key": "bounce-03",
+      "family": "bounce",
+      "id": 3,
+      "split": "calibration",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.007096937133197597,
+        "normalized_rmse": 0.036035362032837706,
+        "frames": 30,
+        "end_error_m": 0.013295037152989707,
+        "max_depth_m": 0.0011281686543405285,
+        "peak_predicted_force_N": 749.878420090617,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21147285200000002
+          ],
+          [
+            0.6666666666666666,
+            0.104515317
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.2109603765259749
+          ],
+          [
+            0.6666666666666666,
+            0.11089496062316058
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0005124754740251092,
+        "wall_s": 0.1966352,
+        "setup_s": 0.0149142,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 7.227095455419885e-07,
+        "pairs": 80338.0,
+        "culled": 79640.0,
+        "rays": 1396.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.007162387589790202,
+        "normalized_rmse": 0.036367692847421994,
+        "frames": 30,
+        "end_error_m": 0.014146339290939204,
+        "max_depth_m": 0.0011298471786739608,
+        "peak_predicted_force_N": 747.939044539485,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21147285200000002
+          ],
+          [
+            0.6666666666666666,
+            0.104515317
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21129813982338808
+          ],
+          [
+            0.6666666666666666,
+            0.11126333018567713
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.00017471217661194083,
+        "wall_s": 0.202612,
+        "setup_s": 0.158164,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80335.0,
+        "max_residual": 8.451155952826639e-07,
+        "pairs": 80336.0,
+        "culled": 79637.0,
+        "rays": 1398.0,
+        "missing": 0.0,
+        "triangle_tests": 14679.0,
+        "delta_to_brep_m": 0.00045119151911166705
+      }
+    },
+    {
+      "key": "bounce-04",
+      "family": "bounce",
+      "id": 4,
+      "split": "calibration",
+      "initial_frame": 7,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.007248371448173304,
+        "normalized_rmse": 0.030538353290516122,
+        "frames": 30,
+        "end_error_m": 0.009644959712893017,
+        "max_depth_m": 0.001132516005882201,
+        "peak_predicted_force_N": 756.0845326700704,
+        "observed_apices_s_m": [
+          [
+            0.3333333333333333,
+            0.21068034100000002
+          ],
+          [
+            0.6666666666666666,
+            0.105292584
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21060900781927894
+          ],
+          [
+            0.6666666666666666,
+            0.11195950107191965
+          ]
+        ],
+        "first_apex_time_error_s": -0.033333333333333326,
+        "first_apex_height_error_m": -7.133318072108374e-05,
+        "wall_s": 0.1746578,
+        "setup_s": 0.0174127,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80335.0,
+        "max_residual": 7.239961696825503e-07,
+        "pairs": 80336.0,
+        "culled": 79640.0,
+        "rays": 1392.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.007133356924216007,
+        "normalized_rmse": 0.030053781798662783,
+        "frames": 30,
+        "end_error_m": 0.010095455031246106,
+        "max_depth_m": 0.0011335185301841882,
+        "peak_predicted_force_N": 758.9304531488247,
+        "observed_apices_s_m": [
+          [
+            0.3333333333333333,
+            0.21068034100000002
+          ],
+          [
+            0.6666666666666666,
+            0.105292584
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.2109050509219225
+          ],
+          [
+            0.6666666666666666,
+            0.11201785837621159
+          ]
+        ],
+        "first_apex_time_error_s": -0.033333333333333326,
+        "first_apex_height_error_m": 0.0002247099219224724,
+        "wall_s": 0.2014807,
+        "setup_s": 0.1660273,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80336.0,
+        "max_residual": 8.469689980472594e-07,
+        "pairs": 80337.0,
+        "culled": 79637.0,
+        "rays": 1400.0,
+        "missing": 0.0,
+        "triangle_tests": 14700.0,
+        "delta_to_brep_m": 0.0003251145190650372
+      }
+    },
+    {
+      "key": "bounce-05",
+      "family": "bounce",
+      "id": 5,
+      "split": "calibration",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.007105883875238659,
+        "normalized_rmse": 0.03521000948648602,
+        "frames": 30,
+        "end_error_m": 0.008197727952113695,
+        "max_depth_m": 0.0011324730941413806,
+        "peak_predicted_force_N": 751.6862542874501,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21317461899999998
+          ],
+          [
+            0.6666666666666666,
+            0.10681585399999999
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21179336856126035
+          ],
+          [
+            0.6666666666666666,
+            0.11162534421994864
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0013812504387396285,
+        "wall_s": 0.2287699,
+        "setup_s": 0.0311547,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 7.880876253807401e-07,
+        "pairs": 80338.0,
+        "culled": 79641.0,
+        "rays": 1394.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.007214919341300453,
+        "normalized_rmse": 0.035750285666311755,
+        "frames": 30,
+        "end_error_m": 0.00759345558398454,
+        "max_depth_m": 0.0011324281618661433,
+        "peak_predicted_force_N": 753.5591809074504,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21317461899999998
+          ],
+          [
+            0.6666666666666666,
+            0.10681585399999999
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21147676574182406
+          ],
+          [
+            0.6666666666666666,
+            0.11138396282787573
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0016978532581759243,
+        "wall_s": 0.1873578,
+        "setup_s": 0.1591238,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80336.0,
+        "max_residual": 9.470142572354234e-07,
+        "pairs": 80337.0,
+        "culled": 79637.0,
+        "rays": 1400.0,
+        "missing": 0.0,
+        "triangle_tests": 14700.0,
+        "delta_to_brep_m": 0.00036125889378556215
+      }
+    },
+    {
+      "key": "bounce-06",
+      "family": "bounce",
+      "id": 6,
+      "split": "held-out",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.0049452984056177225,
+        "normalized_rmse": 0.02464997763476109,
+        "frames": 30,
+        "end_error_m": 0.009496592296806682,
+        "max_depth_m": 0.0011100953910390572,
+        "peak_predicted_force_N": 774.2622251311577,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21574178800000002
+          ],
+          [
+            0.6666666666666666,
+            0.109673764
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.2121966523466295
+          ],
+          [
+            0.6666666666666666,
+            0.11204941151546637
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.003545135653370529,
+        "wall_s": 0.1958519,
+        "setup_s": 0.0159187,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80336.0,
+        "max_residual": 7.120231533264132e-07,
+        "pairs": 80337.0,
+        "culled": 79641.0,
+        "rays": 1392.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.004722166950882352,
+        "normalized_rmse": 0.023537772684178022,
+        "frames": 30,
+        "end_error_m": 0.009782743403140469,
+        "max_depth_m": 0.0011132168462611447,
+        "peak_predicted_force_N": 773.918411662326,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21574178800000002
+          ],
+          [
+            0.6666666666666666,
+            0.109673764
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21259679711528412
+          ],
+          [
+            0.6666666666666666,
+            0.1120658798511928
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.003144990884715898,
+        "wall_s": 0.1811984,
+        "setup_s": 0.1585796,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 8.270790559095076e-07,
+        "pairs": 80338.0,
+        "culled": 79637.0,
+        "rays": 1402.0,
+        "missing": 0.0,
+        "triangle_tests": 14721.0,
+        "delta_to_brep_m": 0.0003624616376335388
+      },
+      "brep_half_step": {
+        "rmse_m": 0.004874610686731675,
+        "normalized_rmse": 0.024297632731243444,
+        "frames": 30,
+        "end_error_m": 0.009488118127902116,
+        "max_depth_m": 0.0011103470811305687,
+        "peak_predicted_force_N": 774.6253277385434,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21574178800000002
+          ],
+          [
+            0.6666666666666666,
+            0.109673764
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21231050621623818
+          ],
+          [
+            0.6666666666666666,
+            0.11195388520656797
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0034312817837618415,
+        "wall_s": 0.4140633,
+        "setup_s": 0.0156809,
+        "steps": 160000.0,
+        "accepted": 160000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 160655.0,
+        "max_residual": 4.958023751555629e-07,
+        "pairs": 160656.0,
+        "culled": 159281.0,
+        "rays": 2750.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "delta_to_brep_m": 0.00010140362447433608
+      }
+    },
+    {
+      "key": "bounce-07",
+      "family": "bounce",
+      "id": 7,
+      "split": "held-out",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.007195994762057088,
+        "normalized_rmse": 0.036209443263308015,
+        "frames": 30,
+        "end_error_m": 0.0036168048941738196,
+        "max_depth_m": 0.0011195614369841102,
+        "peak_predicted_force_N": 765.6442598311585,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21419823900000004
+          ],
+          [
+            0.6666666666666666,
+            0.10831855500000001
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21158949444914946
+          ],
+          [
+            0.6666666666666666,
+            0.11165416493732491
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0026087445508505835,
+        "wall_s": 0.1883314,
+        "setup_s": 0.0233468,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80335.0,
+        "max_residual": 1.0313859846178275e-06,
+        "pairs": 80336.0,
+        "culled": 79641.0,
+        "rays": 1390.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.007217286569507611,
+        "normalized_rmse": 0.03631658126428575,
+        "frames": 30,
+        "end_error_m": 0.003011863716719687,
+        "max_depth_m": 0.0011213301771747577,
+        "peak_predicted_force_N": 763.7506492748363,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21419823900000004
+          ],
+          [
+            0.6666666666666666,
+            0.10831855500000001
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21154372874507327
+          ],
+          [
+            0.6666666666666666,
+            0.11129318106330047
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.002654510254926773,
+        "wall_s": 0.1931408,
+        "setup_s": 0.1551034,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 7.331872478033574e-07,
+        "pairs": 80338.0,
+        "culled": 79637.0,
+        "rays": 1402.0,
+        "missing": 0.0,
+        "triangle_tests": 14721.0,
+        "delta_to_brep_m": 0.00027214031562784583
+      }
+    },
+    {
+      "key": "bounce-08",
+      "family": "bounce",
+      "id": 8,
+      "split": "held-out",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.00653718287735326,
+        "normalized_rmse": 0.03384195247125044,
+        "frames": 30,
+        "end_error_m": 0.011232995192223406,
+        "max_depth_m": 0.0011345577422298796,
+        "peak_predicted_force_N": 764.5086922397257,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21506383999999998
+          ],
+          [
+            0.6666666666666666,
+            0.10716018400000002
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21153892101499444
+          ],
+          [
+            0.6666666666666666,
+            0.11105967662584634
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0035249189850055374,
+        "wall_s": 0.2255284,
+        "setup_s": 0.0240858,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 7.895200919705303e-07,
+        "pairs": 80338.0,
+        "culled": 79641.0,
+        "rays": 1394.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.006708532099394449,
+        "normalized_rmse": 0.0347290000477214,
+        "frames": 30,
+        "end_error_m": 0.011313484680624937,
+        "max_depth_m": 0.0011338099328519619,
+        "peak_predicted_force_N": 765.6935307614963,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21506383999999998
+          ],
+          [
+            0.6666666666666666,
+            0.10716018400000002
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21121724890141225
+          ],
+          [
+            0.6666666666666666,
+            0.11112973037336567
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0038465910985877316,
+        "wall_s": 0.199199,
+        "setup_s": 0.162511,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80335.0,
+        "max_residual": 9.492097454710802e-07,
+        "pairs": 80336.0,
+        "culled": 79638.0,
+        "rays": 1396.0,
+        "missing": 0.0,
+        "triangle_tests": 14658.0,
+        "delta_to_brep_m": 0.00024886826310563056
+      }
+    },
+    {
+      "key": "bounce-09",
+      "family": "bounce",
+      "id": 9,
+      "split": "held-out",
+      "initial_frame": 7,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.006901378577919587,
+        "normalized_rmse": 0.02879619442492924,
+        "frames": 30,
+        "end_error_m": 0.008895455068285013,
+        "max_depth_m": 0.001110612912682992,
+        "peak_predicted_force_N": 776.0173605945914,
+        "observed_apices_s_m": [
+          [
+            0.3333333333333333,
+            0.21129002100000002
+          ],
+          [
+            0.6666666666666666,
+            0.10550426999999998
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.2099905509492073
+          ],
+          [
+            0.6666666666666666,
+            0.11155265539872741
+          ]
+        ],
+        "first_apex_time_error_s": -0.033333333333333326,
+        "first_apex_height_error_m": -0.0012994700507927281,
+        "wall_s": 0.1951516,
+        "setup_s": 0.0263216,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80335.0,
+        "max_residual": 1.0659204985330462e-06,
+        "pairs": 80336.0,
+        "culled": 79641.0,
+        "rays": 1390.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.00680742498770659,
+        "normalized_rmse": 0.028404170451726315,
+        "frames": 30,
+        "end_error_m": 0.009165852167389937,
+        "max_depth_m": 0.0011087372688106528,
+        "peak_predicted_force_N": 776.0419316095421,
+        "observed_apices_s_m": [
+          [
+            0.3333333333333333,
+            0.21129002100000002
+          ],
+          [
+            0.6666666666666666,
+            0.10550426999999998
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21016168804360943
+          ],
+          [
+            0.6666666666666666,
+            0.11166711510620796
+          ]
+        ],
+        "first_apex_time_error_s": -0.033333333333333326,
+        "first_apex_height_error_m": -0.0011283329563905875,
+        "wall_s": 0.1909842,
+        "setup_s": 0.1723682,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80340.0,
+        "max_residual": 7.456346278189585e-07,
+        "pairs": 80341.0,
+        "culled": 79638.0,
+        "rays": 1406.0,
+        "missing": 0.0,
+        "triangle_tests": 14763.0,
+        "delta_to_brep_m": 0.00022911477099933123
+      }
+    },
+    {
+      "key": "bounce-10",
+      "family": "bounce",
+      "id": 10,
+      "split": "held-out",
+      "initial_frame": 7,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.007077212905775062,
+        "normalized_rmse": 0.02983298538578352,
+        "frames": 30,
+        "end_error_m": 0.008753908247131653,
+        "max_depth_m": 0.001129738125118459,
+        "peak_predicted_force_N": 747.4368849215365,
+        "observed_apices_s_m": [
+          [
+            0.3333333333333333,
+            0.211895886
+          ],
+          [
+            0.6666666666666666,
+            0.106114346
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21076609795807316
+          ],
+          [
+            0.6666666666666666,
+            0.11192252221070148
+          ]
+        ],
+        "first_apex_time_error_s": -0.033333333333333326,
+        "first_apex_height_error_m": -0.0011297880419268436,
+        "wall_s": 0.212307,
+        "setup_s": 0.0253659,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 8.604652759203191e-07,
+        "pairs": 80338.0,
+        "culled": 79641.0,
+        "rays": 1394.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.007210999391333416,
+        "normalized_rmse": 0.030396943305605436,
+        "frames": 30,
+        "end_error_m": 0.008716095793184858,
+        "max_depth_m": 0.0011300981618997952,
+        "peak_predicted_force_N": 746.9539841121716,
+        "observed_apices_s_m": [
+          [
+            0.3333333333333333,
+            0.211895886
+          ],
+          [
+            0.6666666666666666,
+            0.106114346
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21051582228441143
+          ],
+          [
+            0.6666666666666666,
+            0.11200648926062036
+          ]
+        ],
+        "first_apex_time_error_s": -0.033333333333333326,
+        "first_apex_height_error_m": -0.0013800637155885753,
+        "wall_s": 0.1844741,
+        "setup_s": 0.1537425,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80335.0,
+        "max_residual": 1.0760571829138144e-06,
+        "pairs": 80336.0,
+        "culled": 79637.0,
+        "rays": 1398.0,
+        "missing": 0.0,
+        "triangle_tests": 14679.0,
+        "delta_to_brep_m": 0.000213144075137754
+      }
+    },
+    {
+      "key": "bounce-11",
+      "family": "bounce",
+      "id": 11,
+      "split": "held-out",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.008772848924523112,
+        "normalized_rmse": 0.044403739624170414,
+        "frames": 30,
+        "end_error_m": -0.010216677865045196,
+        "max_depth_m": 0.0011281331777764324,
+        "peak_predicted_force_N": 753.3254942720715,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21637615699999999
+          ],
+          [
+            0.6666666666666666,
+            0.11343716100000001
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21150787187919706
+          ],
+          [
+            0.6666666666666666,
+            0.11141687708296155
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.004868285120802923,
+        "wall_s": 0.1757021,
+        "setup_s": 0.0237861,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80335.0,
+        "max_residual": 1.0300197796908606e-06,
+        "pairs": 80336.0,
+        "culled": 79640.0,
+        "rays": 1392.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.008885843467468953,
+        "normalized_rmse": 0.044975661049819725,
+        "frames": 30,
+        "end_error_m": -0.010618285858461224,
+        "max_depth_m": 0.0011292309639669845,
+        "peak_predicted_force_N": 750.7326972266738,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21637615699999999
+          ],
+          [
+            0.6666666666666666,
+            0.11343716100000001
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21145839676707018
+          ],
+          [
+            0.6666666666666666,
+            0.11119035312725407
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.004917760232929808,
+        "wall_s": 0.1852585,
+        "setup_s": 0.1549972,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 7.325986821626884e-07,
+        "pairs": 80338.0,
+        "culled": 79637.0,
+        "rays": 1402.0,
+        "missing": 0.0,
+        "triangle_tests": 14721.0,
+        "delta_to_brep_m": 0.0001770052353867175
+      }
+    },
+    {
+      "key": "bounce-12",
+      "family": "bounce",
+      "id": 12,
+      "split": "held-out",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.006235129017014524,
+        "normalized_rmse": 0.03276319834358983,
+        "frames": 30,
+        "end_error_m": 0.0016427975203233275,
+        "max_depth_m": 0.0011304618002189772,
+        "peak_predicted_force_N": 749.6343090890286,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21386037900000002
+          ],
+          [
+            0.6666666666666666,
+            0.108741208
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21141182361694727
+          ],
+          [
+            0.6333333333333333,
+            0.11142051131345902
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0024485553830527473,
+        "wall_s": 0.2065271,
+        "setup_s": 0.0264592,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80336.0,
+        "max_residual": 8.084488829496195e-07,
+        "pairs": 80337.0,
+        "culled": 79642.0,
+        "rays": 1390.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.006423197304991804,
+        "normalized_rmse": 0.03375142466646539,
+        "frames": 30,
+        "end_error_m": 0.0012029483093276838,
+        "max_depth_m": 0.0011307795094177009,
+        "peak_predicted_force_N": 746.8685401243744,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21386037900000002
+          ],
+          [
+            0.6666666666666666,
+            0.108741208
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21109907007128031
+          ],
+          [
+            0.6333333333333333,
+            0.11130462946342021
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0027613089287197023,
+        "wall_s": 0.1800924,
+        "setup_s": 0.1625684,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80334.0,
+        "max_residual": 9.813379886480789e-07,
+        "pairs": 80335.0,
+        "culled": 79638.0,
+        "rays": 1394.0,
+        "missing": 0.0,
+        "triangle_tests": 14637.0,
+        "delta_to_brep_m": 0.0003302099259599075
+      }
+    },
+    {
+      "key": "bounce-13",
+      "family": "bounce",
+      "id": 13,
+      "split": "held-out",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.006523585972298357,
+        "normalized_rmse": 0.032959823628138346,
+        "frames": 30,
+        "end_error_m": 0.007936712984286338,
+        "max_depth_m": 0.0011341945961837359,
+        "peak_predicted_force_N": 758.1770997612383,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.213181058
+          ],
+          [
+            0.6666666666666666,
+            0.10728368800000002
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21184197445899586
+          ],
+          [
+            0.6666666666666666,
+            0.1115450543173035
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.001339083541004149,
+        "wall_s": 0.2038699,
+        "setup_s": 0.0243671,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80335.0,
+        "max_residual": 7.546252902557171e-07,
+        "pairs": 80336.0,
+        "culled": 79641.0,
+        "rays": 1390.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.006702293639576435,
+        "normalized_rmse": 0.03386272783136237,
+        "frames": 30,
+        "end_error_m": 0.007812398762601404,
+        "max_depth_m": 0.0011337818848881007,
+        "peak_predicted_force_N": 759.694091651643,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.213181058
+          ],
+          [
+            0.6666666666666666,
+            0.10728368800000002
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21150118454698041
+          ],
+          [
+            0.6666666666666666,
+            0.11155643364116713
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0016798734530195925,
+        "wall_s": 0.1997427,
+        "setup_s": 0.1674638,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80335.0,
+        "max_residual": 8.91640597799892e-07,
+        "pairs": 80336.0,
+        "culled": 79637.0,
+        "rays": 1398.0,
+        "missing": 0.0,
+        "triangle_tests": 14679.0,
+        "delta_to_brep_m": 0.000280901835185743
+      }
+    },
+    {
+      "key": "bounce-14",
+      "family": "bounce",
+      "id": 14,
+      "split": "held-out",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.00685407402642496,
+        "normalized_rmse": 0.03379871621270434,
+        "frames": 30,
+        "end_error_m": 0.007318957354523245,
+        "max_depth_m": 0.0011250049873488231,
+        "peak_predicted_force_N": 777.9144177263545,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.213665219
+          ],
+          [
+            0.6666666666666666,
+            0.107196073
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21168177904444896
+          ],
+          [
+            0.6666666666666666,
+            0.11172266585908751
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0019834399555510307,
+        "wall_s": 0.2105855,
+        "setup_s": 0.0275367,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80335.0,
+        "max_residual": 8.81151438036909e-07,
+        "pairs": 80336.0,
+        "culled": 79641.0,
+        "rays": 1390.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.006945238118888362,
+        "normalized_rmse": 0.03424826334016168,
+        "frames": 30,
+        "end_error_m": 0.006698331310931935,
+        "max_depth_m": 0.0011229225804471124,
+        "peak_predicted_force_N": 777.7528178776673,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.213665219
+          ],
+          [
+            0.6666666666666666,
+            0.107196073
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21142535120393594
+          ],
+          [
+            0.6666666666666666,
+            0.11145705765609723
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0022398677960640545,
+        "wall_s": 0.1988847,
+        "setup_s": 0.1676691,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 1.1145442595505983e-06,
+        "pairs": 80338.0,
+        "culled": 79638.0,
+        "rays": 1400.0,
+        "missing": 0.0,
+        "triangle_tests": 14700.0,
+        "delta_to_brep_m": 0.00033156203795366303
+      }
+    },
+    {
+      "key": "bounce-15",
+      "family": "bounce",
+      "id": 15,
+      "split": "held-out",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.006088241112219026,
+        "normalized_rmse": 0.03186491918892404,
+        "frames": 30,
+        "end_error_m": 0.0055577080048885424,
+        "max_depth_m": 0.0011336422133811676,
+        "peak_predicted_force_N": 759.0657978916837,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.214222836
+          ],
+          [
+            0.6666666666666666,
+            0.10828786900000001
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.2111484857424053
+          ],
+          [
+            0.6333333333333333,
+            0.1110198247163911
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.003074350257594699,
+        "wall_s": 0.1888935,
+        "setup_s": 0.0162876,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80336.0,
+        "max_residual": 8.487149756319923e-07,
+        "pairs": 80337.0,
+        "culled": 79642.0,
+        "rays": 1390.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0062077287323201,
+        "normalized_rmse": 0.03249029904632753,
+        "frames": 30,
+        "end_error_m": 0.004799838962478362,
+        "max_depth_m": 0.0011332935317310416,
+        "peak_predicted_force_N": 760.6393240704061,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.214222836
+          ],
+          [
+            0.6666666666666666,
+            0.10828786900000001
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21086151757821459
+          ],
+          [
+            0.6333333333333333,
+            0.11089205876890011
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.003361318421785414,
+        "wall_s": 0.1866253,
+        "setup_s": 0.1481689,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80336.0,
+        "max_residual": 1.0536089032342488e-06,
+        "pairs": 80337.0,
+        "culled": 79637.0,
+        "rays": 1400.0,
+        "missing": 0.0,
+        "triangle_tests": 14700.0,
+        "delta_to_brep_m": 0.0003464440531649788
+      }
+    },
+    {
+      "key": "bounce-16",
+      "family": "bounce",
+      "id": 16,
+      "split": "held-out",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.006704385457034447,
+        "normalized_rmse": 0.03591703377901199,
+        "frames": 30,
+        "end_error_m": 0.008164890388410853,
+        "max_depth_m": 0.0011192652473606783,
+        "peak_predicted_force_N": 777.8917745861827,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.212655713
+          ],
+          [
+            0.6666666666666666,
+            0.10591740100000002
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21058781606657606
+          ],
+          [
+            0.6333333333333333,
+            0.1112892961250447
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.002067896933423935,
+        "wall_s": 0.1915095,
+        "setup_s": 0.017433,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 9.051189877595789e-07,
+        "pairs": 80338.0,
+        "culled": 79641.0,
+        "rays": 1394.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.006773746552342195,
+        "normalized_rmse": 0.03628861814257267,
+        "frames": 30,
+        "end_error_m": 0.007842397423290792,
+        "max_depth_m": 0.0011168623288719537,
+        "peak_predicted_force_N": 777.4026276141003,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.212655713
+          ],
+          [
+            0.6666666666666666,
+            0.10591740100000002
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21034310935310704
+          ],
+          [
+            0.6333333333333333,
+            0.11128952294951526
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0023126036468929523,
+        "wall_s": 0.1957212,
+        "setup_s": 0.1539706,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80336.0,
+        "max_residual": 6.800697462949756e-07,
+        "pairs": 80337.0,
+        "culled": 79638.0,
+        "rays": 1398.0,
+        "missing": 0.0,
+        "triangle_tests": 14679.0,
+        "delta_to_brep_m": 0.00020894621260230778
+      }
+    },
+    {
+      "key": "bounce-17",
+      "family": "bounce",
+      "id": 17,
+      "split": "held-out",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.009478370303204952,
+        "normalized_rmse": 0.04853512099544916,
+        "frames": 30,
+        "end_error_m": 0.0029868653565652548,
+        "max_depth_m": 0.0011327064383873202,
+        "peak_predicted_force_N": 750.1289584341004,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21635531300000002
+          ],
+          [
+            0.6666666666666666,
+            0.11055079400000001
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21253789279735574
+          ],
+          [
+            0.6666666666666666,
+            0.11195004947168213
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0038174202026442783,
+        "wall_s": 0.1752395,
+        "setup_s": 0.0155529,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80335.0,
+        "max_residual": 8.906818695919583e-07,
+        "pairs": 80336.0,
+        "culled": 79641.0,
+        "rays": 1390.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.009629052328743372,
+        "normalized_rmse": 0.0493067062055009,
+        "frames": 30,
+        "end_error_m": 0.002281235846035498,
+        "max_depth_m": 0.0011331064445553804,
+        "peak_predicted_force_N": 750.0189982659097,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21635531300000002
+          ],
+          [
+            0.6666666666666666,
+            0.11055079400000001
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.2122852371386653
+          ],
+          [
+            0.6666666666666666,
+            0.11166322655376573
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.004070075861334732,
+        "wall_s": 0.1980263,
+        "setup_s": 0.1536358,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 6.752697139233987e-07,
+        "pairs": 80338.0,
+        "culled": 79638.0,
+        "rays": 1400.0,
+        "missing": 0.0,
+        "triangle_tests": 14700.0,
+        "delta_to_brep_m": 0.0003341254751115036
+      }
+    },
+    {
+      "key": "bounce-18",
+      "family": "bounce",
+      "id": 18,
+      "split": "held-out",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.007320056681718901,
+        "normalized_rmse": 0.03874200014175493,
+        "frames": 30,
+        "end_error_m": -0.0033397375261331186,
+        "max_depth_m": 0.001134158307215357,
+        "peak_predicted_force_N": 767.5446902408414,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21534264800000005
+          ],
+          [
+            0.6666666666666666,
+            0.11052082499999999
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.2112199498909378
+          ],
+          [
+            0.6333333333333333,
+            0.11148721074893148
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0041226981090622394,
+        "wall_s": 0.1831101,
+        "setup_s": 0.0157806,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 6.840360615711916e-07,
+        "pairs": 80338.0,
+        "culled": 79642.0,
+        "rays": 1392.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.006958919864173274,
+        "normalized_rmse": 0.03683065392615975,
+        "frames": 30,
+        "end_error_m": -0.0030071121827586617,
+        "max_depth_m": 0.0011349503250413298,
+        "peak_predicted_force_N": 770.1934223041656,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21534264800000005
+          ],
+          [
+            0.6666666666666666,
+            0.11052082499999999
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21172412798112394
+          ],
+          [
+            0.6333333333333333,
+            0.11142808751904157
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.003618520018876109,
+        "wall_s": 0.185494,
+        "setup_s": 0.1700753,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 7.85690492222102e-07,
+        "pairs": 80338.0,
+        "culled": 79639.0,
+        "rays": 1398.0,
+        "missing": 0.0,
+        "triangle_tests": 14679.0,
+        "delta_to_brep_m": 0.00044414975770732854
+      }
+    },
+    {
+      "key": "bounce-19",
+      "family": "bounce",
+      "id": 19,
+      "split": "held-out",
+      "initial_frame": 7,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.007837165250592018,
+        "normalized_rmse": 0.0328072236037804,
+        "frames": 30,
+        "end_error_m": 0.001982911706571125,
+        "max_depth_m": 0.001132655535656956,
+        "peak_predicted_force_N": 751.8300729026719,
+        "observed_apices_s_m": [
+          [
+            0.3333333333333333,
+            0.21513790600000002
+          ],
+          [
+            0.7,
+            0.10876968099999998
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21111832733184205
+          ],
+          [
+            0.6666666666666666,
+            0.1120389172400565
+          ]
+        ],
+        "first_apex_time_error_s": -0.033333333333333326,
+        "first_apex_height_error_m": -0.004019578668157969,
+        "wall_s": 0.2054012,
+        "setup_s": 0.0199323,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 7.867521354398832e-07,
+        "pairs": 80338.0,
+        "culled": 79641.0,
+        "rays": 1394.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.008068709573819121,
+        "normalized_rmse": 0.03377649324955235,
+        "frames": 30,
+        "end_error_m": 0.0016322659286288066,
+        "max_depth_m": 0.0011326103939626325,
+        "peak_predicted_force_N": 753.7030491840424,
+        "observed_apices_s_m": [
+          [
+            0.3333333333333333,
+            0.21513790600000002
+          ],
+          [
+            0.7,
+            0.10876968099999998
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21082853512678934
+          ],
+          [
+            0.6666666666666666,
+            0.11190325171985352
+          ]
+        ],
+        "first_apex_time_error_s": -0.033333333333333326,
+        "first_apex_height_error_m": -0.004309370873210677,
+        "wall_s": 0.2183543,
+        "setup_s": 0.1654398,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 9.445757562787094e-07,
+        "pairs": 80338.0,
+        "culled": 79638.0,
+        "rays": 1400.0,
+        "missing": 0.0,
+        "triangle_tests": 14700.0,
+        "delta_to_brep_m": 0.00031811225606904824
+      }
+    },
+    {
+      "key": "bounce-20",
+      "family": "bounce",
+      "id": 20,
+      "split": "held-out",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.007636985811043534,
+        "normalized_rmse": 0.04037209736130216,
+        "frames": 30,
+        "end_error_m": 0.0034076894770911845,
+        "max_depth_m": 0.0011297475533723726,
+        "peak_predicted_force_N": 774.1874399303767,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.215391904
+          ],
+          [
+            0.6666666666666666,
+            0.10844030499999999
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.2107518494295295
+          ],
+          [
+            0.6333333333333333,
+            0.11113760213718835
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.004640054570470509,
+        "wall_s": 0.1844666,
+        "setup_s": 0.0236078,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 6.894534276824515e-07,
+        "pairs": 80338.0,
+        "culled": 79640.0,
+        "rays": 1396.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.007370155570708356,
+        "normalized_rmse": 0.038961528229934414,
+        "frames": 30,
+        "end_error_m": 0.004253047261629665,
+        "max_depth_m": 0.0011297917199879909,
+        "peak_predicted_force_N": 776.1126604708223,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.215391904
+          ],
+          [
+            0.6666666666666666,
+            0.10844030499999999
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.21123813119166374
+          ],
+          [
+            0.6333333333333333,
+            0.11121954015288511
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.004153772808336259,
+        "wall_s": 0.1880472,
+        "setup_s": 0.1461267,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 7.944212079280533e-07,
+        "pairs": 80338.0,
+        "culled": 79636.0,
+        "rays": 1404.0,
+        "missing": 0.0,
+        "triangle_tests": 14742.0,
+        "delta_to_brep_m": 0.0004768922464296041
+      }
+    },
+    {
+      "key": "bounce-21",
+      "family": "bounce",
+      "id": 21,
+      "split": "held-out",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.0069007762273590794,
+        "normalized_rmse": 0.03523572679472891,
+        "frames": 30,
+        "end_error_m": 0.007744268315965176,
+        "max_depth_m": 0.0011151281973609643,
+        "peak_predicted_force_N": 768.5482772067664,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21330108299999997
+          ],
+          [
+            0.6666666666666666,
+            0.10682302599999999
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.2112220781605418
+          ],
+          [
+            0.6666666666666666,
+            0.11106753515042353
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.002079004839458165,
+        "wall_s": 0.1855333,
+        "setup_s": 0.0171348,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 7.142109748059511e-07,
+        "pairs": 80338.0,
+        "culled": 79640.0,
+        "rays": 1396.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.006764551336789827,
+        "normalized_rmse": 0.034540155330216,
+        "frames": 30,
+        "end_error_m": 0.008189114600502291,
+        "max_depth_m": 0.0011178845867140519,
+        "peak_predicted_force_N": 767.7863057069565,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21330108299999997
+          ],
+          [
+            0.6666666666666666,
+            0.10682302599999999
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.2116098879760007
+          ],
+          [
+            0.6666666666666666,
+            0.11122243202852228
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.0016911950239992812,
+        "wall_s": 0.1554755,
+        "setup_s": 0.1397214,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 8.316187205537062e-07,
+        "pairs": 80338.0,
+        "culled": 79636.0,
+        "rays": 1404.0,
+        "missing": 0.0,
+        "triangle_tests": 14742.0,
+        "delta_to_brep_m": 0.00037797135458807223
+      }
+    },
+    {
+      "key": "bounce-22",
+      "family": "bounce",
+      "id": 22,
+      "split": "held-out",
+      "initial_frame": 8,
+      "duration_s": 1.0,
+      "brep": {
+        "rmse_m": 0.011818552364457132,
+        "normalized_rmse": 0.060835673949795714,
+        "frames": 30,
+        "end_error_m": -0.022731027735598708,
+        "max_depth_m": 0.0011270729680795642,
+        "peak_predicted_force_N": 746.8977324819753,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21503210199999997
+          ],
+          [
+            0.6666666666666666,
+            0.116362088
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.2100660904445133
+          ],
+          [
+            0.6333333333333333,
+            0.11039383826113568
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.004966011555486677,
+        "wall_s": 0.1745318,
+        "setup_s": 0.0251275,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80337.0,
+        "max_residual": 7.701558129014074e-07,
+        "pairs": 80338.0,
+        "culled": 79641.0,
+        "rays": 1394.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.012178543045346381,
+        "normalized_rmse": 0.06268871610015296,
+        "frames": 30,
+        "end_error_m": -0.023523958212840965,
+        "max_depth_m": 0.001127357228118804,
+        "peak_predicted_force_N": 743.4384335593675,
+        "observed_apices_s_m": [
+          [
+            0.3,
+            0.21503210199999997
+          ],
+          [
+            0.6666666666666666,
+            0.116362088
+          ]
+        ],
+        "predicted_apices_s_m": [
+          [
+            0.3,
+            0.20973235189903272
+          ],
+          [
+            0.6333333333333333,
+            0.11022009637857394
+          ]
+        ],
+        "first_apex_time_error_s": 0.0,
+        "first_apex_height_error_m": -0.005299750100967254,
+        "wall_s": 0.1868174,
+        "setup_s": 0.1391001,
+        "steps": 80000.0,
+        "accepted": 80000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 80336.0,
+        "max_residual": 9.202973512145718e-07,
+        "pairs": 80337.0,
+        "culled": 79637.0,
+        "rays": 1400.0,
+        "missing": 0.0,
+        "triangle_tests": 14700.0,
+        "delta_to_brep_m": 0.00040635488118622646
+      }
+    },
+    {
+      "key": "wood-01",
+      "family": "wood",
+      "id": 1,
+      "split": "calibration",
+      "initial_frame": 2,
+      "duration_s": 0.5,
+      "brep": {
+        "rmse_m": 0.003998447346073018,
+        "normalized_rmse": 0.009506546214029136,
+        "frames": 14,
+        "end_error_m": 0.009120058159702293,
+        "max_depth_m": 1.8097981349492892e-05,
+        "peak_predicted_force_N": 0.7699192964838052,
+        "wall_s": 0.016818,
+        "setup_s": 0.0205207,
+        "steps": 2500.0,
+        "accepted": 2500.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 5000.0,
+        "max_residual": 6.95201121477186e-12,
+        "pairs": 5001.0,
+        "culled": 0.0,
+        "rays": 10002.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.003998447346073018,
+        "normalized_rmse": 0.009506546214029136,
+        "frames": 14,
+        "end_error_m": 0.009120058159702293,
+        "max_depth_m": 1.8097981349492892e-05,
+        "peak_predicted_force_N": 0.7699192964838052,
+        "wall_s": 0.0225068,
+        "setup_s": 0.0234106,
+        "steps": 2500.0,
+        "accepted": 2500.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 5000.0,
+        "max_residual": 6.95201121477186e-12,
+        "pairs": 5001.0,
+        "culled": 0.0,
+        "rays": 10002.0,
+        "missing": 0.0,
+        "triangle_tests": 120024.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-02",
+      "family": "wood",
+      "id": 2,
+      "split": "calibration",
+      "initial_frame": 3,
+      "duration_s": 0.5,
+      "brep": {
+        "rmse_m": 0.0014852218107631401,
+        "normalized_rmse": 0.0033621966208351164,
+        "frames": 14,
+        "end_error_m": -0.00013181332089412523,
+        "max_depth_m": 1.81023042039076e-05,
+        "peak_predicted_force_N": 0.7701951654637692,
+        "wall_s": 0.0163409,
+        "setup_s": 0.0193136,
+        "steps": 2500.0,
+        "accepted": 2500.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 5000.0,
+        "max_residual": 6.14336973401179e-12,
+        "pairs": 5001.0,
+        "culled": 0.0,
+        "rays": 10002.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0014852218107631401,
+        "normalized_rmse": 0.0033621966208351164,
+        "frames": 14,
+        "end_error_m": -0.00013181332089412523,
+        "max_depth_m": 1.81023042039076e-05,
+        "peak_predicted_force_N": 0.7701951654637692,
+        "wall_s": 0.0205798,
+        "setup_s": 0.0202053,
+        "steps": 2500.0,
+        "accepted": 2500.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 5000.0,
+        "max_residual": 6.14336973401179e-12,
+        "pairs": 5001.0,
+        "culled": 0.0,
+        "rays": 10002.0,
+        "missing": 0.0,
+        "triangle_tests": 120024.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-03",
+      "family": "wood",
+      "id": 3,
+      "split": "calibration",
+      "initial_frame": 4,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0010501759198199843,
+        "normalized_rmse": 0.002510744028129458,
+        "frames": 13,
+        "end_error_m": 0.00021503567835379211,
+        "max_depth_m": 1.8097285117313344e-05,
+        "peak_predicted_force_N": 0.7698748685369353,
+        "wall_s": 0.0151229,
+        "setup_s": 0.0290959,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.54220604002814e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0010501759198199843,
+        "normalized_rmse": 0.002510744028129458,
+        "frames": 13,
+        "end_error_m": 0.00021503567835379211,
+        "max_depth_m": 1.8097285117313344e-05,
+        "peak_predicted_force_N": 0.7698748685369353,
+        "wall_s": 0.0185594,
+        "setup_s": 0.0192688,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.54220604002814e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-04",
+      "family": "wood",
+      "id": 4,
+      "split": "calibration",
+      "initial_frame": 4,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.00151411270098569,
+        "normalized_rmse": 0.0035888621741308234,
+        "frames": 13,
+        "end_error_m": -0.0012098287368037253,
+        "max_depth_m": 1.809983608307142e-05,
+        "peak_predicted_force_N": 0.770037654857722,
+        "wall_s": 0.0246089,
+        "setup_s": 0.0362922,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.5442800039100776e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.00151411270098569,
+        "normalized_rmse": 0.0035888621741308234,
+        "frames": 13,
+        "end_error_m": -0.0012098287368037253,
+        "max_depth_m": 1.809983608307142e-05,
+        "peak_predicted_force_N": 0.770037654857722,
+        "wall_s": 0.0209577,
+        "setup_s": 0.0219163,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.5442800039100776e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-05",
+      "family": "wood",
+      "id": 5,
+      "split": "calibration",
+      "initial_frame": 4,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.001978946249292812,
+        "normalized_rmse": 0.004629291203093976,
+        "frames": 13,
+        "end_error_m": -0.003191572772944906,
+        "max_depth_m": 1.810233352118537e-05,
+        "peak_predicted_force_N": 0.7701970364990155,
+        "wall_s": 0.0152796,
+        "setup_s": 0.0196353,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 5.960182911814417e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.001978946249292812,
+        "normalized_rmse": 0.004629291203093976,
+        "frames": 13,
+        "end_error_m": -0.003191572772944906,
+        "max_depth_m": 1.810233352118537e-05,
+        "peak_predicted_force_N": 0.7701970364990155,
+        "wall_s": 0.0211538,
+        "setup_s": 0.0219327,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 5.960182911814417e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-06",
+      "family": "wood",
+      "id": 6,
+      "split": "held-out",
+      "initial_frame": 2,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.001525184744393086,
+        "normalized_rmse": 0.00373465606173965,
+        "frames": 13,
+        "end_error_m": -0.0013000417920544516,
+        "max_depth_m": 1.8101279692855216e-05,
+        "peak_predicted_force_N": 0.7701297818844861,
+        "wall_s": 0.0136001,
+        "setup_s": 0.0272871,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.357065406468202e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.001525184744393086,
+        "normalized_rmse": 0.00373465606173965,
+        "frames": 13,
+        "end_error_m": -0.0013000417920544516,
+        "max_depth_m": 1.8101279692855216e-05,
+        "peak_predicted_force_N": 0.7701297818844861,
+        "wall_s": 0.0207529,
+        "setup_s": 0.021776,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.357065406468202e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-07",
+      "family": "wood",
+      "id": 7,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0024536573163078472,
+        "normalized_rmse": 0.006108512632576582,
+        "frames": 13,
+        "end_error_m": -0.003117992921194468,
+        "max_depth_m": 1.809781215375214e-05,
+        "peak_predicted_force_N": 0.7699084996919955,
+        "wall_s": 0.0167703,
+        "setup_s": 0.0325342,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 5.951709816084142e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0024536573163078472,
+        "normalized_rmse": 0.006108512632576582,
+        "frames": 13,
+        "end_error_m": -0.003117992921194468,
+        "max_depth_m": 1.809781215375214e-05,
+        "peak_predicted_force_N": 0.7699084996919955,
+        "wall_s": 0.0199518,
+        "setup_s": 0.0211524,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 5.951709816084142e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-08",
+      "family": "wood",
+      "id": 8,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0016089400231178292,
+        "normalized_rmse": 0.0038692604391920857,
+        "frames": 13,
+        "end_error_m": -0.0018017167043548332,
+        "max_depth_m": 1.809837552560825e-05,
+        "peak_predicted_force_N": 0.7699444500173617,
+        "wall_s": 0.0147225,
+        "setup_s": 0.0261984,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.756106851927774e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0016089400231178292,
+        "normalized_rmse": 0.0038692604391920857,
+        "frames": 13,
+        "end_error_m": -0.0018017167043548332,
+        "max_depth_m": 1.809837552560825e-05,
+        "peak_predicted_force_N": 0.7699444500173617,
+        "wall_s": 0.0195765,
+        "setup_s": 0.0201561,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.756106851927774e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-09",
+      "family": "wood",
+      "id": 9,
+      "split": "held-out",
+      "initial_frame": 2,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0018610437454009395,
+        "normalized_rmse": 0.004524410901789519,
+        "frames": 13,
+        "end_error_m": -0.0012934552988643766,
+        "max_depth_m": 1.8097615068695533e-05,
+        "peak_predicted_force_N": 0.7698959232785338,
+        "wall_s": 0.018474,
+        "setup_s": 0.0340117,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.7344253719951e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0018610437454009395,
+        "normalized_rmse": 0.004524410901789519,
+        "frames": 13,
+        "end_error_m": -0.0012934552988643766,
+        "max_depth_m": 1.8097615068695533e-05,
+        "peak_predicted_force_N": 0.7698959232785338,
+        "wall_s": 0.0196143,
+        "setup_s": 0.0204062,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.7344253719951e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-10",
+      "family": "wood",
+      "id": 10,
+      "split": "held-out",
+      "initial_frame": 2,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0026810165806710074,
+        "normalized_rmse": 0.006553451376180347,
+        "frames": 13,
+        "end_error_m": -0.003325791734854061,
+        "max_depth_m": 1.8101877999221472e-05,
+        "peak_predicted_force_N": 0.7701679651536586,
+        "wall_s": 0.0147038,
+        "setup_s": 0.0199934,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.740198468660414e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0026810165806710074,
+        "normalized_rmse": 0.006553451376180347,
+        "frames": 13,
+        "end_error_m": -0.003325791734854061,
+        "max_depth_m": 1.8101877999221472e-05,
+        "peak_predicted_force_N": 0.7701679651536586,
+        "wall_s": 0.0214651,
+        "setup_s": 0.0228324,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.740198468660414e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-11",
+      "family": "wood",
+      "id": 11,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.002656828311746451,
+        "normalized_rmse": 0.006641589394206862,
+        "frames": 13,
+        "end_error_m": -0.003725693824114834,
+        "max_depth_m": 1.809933198410746e-05,
+        "peak_predicted_force_N": 0.7700054855762197,
+        "wall_s": 0.0152909,
+        "setup_s": 0.0213047,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.138528115413679e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.002656828311746451,
+        "normalized_rmse": 0.006641589394206862,
+        "frames": 13,
+        "end_error_m": -0.003725693824114834,
+        "max_depth_m": 1.809933198410746e-05,
+        "peak_predicted_force_N": 0.7700054855762197,
+        "wall_s": 0.0176541,
+        "setup_s": 0.0189668,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.138528115413679e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-12",
+      "family": "wood",
+      "id": 12,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.00372107868738401,
+        "normalized_rmse": 0.009140355736440205,
+        "frames": 13,
+        "end_error_m": -0.005639774860413532,
+        "max_depth_m": 1.809931019811778e-05,
+        "peak_predicted_force_N": 0.7700040953044827,
+        "wall_s": 0.0144689,
+        "setup_s": 0.0275908,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.7319129026395986e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.00372107868738401,
+        "normalized_rmse": 0.009140355736440205,
+        "frames": 13,
+        "end_error_m": -0.005639774860413532,
+        "max_depth_m": 1.809931019811778e-05,
+        "peak_predicted_force_N": 0.7700040953044827,
+        "wall_s": 0.0179114,
+        "setup_s": 0.0198163,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.7319129026395986e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-13",
+      "family": "wood",
+      "id": 13,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.004440984685749834,
+        "normalized_rmse": 0.01120551180113092,
+        "frames": 13,
+        "end_error_m": -0.007126660182703415,
+        "max_depth_m": 1.810340652075651e-05,
+        "peak_predicted_force_N": 0.7702655166213861,
+        "wall_s": 0.0192527,
+        "setup_s": 0.0196663,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.769974459210587e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.004440984685749834,
+        "normalized_rmse": 0.01120551180113092,
+        "frames": 13,
+        "end_error_m": -0.007126660182703415,
+        "max_depth_m": 1.810340652075651e-05,
+        "peak_predicted_force_N": 0.7702655166213861,
+        "wall_s": 0.0215112,
+        "setup_s": 0.0344595,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.769974459210587e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-14",
+      "family": "wood",
+      "id": 14,
+      "split": "held-out",
+      "initial_frame": 4,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.005228971355576353,
+        "normalized_rmse": 0.012651445616628456,
+        "frames": 13,
+        "end_error_m": -0.008738769930852819,
+        "max_depth_m": 1.8103768805805692e-05,
+        "peak_predicted_force_N": 0.770288638546574,
+        "wall_s": 0.0174303,
+        "setup_s": 0.0223069,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.7630284879208145e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.005228971355576353,
+        "normalized_rmse": 0.012651445616628456,
+        "frames": 13,
+        "end_error_m": -0.008738769930852819,
+        "max_depth_m": 1.8103768805805692e-05,
+        "peak_predicted_force_N": 0.770288638546574,
+        "wall_s": 0.0215523,
+        "setup_s": 0.0227819,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.7630284879208145e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-15",
+      "family": "wood",
+      "id": 15,
+      "split": "held-out",
+      "initial_frame": 4,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.002825030799948363,
+        "normalized_rmse": 0.006723715916557042,
+        "frames": 13,
+        "end_error_m": -0.004503098126161009,
+        "max_depth_m": 1.8100349031345553e-05,
+        "peak_predicted_force_N": 0.7700703893216057,
+        "wall_s": 0.0150404,
+        "setup_s": 0.018395,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.12451193525592e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.002825030799948363,
+        "normalized_rmse": 0.006723715916557042,
+        "frames": 13,
+        "end_error_m": -0.004503098126161009,
+        "max_depth_m": 1.8100349031345553e-05,
+        "peak_predicted_force_N": 0.7700703893216057,
+        "wall_s": 0.022394,
+        "setup_s": 0.0250823,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.12451193525592e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-16",
+      "family": "wood",
+      "id": 16,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.005166710557946983,
+        "normalized_rmse": 0.012960454200432663,
+        "frames": 13,
+        "end_error_m": -0.008651689370804405,
+        "max_depth_m": 1.8107366985167794e-05,
+        "peak_predicted_force_N": 0.7705182957870206,
+        "wall_s": 0.0170794,
+        "setup_s": 0.022086,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.924082314284205e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.005166710557946983,
+        "normalized_rmse": 0.012960454200432663,
+        "frames": 13,
+        "end_error_m": -0.008651689370804405,
+        "max_depth_m": 1.8107366985167794e-05,
+        "peak_predicted_force_N": 0.7705182957870206,
+        "wall_s": 0.0243605,
+        "setup_s": 0.0276023,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.924082314284205e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-17",
+      "family": "wood",
+      "id": 17,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.005396555040673562,
+        "normalized_rmse": 0.013118104888211366,
+        "frames": 13,
+        "end_error_m": -0.00814162775949362,
+        "max_depth_m": 1.8108031740071695e-05,
+        "peak_predicted_force_N": 0.770560726902248,
+        "wall_s": 0.0161027,
+        "setup_s": 0.021,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.748218553359836e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.005396555040673562,
+        "normalized_rmse": 0.013118104888211366,
+        "frames": 13,
+        "end_error_m": -0.00814162775949362,
+        "max_depth_m": 1.8108031740071695e-05,
+        "peak_predicted_force_N": 0.770560726902248,
+        "wall_s": 0.0217285,
+        "setup_s": 0.0246047,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.748218553359836e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-18",
+      "family": "wood",
+      "id": 18,
+      "split": "held-out",
+      "initial_frame": 5,
+      "duration_s": 0.5,
+      "brep": {
+        "rmse_m": 0.005816140859635103,
+        "normalized_rmse": 0.01313522570805944,
+        "frames": 14,
+        "end_error_m": -0.009401203605414549,
+        "max_depth_m": 1.8103516590116386e-05,
+        "peak_predicted_force_N": 0.7702725414944542,
+        "wall_s": 0.0227475,
+        "setup_s": 0.0264838,
+        "steps": 2500.0,
+        "accepted": 2500.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 5000.0,
+        "max_residual": 8.168470485824545e-12,
+        "pairs": 5001.0,
+        "culled": 0.0,
+        "rays": 10002.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.005816140859635103,
+        "normalized_rmse": 0.01313522570805944,
+        "frames": 14,
+        "end_error_m": -0.009401203605414549,
+        "max_depth_m": 1.8103516590116386e-05,
+        "peak_predicted_force_N": 0.7702725414944542,
+        "wall_s": 0.0205724,
+        "setup_s": 0.0194927,
+        "steps": 2500.0,
+        "accepted": 2500.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 5000.0,
+        "max_residual": 8.168470485824545e-12,
+        "pairs": 5001.0,
+        "culled": 0.0,
+        "rays": 10002.0,
+        "missing": 0.0,
+        "triangle_tests": 120024.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-19",
+      "family": "wood",
+      "id": 19,
+      "split": "held-out",
+      "initial_frame": 2,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0057930908078589315,
+        "normalized_rmse": 0.014621319844401794,
+        "frames": 13,
+        "end_error_m": -0.009738816015234963,
+        "max_depth_m": 1.810632679420318e-05,
+        "peak_predicted_force_N": 0.7704519022587218,
+        "wall_s": 0.0160784,
+        "setup_s": 0.0287572,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.330889953447767e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0057930908078589315,
+        "normalized_rmse": 0.014621319844401794,
+        "frames": 13,
+        "end_error_m": -0.009738816015234963,
+        "max_depth_m": 1.810632679420318e-05,
+        "peak_predicted_force_N": 0.7704519022587218,
+        "wall_s": 0.0217204,
+        "setup_s": 0.0235609,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.330889953447767e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "wood-20",
+      "family": "wood",
+      "id": 20,
+      "split": "held-out",
+      "initial_frame": 4,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.004831177153260696,
+        "normalized_rmse": 0.011387885736905145,
+        "frames": 13,
+        "end_error_m": -0.007841444948636173,
+        "max_depth_m": 1.8102170939390122e-05,
+        "peak_predicted_force_N": 0.7701866605106864,
+        "wall_s": 0.0153896,
+        "setup_s": 0.0191588,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.7300659487575e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.004831177153260696,
+        "normalized_rmse": 0.011387885736905145,
+        "frames": 13,
+        "end_error_m": -0.007841444948636173,
+        "max_depth_m": 1.8102170939390122e-05,
+        "peak_predicted_force_N": 0.7701866605106864,
+        "wall_s": 0.027347,
+        "setup_s": 0.0244724,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 6.7300659487575e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-01",
+      "family": "plastic",
+      "id": 1,
+      "split": "calibration",
+      "initial_frame": 3,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0012350592587856213,
+        "normalized_rmse": 0.002970317669740665,
+        "frames": 13,
+        "end_error_m": 0.001808270904794379,
+        "max_depth_m": 2.5038889874252207e-05,
+        "peak_predicted_force_N": 1.2529178745916327,
+        "wall_s": 0.0150178,
+        "setup_s": 0.0264365,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 8.429668021924402e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0012350592587856213,
+        "normalized_rmse": 0.002970317669740665,
+        "frames": 13,
+        "end_error_m": 0.001808270904794379,
+        "max_depth_m": 2.5038889874252207e-05,
+        "peak_predicted_force_N": 1.2529178745916327,
+        "wall_s": 0.0195662,
+        "setup_s": 0.021567,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 8.429668021924402e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-02",
+      "family": "plastic",
+      "id": 2,
+      "split": "calibration",
+      "initial_frame": 1,
+      "duration_s": 0.43333333333333335,
+      "brep": {
+        "rmse_m": 0.0012051288685567582,
+        "normalized_rmse": 0.0029098320414007914,
+        "frames": 12,
+        "end_error_m": 0.0024124944557292194,
+        "max_depth_m": 2.503906206857004e-05,
+        "peak_predicted_force_N": 1.2529307992287677,
+        "wall_s": 0.0154382,
+        "setup_s": 0.0329798,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 6.772077480704664e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0012051288685567582,
+        "normalized_rmse": 0.0029098320414007914,
+        "frames": 12,
+        "end_error_m": 0.0024124944557292194,
+        "max_depth_m": 2.503906206857004e-05,
+        "peak_predicted_force_N": 1.2529307992287677,
+        "wall_s": 0.0182475,
+        "setup_s": 0.0202387,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 6.772077480704664e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 104040.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-03",
+      "family": "plastic",
+      "id": 3,
+      "split": "calibration",
+      "initial_frame": 3,
+      "duration_s": 0.43333333333333335,
+      "brep": {
+        "rmse_m": 0.0006157071907569971,
+        "normalized_rmse": 0.00158668180960093,
+        "frames": 12,
+        "end_error_m": -0.0002309204189637204,
+        "max_depth_m": 2.5043145508479164e-05,
+        "peak_predicted_force_N": 1.2532373088857867,
+        "wall_s": 0.0151437,
+        "setup_s": 0.0310756,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 9.117888196533825e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0006157071907569971,
+        "normalized_rmse": 0.00158668180960093,
+        "frames": 12,
+        "end_error_m": -0.0002309204189637204,
+        "max_depth_m": 2.5043145508479164e-05,
+        "peak_predicted_force_N": 1.2532373088857867,
+        "wall_s": 0.0175461,
+        "setup_s": 0.0198147,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 9.117888196533825e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 104040.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-04",
+      "family": "plastic",
+      "id": 4,
+      "split": "calibration",
+      "initial_frame": 1,
+      "duration_s": 0.43333333333333335,
+      "brep": {
+        "rmse_m": 0.0004970472018327448,
+        "normalized_rmse": 0.0011722861184883303,
+        "frames": 12,
+        "end_error_m": 0.0006677742135268172,
+        "max_depth_m": 2.504178044215183e-05,
+        "peak_predicted_force_N": 1.253134842000748,
+        "wall_s": 0.0129376,
+        "setup_s": 0.0265554,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 6.784645741801124e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0004970472018327448,
+        "normalized_rmse": 0.0011722861184883303,
+        "frames": 12,
+        "end_error_m": 0.0006677742135268172,
+        "max_depth_m": 2.504178044215183e-05,
+        "peak_predicted_force_N": 1.253134842000748,
+        "wall_s": 0.0168345,
+        "setup_s": 0.0184856,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 6.784645741801124e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 104040.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-05",
+      "family": "plastic",
+      "id": 5,
+      "split": "calibration",
+      "initial_frame": 2,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0012635724952078738,
+        "normalized_rmse": 0.002951241950213,
+        "frames": 13,
+        "end_error_m": -0.0007038487733650456,
+        "max_depth_m": 2.5041996428273178e-05,
+        "peak_predicted_force_N": 1.2531510545252118,
+        "wall_s": 0.0160019,
+        "setup_s": 0.0308255,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.253777310852349e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0012635724952078738,
+        "normalized_rmse": 0.002951241950213,
+        "frames": 13,
+        "end_error_m": -0.0007038487733650456,
+        "max_depth_m": 2.5041996428273178e-05,
+        "peak_predicted_force_N": 1.2531510545252118,
+        "wall_s": 0.0188102,
+        "setup_s": 0.0194049,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.253777310852349e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-06",
+      "family": "plastic",
+      "id": 6,
+      "split": "held-out",
+      "initial_frame": 1,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0012572956678949627,
+        "normalized_rmse": 0.003024489223548475,
+        "frames": 13,
+        "end_error_m": -0.0009900221847262414,
+        "max_depth_m": 2.5041952908706755e-05,
+        "peak_predicted_force_N": 1.2531477878188135,
+        "wall_s": 0.014511,
+        "setup_s": 0.0200916,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.47082965878463e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0012572956678949627,
+        "normalized_rmse": 0.003024489223548475,
+        "frames": 13,
+        "end_error_m": -0.0009900221847262414,
+        "max_depth_m": 2.5041952908706755e-05,
+        "peak_predicted_force_N": 1.2531477878188135,
+        "wall_s": 0.0195371,
+        "setup_s": 0.02001,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.47082965878463e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      },
+      "brep_half_step": {
+        "rmse_m": 0.0012572962562764024,
+        "normalized_rmse": 0.00302449063893021,
+        "frames": 13,
+        "end_error_m": -0.0009900318884250026,
+        "max_depth_m": 2.5041952908706755e-05,
+        "peak_predicted_force_N": 1.253147787818923,
+        "wall_s": 0.0313947,
+        "setup_s": 0.0201505,
+        "steps": 4667.0,
+        "accepted": 4667.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 9334.0,
+        "max_residual": 8.905077395904162e-12,
+        "pairs": 9335.0,
+        "culled": 0.0,
+        "rays": 18670.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "delta_to_brep_m": 2.505484327224986e-09
+      }
+    },
+    {
+      "key": "plastic-07",
+      "family": "plastic",
+      "id": 7,
+      "split": "held-out",
+      "initial_frame": 4,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0018964266017522378,
+        "normalized_rmse": 0.00437206162940173,
+        "frames": 13,
+        "end_error_m": -0.0017933609126029038,
+        "max_depth_m": 2.504354307798079e-05,
+        "peak_predicted_force_N": 1.2532671524353822,
+        "wall_s": 0.0161353,
+        "setup_s": 0.0212328,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.962210142341043e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0018964266017522378,
+        "normalized_rmse": 0.00437206162940173,
+        "frames": 13,
+        "end_error_m": -0.0017933609126029038,
+        "max_depth_m": 2.504354307798079e-05,
+        "peak_predicted_force_N": 1.2532671524353822,
+        "wall_s": 0.0255271,
+        "setup_s": 0.0290623,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.962210142341043e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-08",
+      "family": "plastic",
+      "id": 8,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0019199832993230064,
+        "normalized_rmse": 0.0044515935360948085,
+        "frames": 13,
+        "end_error_m": -0.0022769510451196018,
+        "max_depth_m": 2.504519785952522e-05,
+        "peak_predicted_force_N": 1.2533913711378282,
+        "wall_s": 0.0157998,
+        "setup_s": 0.0219826,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.730229887038195e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0019199832993230064,
+        "normalized_rmse": 0.0044515935360948085,
+        "frames": 13,
+        "end_error_m": -0.0022769510451196018,
+        "max_depth_m": 2.504519785952522e-05,
+        "peak_predicted_force_N": 1.2533913711378282,
+        "wall_s": 0.0197633,
+        "setup_s": 0.0203884,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.730229887038195e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-09",
+      "family": "plastic",
+      "id": 9,
+      "split": "held-out",
+      "initial_frame": 2,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.002828851469790947,
+        "normalized_rmse": 0.006685911603744574,
+        "frames": 13,
+        "end_error_m": -0.004007129188351638,
+        "max_depth_m": 2.5043446980566042e-05,
+        "peak_predicted_force_N": 1.253259938863076,
+        "wall_s": 0.0171335,
+        "setup_s": 0.0237092,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 8.885588455744117e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.002828851469790947,
+        "normalized_rmse": 0.006685911603744574,
+        "frames": 13,
+        "end_error_m": -0.004007129188351638,
+        "max_depth_m": 2.5043446980566042e-05,
+        "peak_predicted_force_N": 1.253259938863076,
+        "wall_s": 0.0191607,
+        "setup_s": 0.0205272,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 8.885588455744117e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-10",
+      "family": "plastic",
+      "id": 10,
+      "split": "held-out",
+      "initial_frame": 4,
+      "duration_s": 0.43333333333333335,
+      "brep": {
+        "rmse_m": 0.0014862494829772483,
+        "normalized_rmse": 0.0037687450374574443,
+        "frames": 12,
+        "end_error_m": -0.0022559154716406127,
+        "max_depth_m": 2.504206582227761e-05,
+        "peak_predicted_force_N": 1.2531562634487554,
+        "wall_s": 0.0145132,
+        "setup_s": 0.0197348,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 8.634245241953807e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0014862494829772483,
+        "normalized_rmse": 0.0037687450374574443,
+        "frames": 12,
+        "end_error_m": -0.0022559154716406127,
+        "max_depth_m": 2.504206582227761e-05,
+        "peak_predicted_force_N": 1.2531562634487554,
+        "wall_s": 0.0184921,
+        "setup_s": 0.0230853,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 8.634245241953807e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 104040.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-11",
+      "family": "plastic",
+      "id": 11,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.43333333333333335,
+      "brep": {
+        "rmse_m": 0.0015918607266847914,
+        "normalized_rmse": 0.0040311898911762276,
+        "frames": 12,
+        "end_error_m": -0.002366875411230429,
+        "max_depth_m": 2.5039682442034444e-05,
+        "peak_predicted_force_N": 1.2529773638625732,
+        "wall_s": 0.0138329,
+        "setup_s": 0.0197355,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 6.567264575066584e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0015918607266847914,
+        "normalized_rmse": 0.0040311898911762276,
+        "frames": 12,
+        "end_error_m": -0.002366875411230429,
+        "max_depth_m": 2.5039682442034444e-05,
+        "peak_predicted_force_N": 1.2529773638625732,
+        "wall_s": 0.0165583,
+        "setup_s": 0.0184968,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 6.567264575066584e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 104040.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-12",
+      "family": "plastic",
+      "id": 12,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.43333333333333335,
+      "brep": {
+        "rmse_m": 0.0048601973087122365,
+        "normalized_rmse": 0.012306456381701823,
+        "frames": 12,
+        "end_error_m": -0.008113334022940927,
+        "max_depth_m": 2.504301581445975e-05,
+        "peak_predicted_force_N": 1.2532275734565232,
+        "wall_s": 0.0152609,
+        "setup_s": 0.0202993,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 7.716423836632452e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0048601973087122365,
+        "normalized_rmse": 0.012306456381701823,
+        "frames": 12,
+        "end_error_m": -0.008113334022940927,
+        "max_depth_m": 2.504301581445975e-05,
+        "peak_predicted_force_N": 1.2532275734565232,
+        "wall_s": 0.0171831,
+        "setup_s": 0.019898,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 7.716423836632452e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 104040.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-13",
+      "family": "plastic",
+      "id": 13,
+      "split": "held-out",
+      "initial_frame": 2,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.003986934363862526,
+        "normalized_rmse": 0.009478509476747516,
+        "frames": 13,
+        "end_error_m": -0.006592961198307934,
+        "max_depth_m": 2.5041272490890915e-05,
+        "peak_predicted_force_N": 1.253096714029266,
+        "wall_s": 0.0145838,
+        "setup_s": 0.0191845,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 8.660018338720038e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.003986934363862526,
+        "normalized_rmse": 0.009478509476747516,
+        "frames": 13,
+        "end_error_m": -0.006592961198307934,
+        "max_depth_m": 2.5041272490890915e-05,
+        "peak_predicted_force_N": 1.253096714029266,
+        "wall_s": 0.0194406,
+        "setup_s": 0.0196436,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 8.660018338720038e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-14",
+      "family": "plastic",
+      "id": 14,
+      "split": "held-out",
+      "initial_frame": 2,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.002028654990751519,
+        "normalized_rmse": 0.0048696971244095374,
+        "frames": 13,
+        "end_error_m": -0.003805831819755162,
+        "max_depth_m": 2.5040283006653313e-05,
+        "peak_predicted_force_N": 1.2530224422132328,
+        "wall_s": 0.0140259,
+        "setup_s": 0.0188242,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.714151255832587e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.002028654990751519,
+        "normalized_rmse": 0.0048696971244095374,
+        "frames": 13,
+        "end_error_m": -0.003805831819755162,
+        "max_depth_m": 2.5040283006653313e-05,
+        "peak_predicted_force_N": 1.2530224422132328,
+        "wall_s": 0.0199512,
+        "setup_s": 0.0203505,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 7.714151255832587e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-15",
+      "family": "plastic",
+      "id": 15,
+      "split": "held-out",
+      "initial_frame": 4,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0062227478130006545,
+        "normalized_rmse": 0.014937376107036254,
+        "frames": 13,
+        "end_error_m": -0.011030565471299686,
+        "max_depth_m": 2.5045387472590053e-05,
+        "peak_predicted_force_N": 1.253405604994226,
+        "wall_s": 0.015028,
+        "setup_s": 0.0192681,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 9.571769586499476e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0062227478130006545,
+        "normalized_rmse": 0.014937376107036254,
+        "frames": 13,
+        "end_error_m": -0.011030565471299686,
+        "max_depth_m": 2.5045387472590053e-05,
+        "peak_predicted_force_N": 1.253405604994226,
+        "wall_s": 0.0219456,
+        "setup_s": 0.0239675,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 9.571769586499476e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-16",
+      "family": "plastic",
+      "id": 16,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.43333333333333335,
+      "brep": {
+        "rmse_m": 0.003157582741077321,
+        "normalized_rmse": 0.007959461396324384,
+        "frames": 12,
+        "end_error_m": -0.00541647175529375,
+        "max_depth_m": 2.504273723230588e-05,
+        "peak_predicted_force_N": 1.2532066618859306,
+        "wall_s": 0.0125166,
+        "setup_s": 0.0245816,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 8.196155506109316e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.003157582741077321,
+        "normalized_rmse": 0.007959461396324384,
+        "frames": 12,
+        "end_error_m": -0.00541647175529375,
+        "max_depth_m": 2.504273723230588e-05,
+        "peak_predicted_force_N": 1.2532066618859306,
+        "wall_s": 0.0136795,
+        "setup_s": 0.0150523,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 8.196155506109316e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 104040.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-17",
+      "family": "plastic",
+      "id": 17,
+      "split": "held-out",
+      "initial_frame": 5,
+      "duration_s": 0.43333333333333335,
+      "brep": {
+        "rmse_m": 0.014803270869398737,
+        "normalized_rmse": 0.03508056211713117,
+        "frames": 12,
+        "end_error_m": -0.027830204506086836,
+        "max_depth_m": 2.504525743290617e-05,
+        "peak_predicted_force_N": 1.2533958431814487,
+        "wall_s": 0.0129669,
+        "setup_s": 0.0198569,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 7.466235544866279e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.014803270869398737,
+        "normalized_rmse": 0.03508056211713117,
+        "frames": 12,
+        "end_error_m": -0.027830204506086836,
+        "max_depth_m": 2.504525743290617e-05,
+        "peak_predicted_force_N": 1.2533958431814487,
+        "wall_s": 0.0170864,
+        "setup_s": 0.0195201,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 7.466235544866279e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 104040.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-18",
+      "family": "plastic",
+      "id": 18,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.43333333333333335,
+      "brep": {
+        "rmse_m": 0.0038847803891144646,
+        "normalized_rmse": 0.009751545435577812,
+        "frames": 12,
+        "end_error_m": -0.007123597910564244,
+        "max_depth_m": 2.504708369162681e-05,
+        "peak_predicted_force_N": 1.2535329390059766,
+        "wall_s": 0.0137601,
+        "setup_s": 0.0264361,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 8.647773917070289e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0038847803891144646,
+        "normalized_rmse": 0.009751545435577812,
+        "frames": 12,
+        "end_error_m": -0.007123597910564244,
+        "max_depth_m": 2.504708369162681e-05,
+        "peak_predicted_force_N": 1.2535329390059766,
+        "wall_s": 0.0168484,
+        "setup_s": 0.0200556,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 8.647773917070289e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 104040.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-19",
+      "family": "plastic",
+      "id": 19,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.43333333333333335,
+      "brep": {
+        "rmse_m": 0.004906279814706768,
+        "normalized_rmse": 0.01256492655755019,
+        "frames": 12,
+        "end_error_m": -0.008826903989475776,
+        "max_depth_m": 2.503128700113641e-05,
+        "peak_predicted_force_N": 1.2523472590895621,
+        "wall_s": 0.0131631,
+        "setup_s": 0.0255892,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 7.721113327416536e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.004906279814706768,
+        "normalized_rmse": 0.01256492655755019,
+        "frames": 12,
+        "end_error_m": -0.008826903989475776,
+        "max_depth_m": 2.503128700113641e-05,
+        "peak_predicted_force_N": 1.2523472590895621,
+        "wall_s": 0.0169795,
+        "setup_s": 0.0194821,
+        "steps": 2167.0,
+        "accepted": 2167.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4334.0,
+        "max_residual": 7.721113327416536e-12,
+        "pairs": 4335.0,
+        "culled": 0.0,
+        "rays": 8670.0,
+        "missing": 0.0,
+        "triangle_tests": 104040.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "plastic-20",
+      "family": "plastic",
+      "id": 20,
+      "split": "held-out",
+      "initial_frame": 2,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.004714527807225784,
+        "normalized_rmse": 0.011439710284664943,
+        "frames": 13,
+        "end_error_m": -0.007825178560490892,
+        "max_depth_m": 2.502992873661125e-05,
+        "peak_predicted_force_N": 1.2522453269085347,
+        "wall_s": 0.0144231,
+        "setup_s": 0.0195131,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 8.669795676536414e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.004714527807225784,
+        "normalized_rmse": 0.011439710284664943,
+        "frames": 13,
+        "end_error_m": -0.007825178560490892,
+        "max_depth_m": 2.502992873661125e-05,
+        "peak_predicted_force_N": 1.2522453269085347,
+        "wall_s": 0.0214814,
+        "setup_s": 0.0246169,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 8.669795676536414e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-01",
+      "family": "metal",
+      "id": 1,
+      "split": "calibration",
+      "initial_frame": 6,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0031263404993981704,
+        "normalized_rmse": 0.007676521723554683,
+        "frames": 13,
+        "end_error_m": 0.007565047664201852,
+        "max_depth_m": 4.3762402415225415e-05,
+        "peak_predicted_force_N": 2.8950210976678954,
+        "wall_s": 0.0145146,
+        "setup_s": 0.0177821,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 9.909204253607133e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0031263404993981704,
+        "normalized_rmse": 0.007676521723554683,
+        "frames": 13,
+        "end_error_m": 0.007565047664201852,
+        "max_depth_m": 4.3762402415225415e-05,
+        "peak_predicted_force_N": 2.8950210976678954,
+        "wall_s": 0.0193977,
+        "setup_s": 0.0201775,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 9.909204253607133e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-02",
+      "family": "metal",
+      "id": 2,
+      "split": "calibration",
+      "initial_frame": 2,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0011771468901737596,
+        "normalized_rmse": 0.002954490878015555,
+        "frames": 13,
+        "end_error_m": 0.003096067166267452,
+        "max_depth_m": 4.377120494387238e-05,
+        "peak_predicted_force_N": 2.8958946141854227,
+        "wall_s": 0.0160093,
+        "setup_s": 0.0206098,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 9.893432013887679e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0011771468901737596,
+        "normalized_rmse": 0.002954490878015555,
+        "frames": 13,
+        "end_error_m": 0.003096067166267452,
+        "max_depth_m": 4.377120494387238e-05,
+        "peak_predicted_force_N": 2.8958946141854227,
+        "wall_s": 0.0202259,
+        "setup_s": 0.0218379,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 9.893432013887679e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-03",
+      "family": "metal",
+      "id": 3,
+      "split": "calibration",
+      "initial_frame": 3,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0018079956702039051,
+        "normalized_rmse": 0.00446679087651673,
+        "frames": 13,
+        "end_error_m": 0.004305487478241193,
+        "max_depth_m": 4.3789165811131125e-05,
+        "peak_predicted_force_N": 2.8976772283768737,
+        "wall_s": 0.0143212,
+        "setup_s": 0.0266582,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 1.0847565301573756e-11,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0018079956702039051,
+        "normalized_rmse": 0.00446679087651673,
+        "frames": 13,
+        "end_error_m": 0.004305487478241193,
+        "max_depth_m": 4.3789165811131125e-05,
+        "peak_predicted_force_N": 2.8976772283768737,
+        "wall_s": 0.0188919,
+        "setup_s": 0.0195603,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 1.0847565301573756e-11,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-04",
+      "family": "metal",
+      "id": 4,
+      "split": "calibration",
+      "initial_frame": 4,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0009935634070408722,
+        "normalized_rmse": 0.0025026928237926365,
+        "frames": 13,
+        "end_error_m": 0.0016619073695966768,
+        "max_depth_m": 4.3784609600489716e-05,
+        "peak_predicted_force_N": 2.897224990335165,
+        "wall_s": 0.0162001,
+        "setup_s": 0.0221599,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 1.1135476117072114e-11,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0009935634070408722,
+        "normalized_rmse": 0.0025026928237926365,
+        "frames": 13,
+        "end_error_m": 0.0016619073695966768,
+        "max_depth_m": 4.3784609600489716e-05,
+        "peak_predicted_force_N": 2.897224990335165,
+        "wall_s": 0.0208959,
+        "setup_s": 0.0222017,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 1.1135476117072114e-11,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-05",
+      "family": "metal",
+      "id": 5,
+      "split": "calibration",
+      "initial_frame": 4,
+      "duration_s": 0.5,
+      "brep": {
+        "rmse_m": 0.00502143340522965,
+        "normalized_rmse": 0.011414583144410786,
+        "frames": 14,
+        "end_error_m": -0.007162626196217187,
+        "max_depth_m": 4.378555183763566e-05,
+        "peak_predicted_force_N": 2.8973185125192487,
+        "wall_s": 0.0116096,
+        "setup_s": 0.0267426,
+        "steps": 2500.0,
+        "accepted": 2500.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 3802.0,
+        "max_residual": 1.0193001305998958e-08,
+        "pairs": 3803.0,
+        "culled": 0.0,
+        "rays": 7606.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.00502143340522965,
+        "normalized_rmse": 0.011414583144410786,
+        "frames": 14,
+        "end_error_m": -0.007162626196217187,
+        "max_depth_m": 4.378555183763566e-05,
+        "peak_predicted_force_N": 2.8973185125192487,
+        "wall_s": 0.0163523,
+        "setup_s": 0.0204336,
+        "steps": 2500.0,
+        "accepted": 2500.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 3802.0,
+        "max_residual": 1.0193001305998958e-08,
+        "pairs": 3803.0,
+        "culled": 0.0,
+        "rays": 7606.0,
+        "missing": 0.0,
+        "triangle_tests": 91272.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-06",
+      "family": "metal",
+      "id": 6,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.008504139736335728,
+        "normalized_rmse": 0.02112945716852227,
+        "frames": 13,
+        "end_error_m": -0.012868331461746096,
+        "max_depth_m": 4.37843608439778e-05,
+        "peak_predicted_force_N": 2.8972003000658453,
+        "wall_s": 0.0132452,
+        "setup_s": 0.0267554,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4297.0,
+        "max_residual": 1.0190106924205935e-08,
+        "pairs": 4298.0,
+        "culled": 0.0,
+        "rays": 8596.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.008504139736335728,
+        "normalized_rmse": 0.02112945716852227,
+        "frames": 13,
+        "end_error_m": -0.012868331461746096,
+        "max_depth_m": 4.37843608439778e-05,
+        "peak_predicted_force_N": 2.8972003000658453,
+        "wall_s": 0.0177921,
+        "setup_s": 0.0204629,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4297.0,
+        "max_residual": 1.0190106924205935e-08,
+        "pairs": 4298.0,
+        "culled": 0.0,
+        "rays": 8596.0,
+        "missing": 0.0,
+        "triangle_tests": 103152.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-07",
+      "family": "metal",
+      "id": 7,
+      "split": "held-out",
+      "initial_frame": 2,
+      "duration_s": 0.5,
+      "brep": {
+        "rmse_m": 0.0024383751058504486,
+        "normalized_rmse": 0.005902359471036359,
+        "frames": 14,
+        "end_error_m": 0.005119259735826248,
+        "max_depth_m": 4.3784080707414547e-05,
+        "peak_predicted_force_N": 2.89717249527435,
+        "wall_s": 0.0132653,
+        "setup_s": 0.0202506,
+        "steps": 2500.0,
+        "accepted": 2500.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 3852.0,
+        "max_residual": 1.0192872851709313e-08,
+        "pairs": 3853.0,
+        "culled": 0.0,
+        "rays": 7706.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0024383751058504486,
+        "normalized_rmse": 0.005902359471036359,
+        "frames": 14,
+        "end_error_m": 0.005119259735826248,
+        "max_depth_m": 4.3784080707414547e-05,
+        "peak_predicted_force_N": 2.89717249527435,
+        "wall_s": 0.0160044,
+        "setup_s": 0.0197811,
+        "steps": 2500.0,
+        "accepted": 2500.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 3852.0,
+        "max_residual": 1.0192872851709313e-08,
+        "pairs": 3853.0,
+        "culled": 0.0,
+        "rays": 7706.0,
+        "missing": 0.0,
+        "triangle_tests": 92472.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-08",
+      "family": "metal",
+      "id": 8,
+      "split": "held-out",
+      "initial_frame": 1,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.007595090843069372,
+        "normalized_rmse": 0.01896907997392641,
+        "frames": 13,
+        "end_error_m": -0.012357473259850926,
+        "max_depth_m": 4.377222438945241e-05,
+        "peak_predicted_force_N": 2.8959957842640627,
+        "wall_s": 0.0162768,
+        "setup_s": 0.0316897,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 1.0824071563021357e-11,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.007595090843069372,
+        "normalized_rmse": 0.01896907997392641,
+        "frames": 13,
+        "end_error_m": -0.012357473259850926,
+        "max_depth_m": 4.377222438945241e-05,
+        "peak_predicted_force_N": 2.8959957842640627,
+        "wall_s": 0.0191836,
+        "setup_s": 0.020173,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 1.0824071563021357e-11,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-09",
+      "family": "metal",
+      "id": 9,
+      "split": "held-out",
+      "initial_frame": 6,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.003943904428261541,
+        "normalized_rmse": 0.0096768943389207,
+        "frames": 13,
+        "end_error_m": -0.005142407849875269,
+        "max_depth_m": 4.378345516028309e-05,
+        "peak_predicted_force_N": 2.897110407230948,
+        "wall_s": 0.0148055,
+        "setup_s": 0.018759,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 9.30151128816496e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.003943904428261541,
+        "normalized_rmse": 0.0096768943389207,
+        "frames": 13,
+        "end_error_m": -0.005142407849875269,
+        "max_depth_m": 4.378345516028309e-05,
+        "peak_predicted_force_N": 2.897110407230948,
+        "wall_s": 0.0212609,
+        "setup_s": 0.0237212,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 9.30151128816496e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-10",
+      "family": "metal",
+      "id": 10,
+      "split": "held-out",
+      "initial_frame": 5,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0018303321506432126,
+        "normalized_rmse": 0.004419401437603495,
+        "frames": 13,
+        "end_error_m": 0.0006851868379575687,
+        "max_depth_m": 4.37849030208437e-05,
+        "peak_predicted_force_N": 2.897254113794798,
+        "wall_s": 0.0128653,
+        "setup_s": 0.0181488,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 1.2092334130639197e-11,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0018303321506432126,
+        "normalized_rmse": 0.004419401437603495,
+        "frames": 13,
+        "end_error_m": 0.0006851868379575687,
+        "max_depth_m": 4.37849030208437e-05,
+        "peak_predicted_force_N": 2.897254113794798,
+        "wall_s": 0.0224492,
+        "setup_s": 0.0225371,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 1.2092334130639197e-11,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-11",
+      "family": "metal",
+      "id": 11,
+      "split": "held-out",
+      "initial_frame": 4,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0020820643743689787,
+        "normalized_rmse": 0.004990334344377903,
+        "frames": 13,
+        "end_error_m": -0.0021395478436905258,
+        "max_depth_m": 4.377669804139783e-05,
+        "peak_predicted_force_N": 2.8964397647232953,
+        "wall_s": 0.0136253,
+        "setup_s": 0.0269074,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 8.67657747074681e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0020820643743689787,
+        "normalized_rmse": 0.004990334344377903,
+        "frames": 13,
+        "end_error_m": -0.0021395478436905258,
+        "max_depth_m": 4.377669804139783e-05,
+        "peak_predicted_force_N": 2.8964397647232953,
+        "wall_s": 0.0188502,
+        "setup_s": 0.0195571,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 8.67657747074681e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-12",
+      "family": "metal",
+      "id": 12,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.006053079903016559,
+        "normalized_rmse": 0.014742945944804051,
+        "frames": 13,
+        "end_error_m": -0.009245292615600531,
+        "max_depth_m": 4.3781387216283024e-05,
+        "peak_predicted_force_N": 2.8969051587654544,
+        "wall_s": 0.0172639,
+        "setup_s": 0.0330497,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 1.0536557482656425e-11,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.006053079903016559,
+        "normalized_rmse": 0.014742945944804051,
+        "frames": 13,
+        "end_error_m": -0.009245292615600531,
+        "max_depth_m": 4.3781387216283024e-05,
+        "peak_predicted_force_N": 2.8969051587654544,
+        "wall_s": 0.0235103,
+        "setup_s": 0.02538,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 1.0536557482656425e-11,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-13",
+      "family": "metal",
+      "id": 13,
+      "split": "held-out",
+      "initial_frame": 4,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.005433025669013364,
+        "normalized_rmse": 0.013405245673366348,
+        "frames": 13,
+        "end_error_m": -0.00930972709593883,
+        "max_depth_m": 4.3780080682117445e-05,
+        "peak_predicted_force_N": 2.896775484573684,
+        "wall_s": 0.0147655,
+        "setup_s": 0.0276384,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 1.021965611221775e-11,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.005433025669013364,
+        "normalized_rmse": 0.013405245673366348,
+        "frames": 13,
+        "end_error_m": -0.00930972709593883,
+        "max_depth_m": 4.3780080682117445e-05,
+        "peak_predicted_force_N": 2.896775484573684,
+        "wall_s": 0.0194189,
+        "setup_s": 0.0214002,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 1.021965611221775e-11,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-14",
+      "family": "metal",
+      "id": 14,
+      "split": "held-out",
+      "initial_frame": 1,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0036076536031331356,
+        "normalized_rmse": 0.00910934191592268,
+        "frames": 13,
+        "end_error_m": -0.0047316532110333875,
+        "max_depth_m": 4.37700830551932e-05,
+        "peak_predicted_force_N": 2.895783278985102,
+        "wall_s": 0.0146114,
+        "setup_s": 0.0202827,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 8.661212129784626e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0036076536031331356,
+        "normalized_rmse": 0.00910934191592268,
+        "frames": 13,
+        "end_error_m": -0.0047316532110333875,
+        "max_depth_m": 4.37700830551932e-05,
+        "peak_predicted_force_N": 2.895783278985102,
+        "wall_s": 0.0180991,
+        "setup_s": 0.020147,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 8.661212129784626e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-15",
+      "family": "metal",
+      "id": 15,
+      "split": "held-out",
+      "initial_frame": 2,
+      "duration_s": 0.5,
+      "brep": {
+        "rmse_m": 0.005573602474398562,
+        "normalized_rmse": 0.01290000643178428,
+        "frames": 14,
+        "end_error_m": -0.006723411617811009,
+        "max_depth_m": 4.3786120255479705e-05,
+        "peak_predicted_force_N": 2.8973749315533626,
+        "wall_s": 0.0134883,
+        "setup_s": 0.0170673,
+        "steps": 2500.0,
+        "accepted": 2500.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 5000.0,
+        "max_residual": 1.1158579920793299e-11,
+        "pairs": 5001.0,
+        "culled": 0.0,
+        "rays": 10002.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.005573602474398562,
+        "normalized_rmse": 0.01290000643178428,
+        "frames": 14,
+        "end_error_m": -0.006723411617811009,
+        "max_depth_m": 4.3786120255479705e-05,
+        "peak_predicted_force_N": 2.8973749315533626,
+        "wall_s": 0.0290983,
+        "setup_s": 0.0299583,
+        "steps": 2500.0,
+        "accepted": 2500.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 5000.0,
+        "max_residual": 1.1158579920793299e-11,
+        "pairs": 5001.0,
+        "culled": 0.0,
+        "rays": 10002.0,
+        "missing": 0.0,
+        "triangle_tests": 120024.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-16",
+      "family": "metal",
+      "id": 16,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.004588827534970565,
+        "normalized_rmse": 0.010996952233245927,
+        "frames": 13,
+        "end_error_m": -0.007394330354537071,
+        "max_depth_m": 4.3786893203490856e-05,
+        "peak_predicted_force_N": 2.8974516521016977,
+        "wall_s": 0.0213557,
+        "setup_s": 0.0372326,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 1.0513110404769032e-11,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.004588827534970565,
+        "normalized_rmse": 0.010996952233245927,
+        "frames": 13,
+        "end_error_m": -0.007394330354537071,
+        "max_depth_m": 4.3786893203490856e-05,
+        "peak_predicted_force_N": 2.8974516521016977,
+        "wall_s": 0.023635,
+        "setup_s": 0.0329815,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 1.0513110404769032e-11,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-18",
+      "family": "metal",
+      "id": 18,
+      "split": "held-out",
+      "initial_frame": 5,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.0032220831863576747,
+        "normalized_rmse": 0.007677481291573763,
+        "frames": 13,
+        "end_error_m": -0.004399484733291187,
+        "max_depth_m": 4.379011368924393e-05,
+        "peak_predicted_force_N": 2.8977713153379487,
+        "wall_s": 0.0177266,
+        "setup_s": 0.0236305,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 9.898327985057477e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.0032220831863576747,
+        "normalized_rmse": 0.007677481291573763,
+        "frames": 13,
+        "end_error_m": -0.004399484733291187,
+        "max_depth_m": 4.379011368924393e-05,
+        "peak_predicted_force_N": 2.8977713153379487,
+        "wall_s": 0.0225135,
+        "setup_s": 0.0236773,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 9.898327985057477e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-19",
+      "family": "metal",
+      "id": 19,
+      "split": "held-out",
+      "initial_frame": 3,
+      "duration_s": 0.5,
+      "brep": {
+        "rmse_m": 0.004146864437258034,
+        "normalized_rmse": 0.009504122351097141,
+        "frames": 14,
+        "end_error_m": -0.004762000953548007,
+        "max_depth_m": 4.3797403015979897e-05,
+        "peak_predicted_force_N": 2.898494892390195,
+        "wall_s": 0.0211335,
+        "setup_s": 0.0438495,
+        "steps": 2500.0,
+        "accepted": 2500.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 5000.0,
+        "max_residual": 1.0515650544951708e-11,
+        "pairs": 5001.0,
+        "culled": 0.0,
+        "rays": 10002.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.004146864437258034,
+        "normalized_rmse": 0.009504122351097141,
+        "frames": 14,
+        "end_error_m": -0.004762000953548007,
+        "max_depth_m": 4.3797403015979897e-05,
+        "peak_predicted_force_N": 2.898494892390195,
+        "wall_s": 0.0217157,
+        "setup_s": 0.0206418,
+        "steps": 2500.0,
+        "accepted": 2500.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 5000.0,
+        "max_residual": 1.0515650544951708e-11,
+        "pairs": 5001.0,
+        "culled": 0.0,
+        "rays": 10002.0,
+        "missing": 0.0,
+        "triangle_tests": 120024.0,
+        "delta_to_brep_m": 0.0
+      }
+    },
+    {
+      "key": "metal-20",
+      "family": "metal",
+      "id": 20,
+      "split": "held-out",
+      "initial_frame": 5,
+      "duration_s": 0.4666666666666667,
+      "brep": {
+        "rmse_m": 0.002591066713881241,
+        "normalized_rmse": 0.006209656466375231,
+        "frames": 13,
+        "end_error_m": -0.0017485684749850572,
+        "max_depth_m": 4.3805469067514924e-05,
+        "peak_predicted_force_N": 2.8992956414284685,
+        "wall_s": 0.0290147,
+        "setup_s": 0.0559924,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 8.966136908937472e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0
+      },
+      "mesh": {
+        "rmse_m": 0.002591066713881241,
+        "normalized_rmse": 0.006209656466375231,
+        "frames": 13,
+        "end_error_m": -0.0017485684749850572,
+        "max_depth_m": 4.3805469067514924e-05,
+        "peak_predicted_force_N": 2.8992956414284685,
+        "wall_s": 0.0291743,
+        "setup_s": 0.0365027,
+        "steps": 2334.0,
+        "accepted": 2334.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 4668.0,
+        "max_residual": 8.966136908937472e-12,
+        "pairs": 4669.0,
+        "culled": 0.0,
+        "rays": 9338.0,
+        "missing": 0.0,
+        "triangle_tests": 112056.0,
+        "delta_to_brep_m": 0.0
+      }
+    }
+  ],
+  "holdout": {
+    "bounce": {
+      "trials": 17,
+      "brep": {
+        "rmse_m": {
+          "median": 0.006901378577919587,
+          "p90": 0.009055057475995849,
+          "count": 17
+        },
+        "normalized_rmse": {
+          "median": 0.03384195247125044,
+          "p90": 0.046056292172681916,
+          "count": 17
+        },
+        "first_apex_time_error_s": {
+          "median": 0.0,
+          "p90": 0.033333333333333326,
+          "count": 17
+        },
+        "first_apex_height_error_m": {
+          "median": 0.003074350257594699,
+          "p90": 0.004731346790603474,
+          "count": 17
+        }
+      },
+      "mesh": {
+        "rmse_m": {
+          "median": 0.006945238118888362,
+          "p90": 0.009183127011978721,
+          "count": 17
+        },
+        "normalized_rmse": {
+          "median": 0.034540155330216,
+          "p90": 0.046708079112092196,
+          "count": 17
+        },
+        "first_apex_time_error_s": {
+          "median": 0.0,
+          "p90": 0.033333333333333326,
+          "count": 17
+        },
+        "first_apex_height_error_m": {
+          "median": 0.003144990884715898,
+          "p90": 0.00455272661709833,
+          "count": 17
+        }
+      }
+    },
+    "wood": {
+      "trials": 15,
+      "brep": {
+        "rmse_m": {
+          "median": 0.00372107868738401,
+          "p90": 0.005634476500984783,
+          "count": 15
+        },
+        "normalized_rmse": {
+          "median": 0.009140355736440205,
+          "p90": 0.01312837738012021,
+          "count": 15
+        }
+      },
+      "mesh": {
+        "rmse_m": {
+          "median": 0.00372107868738401,
+          "p90": 0.005634476500984783,
+          "count": 15
+        },
+        "normalized_rmse": {
+          "median": 0.009140355736440205,
+          "p90": 0.01312837738012021,
+          "count": 15
+        }
+      }
+    },
+    "plastic": {
+      "trials": 15,
+      "brep": {
+        "rmse_m": {
+          "median": 0.003157582741077321,
+          "p90": 0.0056961606136831,
+          "count": 15
+        },
+        "normalized_rmse": {
+          "median": 0.007959461396324384,
+          "p90": 0.013988396287241828,
+          "count": 15
+        }
+      },
+      "mesh": {
+        "rmse_m": {
+          "median": 0.003157582741077321,
+          "p90": 0.0056961606136831,
+          "count": 15
+        },
+        "normalized_rmse": {
+          "median": 0.007959461396324384,
+          "p90": 0.013988396287241828,
+          "count": 15
+        }
+      }
+    },
+    "metal": {
+      "trials": 14,
+      "brep": {
+        "rmse_m": {
+          "median": 0.004045384432759787,
+          "p90": 0.00713248756105353,
+          "count": 14
+        },
+        "normalized_rmse": {
+          "median": 0.009590508345008922,
+          "p90": 0.017701239765189707,
+          "count": 14
+        }
+      },
+      "mesh": {
+        "rmse_m": {
+          "median": 0.004045384432759787,
+          "p90": 0.00713248756105353,
+          "count": 14
+        },
+        "normalized_rmse": {
+          "median": 0.009590508345008922,
+          "p90": 0.017701239765189707,
+          "count": 14
+        }
+      }
+    }
+  }
+}

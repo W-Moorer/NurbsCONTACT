@@ -1,0 +1,34 @@
+[
+  {
+    "scene": "bounce-06",
+    "view": "isometric",
+    "file": "bounce-06-isometric.mp4",
+    "frames": 96,
+    "fps": 24,
+    "physical_duration_s": 1.0
+  },
+  {
+    "scene": "bounce-06",
+    "view": "side",
+    "file": "bounce-06-side.mp4",
+    "frames": 96,
+    "fps": 24,
+    "physical_duration_s": 1.0
+  },
+  {
+    "scene": "plastic-06",
+    "view": "isometric",
+    "file": "plastic-06-isometric.mp4",
+    "frames": 96,
+    "fps": 24,
+    "physical_duration_s": 0.4666666667
+  },
+  {
+    "scene": "plastic-06",
+    "view": "side",
+    "file": "plastic-06-side.mp4",
+    "frames": 96,
+    "fps": 24,
+    "physical_duration_s": 0.4666666667
+  }
+]
