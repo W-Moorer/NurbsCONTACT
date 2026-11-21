@@ -75,6 +75,29 @@ void check_point_resistance() {
             "sliding resistance tangent disagrees with virtual work");
 }
 
+void check_translational_bushing() {
+    const TranslationalBushing element{0,1,{},{},{1,0,0},{20,40,0},{3,7,0}};
+    const auto evaluate = [&](double angle, double vx, double omega) {
+        const std::vector<ContactBodyState> bodies{
+            {nullptr,{{},{0,0,1},angle},{{},{ {},{0,0,1} }}},
+            {nullptr,{{1,.2,0}},{{{1,0,0},{}},{}}}
+        };
+        Forces f{{0,0},Vector(4),Vector(4)};
+        add_translational_bushings(f,bodies,{&element,1},{vx,omega});
+        return f;
+    };
+    const auto at_rest=evaluate(.3,0,0);
+    const double expected_torque=-(20*(std::cos(.3)+.2*std::sin(.3)-1)*(.2*std::cos(.3)-std::sin(.3))
+        -40*(.2*std::cos(.3)-std::sin(.3))*(std::cos(.3)+.2*std::sin(.3)));
+    require(std::abs(at_rest.value[1]-expected_torque)<1e-12,
+            "rotating bushing did not transport the separation into its own frame");
+    const auto slow=evaluate(.3,1-1e-6,2);
+    const auto fast=evaluate(.3,1+1e-6,2);
+    for (std::size_t i=0;i<2;++i)
+        require(std::abs(at_rest.damping[2*i]+(fast.value[i]-slow.value[i])/2e-6)<1e-7,
+                "bushing damping tangent disagrees with virtual work");
+}
+
 void check_triangle_bvh() {
     const Triangle plate{{{0,0,0},{2,0,0},{0,2,0}}};
     const Triangle through{{{0.5,0.5,-1},{0.5,0.5,1},{1,1,1}}};
@@ -128,6 +151,7 @@ int main() {
         check_oscillator();
         check_rollback();
         check_point_resistance();
+        check_translational_bushing();
         check_triangle_bvh();
         std::cout<<"HHT and triangle BVH tests passed\n";
     } catch (const std::exception& e) {

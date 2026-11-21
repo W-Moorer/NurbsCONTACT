@@ -19,6 +19,7 @@ The 27/44-tooth ideal involute STEP reconstruction uses nominal geometry from th
 ## Artifacts
 
 - [NASA aligned single-tooth curves](figures/nasa-single-tooth.pdf)
+- [Three conditions shown in the main manuscript](figures/nasa-single-tooth-selected.pdf)
 - [UNSW aligned DTE and harmonic amplitudes](figures/unsw-encoder-dte.pdf)
 - [Scored curves](curves) · [Summary with per-condition errors](summary.json)
 - [Derived measurements](measurements) · [Source URLs and SHA-256](measurements/sources.json)

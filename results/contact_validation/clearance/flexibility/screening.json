@@ -1,0 +1,704 @@
+[
+  {
+    "case": "reference",
+    "parameters": {
+      "support_x": 1600000.0,
+      "support_y": 8000000.0,
+      "rod_axial": 80000000.0,
+      "rod_bending": 1400000.0,
+      "damping_ratio": 0.16,
+      "pin_mass": 0.1,
+      "tip_mass": 0.12,
+      "guide_lateral": 0.0
+    },
+    "measured_positive_peak_m_s2": 25.86710842249053,
+    "simulated_positive_peak_m_s2": 40.782490589957064,
+    "measured_negative_peak_m_s2": -52.20022398886843,
+    "simulated_negative_peak_m_s2": -47.51352935190652,
+    "measured_first_negative_peak_angle_deg": 46.63339828565423,
+    "simulated_first_negative_peak_angle_deg": 2.5319999992894893,
+    "simulated_peak_at_measured_vertices_m_s2": 40.71493106979875,
+    "uniform_phase_acceleration_rmse_m_s2": 8.721789741265411,
+    "ideal_joint_acceleration_rmse_m_s2": 6.606440691378944,
+    "minimum_gap_um": -0.5657610006055275,
+    "max_geometric_gap_error_um": 4.336808689942018e-12,
+    "raw_sample_rmse_m_s2": 8.718688063180792,
+    "quiet_window_rmse_m_s2": 7.464939685867338,
+    "quiet_window_max_abs_acceleration_m_s2": 40.782490589957064,
+    "position_rmse_mm": 0.6825172739896024,
+    "cycles": [
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 2.5319999992894893,
+          "acceleration_m_s2": -25.671661314295974,
+          "interior": true
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.011999999508824,
+          "acceleration_m_s2": -18.90710318062982,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      },
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 2.53200000164793,
+          "acceleration_m_s2": -25.671661315894323,
+          "interior": true
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.00000000186719,
+          "acceleration_m_s2": -18.911256960899703,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      }
+    ],
+    "measured_peak_phase_deg": 46.63339828565423,
+    "measured_peak_m_s2": -50.6817236961557,
+    "impact_window_rmse_m_s2": 27.712473289085324,
+    "impact_peaks": [
+      {
+        "phase_deg": 42.01199999954813,
+        "acceleration_m_s2": -16.713962211782093,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.886212441540032
+      },
+      {
+        "phase_deg": 42.00000000190647,
+        "acceleration_m_s2": -16.718564130447625,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.886212441219259
+      }
+    ],
+    "step_s": 9.999999999999999e-06,
+    "steps": 180000.0,
+    "accepted": 180000.0,
+    "subdivisions": 0.0,
+    "missing": 0.0
+  },
+  {
+    "case": "soft",
+    "parameters": {
+      "support_x": 450000.0,
+      "support_y": 3000000.0,
+      "rod_axial": 50000000.0,
+      "rod_bending": 350000.0,
+      "damping_ratio": 0.22,
+      "pin_mass": 0.1,
+      "tip_mass": 0.12,
+      "guide_lateral": 0.0
+    },
+    "measured_positive_peak_m_s2": 25.86710842249053,
+    "simulated_positive_peak_m_s2": 34.85744441779182,
+    "measured_negative_peak_m_s2": -52.20022398886843,
+    "simulated_negative_peak_m_s2": -39.54677735476472,
+    "measured_first_negative_peak_angle_deg": 46.63339828565423,
+    "simulated_first_negative_peak_angle_deg": 0.023999999273058847,
+    "simulated_peak_at_measured_vertices_m_s2": 34.80036206524406,
+    "uniform_phase_acceleration_rmse_m_s2": 8.513670640070227,
+    "ideal_joint_acceleration_rmse_m_s2": 6.606440691378944,
+    "minimum_gap_um": -0.5018246513350394,
+    "max_geometric_gap_error_um": 4.87890977618477e-12,
+    "raw_sample_rmse_m_s2": 8.501344067477177,
+    "quiet_window_rmse_m_s2": 7.404693521039338,
+    "quiet_window_max_abs_acceleration_m_s2": 34.85744441779182,
+    "position_rmse_mm": 0.6912855557036389,
+    "cycles": [
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 0.023999999273058847,
+          "acceleration_m_s2": -25.640468423358968,
+          "interior": true
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.011999999508824,
+          "acceleration_m_s2": -18.924996876696206,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      },
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 0.024000001631520718,
+          "acceleration_m_s2": -25.640468422660113,
+          "interior": true
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.00000000186719,
+          "acceleration_m_s2": -18.92915624515474,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      }
+    ],
+    "measured_peak_phase_deg": 46.63339828565423,
+    "measured_peak_m_s2": -50.6817236961557,
+    "impact_window_rmse_m_s2": 27.701378070932304,
+    "impact_peaks": [
+      {
+        "phase_deg": 42.01199999954813,
+        "acceleration_m_s2": -16.72951045003013,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.899690689964206
+      },
+      {
+        "phase_deg": 42.00000000190647,
+        "acceleration_m_s2": -16.73411703175569,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.899690689821044
+      }
+    ],
+    "step_s": 9.999999999999999e-06,
+    "steps": 180000.0,
+    "accepted": 180000.0,
+    "subdivisions": 0.0,
+    "missing": 0.0
+  },
+  {
+    "case": "stiff",
+    "parameters": {
+      "support_x": 8000000.0,
+      "support_y": 28000000.0,
+      "rod_axial": 200000000.0,
+      "rod_bending": 5000000.0,
+      "damping_ratio": 0.12,
+      "pin_mass": 0.1,
+      "tip_mass": 0.12,
+      "guide_lateral": 0.0
+    },
+    "measured_positive_peak_m_s2": 25.86710842249053,
+    "simulated_positive_peak_m_s2": 41.92147028340674,
+    "measured_negative_peak_m_s2": -52.20022398886843,
+    "simulated_negative_peak_m_s2": -48.9465185663847,
+    "measured_first_negative_peak_angle_deg": 46.63339828565423,
+    "simulated_first_negative_peak_angle_deg": 3.8879999992983727,
+    "simulated_peak_at_measured_vertices_m_s2": 40.64774738146051,
+    "uniform_phase_acceleration_rmse_m_s2": 8.481403056121875,
+    "ideal_joint_acceleration_rmse_m_s2": 6.606440691378944,
+    "minimum_gap_um": -0.5926370532892411,
+    "max_geometric_gap_error_um": 4.553649124439119e-12,
+    "raw_sample_rmse_m_s2": 8.482935700485207,
+    "quiet_window_rmse_m_s2": 7.0708392898400705,
+    "quiet_window_max_abs_acceleration_m_s2": 41.92147028340674,
+    "position_rmse_mm": 0.6798893772412559,
+    "cycles": [
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 3.8879999992983727,
+          "acceleration_m_s2": -25.69309421477804,
+          "interior": true
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.011999999508824,
+          "acceleration_m_s2": -18.902013722323698,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      },
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 3.888000001656792,
+          "acceleration_m_s2": -25.693094215518204,
+          "interior": true
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.00000000186719,
+          "acceleration_m_s2": -18.90616513405471,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      }
+    ],
+    "measured_peak_phase_deg": 46.63339828565423,
+    "measured_peak_m_s2": -50.6817236961557,
+    "impact_window_rmse_m_s2": 27.715548350116855,
+    "impact_peaks": [
+      {
+        "phase_deg": 42.01199999954813,
+        "acceleration_m_s2": -16.709613665871498,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.8824430615654
+      },
+      {
+        "phase_deg": 42.00000000190647,
+        "acceleration_m_s2": -16.71421432847834,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.882443059764563
+      }
+    ],
+    "step_s": 9.999999999999999e-06,
+    "steps": 180000.0,
+    "accepted": 180000.0,
+    "subdivisions": 0.0,
+    "missing": 0.0
+  },
+  {
+    "case": "light-damping",
+    "parameters": {
+      "support_x": 1600000.0,
+      "support_y": 8000000.0,
+      "rod_axial": 80000000.0,
+      "rod_bending": 1400000.0,
+      "damping_ratio": 0.045,
+      "pin_mass": 0.1,
+      "tip_mass": 0.12,
+      "guide_lateral": 0.0
+    },
+    "measured_positive_peak_m_s2": 25.86710842249053,
+    "simulated_positive_peak_m_s2": 41.238834737661115,
+    "measured_negative_peak_m_s2": -52.20022398886843,
+    "simulated_negative_peak_m_s2": -48.18611671785546,
+    "measured_first_negative_peak_angle_deg": 46.63339828565423,
+    "simulated_first_negative_peak_angle_deg": 3.191999999293813,
+    "simulated_peak_at_measured_vertices_m_s2": 41.09525518908487,
+    "uniform_phase_acceleration_rmse_m_s2": 9.008960605649635,
+    "ideal_joint_acceleration_rmse_m_s2": 6.606440691378944,
+    "minimum_gap_um": -0.5836388427896133,
+    "max_geometric_gap_error_um": 6.884683795282953e-12,
+    "raw_sample_rmse_m_s2": 9.002832435619244,
+    "quiet_window_rmse_m_s2": 7.9030098700460485,
+    "quiet_window_max_abs_acceleration_m_s2": 41.238834737661115,
+    "position_rmse_mm": 0.6824611342065854,
+    "cycles": [
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 3.191999999293813,
+          "acceleration_m_s2": -26.05751492494303,
+          "interior": true
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.011999999508824,
+          "acceleration_m_s2": -18.90728512684582,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      },
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 3.192000001652218,
+          "acceleration_m_s2": -26.05751492483838,
+          "interior": true
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.00000000186719,
+          "acceleration_m_s2": -18.911439534515193,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      }
+    ],
+    "measured_peak_phase_deg": 46.63339828565423,
+    "measured_peak_m_s2": -50.6817236961557,
+    "impact_window_rmse_m_s2": 27.712499196341994,
+    "impact_peaks": [
+      {
+        "phase_deg": 42.01199999954813,
+        "acceleration_m_s2": -16.71391416312807,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.886172192496577
+      },
+      {
+        "phase_deg": 42.00000000190647,
+        "acceleration_m_s2": -16.718516228171076,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.886172193778132
+      }
+    ],
+    "step_s": 9.999999999999999e-06,
+    "steps": 180000.0,
+    "accepted": 180000.0,
+    "subdivisions": 0.0,
+    "missing": 0.0
+  },
+  {
+    "case": "damped",
+    "parameters": {
+      "support_x": 1600000.0,
+      "support_y": 8000000.0,
+      "rod_axial": 80000000.0,
+      "rod_bending": 1400000.0,
+      "damping_ratio": 0.35,
+      "pin_mass": 0.1,
+      "tip_mass": 0.12,
+      "guide_lateral": 0.0
+    },
+    "measured_positive_peak_m_s2": 25.86710842249053,
+    "simulated_positive_peak_m_s2": 40.15689002882489,
+    "measured_negative_peak_m_s2": -52.20022398886843,
+    "simulated_negative_peak_m_s2": -46.57369227975134,
+    "measured_first_negative_peak_angle_deg": 46.63339828565423,
+    "simulated_first_negative_peak_angle_deg": 1.3079999992814706,
+    "simulated_peak_at_measured_vertices_m_s2": 40.150442937833134,
+    "uniform_phase_acceleration_rmse_m_s2": 8.501217772891906,
+    "ideal_joint_acceleration_rmse_m_s2": 6.606440691378944,
+    "minimum_gap_um": -0.5592993997313722,
+    "max_geometric_gap_error_um": 4.119968255444917e-12,
+    "raw_sample_rmse_m_s2": 8.50081517170068,
+    "quiet_window_rmse_m_s2": 7.14776956393736,
+    "quiet_window_max_abs_acceleration_m_s2": 40.15689002882489,
+    "position_rmse_mm": 0.6825890203242347,
+    "cycles": [
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 1.3079999992814706,
+          "acceleration_m_s2": -25.590182347859404,
+          "interior": true
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.011999999508824,
+          "acceleration_m_s2": -18.90721264063788,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      },
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 1.3080000016399254,
+          "acceleration_m_s2": -25.59018234732852,
+          "interior": true
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.00000000186719,
+          "acceleration_m_s2": -18.9113670859805,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      }
+    ],
+    "measured_peak_phase_deg": 46.63339828565423,
+    "measured_peak_m_s2": -50.6817236961557,
+    "impact_window_rmse_m_s2": 27.71245794165853,
+    "impact_peaks": [
+      {
+        "phase_deg": 42.01199999954813,
+        "acceleration_m_s2": -16.71393174658858,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.886222356656146
+      },
+      {
+        "phase_deg": 42.00000000190647,
+        "acceleration_m_s2": -16.7185336063978,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.886222354835994
+      }
+    ],
+    "step_s": 9.999999999999999e-06,
+    "steps": 180000.0,
+    "accepted": 180001.0,
+    "subdivisions": 1.0,
+    "missing": 0.0
+  },
+  {
+    "case": "lateral",
+    "parameters": {
+      "support_x": 1600000.0,
+      "support_y": 1600000.0,
+      "rod_axial": 80000000.0,
+      "rod_bending": 350000.0,
+      "damping_ratio": 0.16,
+      "pin_mass": 0.1,
+      "tip_mass": 0.12,
+      "guide_lateral": 0.0
+    },
+    "measured_positive_peak_m_s2": 25.86710842249053,
+    "simulated_positive_peak_m_s2": 36.22041354693867,
+    "measured_negative_peak_m_s2": -52.20022398886843,
+    "simulated_negative_peak_m_s2": -47.70592761520336,
+    "measured_first_negative_peak_angle_deg": 46.63339828565423,
+    "simulated_first_negative_peak_angle_deg": 0.011999999272980233,
+    "simulated_peak_at_measured_vertices_m_s2": 35.5867007672641,
+    "uniform_phase_acceleration_rmse_m_s2": 8.246508171538693,
+    "ideal_joint_acceleration_rmse_m_s2": 6.606440691378944,
+    "minimum_gap_um": -0.5712595860692116,
+    "max_geometric_gap_error_um": 5.204170427930421e-12,
+    "raw_sample_rmse_m_s2": 8.243472422927184,
+    "quiet_window_rmse_m_s2": 6.468643471903108,
+    "quiet_window_max_abs_acceleration_m_s2": 36.22041354693867,
+    "position_rmse_mm": 0.6826460566971545,
+    "cycles": [
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 0.011999999272980233,
+          "acceleration_m_s2": -26.049374769212527,
+          "interior": false
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.011999999508824,
+          "acceleration_m_s2": -18.90755207530155,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      },
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 1.6313492778863292e-09,
+          "acceleration_m_s2": -26.05335535895686,
+          "interior": false
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.00000000186719,
+          "acceleration_m_s2": -18.91170665968972,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      }
+    ],
+    "measured_peak_phase_deg": 46.63339828565423,
+    "measured_peak_m_s2": -50.6817236961557,
+    "impact_window_rmse_m_s2": 27.711872538975477,
+    "impact_peaks": [
+      {
+        "phase_deg": 42.01199999954813,
+        "acceleration_m_s2": -16.714289705880375,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.886802140500247
+      },
+      {
+        "phase_deg": 42.00000000190647,
+        "acceleration_m_s2": -16.718891120538856,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.886802139625907
+      }
+    ],
+    "step_s": 9.999999999999999e-06,
+    "steps": 180000.0,
+    "accepted": 180000.0,
+    "subdivisions": 0.0,
+    "missing": 0.0
+  },
+  {
+    "case": "lateral-damped",
+    "parameters": {
+      "support_x": 1600000.0,
+      "support_y": 1600000.0,
+      "rod_axial": 80000000.0,
+      "rod_bending": 350000.0,
+      "damping_ratio": 0.36,
+      "pin_mass": 0.1,
+      "tip_mass": 0.12,
+      "guide_lateral": 0.0
+    },
+    "measured_positive_peak_m_s2": 25.86710842249053,
+    "simulated_positive_peak_m_s2": 35.87462014723233,
+    "measured_negative_peak_m_s2": -52.20022398886843,
+    "simulated_negative_peak_m_s2": -46.44496809995484,
+    "measured_first_negative_peak_angle_deg": 46.63339828565423,
+    "simulated_first_negative_peak_angle_deg": 0.011999999272980233,
+    "simulated_peak_at_measured_vertices_m_s2": 35.17395718728894,
+    "uniform_phase_acceleration_rmse_m_s2": 8.053814290648948,
+    "ideal_joint_acceleration_rmse_m_s2": 6.606440691378944,
+    "minimum_gap_um": -0.5624097663727012,
+    "max_geometric_gap_error_um": 5.854691731421724e-12,
+    "raw_sample_rmse_m_s2": 8.052600102377225,
+    "quiet_window_rmse_m_s2": 6.263425857535296,
+    "quiet_window_max_abs_acceleration_m_s2": 35.87462014723233,
+    "position_rmse_mm": 0.682723999130969,
+    "cycles": [
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 0.011999999272980233,
+          "acceleration_m_s2": -25.594717058889287,
+          "interior": false
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.011999999508824,
+          "acceleration_m_s2": -18.907720857326353,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      },
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 1.6313492778863292e-09,
+          "acceleration_m_s2": -25.595163288942683,
+          "interior": false
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.00000000186719,
+          "acceleration_m_s2": -18.911875531704027,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      }
+    ],
+    "measured_peak_phase_deg": 46.63339828565423,
+    "measured_peak_m_s2": -50.6817236961557,
+    "impact_window_rmse_m_s2": 27.71187163350346,
+    "impact_peaks": [
+      {
+        "phase_deg": 42.01199999954813,
+        "acceleration_m_s2": -16.7142961387296,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.886786339291374
+      },
+      {
+        "phase_deg": 42.00000000190647,
+        "acceleration_m_s2": -16.718897804387925,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.886786339949271
+      }
+    ],
+    "step_s": 9.999999999999999e-06,
+    "steps": 180000.0,
+    "accepted": 180000.0,
+    "subdivisions": 0.0,
+    "missing": 0.0
+  },
+  {
+    "case": "lateral-soft",
+    "parameters": {
+      "support_x": 700000.0,
+      "support_y": 1600000.0,
+      "rod_axial": 80000000.0,
+      "rod_bending": 350000.0,
+      "damping_ratio": 0.3,
+      "pin_mass": 0.1,
+      "tip_mass": 0.12,
+      "guide_lateral": 0.0
+    },
+    "measured_positive_peak_m_s2": 25.86710842249053,
+    "simulated_positive_peak_m_s2": 34.57444056070483,
+    "measured_negative_peak_m_s2": -52.20022398886843,
+    "simulated_negative_peak_m_s2": -41.387565090148684,
+    "measured_first_negative_peak_angle_deg": 46.63339828565423,
+    "simulated_first_negative_peak_angle_deg": 0.011999999272980233,
+    "simulated_peak_at_measured_vertices_m_s2": 33.82181957510203,
+    "uniform_phase_acceleration_rmse_m_s2": 8.138388341800743,
+    "ideal_joint_acceleration_rmse_m_s2": 6.606440691378944,
+    "minimum_gap_um": -0.5102976584677593,
+    "max_geometric_gap_error_um": 5.475220971051797e-12,
+    "raw_sample_rmse_m_s2": 8.132366477748652,
+    "quiet_window_rmse_m_s2": 6.464718504485178,
+    "quiet_window_max_abs_acceleration_m_s2": 34.57444056070483,
+    "position_rmse_mm": 0.6869019037396435,
+    "cycles": [
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 0.011999999272980233,
+          "acceleration_m_s2": -25.6200173780682,
+          "interior": false
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.011999999508824,
+          "acceleration_m_s2": -18.91548779973079,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      },
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 1.6313492778863292e-09,
+          "acceleration_m_s2": -25.62021528711521,
+          "interior": false
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.00000000186719,
+          "acceleration_m_s2": -18.919642532902486,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      }
+    ],
+    "measured_peak_phase_deg": 46.63339828565423,
+    "measured_peak_m_s2": -50.6817236961557,
+    "impact_window_rmse_m_s2": 27.7065735343937,
+    "impact_peaks": [
+      {
+        "phase_deg": 42.01199999954813,
+        "acceleration_m_s2": -16.72196095434817,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.89329330741229
+      },
+      {
+        "phase_deg": 42.00000000190647,
+        "acceleration_m_s2": -16.726564499731662,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.89329330651156
+      }
+    ],
+    "step_s": 9.999999999999999e-06,
+    "steps": 180000.0,
+    "accepted": 180000.0,
+    "subdivisions": 0.0,
+    "missing": 0.0
+  },
+  {
+    "case": "compliant-guide",
+    "parameters": {
+      "support_x": 1600000.0,
+      "support_y": 1600000.0,
+      "rod_axial": 80000000.0,
+      "rod_bending": 350000.0,
+      "damping_ratio": 0.22,
+      "pin_mass": 0.1,
+      "tip_mass": 0.12,
+      "guide_lateral": 450000.0
+    },
+    "measured_positive_peak_m_s2": 25.86710842249053,
+    "simulated_positive_peak_m_s2": 35.69185302654551,
+    "measured_negative_peak_m_s2": -52.20022398886843,
+    "simulated_negative_peak_m_s2": -48.76339368283181,
+    "measured_first_negative_peak_angle_deg": 46.63339828565423,
+    "simulated_first_negative_peak_angle_deg": 0.11999999927368776,
+    "simulated_peak_at_measured_vertices_m_s2": 35.69123752589514,
+    "uniform_phase_acceleration_rmse_m_s2": 7.925203709659159,
+    "ideal_joint_acceleration_rmse_m_s2": 6.606440691378944,
+    "minimum_gap_um": -0.5776427082528068,
+    "max_geometric_gap_error_um": 5.854691731421724e-12,
+    "raw_sample_rmse_m_s2": 7.9225635822744405,
+    "quiet_window_rmse_m_s2": 6.0121732950620785,
+    "quiet_window_max_abs_acceleration_m_s2": 35.69185302654551,
+    "position_rmse_mm": 0.6830526795014539,
+    "cycles": [
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 0.11999999927368776,
+          "acceleration_m_s2": -25.60958934735034,
+          "interior": true
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.011999999508824,
+          "acceleration_m_s2": -18.90763518869168,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      },
+      {
+        "full_half_cycle_peak": {
+          "angle_deg": 0.12000000163209279,
+          "acceleration_m_s2": -25.609589347460954,
+          "interior": true
+        },
+        "experiment_window_peak": {
+          "angle_deg": 36.00000000186719,
+          "acceleration_m_s2": -18.91178604642931,
+          "interior": false
+        },
+        "fraction_open_in_published_window": 0.0
+      }
+    ],
+    "measured_peak_phase_deg": 46.63339828565423,
+    "measured_peak_m_s2": -50.6817236961557,
+    "impact_window_rmse_m_s2": 27.709520629362647,
+    "impact_peaks": [
+      {
+        "phase_deg": 42.01199999954813,
+        "acceleration_m_s2": -16.71675369460922,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.889581335533567
+      },
+      {
+        "phase_deg": 42.00000000190647,
+        "acceleration_m_s2": -16.72135173117012,
+        "interior": false,
+        "at_measured_phase_m_s2": -14.889581336995581
+      }
+    ],
+    "step_s": 9.999999999999999e-06,
+    "steps": 180000.0,
+    "accepted": 180000.0,
+    "subdivisions": 0.0,
+    "missing": 0.0
+  }
+]

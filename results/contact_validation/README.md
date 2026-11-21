@@ -30,7 +30,7 @@ Seven serial timing repeats give triangle-BVH to B-rep integration time ratios o
 - [GAUGE error distributions and per-trial results](summary.json) · [Original URLs, data revision and checksums](sources.json) · [Paired sampled curves](curves)
 - [Electrical duration metrics](beam/summary.json) · [Paired durations](beam/comparison.csv) · [Digitization and source coordinates](beam/measured.csv)
 - [Force, position and gap traces](runs) · [Scene decks](scenes) · [Performance repetitions](timing.json)
-- [Measured-versus-simulated figure](figures/contact-validation.pdf) · [Final paper](../../docs/hht.pdf)
+- [Measured-versus-simulated figure](figures/contact-validation.pdf) · [Final paper](../../docs/manuscript.pdf)
 - [Multi-view animations](animations/index.json)
 - [Clearance results, models, evidence limits and reproduction](external-validation.md#clearance-slider-crank)
 
@@ -65,6 +65,17 @@ An optional resistance block follows the v2 drives. A sliding resistance project
 ~~~text
 resistances count
 slide body_a body_b anchor_a_xyz anchor_b_xyz plane_normal_xyz force_limit_N slip_speed_m_s
+~~~
+
+A second optional block adds translational Kelvin–Voigt elements. Principal
+axes, the rest separation and the per-axis coefficients are in body A's
+local frame. The relative rate includes both anchor motion and transport of
+that frame. The element contributes generalized forces and velocity and
+restoring tangents to the same implicit solve as the contact probes.
+
+~~~text
+bushings count
+bushing body_a body_b anchor_a_xyz anchor_b_xyz rest_xyz K_xyz C_xyz
 ~~~
 
 ## Reproduce

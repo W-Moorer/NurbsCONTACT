@@ -202,6 +202,43 @@ void add_point_resistances(Forces& forces, std::span<const ContactBodyState> bod
     }
 }
 
+void add_translational_bushings(Forces& forces, std::span<const ContactBodyState> bodies,
+                                std::span<const TranslationalBushing> bushings, const Vector& velocity) {
+    const auto n = velocity.size();
+    std::vector<Vec> jacobian(n);
+    for (const auto& element:bushings) {
+        const auto& a = bodies[element.a];
+        const auto& b = bodies[element.b];
+        const Vec arm_a = a.pose.rotate(element.anchor_a);
+        const Vec arm_b = b.pose.rotate(element.anchor_b);
+        const Vec difference = sub(add(b.pose.origin,arm_b),add(a.pose.origin,arm_a));
+        const Vec strain = sub(a.pose.inverse_rotate(difference),element.rest);
+        const auto relative = [&](const Twist& da, const Twist& db) {
+            // Transport the separation vector with A's rotating frame.
+            return a.pose.inverse_rotate(sub(sub(db.at(arm_b),da.at(arm_a)),
+                                              cross3(da.angular,difference)));
+        };
+        Vec rate = relative(a.prescribed,b.prescribed);
+        for (std::size_t i=0;i<n;++i) {
+            jacobian[i] = relative(a.derivative[i],b.derivative[i]);
+            rate = add(rate,scale(jacobian[i],velocity[i]));
+        }
+        Vec restoring{};
+        for (std::size_t axis=0;axis<3;++axis)
+            restoring[axis] = element.stiffness[axis]*strain[axis]+element.damping[axis]*rate[axis];
+        for (std::size_t i=0;i<n;++i) {
+            forces.value[i] -= dot3(jacobian[i],restoring);
+            for (std::size_t j=0;j<n;++j) {
+                for (std::size_t axis=0;axis<3;++axis) {
+                    const double projection = jacobian[i][axis]*jacobian[j][axis];
+                    forces.stiffness[i*n+j] += element.stiffness[axis]*projection;
+                    forces.damping[i*n+j] += element.damping[axis]*projection;
+                }
+            }
+        }
+    }
+}
+
 bool add_contact_forces(Forces* forces, std::span<const ContactBodyState> bodies,
                         std::span<const ContactPair> pairs, const Vector& velocity,
                         ContactWork& work, std::vector<ContactSample>* observations) {

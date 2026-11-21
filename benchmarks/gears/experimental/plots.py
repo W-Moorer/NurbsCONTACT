@@ -26,9 +26,13 @@ def save(figure,folder,name):
     plt.close(figure)
 
 
-def force_plot(root,folder,summary):
-    fig,axes=plt.subplots(2,2,figsize=(7.15,4.95),layout="constrained")
-    for ax,(key,(rpm,torque)) in zip(axes.flat,NASA.items(),strict=True):
+def force_plot(root,folder,summary,selected=False):
+    keys="acd" if selected else "abcd"
+    rows,columns=(1,3) if selected else (2,2)
+    dimensions=(9.1,2.9) if selected else (7.15,4.95)
+    fig,axes=plt.subplots(rows,columns,figsize=dimensions,layout="constrained")
+    for ax,key in zip(axes.flat,keys,strict=True):
+        rpm,torque=NASA[key]
         data=read(root/"curves"/f"nasa-{key}.csv")
         source=read(root/"measurements"/f"nasa-7{key}.csv")
         x=data["roll_deg"]
@@ -47,8 +51,8 @@ def force_plot(root,folder,summary):
         ax.set_xlabel("Driven tooth roll angle (°)")
         ax.set_ylabel("Single-tooth normal force (N)")
         ax.grid(axis="y",color=GRID,linewidth=.55)
-    axes[0,0].legend(loc="upper left",fontsize=7.2)
-    save(fig,folder,"nasa-single-tooth")
+    axes.flat[0].legend(loc="upper left",fontsize=7.2)
+    save(fig,folder,"nasa-single-tooth-selected" if selected else "nasa-single-tooth")
 
 
 def encoder_plot(root,folder,summary):
@@ -88,15 +92,19 @@ def encoder_plot(root,folder,summary):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("results",type=Path)
-    root=parser.parse_args().results
+    parser.add_argument("--nasa-selected-only",action="store_true")
+    args=parser.parse_args()
+    root=args.results
     folder=root/"figures"
     folder.mkdir(exist_ok=True)
     mpl.rcParams.update({"font.family":"sans-serif","font.sans-serif":["Arial","DejaVu Sans"],
         "font.size":8.1,"axes.spines.top":False,"axes.spines.right":False,"text.color":INK,
         "axes.labelcolor":INK,"xtick.color":INK,"ytick.color":INK,"legend.frameon":False,"pdf.fonttype":42})
     report=json.loads((root/"summary.json").read_text(encoding="utf-8"))
-    force_plot(root,folder,report)
-    encoder_plot(root,folder,report)
+    force_plot(root,folder,report,selected=True)
+    if not args.nasa_selected_only:
+        force_plot(root,folder,report)
+        encoder_plot(root,folder,report)
 
 
 if __name__=="__main__":

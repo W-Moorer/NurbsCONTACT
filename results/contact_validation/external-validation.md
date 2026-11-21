@@ -37,6 +37,16 @@ The published negative peak lies inside the interval the authors inferred to be 
 
 - [Revision metrics and fixed parameters](clearance/revised/summary.json) · [Acceleration comparison and full-rate envelopes](clearance/revised/dissipation-comparison.pdf)
 
+### Explicit structural flexibility
+
+The pin, slider carriage, sleeve tip and rod core participate in one HHT solve. Translational Kelvin–Voigt elements connect the two internal nodes to their mounts. The rod tip element uses the rotating local axial and transverse directions. The selected case also allows lateral motion of the guide carriage. Contact uses the nominal Hertz law. Local penetration and structural deformation have separate meanings in this model.
+
+For 200 rpm and 0.25 mm, nine sensitivity cases leave the measured negative acceleration peak unresolved. The selected case uses axial and lateral pin-support stiffnesses of 1.6 MN/m, rod-tip axial and transverse stiffnesses of 80 and 0.35 MN/m, and lateral guide stiffness of 0.45 MN/m. Its maximum acceleration in the quiet window is 35.69 m/s² versus 36.95 m/s² for the equivalent-compliance model. Quiet-window RMSE is 6.01 versus 5.99 m/s². The predicted acceleration at 46.6° remains approximately −14.9 m/s². The measured trace is −50.7 m/s² at that phase.
+
+The results archive includes the raw carriage, gap, and contact-force values at integration times and the selected STEP deck. Peak and RMSE metrics use the final two revolutions of six. The reference waveform comes from the published encoder-phase plot. The code applies neither a registered phase offset nor a filter to the simulation.
+
+- [Screened cases](clearance/flexibility/screening.json) · [Selected case and step refinement](clearance/flexibility/summary.json) · [Acceleration and raw envelopes](clearance/flexibility/structural-flexibility.pdf)
+
 ## Archived robot copper-ring insertion
 
 The archived records provide commanded and measured wrist pose and wrist force/torque for 300 attempts. The dataset covers four tooling slots and 13 commanded lateral offsets. The paired CSV includes transformed measurements from Mihael Simonič and Matevž Majcen Horvat's *Copper Rings Insertion Attempts Dataset*, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Each trial is registered to the first minimum of commanded Z. The model uses measured axial position relative to that command target. The measured tool-frame axial force is centered on the median of the first 35 samples. The evaluation window covers sample offsets −28 through +23. The files contain no timestamps, so the curves use sample index and the model uses rate-independent compliance.
@@ -58,6 +68,8 @@ cmake --build build/occt --config Release --target nc_contact nc_step_tests
 ctest --test-dir build/occt -C Release --output-on-failure
 python benchmarks/contact_validation/clearance.py build/occt/Release/nc_contact.exe build/external-validation/source/springer.pdf build/external-validation/clearance results/contact_validation/clearance --extended
 python benchmarks/contact_validation/clearance_revision.py build/occt/Release/nc_contact.exe build/external-validation/slider-revision results/contact_validation/clearance results/contact_validation/clearance/revised
+python benchmarks/contact_validation/clearance_flexibility.py build/occt/Release/nc_contact.exe build/external-validation/flex-screen results/contact_validation/clearance results/contact_validation/clearance/flexibility
+python benchmarks/contact_validation/clearance_flexibility.py build/occt/Release/nc_contact.exe build/external-validation/flex-selected results/contact_validation/clearance results/contact_validation/clearance/flexibility --selected compliant-guide
 python benchmarks/contact_validation/insertion.py build/occt/Release/nc_contact.exe build/external-validation/source/insertion-dataset.zip build/external-validation/insertion results/contact_validation/insertion
 python benchmarks/contact_validation/external_plots.py results/contact_validation --animate
 python benchmarks/hht/paper.py results/hht

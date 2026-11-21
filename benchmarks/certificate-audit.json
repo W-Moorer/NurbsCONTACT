@@ -1,0 +1,56 @@
+{
+  "time_target": 0.0005,
+  "scope": "Recorded time certificates and reference intervals. CSVs do not store witness coordinates.",
+  "files": {
+    "results.csv": {
+      "runs": 270,
+      "clear": 135,
+      "witnessed": 135,
+      "unresolved": 0,
+      "witnessed_above_time_target": 0,
+      "reference_disagreements": 0,
+      "maximum_witnessed_width": 0.0004991767810805237,
+      "p95_query_us": 1461315.3
+    },
+    "axial-results.csv": {
+      "runs": 324,
+      "clear": 162,
+      "witnessed": 162,
+      "unresolved": 0,
+      "witnessed_above_time_target": 0,
+      "reference_disagreements": 0,
+      "maximum_witnessed_width": 0.0004991767810805237,
+      "p95_query_us": 975932.9
+    },
+    "assemblies/wheel-results.csv": {
+      "runs": 54,
+      "clear": 0,
+      "witnessed": 54,
+      "unresolved": 0,
+      "witnessed_above_time_target": 0,
+      "reference_disagreements": 0,
+      "maximum_witnessed_width": 0.0004999194873729629,
+      "p95_query_us": 959289.0
+    },
+    "assemblies/lidar-results.csv": {
+      "runs": 18,
+      "clear": 18,
+      "witnessed": 0,
+      "unresolved": 0,
+      "witnessed_above_time_target": 0,
+      "reference_disagreements": 0,
+      "maximum_witnessed_width": null,
+      "p95_query_us": 1712430.6
+    },
+    "assemblies/lidar-diagnostic.csv": {
+      "runs": 2,
+      "clear": 0,
+      "witnessed": 2,
+      "unresolved": 0,
+      "witnessed_above_time_target": 2,
+      "reference_disagreements": 0,
+      "maximum_witnessed_width": 0.03502559018118673,
+      "p95_query_us": 4855914.1
+    }
+  }
+}

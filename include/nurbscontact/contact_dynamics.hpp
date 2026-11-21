@@ -89,6 +89,16 @@ struct PointResistance {
 void add_point_resistances(Forces& forces, std::span<const ContactBodyState> bodies,
                            std::span<const PointResistance> resistances, const Vector& velocity);
 
+// Translational Kelvin–Voigt element with principal axes fixed to body A.
+struct TranslationalBushing {
+    std::size_t a, b;
+    Vec anchor_a, anchor_b;
+    Vec rest, stiffness, damping;
+};
+
+void add_translational_bushings(Forces& forces, std::span<const ContactBodyState> bodies,
+                                std::span<const TranslationalBushing> bushings, const Vector& velocity);
+
 // Exterior probes treat an absent hit as open. A contained probe starts at
 // the cavity and part anchors and rejects a missing wall or part. The radial
 // mode uses the centerline for the force differential of circular sections.

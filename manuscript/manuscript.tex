@@ -19,8 +19,8 @@
 \newcommand{\vct}{\mathbf v}
 \newcommand{\acc}{\mathbf a}
 \newcommand{\force}{\mathbf F}
-\input{hht-results.tex}
-\title{\textbf{Native CAD Clearance for Implicit HHT-$\alpha$ Multibody Contact}}
+\input{manuscript-results.tex}
+\title{\textbf{Certified Continuous Clearance of Trimmed STEP Surfaces under Fixed-Axis Rigid Motion}}
 \author{NurbsCONTACT research manuscript}
 \date{}
 
@@ -28,26 +28,28 @@
 \maketitle
 
 \begin{abstract}
-Implicit time integration controls temporal error while contact forces still depend on the geometry used to evaluate clearance. We integrate native CAD boundary queries with HHT-$\alpha$ for constrained rigid bodies with fixed-axis hinges and translational joints. An analytic support query certifies when a witness on a trimmed finite face realizes the global clearance. A lower bound along each accepted configuration segment protects the source CAD boundary for both a native backend and an AABB hierarchy over triangles. In the matched-accuracy ball train, the native method reduced the median runtime from \TrainMeshTime{} to \TrainCadTime{} s, a \TrainGain{}-fold speedup. In a 120 s cam array, native geometry reduced the median cost by \CamFineGain{} times relative to the 96-facet mesh and reduced follower trajectory error against finer-step CAD integration. Two 300 s CAD stress runs completed with positive interval clearance. A separate trimmed bore test shows the complementary regime in which tessellated queries are faster. The implementation, STEP models, measurements, and six multi-view animations accompany the study.
+Continuous clearance queries must account for both the motion between poses and the regions removed by CAD trims. We certify positive clearance between nominal STEP boundaries under a prescribed relative fixed-axis rotation and affine translation. Outward-rounded directional bounds enclose the original curved control-point trajectories. For supported plane and cylinder faces under fixed relative orientation, radial and axial bounds expose the void inside a trimmed bore before parameter subdivision. The search returns a safe time prefix and, when an original-surface witness is available, an upper bound on first threshold entry. In a matched ablation, the circular-rim bounds reduce median runtime from 693.1 ms to 1.24 ms for a controlled eccentric bore query. Tested production wheel interfaces gain 2.80 to 5.97 times. A complete lidar insertion exceeds the target interval width at the work cap. Separate implicit-dynamics experiments evaluate the behavior of native and tessellated contact queries in downstream models.
 \end{abstract}
 
 \section{Introduction}
 
-Multibody contact forces can change sharply over a short gap. A planar follower riding a circular cam illustrates the interaction between time integration and geometry. The cam's supporting point moves smoothly on the circle. On an inscribed polygon, the support switches among vertices. Refining the integrator resolves that polygonal signal more closely. Refining the surface representation changes the signal itself. A useful comparison between CAD and mesh contact must therefore control the temporal method, the force law, and the accepted clearance condition.
+An eccentric pin can approach a bore rim between two poses that are both safe. A convex enclosure of the entire face fills the bore, so a box or hull overlap may keep irrelevant times in the search. A continuous clearance query on the original STEP boundary must preserve the physical trim and enclose the path between the poses. This is particularly important when assembly verification specifies a positive margin.
 
-We study prescribed classes of joints and common CAD contact features. Each rigid body moves on a prismatic axis or rotates around a fixed hinge, with forces coupled through contact, springs, and drives. The HHT-$\alpha$ equilibrium iteration uses the same compliance law for both backends. The native backend specializes supported analytic queries when the projection lies on the finite CAD face. A general B-rep query remains available for poses that fall outside the specialization. The mesh backend evaluates distances between triangular faces using dual BVH traversal.
+We use two complementary exclusions. A directional bound encloses the scalar projection of each moving support point under exact fixed-axis motion. A radial and axial bound for supported face types uses the original trim to verify an empty disk and reject times in which the moving part stays in that void. The search keeps surviving time intervals through parameter subdivision. A feasible point pair on the trimmed surfaces supplies an independent upper bound on the first entry time.
 
-Our first contribution is a finite-face support test that gives an exact native clearance and its force witness on the supported primitive pairs. The second is a shared interval guard for the reconstructed motion between accepted HHT states. Endpoint bounds are reusable without changing the exclusion argument. The third is a reproducible body of evidence that separates geometry error, time integration error, and search work. It includes analytic checks, a mesh refinement study, controlled multibody schedules, and long-time tests.
+Our contributions are an outward-rounded projection bound for the prescribed curved motion, a trim-dependent circular-void bound with a strict separation example against whole-face convex enclosures, and a first-entry certificate with an explicit unresolved outcome. We check these constructions on generated STEP cases with analytic references and on original component pairs from published assemblies. The HHT-$\alpha$ experiments provide a downstream comparison under shared dynamics settings.
 
 \section{Related work}
 
-Hilber, Hughes, and Taylor introduced a family of implicit schemes with controllable numerical dissipation for structural dynamics \cite{hilber1977}. In multibody software, HHT-type algorithms solve an implicit force balance with nonlinear iterations and can use adaptive steps \cite{chrono}. We apply its acceleration formulation to reduced rigid-body coordinates and explicitly verify the oscillator convergence rate. The contact law in our experiments is a positive-gap compliance layer. The resulting trajectories follow that law under the evaluated time steps.
+Static B-rep proximity methods retain geometric features that are approximated by faceted proxies. Crozet et~al. use smooth CAD boundaries and feature-specific routines to compute local minima for dynamics \cite{crozet2018}. Here the clearance query bounds a global minimum over the trimmed domains along a declared motion.
 
-B-rep proximity methods retain geometric features that are approximated by faceted collision proxies. Crozet et~al. used smooth CAD boundaries and feature-specific routines to compute local minima for dynamics \cite{crozet2018}. Moving parametric surfaces have also been treated using interval and time-dependent inclusions \cite{chen2024}. Ferguson et~al. developed an intersection-free rigid dynamics method with conservative queries for curved trajectories \cite{ferguson2021}. Our guard uses a Hausdorff-travel bound on the declared reconstruction between successive reduced states. Its role is to control feasible geometry across accepted steps in a conventional implicit integrator.
+Chen et~al. use time-dependent inclusions for zero-distance collision of parametric surfaces, including rational B\'ezier patches \cite{chen2024}. Their Algorithms~2--3 propagate time intervals through subdivision and clip time using projections on AABB or OBB axes. These operations already establish time-interval inheritance and directional clipping. Their formulation gives linear control-point trajectories within a query, and their rigid-motion example uses time-linear pieces. Their termination returns the left endpoint of an earliest remaining candidate. Our query uses curved projection enclosures on the prescribed fixed-axis trajectory and reports a safe prefix at a clearance threshold with an optional feasible witness. Our circular-void predicate uses the native trim wires to tighten time exclusion on the supported faces.
 
-Hierarchical nearest-distance queries on triangle meshes have a long history \cite{larsen2000}. Our baseline uses a local AABB tree, best-first traversal, and exact feature formulas for triangle pairs evaluated in floating point. We measure both previous-pair seeding and an unseeded traversal on the long ball train. Unlike higher-order formulations that use a collision proxy for curved geometry \cite{ferguson2023}, the native experiments evaluate the original analytic B-rep features for contact. The triangulated cases use the same source geometry and integration settings.
+Ferguson et~al. reduce curved rigid-body collision queries to conservative linear CCD with a separation margin \cite{ferguson2021}. This establishes prior use of positive margins for curved rigid motion. The present specialization concerns original trimmed STEP boundaries and their temporal bounds. The downstream comparisons use an AABB hierarchy for triangles \cite{larsen2000} and the HHT acceleration formulation \cite{hilber1977,chrono}.
 
-\section{Rigid-body model and contact queries}
+\input{continuous-clearance.tex}
+
+\section{Application to implicit multibody contact}
 
 \subsection{Reduced coordinates}
 
@@ -83,7 +85,7 @@ The membership check uses the finite source rectangle. When the condition fails,
 
 We triangulate the same STEP spheres and cylinders with uniform azimuthal sampling. A sphere uses half as many latitudinal intervals as azimuthal segments. Each finite rectangle uses two triangles. The general trimmed-query experiment instead uses Open CASCADE tessellation with a requested linear deflection. A median-split local AABB tree encloses the triangles with two primitives per leaf. During a query the moving node bounds are transformed into the fixed body's frame. Best-first traversal uses box separation as a lower bound and a feasible triangle pair as an upper bound. The leaf calculation covers vertex-to-face, edge-to-edge, and segment--triangle intersection cases. A previous triangle pair can seed the upper bound. Both coherence settings use the same traversal and complete the same distance problem for their triangulation.
 
-\section{Implicit HHT integration and acceptance}
+\subsection{Implicit integration and acceptance}
 
 The unknown at each step is \(\acc_{k+1}\). At step size \(h\), we apply the Newmark updates
 \begin{align}
@@ -112,7 +114,7 @@ Boundary distance is Lipschitz with respect to the sum of the two Hausdorff disp
 
 For a slider we bound travel by the position change, and for a hinge by the angular change times an enclosing distance to the pivot. The analytic endpoint bounds and travel bounds use outward interval arithmetic. We require \(\underline d_{\mathrm{step}}>0.5\) mm for every eligible pair. Both pipelines use this CAD guard as a common acceptance cost. A cache keyed by the exact previous coordinate vector reuses endpoint bounds. Cache hits change only the number of evaluations. The guarantee concerns the linear reconstruction between accepted states on the nominal CAD fixtures.
 
-\section{Experiments}
+\section{Dynamics benchmarks and experimental comparisons}
 
 \begin{figure}[t]
 \centering
@@ -185,11 +187,7 @@ Each 300 s native run completed 60,000 nominal advances. Minimum interval-wide c
 
 We separately compare static clearance on a STEP pin and trimmed circular bore at 25 poses. The original B-rep retains the radial bore boundary and encloses the analytic distance at each pose. With the tested finest tessellation the triangle BVH achieved a maximum point estimate error of \TrimFinestError{} mm against that reference, and a median time of \TrimFinestMesh{} ms. The general B-rep median was \TrimCadTime{} ms. The dataset demonstrates two regimes. Analytic native support can improve both cost and accuracy on qualified pairs. A tessellated hierarchy can be much faster on a general trimmed shape at the tested accuracy.
 
-\subsection{Production STEP assembly clearance}
-
-The continuous CAD search also supports radial and axial rejection bounds for fixed-orientation translation near circular trims. The original controlled eccentric pin-to-hole-rim sweep provides an analytic entry time. Enabling those bounds lowered its median latency from 693.1 to 1.24 ms in nine paired repetitions. The refined interval still contained the analytic first entry and decreased in width from \(4.992\times10^{-4}\) to \(3.125\times10^{-5}\) in normalized time.
-
-We also replay prescribed assembly motions on original component occurrences from the published OpenAMRobot wheel and lidar supports \cite{openamrobot}. This test measures the geometry stage on production trims and placements. It compares the original CAD search with its radial and axial bounds enabled, leaving the distance and time tolerances unchanged. The three wheel cases cover a washer stack and two screw insertions, each with nine repeated measurements per configuration. All 54 wheel queries meet the time-width target and overlap the independent OCCT cross-check. Median speedups range from 2.80 to 5.97, with the largest gain on the first eccentric screw insertion (905.9 to 151.8 ms). The lidar pre-seat trajectory gains 1.09 times and certifies the full tested interval. The full lidar insertion still reaches the work cap before meeting the time-width target. These prescribed-motion results establish an additional test of the native query kernel. The HHT results in Table~\ref{tab:performance} use the separately defined dynamic fixtures and the triangle baseline.
+\subsection{Additional static STEP samples}
 
 \begin{table}[t]
 \centering\small
@@ -204,7 +202,7 @@ Assembly motion & CAD resolved & CAD (ms) & Mesh (ms) & Mesh error (mm)\\
 \end{tabular}
 \end{table}
 
-We additionally sample 17 poses per production motion and directly compare the native B-rep search and the mesh BVH. Both use original placements and boundary distances in millimeters. The B-rep search requests a 0.0002 mm interval width with a cap of 30,000 tasks. Each of the mesh deflections 0.20, 0.05, and 0.0125 mm is tessellated independently from the source shape. The numerical reference is OCCT boundary extrema at the same pose. The CAD intervals contain the numerical reference at \ProductionOracleAgreement{} of \ProductionOraclePoses{} poses with a \(10^{-6}\) mm comparison margin. The finest mesh returned a point estimate at every pose and had the smaller median query time for each pair, with the largest observed discrepancy on the lidar support (Table~\ref{tab:production}). The first-entry sweep measurements above provide the trajectory-wide clearance evidence.
+We additionally sample 17 poses per production motion and directly compare the native B-rep search and the mesh BVH. Both use original placements and boundary distances in millimeters. The B-rep search requests a 0.0002 mm interval width with a cap of 30,000 tasks. Each of the mesh deflections 0.20, 0.05, and 0.0125 mm is tessellated independently from the source shape. The numerical reference is OCCT boundary extrema at the same pose. The CAD intervals contain the numerical reference at \ProductionOracleAgreement{} of \ProductionOraclePoses{} poses with a \(10^{-6}\) mm comparison margin. The finest mesh returned a point estimate at every pose and had the smaller median query time for each pair, with the largest observed discrepancy on the lidar support (Table~\ref{tab:production}). Section~\ref{sec:continuous-experiments} reports the separate trajectory-wide results.
 
 \IfFileExists{contact-validation-results.tex}{%
   \input{contact-validation-results.tex}%
@@ -214,15 +212,29 @@ We additionally sample 17 poses per production motion and directly compare the n
   \fi
 }{}
 
+\ifdefined\NasaSelectedRows
+  \input{nasa-selected.tex}%
+\fi
+
 \section{Scope and conclusion}
 
-The certified-clearance benchmarks use frictionless compliance, fixed-axis hinges, and sliders. The reported CAD guard protects each declared pair over the specified interpolation of accepted states. Its hypothesis concerns the nominal imported geometry. The primary speedups in those tests use analytic CAD pairs whose support witnesses satisfy the finite-face condition. The general trimmed distance benchmark records the opposite latency tradeoff. The directional contact experiments extend the evaluated conditions to frictional sliding and reduced beam compliance.
+Fixed-axis projection enclosures and the trim-derived circular void
+retain distinct information about the original STEP boundaries. Both
+preserve coverage of the first-entry search under their stated motion
+and face assumptions. The strongest measured gains occur when the
+void removes most of a coarse candidate interval. The full lidar
+insertion establishes a documented work-cap limit.
 
-Within these conditions, retaining original CAD support avoids the faceting error that dominates the coarse cam comparisons, and avoids visiting triangle features in the matched ballistic and train queries. The resulting experiments distinguish convergence of the implicit integrator from the effect of geometry representation. They also show that the shared guard and endpoint reuse can be measured independently of the contact backend.
+The trajectory certificate concerns a specified relative motion and
+nominal closed trim domains. The HHT application uses its own accepted
+configuration reconstruction and endpoint travel bounds. The
+directional-contact experiments compare force responses with distinct
+physical assumptions. Their agreement and discrepancies characterize
+those models independently of the continuous-query certificate.
 
 \paragraph{Reproducibility.}
 The \path{nc_hht} target generates and reads the STEP fixtures. \path{benchmarks/hht/run.py} runs the numerical suite, \path{analyze.py} validates trajectories and aggregates results, and \path{render.py} and \path{plots.py} generate the videos and figures from the recorded states. \path{results/hht/protocol.json} specifies the run matrix. The results include per-run solver counters, clearance bounds, raw geometry tests, and the multi-view animation index. The production assembly input hashes, motion definitions, and raw observations are in \path{benchmarks/assemblies/}. The paired eccentric-rim measurements are in \path{benchmarks/axial-results.csv}.
 
 \bibliographystyle{unsrtnat}
-\bibliography{hht}
+\bibliography{manuscript}
 \end{document}

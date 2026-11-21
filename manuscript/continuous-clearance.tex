@@ -1,0 +1,203 @@
+\section{Certified continuous clearance}
+\label{sec:continuous-clearance}
+
+\subsection{Trimmed surfaces and the query contract}
+
+Each face is \(S(D)\), where \(D\) is a closed parameter domain bounded by the
+original STEP p-curves. A nominal connector closes a small UV endpoint gap
+when needed, and the importer records its maximum enclosure. Boundary points
+belong to \(D\). A parameter rectangle is discarded only after its separation
+from every trim curve and its even crossing parity have both been certified.
+Mixed rectangles remain in the hierarchy. Upper bounds use feasible points
+on the original face or on its p-curves. Positive-weight NURBS spans are
+subdivided into homogeneous B\'ezier nets with outward arithmetic. Native
+elementary surfaces use analytic convex envelopes in their charts.
+
+Let \(d(t)\) be the minimum distance between the two boundaries in the fixed
+frame of body \(A\). Given a threshold \(\delta>0\) and interval \(I=[t_0,t_1]\),
+we seek the first \(t\in I\) with \(d(t)\leq\delta\).
+The lower time endpoint \(t_-\) certifies \(d(t)>\delta\) for all earlier
+times in \(I\). A feasible original-surface point pair within \(\delta\)
+at time \(t_+\) certifies an upper bound. An empty frontier with no witness
+certifies the entire interval. If the budget is exhausted before a witness
+is found, the remaining interval stays unresolved. A witnessed bracket can
+also exceed the requested width, so the width is reported separately.
+
+\subsection{Directional exclusion on the curved path}
+
+Body \(B\) has an affine translation and rotation about a fixed unit axis
+with angle \(\theta(t)=\theta_0+\omega t\) in this relative frame.
+For a support vertex \(p_i\), Rodrigues' formula gives its projection
+on a fixed direction \(n\) as
+\[
+f_i(t)=a_i+b_i t+c_i\cos(\theta(t))+d_i\sin(\theta(t)).
+\]
+Let \(H=\max_j n^\top a_j^A\) over the support vertices of the fixed
+cell. Each time at which the two cell images are within \(\delta\) lies in
+\(\bigcup_i\{t:f_i(t)\le H+\delta\|n\|\}\).
+
+\begin{proposition}[Conservative directional time set]
+Intersecting these sets over any collection of directions retains every
+feasible time for the cell pair.
+\end{proposition}
+\begin{proof}
+For feasible points \(x\) and \(y\) in the fixed and moving cells,
+\(n^\top x\le H\) and \(n^\top(y-x)\le\|n\|\delta\).
+Rigid motion preserves the convex weights of \(y\), so
+\(\min_i f_i(t)\le n^\top y\). The inequality holds for every direction.
+\end{proof}
+
+An affine projection is clipped directly. For curved trajectories we
+enclose the sine and cosine ranges with outward rounding and discard an
+interval only if every lower support projection exceeds the upper
+threshold. Ambiguous intervals survive the clipping budget. The retained
+time set is passed to spatial descendants, as in time-dependent
+inclusion methods \cite{chen2024}. The enclosure acts on the declared
+curved trajectory throughout the interval.
+
+\subsection{What the trim adds at a circular hole}
+
+A planar face with a certified circular void has a positive lower radius
+in a frame centered in the hole. To certify it, we enclose the minimum
+distance from a proposed center to all trim curves in the UV chart.
+The interior of that disk intersects no trim curve. Even parity at its
+center therefore certifies that the whole disk lies outside the material
+domain. A lower singular-value bound of the planar parameterization
+translates the disk radius into physical units. Native cylindrical
+faces supply radial and axial enclosures from their analytic charts.
+
+\begin{proposition}[Radial and axial exclusion]
+In a common cylindrical frame, let \(g_r\) and \(g_z\) be lower bounds
+on the gaps between the two radial and axial coordinate intervals.
+Then \(d\ge\sqrt{g_r^2+g_z^2}\). At fixed relative orientation, a
+uniform \(g_r\le\delta\) restricts admissible axial separation to
+\(\sqrt{\delta^2-g_r^2}\). If \(g_r>\delta\), the whole interval is safe
+for the face pair.
+\end{proposition}
+\begin{proof}
+The squared separation of any pair is the sum of its squared transverse
+and axial separations. The reverse triangle inequality in the transverse
+plane bounds the transverse separation below by the difference of the
+two radii. Using the interval gaps proves the result. Under affine
+translation and fixed orientation, the axial intervals admit affine
+clipping with the stated allowance.
+\end{proof}
+
+\begin{proposition}[Strict separation from a whole-face convex bound]
+Consider a planar annulus with inner radius \(R\) and outer radius
+\(R_{\rm out}>R\). Let a disk of radius \(a\) remain coplanar during
+the tested translation and let \(s(t)\) be its center offset. If
+\(\sup_{t\in I}s(t)+a+\delta<R\), the radial test rejects all of \(I\),
+while a single convex enclosure of the full annulus overlaps the disk
+throughout \(I\).
+\end{proposition}
+\begin{proof}
+The annulus has minimum radius \(R\), and every disk point has radius
+at most \(s(t)+a\). Their radial gap exceeds \(\delta\). The outer circle
+of the annulus spans the full disk of radius \(R_{\rm out}\) by convex
+combinations. The moving disk lies inside that convex hull throughout.
+\end{proof}
+
+The example concerns a whole-face enclosure. Subdivision may eventually
+recover the separation with convex cells. The void test can establish it
+before those subdivisions, within its supported fixed-orientation regime.
+
+\subsection{Preservation of the first-entry bracket}
+
+Each queued task covers two spatial cells and a time set. Spatial and
+temporal splits cover the parent domain, and the certified exclusions
+remove only empty trim regions or times with distance above \(\delta\).
+A valid witness time allows the search to ignore later events. A
+budget-limited task keeps its earliest candidate time in the frontier.
+Induction on these operations establishes the safe prefix and the
+first-entry bracket whenever both endpoints are available. This argument
+also applies to an interior event with safe trajectory endpoints.
+
+\section{Continuous-query experiments}
+\label{sec:continuous-experiments}
+
+Six controlled fixtures cover planar entry, centered bore passage,
+eccentric rim entry, rotary separation and entry, and a rotating spline
+near miss. The first-entry time or no-event outcome follows independent
+analytic geometry. In the archived matched-tolerance suite of 270 queries,
+all 135 returned hit brackets enclose their reference time and all 135
+no-event queries certify the full interval. The maximum hit width is
+\(4.992\times 10^{-4}\) in normalized time. The tolerances are
+\(2\times10^{-4}\) in space and \(5\times10^{-4}\) in time, with a
+200,000-task cap. The componentwise chord-box ablation encloses each
+rotating point's deviation from its linear chord by \(M h^2/8\), where
+\(M\) bounds its second derivative and \(h\) is the interval width.
+It runs in the shared search and evaluates the original path.
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Matched circular-rim ablation on a controlled fixture and original
+production STEP assembly interfaces. Medians use nine query-only repeats.
+Wheel first-entry brackets agree with independent OCCT cross-checks.}
+\label{tab:rim-ablation}
+\begin{tabular}{lrrr}
+\toprule
+Scenario & Directional (ms) & With radial and axial bounds (ms) & Ratio\\
+\midrule
+Controlled eccentric rim & 693.056 & 1.240 & 559\\
+Centered bore passage & 16.957 & 0.403 & 42.1\\
+Wheel washer stack & 23.887 & 7.605 & 3.14\\
+Wheel eccentric bolt 1 & 905.886 & 151.779 & 5.97\\
+Wheel eccentric bolt 2 & 925.171 & 330.183 & 2.80\\
+Lidar nut pre-seat & 1647.266 & 1508.700 & 1.09\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+In the controlled rim test, adding the circular bounds reduces visited
+tasks from 33,728 to 25 and bracket width from \(4.992\times10^{-4}\)
+to \(3.125\times10^{-5}\). Both brackets contain the analytic entry.
+The production comparison uses the original STEP occurrences and placements
+from the OpenAMRobot assemblies \cite{openamrobot}. The full lidar
+insertion reaches the work cap and yields a wide witnessed bracket
+\([0.386675,0.421701]\). The bracket overlaps the OCCT cross-check near
+0.4001. Table~\ref{tab:rim-ablation} establishes a within-solver
+exclusion benefit at the stated interfaces. Rechecking the archived
+time outputs finds no disagreement in the analytic cases or with the
+production reference intervals, including both wide lidar brackets.
+The archive contains bracket endpoints and reference intervals.
+
+\subsection{Common untrimmed patch comparison with TDIB-CCD}
+
+We run the official Chen OBB implementation on the same untrimmed
+biquadratic control nets and linear control-point trajectories as
+our kernel. A planar and a curved moving graph first touch a fixed
+plane at \(t=0.375\). A slower version of the curved graph remains
+clear over \([0,1]\). Table~\ref{tab:chen-common} reports nine query-only
+repetitions. Both methods use a numerical time target of
+\(5\times10^{-4}\). The OBB width criterion also covers its parameter
+cells, and the native query uses a distance tolerance of \(5\times10^{-4}\)
+and a 25,000-task cap.
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Common zero-distance inputs. Chen's returned time is a candidate
+at the left endpoint of a retained interval. Point residual uses the
+returned cell centers. The native entry cases have a safe prefix with
+no witnessed zero-distance upper bound at the cap.}
+\label{tab:chen-common}
+\begin{tabular}{lrrrr}
+\toprule
+Case & OBB candidate & OBB residual & Native safe prefix & Median ms (OBB / native)\\
+\midrule
+Planar entry & 0.375000 & \(4.92\times10^{-4}\) & 0.375000 & 218.0 / 1533.0\\
+Curved entry & 0.375000 & \(6.91\times10^{-4}\) & 0.374832 & 132.4 / 1160.1\\
+Curved clear & Clear & -- & 1.000000 & 2.93 / 1.08\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The native entry cases take longer under the reported stopping rules,
+while both methods reject the clear case. These timings compare the
+observed behavior of different query contracts. In a separate native query
+at a margin of \(0.025\), both witnessed brackets enclose the analytic
+first entry at \(0.35\). The planar and curved brackets have widths of
+\(1.46\times10^{-4}\) and \(2.94\times10^{-4}\), respectively.
+A conservative segmented-rotation comparison against the external solver,
+additional hole geometries, and independent witness checks on grazing
+and trim-edge queries remain evaluation targets.

@@ -64,6 +64,7 @@ struct Input {
     std::vector<Body> bodies;
     std::vector<ContactPair> pairs;
     std::vector<PointResistance> resistances;
+    std::vector<TranslationalBushing> bushings;
 };
 
 template<class T> T take(std::istream& in) {
@@ -183,18 +184,34 @@ Input read_scene(const Path& path,double deflection) {
             }
         }
     }
-    if (has_drives && !(in>>std::ws).eof()) {
-        expect(in,"resistances");
-        const auto resistances=take<unsigned>(in);
-        if (resistances>16384) throw std::invalid_argument("too many resistances");
-        for (unsigned i=0;i<resistances;++i) {
-            expect(in,"slide");
+    bool read_resistances=false, read_bushings=false;
+    while (has_drives && !(in>>std::ws).eof()) {
+        const auto block=take<std::string>(in);
+        const bool sliding=block=="resistances" && !read_resistances;
+        const bool elastic=block=="bushings" && !read_bushings;
+        if (!sliding && !elastic) throw std::invalid_argument("unknown or duplicate element block");
+        read_resistances |= sliding;
+        read_bushings |= elastic;
+        const auto elements=take<unsigned>(in);
+        if (elements>16384) throw std::invalid_argument("too many elements in scene block");
+        for (unsigned i=0;i<elements;++i) {
+            expect(in,sliding ? "slide" : "bushing");
             const auto a=take<unsigned>(in),b=take<unsigned>(in);
-            if (a>=bodies || b>=bodies || a==b) throw std::invalid_argument("invalid resistance pair");
-            PointResistance item{a,b,vector(in),vector(in),unit(vector(in)),number(in),number(in)};
-            if (item.force_limit<0 || item.slip_speed<=0)
-                throw std::invalid_argument("invalid resistance force or slip speed");
-            input.resistances.push_back(item);
+            if (a>=bodies || b>=bodies || a==b) throw std::invalid_argument("invalid element pair");
+            const auto anchor_a=vector(in),anchor_b=vector(in);
+            if (sliding) {
+                PointResistance item{a,b,anchor_a,anchor_b,unit(vector(in)),number(in),number(in)};
+                if (item.force_limit<0 || item.slip_speed<=0)
+                    throw std::invalid_argument("invalid resistance force or slip speed");
+                input.resistances.push_back(item);
+            } else {
+                TranslationalBushing item{a,b,anchor_a,anchor_b,vector(in),vector(in),vector(in)};
+                for (std::size_t axis=0;axis<3;++axis) {
+                    if (item.stiffness[axis]<0 || item.damping[axis]<0)
+                        throw std::invalid_argument("negative bushing stiffness or damping");
+                }
+                input.bushings.push_back(item);
+            }
         }
     }
     if (!(in>>std::ws).eof()) throw std::invalid_argument("extra fields in scene");
@@ -290,6 +307,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             }
         }
         if (!input.resistances.empty()) add_point_resistances(out,state,input.resistances,v_);
+        if (!input.bushings.empty()) add_translational_bushings(out,state,input.bushings,v_);
         if (!add_contact_forces(&out,state,input.pairs,v_,work))
             out.value[0]=std::numeric_limits<double>::quiet_NaN();
         return out;

@@ -51,7 +51,7 @@ The `nc_contact` runner loads STEP components, generalized coordinates, material
 
 - [Experiment protocol and reproduction](results/hht/README.md)
 - [Validated numerical summary](results/hht/metrics/summary.json)
-- [LaTeX source](manuscript/hht.tex) and [final paper](docs/hht.pdf)
+- [LaTeX source](manuscript/manuscript.tex) and [final paper](docs/manuscript.pdf)
 
 ## Industrial transmission and bearing benchmarks
 

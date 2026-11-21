@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.23)
+project(contact_common_patches LANGUAGES CXX)
+
+if(NOT EXISTS "${TDIB_SOURCE_DIR}/core/solverTD.h")
+    message(FATAL_ERROR "Set TDIB_SOURCE_DIR to the official TDIB-CCD checkout")
+endif()
+if(NOT EXISTS "${EIGEN_INCLUDE_DIR}/Eigen/Dense")
+    message(FATAL_ERROR "Set EIGEN_INCLUDE_DIR to the directory that contains Eigen/Dense")
+endif()
+
+set(NC_WITH_OCCT OFF CACHE BOOL "The comparison constructs patch control nets directly")
+set(BUILD_TESTING OFF CACHE BOOL "Build the standalone query comparison")
+add_subdirectory(../.. nurbscontact)
+add_executable(nc_chen_common common.cpp)
+target_include_directories(nc_chen_common SYSTEM PRIVATE "${TDIB_SOURCE_DIR}/core" "${EIGEN_INCLUDE_DIR}")
+target_link_libraries(nc_chen_common PRIVATE nurbscontact)

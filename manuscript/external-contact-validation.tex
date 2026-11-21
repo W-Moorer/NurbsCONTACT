@@ -118,3 +118,45 @@ half-degree bin. The plotted phase follows the published encoder.}
 \label{fig:clearance-dissipation}
 \end{figure}
 \fi
+
+\ifdefined\FlexQuietModel
+\paragraph{Explicit structural flexibility.}
+The same integrator can couple independently moving anchors through
+translational Kelvin--Voigt elements. For a separation \(r=x_B-x_A\),
+the strain in the frame of body \(A\) is \(R_A^\top r-r_0\).
+Its time derivative includes the frame transport term
+\(-R_A^\top(\omega_A\times r)\). The restoring force is projected through
+the same velocity Jacobian into the implicit force balance.
+
+We place a lumped point mass at the sleeve and another at the pin.
+An axial and transverse element connects the sleeve to the rod tip.
+A second element connects the pin to the slider carriage, with a
+lateral guide mode in the refined case. The mass partition preserves
+the rod's total mass, first moment and pivot inertia under the assumed
+rigid mounting. The local contact uses the nominal Hertz law, with
+structural deformation in the elements. The stiffnesses and damping
+are sensitivity parameters because the independent structural response
+of the rig is unavailable.
+
+Nine scanned configurations retain the phase origin and score the
+integration samples without a signal filter. The refined configuration
+keeps the \(90^\circ\)--\(180^\circ\) RMSE near the equivalent-compliance
+control (\FlexQuietModel{} versus \FlexQuietControl{} m/s\(^{2}\)) and
+reduces the interval maximum from \FlexPeakControl{} to
+\FlexPeakModel{} m/s\(^{2}\). Its maximum local compression is
+\FlexDepth{} micrometers. Halving the step changes the phase-grid
+waveform by \FlexRefinement{} m/s\(^{2}\) RMS. The predicted acceleration
+at the experimental \(46.6^\circ\) peak is \FlexPredicted{} m/s\(^{2}\)
+against an observed \FlexObserved{} m/s\(^{2}\), with no local minimum
+in the tested impact window. The model still sustains pin--bore contact
+over the reported separation window.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{\ContactValidationPath ../clearance/flexibility/structural-flexibility.pdf}
+\caption{Carriage acceleration with equivalent compliance and with
+explicit support and rod-tip flexibility. Bands retain the extrema of
+integration samples within each half-degree bin.}
+\label{fig:clearance-structural-flexibility}
+\end{figure}
+\fi

@@ -155,14 +155,47 @@ def external_validation_macros(root):
             "ExternalDampedHalfStep": f"{revision['half_step_waveform_delta_rmse_m_s2']:.4f}",
             "ExternalDampedIndependent": f"{transferred['raw_sample_rmse_m_s2']:.2f}",
         })
+    flex_file = slider_file.parent / "flexibility" / "summary.json"
+    if flex_file.is_file():
+        report = json.loads(flex_file.read_text(encoding="utf-8"))
+        by_case = {row["case"]:row for row in report["runs"]}
+        control, flexible = by_case["rigid"], by_case["flex"]
+        macros.update({
+            "FlexQuietControl": f"{control['quiet_window_rmse_m_s2']:.2f}",
+            "FlexQuietModel": f"{flexible['quiet_window_rmse_m_s2']:.2f}",
+            "FlexPeakControl": f"{control['quiet_window_max_abs_acceleration_m_s2']:.2f}",
+            "FlexPeakModel": f"{flexible['quiet_window_max_abs_acceleration_m_s2']:.2f}",
+            "FlexDepth": f"{-flexible['minimum_gap_um']:.2f}",
+            "FlexObserved": f"{flexible['measured_peak_m_s2']:.1f}",
+            "FlexPredicted": f"{flexible['impact_peaks'][0]['at_measured_phase_m_s2']:.1f}",
+            "FlexRefinement": f"{report['half_step_common_grid_delta_m_s2']:.4f}",
+        })
     return macros
 
 
 def paper_output_path(results: Path) -> Path:
     project = Path(__file__).resolve().parents[2]
     if results.resolve() == project / "results" / "hht":
-        return project / "docs" / "hht.pdf"
-    return results / "paper" / "hht.pdf"
+        return project / "docs" / "manuscript.pdf"
+    return results / "paper" / "manuscript.pdf"
+
+
+def nasa_selected_macros(root):
+    report_file = root / "summary.json"
+    if not report_file.is_file() or not (root / "figures" / "nasa-single-tooth-selected.pdf").is_file():
+        return []
+    report = json.loads(report_file.read_text(encoding="utf-8"))
+    comparisons = report["comparisons"]
+    rows = [r"\newcommand{\NasaSelectedRows}{%"]
+    for panel in "acd":
+        case = comparisons[f"nasa-{panel}"]
+        cad = case["brep"]["error"]
+        mesh = case["mesh"]["error"]
+        role = "Calibration" if panel == "a" else "Held out"
+        rows.append(f"7({panel}) & {case['rpm']:.0f} & {case['input_torque_Nm']:.2f} & "
+                    f"{cad['rms']:.1f} & {mesh['rms']:.1f} & {role} " + r"\\")
+    rows.append("}")
+    return rows
 
 
 def main():
@@ -187,21 +220,22 @@ def main():
         lines.append(rf"\newcommand{{\{name}}}{{{value}}}")
     for name, value in external_validation_macros(args.results.parent / "contact_validation").items():
         lines.append(rf"\newcommand{{\{name}}}{{{value}}}")
+    lines.extend(nasa_selected_macros(project / "results" / "gears" / "experimental"))
     lines.extend([r"\newcommand{\PerformanceRows}{%", *table_rows(summary), "}"])
     lines.extend([r"\newcommand{\ProductionRows}{%", *production_rows(summary), "}"])
-    (source / "hht-results.tex").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (source / "manuscript-results.tex").write_text("\n".join(lines) + "\n", encoding="utf-8")
     if args.macros_only:
         return
-    build = project / "build" / "hht-paper"
+    build = project / "build" / "manuscript-paper"
     build.mkdir(parents=True, exist_ok=True)
     subprocess.run(
         ["latexmk", "-pdf", "-interaction=nonstopmode", "-halt-on-error", "-file-line-error",
-         f"-outdir={build.as_posix()}", "hht.tex"],
+         f"-outdir={build.as_posix()}", "manuscript.tex"],
         cwd=source, check=True,
     )
     output = paper_output_path(args.results)
     output.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(build / "hht.pdf", output)
+    shutil.copyfile(build / "manuscript.pdf", output)
     print(output)
 
 
