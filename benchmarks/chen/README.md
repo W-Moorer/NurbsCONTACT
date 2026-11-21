@@ -20,4 +20,4 @@ build/chen-common/Release/nc_chen_common.exe
 build/chen-common/Release/nc_chen_common.exe --positive-only
 ~~~
 
-Substitute the location of the local Eigen headers when needed. The full external baseline for rigid rotation would additionally use conservative bounds on chord deviation and check the returned outcome against the original rotating geometry.
+Substitute the location of the local Eigen headers when needed. The [rotation follow-up](../clearance-followup/README.md) adds a chord-error bound, outward verification of proposed exclusions and an original-trajectory witness check around the official OBB search.

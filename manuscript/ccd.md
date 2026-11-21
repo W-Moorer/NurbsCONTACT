@@ -139,6 +139,10 @@ The 54 wheel queries all returned first-entry brackets that overlapped the OCCT 
 
 The full lidar insertion tests the same parts along the path to the nominal seat. Both configurations exhausted the 200,000-task cap and returned a first-entry interval approximately \([0.386675,0.421701]\). It overlapped the OCCT numerical cross-check near \(0.4001\) and exceeded the \(5\times10^{-4}\) width target. This case exposes the cost of refining several close faces on the same path. [Full insertion diagnostic](../benchmarks/assemblies/lidar-diagnostic.csv)
 
+### 5.7 Segmented rotation, a second STEP source, and edge audit
+
+The common rotation fixtures compare the original-trajectory query with Chen's time-dependent OBB search on piecewise-linear chords. The wrapper pads projections by the threshold and a bound on geometric and rounding deviation, verifies proposed exclusions outward, and checks the upper witness on the original trajectory. The counterbore and Voron Trident Front Idler B interfaces add a swept-box variant to the paired directional and radial/axial ablations. The trim-edge audit reconstructs witness residuals from coordinate intervals and uses a closed-form closest point on the circular inner trim. [Protocol, raw CSVs and independent verifier](../benchmarks/clearance-followup/README.md)
+
 ## 6. Scope
 
 The algorithm treats separate boundary sets and returns native point pairs. Volumetric containment, recovery from initial interpenetration, and sustained-contact response require additional semantics. Relative poses outside the fixed-axis motion model require a different trajectory enclosure. The STEP adapter supports elementary analytic faces and clamped nonperiodic splines. Invalid or unsupported face data produces an import error with the offending face ID. A small nominal UV connector is part of the geometry evaluated by the prototype.

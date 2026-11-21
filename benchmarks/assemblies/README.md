@@ -37,6 +37,10 @@ The full lidar insertion diagnostic exercises the finite work budget. It keeps i
 
 The checked-in measurements are [wheel-results.csv](wheel-results.csv), [lidar-results.csv](lidar-results.csv), and [lidar-diagnostic.csv](lidar-diagnostic.csv).
 
+## Voron Trident
+
+The follow-up uses the original Front Idler B occurrence subtree and tests two screw sizes with a spacer, washer and bearing. The three-way `measure-all` mode records witnessed brackets and budget-limited prefixes with the same numerical reference. [Source revision, motions and measurements](../clearance-followup/README.md)
+
 ## Sampled distances against a triangle BVH
 
 The clearance command queries 17 fixed poses per configured motion. It times the native B-rep interval search with a 0.0002 mm width target and 30,000 task cap, then repeats the same poses using BVHs of OCCT triangulations at linear deflections of 0.20, 0.05 and 0.0125 mm. Each comparison uses the OCCT boundary-extrema distance as its independent numerical reference. The records preserve the interval when the native search reaches its budget.

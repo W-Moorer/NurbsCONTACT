@@ -1,0 +1,534 @@
+{
+  "rotation": {
+    "planar-tilt": {
+      "native": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.7325210571289062,
+        "reference_status": "hit",
+        "reference_lower": "0.732526247477109227029866408819557848072292997",
+        "reference_upper": "0.732526247477109227029866408819557848072292997",
+        "reference_minimum_distance": null,
+        "maximum_width": 7.724761962890625e-05,
+        "minimum_witness_time": 0.7325983047485352,
+        "maximum_witness_distance": 0.03120431348070963,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 16109.3,
+        "p95_us": 17022.4,
+        "median_nodes": 173
+      },
+      "chen-obb-chord": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.732421875,
+        "reference_status": "hit",
+        "reference_lower": "0.732526247477109227029866408819557848072292997",
+        "reference_upper": "0.732526247477109227029866408819557848072292997",
+        "reference_minimum_distance": null,
+        "maximum_width": 0.0001220703125,
+        "minimum_witness_time": 0.7325439453125,
+        "maximum_witness_distance": 0.03123684199165944,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 139098.3,
+        "p95_us": 154065.3,
+        "median_nodes": 117
+      }
+    },
+    "curved-tilt": {
+      "native": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.5451006218791008,
+        "reference_status": "hit",
+        "reference_lower": "0.545388186141660342539794736110929143135171907",
+        "reference_upper": "0.545388186141660342539794736110929143135171907",
+        "reference_minimum_distance": null,
+        "maximum_width": 0.00045921653509140015,
+        "minimum_witness_time": 0.5455598384141922,
+        "maximum_witness_distance": 0.031109674347696806,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 22825.2,
+        "p95_us": 35208.9,
+        "median_nodes": 236
+      },
+      "chen-obb-chord": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.5452880859375,
+        "reference_status": "hit",
+        "reference_lower": "0.545388186141660342539794736110929143135171907",
+        "reference_upper": "0.545388186141660342539794736110929143135171907",
+        "reference_minimum_distance": null,
+        "maximum_width": 0.0001220703125,
+        "minimum_witness_time": 0.54541015625,
+        "maximum_witness_distance": 0.031231217312353808,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 1894177.8,
+        "p95_us": 2038740.3,
+        "median_nodes": 4246
+      }
+    },
+    "interior-entry": {
+      "native": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.3726901188492775,
+        "reference_status": "hit",
+        "reference_lower": "0.372768925183342639153655751991071515503909741",
+        "reference_upper": "0.372768925183342639153655751991071515503909741",
+        "reference_minimum_distance": null,
+        "maximum_width": 0.0001764502376317978,
+        "minimum_witness_time": 0.3728665690869093,
+        "maximum_witness_distance": 0.031192548874515034,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 105379.0,
+        "p95_us": 122054.4,
+        "median_nodes": 1351
+      },
+      "chen-obb-chord": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.3726806640625,
+        "reference_status": "hit",
+        "reference_lower": "0.372768925183342639153655751991071515503909741",
+        "reference_upper": "0.372768925183342639153655751991071515503909741",
+        "reference_minimum_distance": null,
+        "maximum_width": 0.0001220703125,
+        "minimum_witness_time": 0.372802734375,
+        "maximum_witness_distance": 0.03120828884039584,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 157350.2,
+        "p95_us": 164041.8,
+        "median_nodes": 169
+      }
+    },
+    "rotating-near-miss": {
+      "native": {
+        "status": "clear",
+        "minimum_safe_prefix": 1.0,
+        "reference_status": "clear",
+        "reference_lower": null,
+        "reference_upper": null,
+        "reference_minimum_distance": "0.0322499999999998898658759571844711899757385254",
+        "maximum_width": null,
+        "minimum_witness_time": null,
+        "maximum_witness_distance": null,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 17.2,
+        "p95_us": 22.5,
+        "median_nodes": 1
+      },
+      "chen-obb-chord": {
+        "status": "clear",
+        "minimum_safe_prefix": 1.0,
+        "reference_status": "clear",
+        "reference_lower": null,
+        "reference_upper": null,
+        "reference_minimum_distance": "0.0322499999999998898658759571844711899757385254",
+        "maximum_width": null,
+        "minimum_witness_time": null,
+        "maximum_witness_distance": null,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 29090.8,
+        "p95_us": 30798.7,
+        "median_nodes": 256
+      }
+    }
+  },
+  "counterbore": {
+    "throat-pass": {
+      "swept-box": {
+        "status": "clear",
+        "minimum_safe_prefix": 1.0,
+        "reference_status": "clear",
+        "reference_lower": null,
+        "reference_upper": null,
+        "reference_minimum_distance": null,
+        "maximum_width": null,
+        "minimum_witness_time": null,
+        "maximum_witness_distance": null,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 939850.7,
+        "p95_us": 1015238.9,
+        "median_nodes": 54735
+      },
+      "directional": {
+        "status": "clear",
+        "minimum_safe_prefix": 1.0,
+        "reference_status": "clear",
+        "reference_lower": null,
+        "reference_upper": null,
+        "reference_minimum_distance": null,
+        "maximum_width": null,
+        "minimum_witness_time": null,
+        "maximum_witness_distance": null,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 934137.5,
+        "p95_us": 1039576.8,
+        "median_nodes": 44395
+      },
+      "axial": {
+        "status": "clear",
+        "minimum_safe_prefix": 1.0,
+        "reference_status": "clear",
+        "reference_lower": null,
+        "reference_upper": null,
+        "reference_minimum_distance": null,
+        "maximum_width": null,
+        "minimum_witness_time": null,
+        "maximum_witness_distance": null,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 380.1,
+        "p95_us": 444.8,
+        "median_nodes": 31
+      }
+    },
+    "shoulder-entry": {
+      "swept-box": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.74462890625,
+        "reference_status": "hit",
+        "reference_lower": "0.74483251697057697150292653173117331948103465",
+        "reference_upper": "0.74483251697057697150292653173117331948103465",
+        "reference_minimum_distance": null,
+        "maximum_width": 0.00048828125,
+        "minimum_witness_time": 0.7451171875,
+        "maximum_witness_distance": 0.030508787796510742,
+        "witness_a_features": [
+          "vertex"
+        ],
+        "runs_above_width_target": 0,
+        "median_us": 406937.9,
+        "p95_us": 427723.4,
+        "median_nodes": 29350
+      },
+      "directional": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.7444646710752238,
+        "reference_status": "hit",
+        "reference_lower": "0.74483251697057697150292653173117331948103465",
+        "reference_upper": "0.74483251697057697150292653173117331948103465",
+        "reference_minimum_distance": null,
+        "maximum_width": 0.0003955655246513645,
+        "minimum_witness_time": 0.7448602365998752,
+        "maximum_witness_distance": 0.031176771660937255,
+        "witness_a_features": [
+          "vertex"
+        ],
+        "runs_above_width_target": 0,
+        "median_us": 350779.7,
+        "p95_us": 377337.2,
+        "median_nodes": 14155
+      },
+      "axial": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.7448325169697375,
+        "reference_status": "hit",
+        "reference_lower": "0.74483251697057697150292653173117331948103465",
+        "reference_upper": "0.74483251697057697150292653173117331948103465",
+        "reference_minimum_distance": null,
+        "maximum_width": 3.12500006273142e-05,
+        "minimum_witness_time": 0.7448637669703648,
+        "maximum_witness_distance": 0.03116746126981581,
+        "witness_a_features": [
+          "vertex"
+        ],
+        "runs_above_width_target": 0,
+        "median_us": 690.9,
+        "p95_us": 772.7,
+        "median_nodes": 31
+      }
+    },
+    "mouth-entry": {
+      "swept-box": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.24462890625,
+        "reference_status": "hit",
+        "reference_lower": "0.24483251697057697150292653173117331948103465",
+        "reference_upper": "0.24483251697057697150292653173117331948103465",
+        "reference_minimum_distance": null,
+        "maximum_width": 0.00048828125,
+        "minimum_witness_time": 0.2451171875,
+        "maximum_witness_distance": 0.030508787796510825,
+        "witness_a_features": [
+          "vertex"
+        ],
+        "runs_above_width_target": 0,
+        "median_us": 223628.4,
+        "p95_us": 231943.3,
+        "median_nodes": 16609
+      },
+      "directional": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.24461746063907253,
+        "reference_status": "hit",
+        "reference_lower": "0.24483251697057697150292653173117331948103465",
+        "reference_upper": "0.24483251697057697150292653173117331948103465",
+        "reference_minimum_distance": null,
+        "maximum_width": 0.0004997268609274741,
+        "minimum_witness_time": 0.2451171875,
+        "maximum_witness_distance": 0.030508787796510825,
+        "witness_a_features": [
+          "vertex"
+        ],
+        "runs_above_width_target": 0,
+        "median_us": 279304.0,
+        "p95_us": 328719.8,
+        "median_nodes": 13754
+      },
+      "axial": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.24483251696915784,
+        "reference_status": "hit",
+        "reference_lower": "0.24483251697057697150292653173117331948103465",
+        "reference_upper": "0.24483251697057697150292653173117331948103465",
+        "reference_minimum_distance": null,
+        "maximum_width": 3.1250001063160004e-05,
+        "minimum_witness_time": 0.244863766970221,
+        "maximum_witness_distance": 0.031167461270195276,
+        "witness_a_features": [
+          "vertex"
+        ],
+        "runs_above_width_target": 0,
+        "median_us": 657.0,
+        "p95_us": 690.5,
+        "median_nodes": 23
+      }
+    }
+  },
+  "assembly": {
+    "voron-spacer": {
+      "axial": {
+        "status": "unresolved",
+        "minimum_safe_prefix": 0.5233197618576257,
+        "reference_status": "unresolved",
+        "reference_lower": "0.9755859375",
+        "reference_upper": null,
+        "reference_minimum_distance": null,
+        "maximum_width": null,
+        "minimum_witness_time": null,
+        "maximum_witness_distance": null,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 4635623.0,
+        "p95_us": 6754503.5,
+        "median_nodes": 200000
+      },
+      "directional": {
+        "status": "unresolved",
+        "minimum_safe_prefix": 0.4927112345998009,
+        "reference_status": "unresolved",
+        "reference_lower": "0.9755859375",
+        "reference_upper": null,
+        "reference_minimum_distance": null,
+        "maximum_width": null,
+        "minimum_witness_time": null,
+        "maximum_witness_distance": null,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 3782196.3,
+        "p95_us": 4814504.5,
+        "median_nodes": 200000
+      },
+      "swept-box": {
+        "status": "unresolved",
+        "minimum_safe_prefix": 0.48828125,
+        "reference_status": "unresolved",
+        "reference_lower": "0.9755859375",
+        "reference_upper": null,
+        "reference_minimum_distance": null,
+        "maximum_width": null,
+        "minimum_witness_time": null,
+        "maximum_witness_distance": null,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 3042649.3,
+        "p95_us": 3455311.7,
+        "median_nodes": 200000
+      }
+    },
+    "voron-washer": {
+      "axial": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.3701509891357951,
+        "reference_status": "hit",
+        "reference_lower": "0.37060546875",
+        "reference_upper": "0.3706207275390625",
+        "reference_minimum_distance": null,
+        "maximum_width": 0.0004999585796927053,
+        "minimum_witness_time": 0.3706509477154878,
+        "maximum_witness_distance": null,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 1035654.5,
+        "p95_us": 1072627.3,
+        "median_nodes": 46722
+      },
+      "directional": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.3701509891357951,
+        "reference_status": "hit",
+        "reference_lower": "0.37060546875",
+        "reference_upper": "0.3706207275390625",
+        "reference_minimum_distance": null,
+        "maximum_width": 0.0004999585796927053,
+        "minimum_witness_time": 0.3706509477154878,
+        "maximum_witness_distance": null,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 1094143.8,
+        "p95_us": 1152750.0,
+        "median_nodes": 49545
+      },
+      "swept-box": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.370361328125,
+        "reference_status": "hit",
+        "reference_lower": "0.37060546875",
+        "reference_upper": "0.3706207275390625",
+        "reference_minimum_distance": null,
+        "maximum_width": 0.000732421875,
+        "minimum_witness_time": 0.37109375,
+        "maximum_witness_distance": null,
+        "witness_a_features": [],
+        "runs_above_width_target": 9,
+        "median_us": 2839609.0,
+        "p95_us": 2954987.0,
+        "median_nodes": 200000
+      }
+    },
+    "voron-bearing": {
+      "axial": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.5251733223290854,
+        "reference_status": "hit",
+        "reference_lower": "0.525604248046875",
+        "reference_upper": "0.52562713623046875",
+        "reference_minimum_distance": null,
+        "maximum_width": 0.0004999228991300342,
+        "minimum_witness_time": 0.5256732452282155,
+        "maximum_witness_distance": null,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 5222019.2,
+        "p95_us": 6121652.2,
+        "median_nodes": 171626
+      },
+      "directional": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.5251732797266614,
+        "reference_status": "hit",
+        "reference_lower": "0.525604248046875",
+        "reference_upper": "0.52562713623046875",
+        "reference_minimum_distance": null,
+        "maximum_width": 0.0004999655015540672,
+        "minimum_witness_time": 0.5256732452282155,
+        "maximum_witness_distance": null,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 5546092.8,
+        "p95_us": 6141963.8,
+        "median_nodes": 177876
+      },
+      "swept-box": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.5234375,
+        "reference_status": "hit",
+        "reference_lower": "0.525604248046875",
+        "reference_upper": "0.52562713623046875",
+        "reference_minimum_distance": null,
+        "maximum_width": 0.00390625,
+        "minimum_witness_time": 0.52734375,
+        "maximum_witness_distance": null,
+        "witness_a_features": [],
+        "runs_above_width_target": 9,
+        "median_us": 4615775.7,
+        "p95_us": 5275032.9,
+        "median_nodes": 200000
+      }
+    }
+  },
+  "audit": {
+    "trim-edge-entry": {
+      "axial": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.3543300678781806,
+        "reference_status": "hit",
+        "reference_lower": "0.3543300678823078860117061269246932779241386",
+        "reference_upper": "0.3543300678823078860117061269246932779241386",
+        "reference_minimum_distance": "0.0234375",
+        "maximum_width": 0.00024999999999997247,
+        "minimum_witness_time": 0.3545800678781806,
+        "maximum_witness_distance": 0.031085206033615982,
+        "witness_a_features": [
+          "edge"
+        ],
+        "runs_above_width_target": 0,
+        "median_us": 2428.1,
+        "p95_us": 2600.7,
+        "median_nodes": 48
+      }
+    },
+    "narrow-edge-entry": {
+      "axial": {
+        "status": "hit",
+        "minimum_safe_prefix": 0.3749694786988506,
+        "reference_status": "hit",
+        "reference_lower": "0.374969482425512979023932173298159037194137023",
+        "reference_upper": "0.374969482425512979023932173298159037194137023",
+        "reference_minimum_distance": "0.03124998509883880615234375",
+        "maximum_width": 3.052130114938878e-05,
+        "minimum_witness_time": 0.375,
+        "maximum_witness_distance": 0.031249985099748523,
+        "witness_a_features": [
+          "edge"
+        ],
+        "runs_above_width_target": 0,
+        "median_us": 2203.1,
+        "p95_us": 2402.0,
+        "median_nodes": 48
+      }
+    },
+    "exact-edge-graze": {
+      "axial": {
+        "status": "unresolved",
+        "minimum_safe_prefix": 0.3749995230604205,
+        "reference_status": "hit",
+        "reference_lower": "0.375",
+        "reference_upper": "0.375",
+        "reference_minimum_distance": "0.03125",
+        "maximum_width": null,
+        "minimum_witness_time": null,
+        "maximum_witness_distance": null,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 10271.7,
+        "p95_us": 11366.1,
+        "median_nodes": 297
+      }
+    },
+    "near-edge-miss": {
+      "axial": {
+        "status": "clear",
+        "minimum_safe_prefix": 1.0,
+        "reference_status": "clear",
+        "reference_lower": null,
+        "reference_upper": null,
+        "reference_minimum_distance": "0.03125011920928955078125",
+        "maximum_width": null,
+        "minimum_witness_time": null,
+        "maximum_witness_distance": null,
+        "witness_a_features": [],
+        "runs_above_width_target": 0,
+        "median_us": 6.9,
+        "p95_us": 10.6,
+        "median_nodes": 1
+      }
+    }
+  }
+}

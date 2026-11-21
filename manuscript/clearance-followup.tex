@@ -1,0 +1,145 @@
+\subsection{Conservative segmented-rotation comparison}
+\label{sec:rotation-followup}
+
+The follow-up uses a clearance of \(0.03125\) model units, a distance
+tolerance of \(2\times10^{-4}\), a time target of \(5\times10^{-4}\) on
+\([0,1]\), and a cap of 200,000 search tasks. Each configuration is
+measured nine times after warm-up with alternating or rotating run order.
+An 80-digit analytic evaluation provides the reference for the generated
+geometries. The production pairs use the same independent adaptive OCCT
+distance cross-check for all three methods, with a \(10^{-6}\) mm numerical
+margin and a time resolution of \(2\times10^{-5}\).
+
+For a segment of duration \(h\), the chord between the two exact endpoint
+poses differs from the fixed-axis trajectory by at most \(M h^2/8\),
+where \(M=\omega^2\max_i\|p_{i,\perp}\|\) bounds control-point acceleration.
+The bound extends to each patch point by convexity. The segmented wrapper
+splits until the chord bound fits the distance tolerance, then encloses the
+rounding errors in endpoint position and velocity. It adds the resulting padding
+and the requested clearance to the official Chen OBB projection test,
+scaled by each axis norm. The wrapper visits segments in temporal order.
+It subdivides retained time intervals before running the official
+parameter search and verifies proposed rejections with outward projection
+bounds on the chord nets. This check can refine the moving B\'ezier
+net. Entering upper bounds require an original-path point pair.
+The timing includes segmentation, projection verification, and witness
+evaluation.
+
+The fixtures share the same untrimmed biquadratic control nets. A moving
+rectangle or curved graph tilts about the \(y\)-axis above a fixed plane.
+At first entry the minimum vertical separation is
+\(H-\sin(\omega t)\), with the closest moving point at \(x=1\)
+and, for the graph, on its minimum-height centerline. One entry
+occurs strictly between safe endpoints. The near miss stays above the
+threshold by \(0.001\) model units at closest approach.
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Matched original-trajectory results. Every hit bracket contains
+the analytic entry. Width is the largest across nine repeats.}
+\label{tab:rotation-followup}
+\begin{tabular}{lrrrrr}
+\toprule
+ & & \multicolumn{2}{c}{Median query (ms)} & \multicolumn{2}{c}{Bracket width}\\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+Fixture & Reference & Chen chords & Native & Chen chords & Native\\
+\midrule
+\RotationFollowupRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+Both methods meet the time target on these fixtures. The curve forces
+more segment and parameter checks in the chord method than a planar
+fixture does. The native search certifies the rotating near miss with its
+root directional bound. This comparison covers the padded and audited
+rotation wrapper. The zero-distance linear comparison in
+Table~\ref{tab:chen-common} measures the upstream implementation directly.
+
+\subsection{Counterbore and a second production STEP source}
+\label{sec:counterbore-followup}
+
+The generated counterbore has mouth and throat radii of \(1.375\) mm
+and \(0.8125\) mm, with an internal shoulder at their junction and a
+pin of radius \(0.375\) mm. Different lateral offsets lead to a clear passage, a first
+entry at the shoulder, or a first entry at the mouth. For each circular
+rim, the reference pairs the leading pin cap with that rim and combines
+the radial and axial gaps. At the two entry offsets the radial gap at the
+active rim is \(0.0234375\) mm.
+
+The production replication uses the Voron Trident Front Idler B
+assembly \cite{vorontrident}. The extractor keeps original AP214
+geometry and occurrence transforms within the idler subtree. We test the
+M5 spacer and an F695 bearing against their original M5 screw, and the
+M3 washer against its screw. Each approach follows the screw axis with a
+transverse displacement of \(0.10\) mm. The three variants share the
+same trim handling, search, clearance and reference. They use a swept
+box, directional time bounds, or directional time bounds with radial
+and axial exclusion.
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Three-way ablation. The reference column gives the analytic
+entry for the counterbore and the lower endpoint of the OCCT bracket for
+the Voron interfaces. A star marks a budget-limited result or a bracket
+wider than the time target.}
+\label{tab:counterbore-followup}
+\begin{tabular}{lrrrrr}
+\toprule
+ & & \multicolumn{3}{c}{Median query (ms)} & \\
+\cmidrule(lr){3-5}
+Fixture & Reference & Swept box & Directional & With radial/axial & Tasks with bound\\
+\midrule
+\HoleFollowupRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+The radial and axial filter leaves 23--31 tasks for each counterbore
+query, compared with 13,754--44,395 for directional clipping alone.
+All three variants agree with the analytic references. For the Voron
+washer and bearing, both directional variants meet the time target,
+while the swept-box variant reaches the cap with wider witnessed
+brackets. The radial and axial filter reduces task counts modestly.
+All three methods exhaust their budget on the M5 spacer. The best
+certified prefix reaches \(0.523320\), and the independent numerical
+reference reaches \(0.975586\) before its own cap with no upper witness.
+
+\subsection{Independent trim-edge certificate audit}
+\label{sec:edge-audit}
+
+For a plane with a unit circular trim and a parallel disk of radius
+\(0.25\), the disk stays inside the hole in projection. At closest distance
+the plate point lies in the interior of the inner trim edge at
+\((1,0,0)\). The analytic
+distance is \(\sqrt{g^2+(0.375-t)^2}\), with \(g\) the in-plane gap.
+Offsets place \(g\) well inside the threshold, \(2^{-26}\) below it,
+exactly on it, or \(2^{-23}\) above it. The narrow entry interval is
+about \(6.10\times10^{-5}\) wide and both trajectory endpoints are safe
+in every case.
+
+The independent verifier compares the returned prefixes and witnessed
+times with the analytic reference and reconstructs the residual from
+the exported Cartesian coordinate intervals. It checks those intervals
+against the two plane equations and the disk and trim radii. The
+threshold equality at \(t=0.375\) is an isolated contact. A prefix with no
+feasible upper witness leaves its remaining interval unresolved.
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Independent trim-edge audit. The point-pair residual is an
+upper bound recomputed from the archived coordinate intervals.}
+\label{tab:edge-audit}
+\begin{tabular}{lrrrrr}
+\toprule
+Case & Reference & Outcome & Safe prefix & Width & Residual\\
+\midrule
+\WitnessFollowupRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+Both crossing cases return edge witnesses and contain their analytic
+entry times. The exact graze remains unresolved, with its prefix ending
+\(4.77\times10^{-7}\) before the reference time. The near miss certifies
+the entire interval at a minimum margin of \(2^{-23}\) mm.

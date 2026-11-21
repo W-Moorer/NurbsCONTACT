@@ -198,6 +198,76 @@ def nasa_selected_macros(root):
     return rows
 
 
+def clearance_followup_macros(root):
+    report_file = root / "summary.json"
+    if not report_file.is_file():
+        return []
+    report = json.loads(report_file.read_text(encoding="utf-8"))
+
+    def value(x, digits=3):
+        if x is None:
+            return "--"
+        parts = f"{x:.{digits}g}".split("e")
+        if len(parts) == 1:
+            return parts[0]
+        mantissa, exponent = parts
+        return rf"\({mantissa}\times10^{{{int(exponent)}}}\)"
+
+    def end(row):
+        return " & ".join(row) + r" \\"
+
+    def table(name, rows):
+        return [rf"\newcommand{{\{name}}}{{%", *(end(row) for row in rows), "}"]
+
+    rotation_labels = {
+        "planar-tilt": "Planar tilt", "curved-tilt": "Curved tilt",
+        "interior-entry": "Interior entry", "rotating-near-miss": "Rotating near miss",
+    }
+    rotation = []
+    for case, label in rotation_labels.items():
+        baseline = report["rotation"][case]["chen-obb-chord"]
+        native = report["rotation"][case]["native"]
+        ref = native["reference_lower"]
+        rotation.append((label, f"{float(ref):.6f}" if ref else "Clear",
+            f"{baseline['median_us']/1000:.3f}", f"{native['median_us']/1000:.3f}",
+            value(baseline["maximum_width"]), value(native["maximum_width"])))
+
+    hole_labels = {
+        "throat-pass": "Counterbore passage", "shoulder-entry": "Counterbore shoulder",
+        "mouth-entry": "Counterbore mouth", "voron-spacer": "Voron M5 spacer",
+        "voron-washer": "Voron M3 washer", "voron-bearing": "Voron F695 bearing",
+    }
+    holes = []
+    for case, label in hole_labels.items():
+        group = "assembly" if case.startswith("voron-") else "counterbore"
+        row = report[group][case]
+        source = row["axial"]
+        ref = source["reference_lower"]
+        timings = []
+        for method in ("swept-box", "directional", "axial"):
+            item = row[method]
+            tag = r"${}^{*}$" if item["status"] == "unresolved" or item["runs_above_width_target"] else ""
+            timings.append(f"{item['median_us']/1000:.3f}" + tag)
+        reference = "Unresolved" if source["reference_status"] == "unresolved" else (
+            f"{float(ref):.6f}" if ref else "Clear")
+        holes.append((label, reference, *timings,
+                      f"{row['axial']['median_nodes']:.0f}"))
+
+    audit_labels = {
+        "trim-edge-entry": "Trim-edge entry", "narrow-edge-entry": "Narrow entry",
+        "exact-edge-graze": "Exact grazing", "near-edge-miss": "Near miss",
+    }
+    audit = []
+    for case, label in audit_labels.items():
+        row = report["audit"][case]["axial"]
+        ref = row["reference_lower"]
+        audit.append((label, f"{float(ref):.9f}" if ref else "Clear", row["status"],
+                      f"{row['minimum_safe_prefix']:.9f}", value(row["maximum_width"]),
+                      value(row["maximum_witness_distance"], 10)))
+    return (table("RotationFollowupRows", rotation) + table("HoleFollowupRows", holes) +
+            table("WitnessFollowupRows", audit))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("results", type=Path)
@@ -221,6 +291,7 @@ def main():
     for name, value in external_validation_macros(args.results.parent / "contact_validation").items():
         lines.append(rf"\newcommand{{\{name}}}{{{value}}}")
     lines.extend(nasa_selected_macros(project / "results" / "gears" / "experimental"))
+    lines.extend(clearance_followup_macros(project / "benchmarks" / "clearance-followup"))
     lines.extend([r"\newcommand{\PerformanceRows}{%", *table_rows(summary), "}"])
     lines.extend([r"\newcommand{\ProductionRows}{%", *production_rows(summary), "}"])
     (source / "manuscript-results.tex").write_text("\n".join(lines) + "\n", encoding="utf-8")

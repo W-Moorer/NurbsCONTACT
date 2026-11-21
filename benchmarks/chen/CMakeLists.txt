@@ -14,3 +14,11 @@ add_subdirectory(../.. nurbscontact)
 add_executable(nc_chen_common common.cpp)
 target_include_directories(nc_chen_common SYSTEM PRIVATE "${TDIB_SOURCE_DIR}/core" "${EIGEN_INCLUDE_DIR}")
 target_link_libraries(nc_chen_common PRIVATE nurbscontact)
+
+# Generate an experimental variant from the pinned header. The common
+# linear benchmark still includes the official header directly.
+include(rotation_header.cmake)
+add_executable(nc_chen_rotation rotation.cpp)
+target_include_directories(nc_chen_rotation PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+target_include_directories(nc_chen_rotation SYSTEM PRIVATE "${TDIB_SOURCE_DIR}/core" "${EIGEN_INCLUDE_DIR}")
+target_link_libraries(nc_chen_rotation PRIVATE nurbscontact)

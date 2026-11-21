@@ -1,0 +1,4 @@
+# name fixed-id moving-id start-dx start-dy start-dz velocity-x velocity-y velocity-z clearance-mm
+voron-spacer 20 9 0.10 0 -26 0 0 26 0.03125
+voron-washer 3 17 0.10 -25 0 0 25 0 0.03125
+voron-bearing 21 9 0.10 0 -26 0 0 26 0.03125

@@ -300,7 +300,8 @@ void measure_clearance(
     }
 }
 
-void measure(const std::vector<Component>& components, const char* config, const char* filename, int repeats) {
+void measure(const std::vector<Component>& components, const char* config, const char* filename,
+             int repeats, bool all_variants) {
     if (repeats < 1) throw std::invalid_argument("repetition count must be positive");
     const auto cases = read_cases(config, components.size());
     std::ofstream out(filename);
@@ -315,17 +316,17 @@ void measure(const std::vector<Component>& components, const char* config, const
         const PreparedModel a{adapt_occt(ca.shape)};
         const PreparedModel b{adapt_occt(cb.shape)};
         const auto reference = reference_check(ca, cb, scene.motion, scene.clearance);
-        Options options;
-        options.distance_tolerance = 2e-4;
-        options.time_tolerance = 5e-4;
-        options.max_nodes = 200'000;
-        for (const bool radial : {false, true}) {
-            options.axial_time = radial;
-            sweep(a, b, scene.motion, {0, 1}, scene.clearance, options);
-        }
+        constexpr Options base{2e-4, 5e-4, 200'000};
+        std::array variants{base, base, base};
+        variants[1].axial_time = variants[2].axial_time = false;
+        variants[2].directional_time = false;
+        constexpr std::array names{"axial", "directional", "swept-box"};
+        const int methods = all_variants ? 3 : 2;
+        for (int j = 0; j < methods; ++j) sweep(a, b, scene.motion, {0, 1}, scene.clearance, variants[j]);
         for (int i = 0; i < repeats; ++i) {
-            for (int j = 0; j < 2; ++j) {
-                options.axial_time = (i + j) % 2 == 0;
+            for (int j = 0; j < methods; ++j) {
+                const int variant = (i + j) % methods;
+                const auto& options = variants[variant];
                 const auto start = std::chrono::steady_clock::now();
                 const auto result = sweep(a, b, scene.motion, {0, 1}, scene.clearance, options);
                 const auto stop = std::chrono::steady_clock::now();
@@ -335,9 +336,12 @@ void measure(const std::vector<Component>& components, const char* config, const
                     (result.status == SweepStatus::clear ||
                         (result.witness_time && reference.upper &&
                          result.safe_prefix <= *reference.upper && reference.lower <= *result.witness_time));
-                passed = passed && agreed &&
-                    (!result.witness_time || *result.witness_time - result.safe_prefix <= options.time_tolerance);
-                out << scene.name << ',' << (options.axial_time ? "axial" : "directional") << ',' << i << ','
+                const bool safe_unresolved = result.status == SweepStatus::unresolved &&
+                    (reference.status == SweepStatus::clear ||
+                     result.safe_prefix <= reference.upper.value_or(reference.lower));
+                passed = passed && (all_variants ? (agreed || safe_unresolved) :
+                    (agreed && (!result.witness_time || *result.witness_time - result.safe_prefix <= options.time_tolerance)));
+                out << scene.name << ',' << names[variant] << ',' << i << ','
                     << status(result.status) << ',' << result.safe_prefix << ',';
                 if (result.witness_time) out << *result.witness_time;
                 out << ',';
@@ -361,13 +365,16 @@ int main(int argc, char** argv) {
     try {
         if (argc == 4 && std::string_view{argv[1]} == "catalog") {
             catalog(read_components(argv[2]), argv[3]);
-        } else if (argc == 6 && std::string_view{argv[1]} == "measure") {
-            measure(read_components(argv[2]), argv[3], argv[4], std::stoi(argv[5]));
+        } else if (argc == 6 && (std::string_view{argv[1]} == "measure" ||
+                                 std::string_view{argv[1]} == "measure-all")) {
+            measure(read_components(argv[2]), argv[3], argv[4], std::stoi(argv[5]),
+                    std::string_view{argv[1]} == "measure-all");
         } else if (argc == 5 && std::string_view{argv[1]} == "clearance") {
             measure_clearance(read_components(argv[2]), argv[3], argv[4]);
         } else {
             std::cerr << "Usage: nc_assembly_bench catalog ASSEMBLY.step OUTPUT.csv\n"
                          "       nc_assembly_bench measure ASSEMBLY.step CASES.txt OUTPUT.csv REPEATS\n"
+                         "       nc_assembly_bench measure-all ASSEMBLY.step CASES.txt OUTPUT.csv REPEATS\n"
                          "       nc_assembly_bench clearance ASSEMBLY.step CASES.txt OUTPUT.csv\n";
             return 2;
         }

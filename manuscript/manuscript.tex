@@ -28,7 +28,7 @@
 \maketitle
 
 \begin{abstract}
-Continuous clearance queries must account for both the motion between poses and the regions removed by CAD trims. We certify positive clearance between nominal STEP boundaries under a prescribed relative fixed-axis rotation and affine translation. Outward-rounded directional bounds enclose the original curved control-point trajectories. For supported plane and cylinder faces under fixed relative orientation, radial and axial bounds expose the void inside a trimmed bore before parameter subdivision. The search returns a safe time prefix and, when an original-surface witness is available, an upper bound on first threshold entry. In a matched ablation, the circular-rim bounds reduce median runtime from 693.1 ms to 1.24 ms for a controlled eccentric bore query. Tested production wheel interfaces gain 2.80 to 5.97 times. A complete lidar insertion exceeds the target interval width at the work cap. Separate implicit-dynamics experiments evaluate the behavior of native and tessellated contact queries in downstream models.
+Continuous clearance queries must account for both the motion between poses and the regions removed by CAD trims. We certify positive clearance between nominal STEP boundaries under a prescribed relative fixed-axis rotation and affine translation. Outward-rounded directional bounds enclose the original curved control-point trajectories. For supported plane and cylinder faces under fixed relative orientation, radial and axial bounds expose the void inside a trimmed bore before parameter subdivision. The search returns a safe time prefix and, when an original-surface witness is available, an upper bound on first threshold entry. The circular-rim bounds reduce median runtime from 693.1 ms to 1.24 ms for a controlled eccentric bore. A counterbore reproduces this gain mechanism at the mouth and the internal shoulder. Tests on two production STEP sources show interface-dependent gains and work-cap limits. A conservative chord-based Chen OBB comparison uses the same analytic rotation references, and an independent audit checks trim-edge witnesses through near grazing. Separate implicit-dynamics experiments compare native and tessellated geometry in downstream models.
 \end{abstract}
 
 \section{Introduction}
@@ -222,8 +222,11 @@ Fixed-axis projection enclosures and the trim-derived circular void
 retain distinct information about the original STEP boundaries. Both
 preserve coverage of the first-entry search under their stated motion
 and face assumptions. The strongest measured gains occur when the
-void removes most of a coarse candidate interval. The full lidar
-insertion establishes a documented work-cap limit.
+void removes most of a coarse candidate interval, including both
+entry rims of the counterbore. The Voron spacer and full lidar insertion
+show where the work cap limits the available certificate. The trim-edge
+audit confirms threshold crossings and shows the finite safe prefix
+returned at isolated grazing.
 
 The trajectory certificate concerns a specified relative motion and
 nominal closed trim domains. The HHT application uses its own accepted
@@ -233,7 +236,7 @@ physical assumptions. Their agreement and discrepancies characterize
 those models independently of the continuous-query certificate.
 
 \paragraph{Reproducibility.}
-The \path{nc_hht} target generates and reads the STEP fixtures. \path{benchmarks/hht/run.py} runs the numerical suite, \path{analyze.py} validates trajectories and aggregates results, and \path{render.py} and \path{plots.py} generate the videos and figures from the recorded states. \path{results/hht/protocol.json} specifies the run matrix. The results include per-run solver counters, clearance bounds, raw geometry tests, and the multi-view animation index. The production assembly input hashes, motion definitions, and raw observations are in \path{benchmarks/assemblies/}. The paired eccentric-rim measurements are in \path{benchmarks/axial-results.csv}.
+The paired eccentric-rim measurements are in \path{benchmarks/axial-results.csv}. The follow-up protocol and raw results are in \path{benchmarks/clearance-followup/}. The production STEP input hashes and motion definitions are in \path{benchmarks/assemblies/}. The \path{nc_hht} target generates and reads the dynamics STEP fixtures. \path{benchmarks/hht/run.py} runs the dynamics suite, \path{analyze.py} validates trajectories and aggregates results, and \path{render.py} and \path{plots.py} generate videos and figures. \path{results/hht/protocol.json} specifies the run matrix and the results contain the multi-view animation index.
 
 \bibliographystyle{unsrtnat}
 \bibliography{manuscript}
