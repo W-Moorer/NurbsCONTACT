@@ -16,7 +16,6 @@ The native adapter compiles planar faces with linear trimming wires and uses the
 | GAUGE incline | 50 mm wood, plastic and metal cubes with three translational coordinates. The first three board poses set its fixed frame. Compare center position along the board while the cube remains fully supported. | IDs 1–5 per material determine one kinetic friction coefficient from the supported motion. The remaining records use those frozen values. Metal trial 17 is absent in the pinned publication. The initial projected speed uses the two adjacent early frames, which are excluded from scoring. |
 | Steel ball striking a beam | 70 mm steel sphere and one vertical beam mode. The measured observable is the duration of the first electrical contact pulse at midspan. | All 27 measurements are predictions with stiffness from reported elastic constants and curvature. The beam modal frequency comes from its measured displacement spectrum and its modal mass is half the beam mass. The duration points come from Qi and Yin's Fig. 17. |
 | Slider-crank with pin–bore clearance | Prescribed crank with dynamic rod rotation and slider translation. Compare slider travel and acceleration on the published encoder angle. | Seven clearance–speed combinations from the vector paths of the publisher PDF. Use published material and restitution parameters without fitting measured curves. |
-| Robot copper-ring insertion | Prescribed measured wrist height and a reduced axial ring–stop STEP interface. Compare tool-frame axial force. | Calibrate one stiffness and 13 offset-specific stop heights on slots 1–2. Evaluate on 150 held-out trials from slots 3–4. |
 
 The same nominal STEP parts are used by both backends. These STEP reconstructions use the dimensions of the published geometry, including GAUGE's released assets, and the reported steel specimens. GAUGE scoring uses neither a fitted time shift nor a fitted trajectory transform. The rebound score is for the vertical component. The slide score is for supported translation. The beam score covers the first pulse in every reported speed condition. The coarser camera data support rebound heights and trajectory timing at the recorded cadence. Electrical pulse duration provides the independent high-bandwidth observable.
 
@@ -33,7 +32,7 @@ Seven serial timing repeats give triangle-BVH to B-rep integration time ratios o
 - [Force, position and gap traces](runs) · [Scene decks](scenes) · [Performance repetitions](timing.json)
 - [Measured-versus-simulated figure](figures/contact-validation.pdf) · [Final paper](../../docs/hht.pdf)
 - [Multi-view animations](animations/index.json)
-- [Clearance and copper-ring results, models, evidence limits and reproduction](external-validation.md)
+- [Clearance results, models, evidence limits and reproduction](external-validation.md#clearance-slider-crank)
 
 ## Scene format
 

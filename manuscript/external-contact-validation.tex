@@ -1,4 +1,4 @@
-\subsection{Clearance joints and copper-ring insertion}
+\subsection{Slider--crank clearance joint}
 \label{sec:external-contact-cases}
 
 For pin--bore pairs the probe starts at each component's axis and intersects
@@ -19,6 +19,10 @@ elastic constants, friction coefficient and restitution coefficient, with
 no fit to the digitized accelerometer traces. We extracted the measured
 paths directly from the PDF of Figs.~5(b), 6, and 8. Each simulation runs six
 revolutions and compares the last two on the published encoder angle.
+The baseline deck attaches the sleeve to the slider and the pin to the
+rod. The physical rig uses the opposite mounting. With circular sections
+this swap preserves the radial gap at fixed center positions, while the
+rotating surface changes the tangential contact kinematics.
 
 At 200 rpm and 0.25 mm radial clearance, B-rep reproduced the gross travel
 with a \ExternalSliderPosition{} mm position RMSE. Acceleration RMSE was
@@ -53,30 +57,24 @@ increases the acceleration error.}
 \label{fig:clearance-slider-validation}
 \end{figure}
 
-The \href{https://doi.org/10.5281/zenodo.6364950}{copper-ring insertion data}
-contain commanded and measured wrist positions and tool-frame wrench samples
-from four fixture slots. The
-\href{https://doi.org/10.3390/s22207962}{experimental description} reports a
-deformable ring with two lugs. We use a reduced axial interface consisting of
-an annulus and a stop plane, since the available data lack tooling dimensions
-and a ring deformation model. Measured wrist translation drives the contact
-probe. The commanded turnaround sets the axial origin and aligns the sample
-indices. Slots 1 and 2 determine one axial stiffness and one effective stop
-height per offset. Slots 3 and 4 have no force input to the fit.
+Flores et al. excluded shaft torque from their comparison because of a
+residual signal in the torque sensor. They measured slider acceleration
+and crank angle independently and inferred separation near \(43^\circ\)
+and recontact near \(63^\circ\) from Fig.~5(d). The raw acquisition and
+filter settings were unavailable for this comparison. In the authors'
+Fig.~11(c,d), the first-half-revolution negative extrema are near
+\(46.7^\circ\) for the measurement and \(6.2^\circ\) for their own
+simulation. Those extrema are waveform landmarks. The physical contact
+transitions were inferred separately.
 
-Across \ExternalRingCount{} held-out trials the force RMSE is
-\ExternalRingRmse{} N, compared with \ExternalRingZero{} N for a zero-force
-baseline and \ExternalRingRepeat{} N for within-slot, within-offset
-variation about the repeat median. The measured and replay median peaks are
-\ExternalRingMeasuredPeak{} N and \ExternalRingPredictedPeak{} N,
-respectively. The planar axial witness gives the same output with both
-geometry backends. These results quantify the axial surrogate's ability to
-reproduce the recorded force, with substantial residual error in the peak.
-
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\linewidth]{\ContactValidationPath copper-ring-validation.pdf}
-\caption{Held-out copper-ring force histories and peaks. Shading shows the
-measured interquartile interval. Time is represented by sample index.}
-\label{fig:copper-ring-validation}
-\end{figure}
+Our saved B-rep states show continuous compression over the reported
+\(43^\circ\)--\(63^\circ\) window, including the refined and extended
+runs. A diagnostic run at 10 microseconds with the physical sleeve
+and pin mounting moved the first-half-revolution negative extremum to
+\(0.3^\circ\) and retained continuous compression in that window.
+Flores et al. identified the compliance of the joints, friction in the
+preloaded slider guide, misalignment, and pin and sleeve roundness as
+contributors to the response differences. Their normal force law also
+scales dissipation by the approach speed at each impact. Our law uses
+a fixed rate coefficient. The comparison supports gross travel and
+identifies a discrepancy in the contact transitions.

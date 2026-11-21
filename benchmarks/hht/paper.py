@@ -104,8 +104,7 @@ def production_rows(summary):
 
 def external_validation_macros(root):
     slider_file = root / "clearance" / "summary.json"
-    ring_file = root / "insertion" / "summary.json"
-    if not (slider_file.exists() and ring_file.exists()):
+    if not slider_file.exists():
         return {}
     slider = json.loads(slider_file.read_text(encoding="utf-8"))
     comparison = {run["backend"]: run for run in slider["runs"]
@@ -119,7 +118,6 @@ def external_validation_macros(root):
             matched.setdefault((run["rpm"], run["clearance_mm"]), {})[run["backend"]] = run["wall_s"]
     time_ratios = [group["brep"]/group["mesh5um"] for group in matched.values()
                    if {"brep", "mesh5um"} <= group.keys()]
-    ring = json.loads(ring_file.read_text(encoding="utf-8"))["metrics"]["holdout"]
     macros = {
         "ExternalSliderPosition": f"{brep['position_rmse_mm']:.2f}",
         "ExternalSliderRmse": f"{brep['uniform_phase_acceleration_rmse_m_s2']:.2f}",
@@ -133,12 +131,6 @@ def external_validation_macros(root):
         "ExternalSliderSpeedRatio": f"{mesh['wall_s']/brep['wall_s']:.2f}",
         "ExternalSliderMedianTimeRatio": f"{median(time_ratios):.2f}",
         "ExternalSliderTimingCases": str(len(time_ratios)),
-        "ExternalRingCount": str(ring["count"]),
-        "ExternalRingRmse": f"{ring['rmse_N']:.2f}",
-        "ExternalRingZero": f"{ring['zero_force_baseline_rmse_N']:.2f}",
-        "ExternalRingRepeat": f"{ring['replicate_median_rmse_N']:.2f}",
-        "ExternalRingMeasuredPeak": f"{ring['median_measured_peak_N']:.2f}",
-        "ExternalRingPredictedPeak": f"{ring['median_simulated_peak_N']:.2f}",
     }
     if "extended_run" in slider:
         extended = slider["extended_run"]

@@ -10,12 +10,22 @@ At 200 rpm and 0.25 mm, the B-rep travel RMSE is 0.66 mm. Acceleration RMSE is 1
 
 The median B-rep integration time across the seven conditions is 2.40 times the 5 µm mesh time and 3.65 times the 25 µm mesh time. Each backend and condition was timed once.
 
+### Why the acceleration differs
+
+Flores et al. excluded their shaft torque signal because of a persistent residual component. They used a separate slider accelerometer, LVDT and crank encoder in the published comparison. The authors inferred a separation near 43° and recontact near 63° from Fig. 5(d). Their rig could only infer joint impact from slider acceleration. Raw samples and accelerometer processing settings were unavailable for the present comparison. [Flores et al., Sections 3–5](https://doi.org/10.1007/s11071-010-9899-8)
+
+The first-half-revolution negative acceleration extremum is at 46.6–46.7° in the published experimental traces in Figs. 5(d), 6(b) and 11(c), and at 6.2° in the authors' numerical trace in Fig. 11(d). These are extrema in the digitized plots. The corresponding figures may show the same experimental record. Our B-rep trace has a positive normal contact force throughout the reported 43–63° window in both scored revolutions at 10 and 5 µs and in the final two revolutions of the 30-revolution run.
+
+At 200 rpm, a 43° phase offset corresponds to about 36 ms. Applying a common ±43° offset to the periodic simulated position raises the position RMSE from 0.66 mm to 28.95–29.16 mm. The position agreement argues against a uniform shift of the crank reference. The publication lacks the raw synchronized signals needed to assess a delay specific to the accelerometer channel.
+
+The published rig mounts the sleeve on the rod and the journal on the slider. The baseline replay decks interchange those attachments. This preserves the nominal circular gap calculation and changes the tangential slip and moment arm. To isolate this detail at 200 rpm and 0.25 mm, assign the rod body fields to the sleeve, assign the slider body fields to the pin, and move the orbit drive from body 1 to body 0. Retain the other inputs and six revolutions at 10 µs. In this test the negative extremum occurs at 0.3° and the waveform RMSE is 13.07 m/s². The positive normal force persists from 43° to 63° in both scored revolutions. The original authors discuss joint flexibility, preload friction, misalignment, and roundness. Their dissipation term uses the approach speed at each impact in Eq. (3), while the shared solver uses a fixed rate coefficient for the case. [Flores et al., Eqs. (3)–(5) and Figs. 5–6 and 11](https://doi.org/10.1007/s11071-010-9899-8)
+
 - [Per-condition and per-backend metrics](clearance/summary.json) · [Travel and acceleration comparison](figures/clearance-slider-validation.pdf)
 - [200 rpm and 0.25 mm acceleration samples](clearance/paired-200rpm-0.25mm-brep.csv) · [Position samples](clearance/position-200rpm-0.25mm-brep.csv)
 - [STEP fixtures and scene decks](clearance/models)
 - [Plan-view animation](animations/clearance-slider-plan.mp4) · [Isometric animation](animations/clearance-slider-isometric.mp4)
 
-## Robot copper-ring insertion
+## Archived robot copper-ring insertion
 
 The archived records provide commanded and measured wrist pose and wrist force/torque for 300 attempts. The dataset covers four tooling slots and 13 commanded lateral offsets. The paired CSV includes transformed measurements from Mihael Simonič and Matevž Majcen Horvat's *Copper Rings Insertion Attempts Dataset*, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Each trial is registered to the first minimum of commanded Z. The model uses measured axial position relative to that command target. The measured tool-frame axial force is centered on the median of the first 35 samples. The evaluation window covers sample offsets −28 through +23. The files contain no timestamps, so the curves use sample index and the model uses rate-independent compliance.
 
