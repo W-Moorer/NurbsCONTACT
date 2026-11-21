@@ -189,6 +189,53 @@ python benchmarks/contact_validation/clearance_bearings.py $contact $bearings $r
 python benchmarks/contact_validation/clearance_bearing_report.py $bearings $ref "$ref/auxiliary-bearings"
 ~~~
 
+### Crank speed and flywheel inertia
+
+The rotating crank assembly has a reported inertia of
+0.460327 kg·m². The dynamic drive deck releases its angle as a
+fourteenth coordinate. That coordinate receives the needle-bearing
+reaction moment and a motor torque. A constant feed-forward torque
+balances the average bearing moment from the fixed-speed run.
+Two sensitivity cases also use proportional speed feedback with
+response times of 0.30 s and 0.03 s. The controller gains represent
+model assumptions. The measured controller response and encoder time
+record are unavailable. The scores use the integrated crank angle
+directly through the fifth and sixth revolutions.
+
+For each digitized acceleration envelope, the speed audit allows
+positive angular speed within a relative deviation of the nominal
+200 rpm. If $h$ is the ratio of actual to nominal elapsed time per
+radian, $h$ lies in $[1/(1+\epsilon),1/(1-\epsilon)]$. The
+displacement integral contains a product of two such time factors.
+Bounding the two factors according to the sign of acceleration gives
+lower and upper displacement estimates at each displayed phase. A
+linear feasibility check allows free initial position and velocity
+and the rigid-planar clearance envelope for all three joints. The
+first feasible tolerance in the relaxed equations gives a necessary
+speed deviation. The separate ideal-path test uses
+$\mathrm{d}(v^2)/\mathrm{d}\theta=2a\,\mathrm{d}x/\mathrm{d}\theta$
+with the ideal center path held fixed.
+[Original rig](https://doi.org/10.1007/s11071-010-9899-8) · [Drive and acquisition description](https://hdl.handle.net/10057/324) · [Speed audit](clearance/drive-inertia/speed-audit.json) · [Raw-sample comparison](clearance/drive-inertia/drive-response.pdf)
+
+Run the auxiliary-bearing commands first to produce the fixed-speed
+time records from which the feed-forward torques are computed.
+
+~~~powershell
+$contact = 'build/occt/Release/nc_contact.exe'
+$ref = 'results/contact_validation/clearance'
+$bearings = 'build/external-validation/flores-bearings'
+$drive = 'build/external-validation/flores-drive'
+$fixed = "$bearings/200rpm-0.25mm-10us-6cycles/both/200rpm-0.25mm-bearings.csv"
+python benchmarks/contact_validation/clearance_drive.py $contact $drive $ref $fixed
+python benchmarks/contact_validation/clearance_drive.py $contact $drive $ref $fixed --cases slow --step-us 5
+$fixed150 = "$bearings/150rpm-0.25mm-10us-6cycles/both/150rpm-0.25mm-bearings.csv"
+python benchmarks/contact_validation/clearance_drive.py $contact $drive $ref $fixed150 --cases slow --rpm 150
+$fixedLarge = "$bearings/200rpm-0.50mm-10us-6cycles/both/200rpm-0.50mm-bearings.csv"
+python benchmarks/contact_validation/clearance_drive.py $contact $drive $ref $fixedLarge --cases slow --clearance 0.50
+python benchmarks/contact_validation/clearance_speed_audit.py build/external-validation/source/springer.pdf "$drive/speed-audit.json"
+python benchmarks/contact_validation/clearance_drive_report.py $drive $ref "$ref/drive-inertia"
+~~~
+
 ## Archived robot copper-ring insertion
 
 The archived records provide commanded and measured wrist pose and wrist force/torque for 300 attempts. The dataset covers four tooling slots and 13 commanded lateral offsets. The paired CSV includes transformed measurements from Mihael Simonič and Matevž Majcen Horvat's *Copper Rings Insertion Attempts Dataset*, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Each trial is registered to the first minimum of commanded Z. The model uses measured axial position relative to that command target. The measured tool-frame axial force is centered on the median of the first 35 samples. The evaluation window covers sample offsets −28 through +23. The files contain no timestamps, so the curves use sample index and the model uses rate-independent compliance.

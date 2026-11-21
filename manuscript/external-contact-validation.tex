@@ -297,3 +297,25 @@ nominal clearances increases the rigid-planar displacement bound to
 \BearingRigidBound{} mm, below the excursions inferred from the
 published acceleration envelopes.
 \fi
+
+\ifdefined\DrivePhase
+\paragraph{Finite crank inertia.}
+We released the crank angle with the reported \(0.460327\)
+kg\,m\(^{2}\) inertia. The drive torque covers the mean bearing reaction
+and optionally uses proportional speed feedback. The response times are
+0.30 and 0.03 s. The integrated encoder angle defines the comparison
+phase. Across the drive variants, the simulated speed deviates by at most
+\DriveMaxDeviation\% from 200 rpm. The \(5\,\mu\mathrm{s}\) run with
+0.30 s feedback ranges from \DriveSpeedLower{} to \DriveSpeedUpper{} rpm.
+It produces a trough at \(\DrivePhase^\circ\) of \DrivePeak{} m/s\(^{2}\),
+minimum main-joint load of \DriveLoad{} N in the reported separation
+window, and sustained-loading RMSE of \DriveQuiet{} m/s\(^{2}\).
+The raw RMSEs on the 150 rpm, 0.25 mm and 200 rpm, 0.50 mm cases are
+\DriveTransferLow{} and \DriveTransferLarge{} m/s\(^{2}\).
+An independent time-map bound allows any positive angular speed
+and the combined 0.264 mm planar clearance in the position equation.
+Interpreting the plotted acceleration as slider-center motion requires
+at least \DriveBoundFigSix\% speed deviation for Fig.~6(b) and
+\DriveBoundFigFive\% for Fig.~5(d) over \(25^\circ\)--\(85^\circ\).
+These are necessary bounds for the digitized envelopes.
+\fi

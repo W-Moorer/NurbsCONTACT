@@ -155,7 +155,18 @@ drives 1
     return path
 
 
-def simulate(exe, deck, directory, tag, deflection, requested_step, rpm, cycles, reuse, stride=1):
+def encoder_interval(crank_angle, start_turn):
+    phase = np.rad2deg(crank_angle)-start_turn*360
+    if np.any(np.diff(phase)<=0) or phase[0]>0 or phase[-1]<720:
+        raise ValueError("at least two revolutions of increasing encoder angle are required")
+    # Keep a neighbor on each side of the two-revolution window for interpolation.
+    first,last = np.searchsorted(phase,(0,720))
+    interval = slice(max(0,first-1),last+1)
+    return phase[interval],interval
+
+
+def simulate(exe, deck, directory, tag, deflection, requested_step, rpm, cycles, reuse,
+             stride=1, encoder_window=None):
     cycle = 60/rpm
     per_cycle = round(cycle/requested_step)
     dt = cycle/per_cycle
@@ -170,6 +181,10 @@ def simulate(exe, deck, directory, tag, deflection, requested_step, rpm, cycles,
         trace = np.loadtxt(stream, dtype=np.dtype([(field, "f8") for field in fields]), delimiter=",")
     with stats_path.open(newline="") as stream:
         stats = {key: float(value) for key, value in next(csv.DictReader(stream)).items()}
+    if encoder_window is not None:
+        coordinate, start_turn = encoder_window
+        phase,interval = encoder_interval(trace[f"q{coordinate}"],start_turn)
+        return phase, trace[interval], stats | {"step_s": dt}
     selected = trace["time_s"] >= (cycles-2)*cycle - dt/2
     phase = (trace["time_s"][selected]/cycle - cycles + 2)*360
     return phase, trace[selected], stats | {"step_s": dt}

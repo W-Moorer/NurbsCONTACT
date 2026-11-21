@@ -1,0 +1,50 @@
+{
+  "source_sha256": "ad7d8d5d6b1e7080245cdd87f452a53880e1111df11c3c3ca0f4e9abfb0bc816",
+  "assumptions": "The plotted extrema are linearly interpolated in encoder angle. Angular speed is positive. Axial acceleration is assigned to slider-center motion. The first bound allows total rigid planar clearance of 0.264 mm. The second fixes the ideal center path. Both leave initial speed free and relax acceleration envelopes independently at each phase.",
+  "analytic_controls": {
+    "exact_constant_200rpm": "feasible to within one part per million",
+    "exact_constant_214rpm_bound": 0.044692914560437204,
+    "variable_speed_within_five_percent_and_position_within_0p14mm_bound": 0.0
+  },
+  "panels": {
+    "5c-ideal-experiment": {
+      "phase_window_deg": [
+        25,
+        85
+      ],
+      "knots": 57,
+      "rigid_clearance_0p264mm_lower_bound_fraction": 0.0,
+      "exact_ideal_path_lower_bound_fraction": 0.013424935564398766
+    },
+    "5d-clearance-experiment": {
+      "phase_window_deg": [
+        25,
+        85
+      ],
+      "knots": 64,
+      "rigid_clearance_0p264mm_lower_bound_fraction": 0.029894584044814113,
+      "exact_ideal_path_lower_bound_fraction": 0.18708503767848023
+    },
+    "6b-clearance-experiment": {
+      "phase_window_deg": [
+        25,
+        85
+      ],
+      "knots": 34,
+      "rigid_clearance_0p264mm_lower_bound_fraction": 0.014549592509865763,
+      "exact_ideal_path_lower_bound_fraction": 0.162478556111455
+    }
+  },
+  "ideal_path_within_one_percent_at_peak": {
+    "phase_deg": 46.63339828565423,
+    "target_acceleration_m_s2": -50.6817236961557,
+    "required_angular_acceleration_rad_s2": [
+      875.8482011651637,
+      890.526462009692
+    ],
+    "required_crank_inertia_torque_N_m": [
+      403.17657489775627,
+      409.9333746775355
+    ]
+  }
+}

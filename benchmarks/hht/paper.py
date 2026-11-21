@@ -244,6 +244,28 @@ def external_validation_macros(root):
             "BearingTransferLow": f"{low['raw_rmse_m_s2']:.2f}",
             "BearingTransferLarge": f"{large['raw_rmse_m_s2']:.2f}",
         })
+    drive_file = slider_file.parent / "drive-inertia" / "summary.json"
+    if drive_file.is_file():
+        report = json.loads(drive_file.read_text(encoding="utf-8"))
+        audit = json.loads(drive_file.with_name("speed-audit.json").read_text(encoding="utf-8"))
+        bound = "rigid_clearance_0p264mm_lower_bound_fraction"
+        drive = report["refinement"]
+        event = drive["revolutions"][0]
+        worst = max(row["max_speed_deviation_fraction"] for row in (*report["screening"],drive))
+        low, large = report["held_out"]
+        macros.update({
+            "DriveSpeedLower": f"{drive['encoder_speed_rpm'][0]:.2f}",
+            "DriveSpeedUpper": f"{drive['encoder_speed_rpm'][1]:.2f}",
+            "DriveMaxDeviation": f"{100*worst:.2f}",
+            "DriveBoundFigSix": f"{100*audit['panels']['6b-clearance-experiment'][bound]:.2f}",
+            "DriveBoundFigFive": f"{100*audit['panels']['5d-clearance-experiment'][bound]:.2f}",
+            "DrivePhase": f"{event['window_min_phase_deg']:.2f}",
+            "DrivePeak": f"{event['window_min_m_s2']:.2f}",
+            "DriveLoad": f"{event['min_load_N']:.2f}",
+            "DriveQuiet": f"{drive['quiet_rmse_m_s2']:.2f}",
+            "DriveTransferLow": f"{low['raw_rmse_m_s2']:.2f}",
+            "DriveTransferLarge": f"{large['raw_rmse_m_s2']:.2f}",
+        })
     return macros
 
 

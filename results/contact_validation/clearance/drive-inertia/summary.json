@@ -1,0 +1,470 @@
+{
+  "source": "https://doi.org/10.1007/s11071-010-9899-8",
+  "flywheel_inertia_kg_m2": 0.460327,
+  "refinement": {
+    "measured_phase_deg": 46.63339828565423,
+    "measured_peak_m_s2": -50.6817236961557,
+    "raw_rmse_m_s2": 7.2033654072630275,
+    "quiet_rmse_m_s2": 5.341147969408169,
+    "quiet_max_abs_m_s2": 25.919895657651978,
+    "revolutions": [
+      {
+        "window_min_phase_deg": 46.4600694287235,
+        "window_min_m_s2": -19.457329630764672,
+        "minimum_inside_window": true,
+        "sensor_at_measured_phase_m_s2": -19.45600182621382,
+        "carriage_at_measured_phase_m_s2": -15.137356101357902,
+        "max_sensor_carriage_difference_m_s2": 5.463638930221261,
+        "min_load_N": 11.383480874991493,
+        "all_sections_open_fraction": 0.0,
+        "partially_loaded_fraction": 1.0,
+        "max_clearance_for_any_section_um": 38.589193088023336
+      },
+      {
+        "window_min_phase_deg": 46.45686685163628,
+        "window_min_m_s2": -19.523408364838645,
+        "minimum_inside_window": true,
+        "sensor_at_measured_phase_m_s2": -19.52195674817881,
+        "carriage_at_measured_phase_m_s2": -15.03750388193071,
+        "max_sensor_carriage_difference_m_s2": 5.3459642724434815,
+        "min_load_N": 11.09485427161001,
+        "all_sections_open_fraction": 0.0,
+        "partially_loaded_fraction": 1.0,
+        "max_clearance_for_any_section_um": 38.77871449849309
+      }
+    ],
+    "encoder_speed_rpm": [
+      199.52226109050633,
+      200.4614763101746
+    ],
+    "mean_encoder_rpm": 199.99597238106503,
+    "max_speed_deviation_fraction": 0.002388694547468373,
+    "max_acceleration_rad_s2": 3.563871891786914,
+    "max_motor_torque_N_m": 0.13128590665742446,
+    "max_motor_power_W": 2.7430775357154027,
+    "max_needle_torque_N_m": 1.5394654984111866,
+    "hht_angular_balance_error_N_m": 1.2062444054022903e-08,
+    "case": "slow",
+    "step_us": 5.0,
+    "rpm": 200,
+    "radial_clearance_mm": 0.25,
+    "encoder_coordinate": 13,
+    "encoder_turns": [
+      4,
+      6
+    ],
+    "output_filter": null,
+    "phase_shift_deg": 0,
+    "response_time_s": 0.3,
+    "bias_N_m": 0.05452069956558946,
+    "controller_N_m_s_rad": 1.5344233333333333,
+    "trough_widths_deg": [
+      6.021760416244959,
+      5.942147995958919
+    ],
+    "stats": {
+      "wall_s": 343.1043651,
+      "setup_s": 0.1248341,
+      "steps": 420000.0,
+      "accepted": 420000.0,
+      "subdivisions": 0.0,
+      "force_evaluations": 1043071.0,
+      "max_residual": 4.371225026326975e-06,
+      "pairs": 5215360.0,
+      "culled": 0.0,
+      "rays": 10430720.0,
+      "missing": 0.0,
+      "triangle_tests": 0.0,
+      "step_s": 4.9999999999999996e-06
+    }
+  },
+  "screening": [
+    {
+      "measured_phase_deg": 46.63339828565423,
+      "measured_peak_m_s2": -50.6817236961557,
+      "raw_rmse_m_s2": 7.197304405786005,
+      "quiet_rmse_m_s2": 5.292030689305831,
+      "quiet_max_abs_m_s2": 25.76424772901406,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 46.20525796130141,
+          "window_min_m_s2": -19.586357814016804,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.57761957424729,
+          "carriage_at_measured_phase_m_s2": -15.0719959049626,
+          "max_sensor_carriage_difference_m_s2": 5.46885371606788,
+          "min_load_N": 11.329563606270268,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.61051195745355
+        },
+        {
+          "window_min_phase_deg": 46.21800558907444,
+          "window_min_m_s2": -19.655325438868704,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.64654614930678,
+          "carriage_at_measured_phase_m_s2": -14.970368447442171,
+          "max_sensor_carriage_difference_m_s2": 5.3919886109125805,
+          "min_load_N": 11.031020950760366,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.80857732733653
+        }
+      ],
+      "encoder_speed_rpm": [
+        199.06005078657412,
+        199.99990144912599
+      ],
+      "mean_encoder_rpm": 199.5352808894327,
+      "max_speed_deviation_fraction": 0.004699746067129418,
+      "max_acceleration_rad_s2": 3.448934759129943,
+      "max_motor_torque_N_m": 0.05452069956558946,
+      "max_motor_power_W": 1.1418782988264147,
+      "max_needle_torque_N_m": 1.5331239055114998,
+      "hht_angular_balance_error_N_m": 1.1547137430262255e-08,
+      "case": "constant-torque",
+      "step_us": 10,
+      "rpm": 200,
+      "radial_clearance_mm": 0.25,
+      "encoder_coordinate": 13,
+      "encoder_turns": [
+        4,
+        6
+      ],
+      "output_filter": null,
+      "phase_shift_deg": 0,
+      "response_time_s": null,
+      "bias_N_m": 0.05452069956558946,
+      "controller_N_m_s_rad": 0.0,
+      "trough_widths_deg": [
+        5.7002372252526925,
+        5.627887325637765
+      ],
+      "stats": {
+        "wall_s": 114.6691176,
+        "setup_s": 0.0387833,
+        "steps": 210000.0,
+        "accepted": 210000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 628208.0,
+        "max_residual": 4.310238981987402e-06,
+        "pairs": 3141045.0,
+        "culled": 0.0,
+        "rays": 6282090.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 9.999999999999999e-06
+      }
+    },
+    {
+      "measured_phase_deg": 46.63339828565423,
+      "measured_peak_m_s2": -50.6817236961557,
+      "raw_rmse_m_s2": 7.204272275036198,
+      "quiet_rmse_m_s2": 5.341205511442082,
+      "quiet_max_abs_m_s2": 25.919904211799405,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 46.46006935165178,
+          "window_min_m_s2": -19.457334422165697,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.456016381185314,
+          "carriage_at_measured_phase_m_s2": -15.137621502549438,
+          "max_sensor_carriage_difference_m_s2": 5.463547223340463,
+          "min_load_N": 11.383318927996012,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.58932243984946
+        },
+        {
+          "window_min_phase_deg": 46.46286264353762,
+          "window_min_m_s2": -19.523410493600597,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.52197092078403,
+          "carriage_at_measured_phase_m_s2": -15.037819461888585,
+          "max_sensor_carriage_difference_m_s2": 5.346062071181471,
+          "min_load_N": 11.096702838287129,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.77859483067923
+        }
+      ],
+      "encoder_speed_rpm": [
+        199.5222605161573,
+        200.4614771554453
+      ],
+      "mean_encoder_rpm": 199.99597618942235,
+      "max_speed_deviation_fraction": 0.002388697419213548,
+      "max_acceleration_rad_s2": 3.563882518732559,
+      "max_motor_torque_N_m": 0.13128599894637627,
+      "max_motor_power_W": 2.743079456097306,
+      "max_needle_torque_N_m": 1.5394637640275612,
+      "hht_angular_balance_error_N_m": 1.137524752170549e-08,
+      "case": "slow",
+      "step_us": 10,
+      "rpm": 200,
+      "radial_clearance_mm": 0.25,
+      "encoder_coordinate": 13,
+      "encoder_turns": [
+        4,
+        6
+      ],
+      "output_filter": null,
+      "phase_shift_deg": 0,
+      "response_time_s": 0.3,
+      "bias_N_m": 0.05452069956558946,
+      "controller_N_m_s_rad": 1.5344233333333333,
+      "trough_widths_deg": [
+        6.01504044640253,
+        5.9429756852338755
+      ],
+      "stats": {
+        "wall_s": 115.8133783,
+        "setup_s": 0.0401386,
+        "steps": 210000.0,
+        "accepted": 210000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 628196.0,
+        "max_residual": 4.310094103864015e-06,
+        "pairs": 3140985.0,
+        "culled": 0.0,
+        "rays": 6281970.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 9.999999999999999e-06
+      }
+    },
+    {
+      "measured_phase_deg": 46.63339828565423,
+      "measured_peak_m_s2": -50.6817236961557,
+      "raw_rmse_m_s2": 7.215489774137878,
+      "quiet_rmse_m_s2": 5.363155098859538,
+      "quiet_max_abs_m_s2": 25.942657340869822,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 46.59969044781474,
+          "window_min_m_s2": -19.46007111350332,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.46003522540465,
+          "carriage_at_measured_phase_m_s2": -15.158280898805433,
+          "max_sensor_carriage_difference_m_s2": 5.527349917610655,
+          "min_load_N": 11.461480852788828,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.56325210063911
+        },
+        {
+          "window_min_phase_deg": 46.58711562083204,
+          "window_min_m_s2": -19.516593240108392,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.516480722750718,
+          "carriage_at_measured_phase_m_s2": -15.064244424340854,
+          "max_sensor_carriage_difference_m_s2": 5.399441035305983,
+          "min_load_N": 11.204530247116441,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.732186430705596
+        }
+      ],
+      "encoder_speed_rpm": [
+        199.62216163067046,
+        200.39171309429761
+      ],
+      "mean_encoder_rpm": 199.99967503772686,
+      "max_speed_deviation_fraction": 0.001958565471487983,
+      "max_acceleration_rad_s2": 3.53055533290106,
+      "max_motor_torque_N_m": 0.6616481512433952,
+      "max_motor_power_W": 13.831346948686052,
+      "max_needle_torque_N_m": 1.5501070631343568,
+      "hht_angular_balance_error_N_m": 1.184291109623814e-08,
+      "case": "fast",
+      "step_us": 10,
+      "rpm": 200,
+      "radial_clearance_mm": 0.25,
+      "encoder_coordinate": 13,
+      "encoder_turns": [
+        4,
+        6
+      ],
+      "output_filter": null,
+      "phase_shift_deg": 0,
+      "response_time_s": 0.03,
+      "bias_N_m": 0.05452069956558946,
+      "controller_N_m_s_rad": 15.344233333333333,
+      "trough_widths_deg": [
+        6.200943348227526,
+        6.108600363880534
+      ],
+      "stats": {
+        "wall_s": 114.7086746,
+        "setup_s": 0.0385642,
+        "steps": 210000.0,
+        "accepted": 210000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 628113.0,
+        "max_residual": 4.3077828520976524e-06,
+        "pairs": 3140570.0,
+        "culled": 0.0,
+        "rays": 6281140.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 9.999999999999999e-06
+      }
+    }
+  ],
+  "held_out": [
+    {
+      "measured_phase_deg": 44.4112919640406,
+      "measured_peak_m_s2": -10.08643406011177,
+      "raw_rmse_m_s2": 3.036885556558494,
+      "quiet_rmse_m_s2": 3.3020618448859143,
+      "quiet_max_abs_m_s2": 14.011999677367104,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 55.99233529275352,
+          "window_min_m_s2": -7.556473265069872,
+          "minimum_inside_window": false,
+          "sensor_at_measured_phase_m_s2": -5.3621193650737204,
+          "carriage_at_measured_phase_m_s2": -8.807166170085695,
+          "max_sensor_carriage_difference_m_s2": 3.445322965718062,
+          "min_load_N": 6.637944601458959,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 41.57726030649088
+        },
+        {
+          "window_min_phase_deg": 55.99919411607425,
+          "window_min_m_s2": -7.609755187654398,
+          "minimum_inside_window": false,
+          "sensor_at_measured_phase_m_s2": -5.361220736449273,
+          "carriage_at_measured_phase_m_s2": -8.849264082333354,
+          "max_sensor_carriage_difference_m_s2": 3.4881997265137965,
+          "min_load_N": 6.704163903102427,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 41.52026074174565
+        }
+      ],
+      "encoder_speed_rpm": [
+        149.64534291640754,
+        150.3461292277477
+      ],
+      "mean_encoder_rpm": 149.99928814093374,
+      "max_speed_deviation_fraction": 0.0023643805572831633,
+      "max_acceleration_rad_s2": 2.2241039550782156,
+      "max_motor_torque_N_m": 0.09780579152183883,
+      "max_motor_power_W": 1.532697312354851,
+      "max_needle_torque_N_m": 0.9642779372710013,
+      "hht_angular_balance_error_N_m": 6.727400095329905e-09,
+      "case": "slow",
+      "step_us": 10,
+      "rpm": 150,
+      "radial_clearance_mm": 0.25,
+      "encoder_coordinate": 13,
+      "encoder_turns": [
+        4,
+        6
+      ],
+      "output_filter": null,
+      "phase_shift_deg": 0,
+      "response_time_s": 0.3,
+      "bias_N_m": 0.040817918171902334,
+      "controller_N_m_s_rad": 1.5344233333333333,
+      "trough_widths_deg": [
+        null,
+        null
+      ],
+      "stats": {
+        "wall_s": 269.5795037,
+        "setup_s": 0.1499662,
+        "steps": 280000.0,
+        "accepted": 280000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 784530.0,
+        "max_residual": 1.8222359033370772e-06,
+        "pairs": 3922655.0,
+        "culled": 0.0,
+        "rays": 7845310.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 1e-05
+      }
+    },
+    {
+      "measured_phase_deg": 46.633457798307965,
+      "measured_peak_m_s2": -96.25104626331068,
+      "raw_rmse_m_s2": 14.171326554813897,
+      "quiet_rmse_m_s2": 14.85523087679195,
+      "quiet_max_abs_m_s2": 37.64784784701912,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 53.556295282918654,
+          "window_min_m_s2": -22.263783454733947,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -17.639127920470226,
+          "carriage_at_measured_phase_m_s2": -15.054745358474037,
+          "max_sensor_carriage_difference_m_s2": 11.6128588325996,
+          "min_load_N": 11.562681768451313,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.80323521418191
+        },
+        {
+          "window_min_phase_deg": 53.55941934409293,
+          "window_min_m_s2": -22.268907113479344,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -17.646070403025355,
+          "carriage_at_measured_phase_m_s2": -15.046231635061506,
+          "max_sensor_carriage_difference_m_s2": 11.585719206917497,
+          "min_load_N": 11.543671293398527,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.827334632184765
+        }
+      ],
+      "encoder_speed_rpm": [
+        199.52893239123844,
+        200.46412380113756
+      ],
+      "mean_encoder_rpm": 199.9960832538867,
+      "max_speed_deviation_fraction": 0.002355338043807942,
+      "max_acceleration_rad_s2": 5.001328780748526,
+      "max_motor_torque_N_m": 0.13242298961198673,
+      "max_motor_power_W": 2.7669281715910117,
+      "max_needle_torque_N_m": 2.2230358930970553,
+      "hht_angular_balance_error_N_m": 2.1347181911046675e-08,
+      "case": "slow",
+      "step_us": 10,
+      "rpm": 200,
+      "radial_clearance_mm": 0.5,
+      "encoder_coordinate": 13,
+      "encoder_turns": [
+        4,
+        6
+      ],
+      "output_filter": null,
+      "phase_shift_deg": 0,
+      "response_time_s": 0.3,
+      "bias_N_m": 0.05672975671378295,
+      "controller_N_m_s_rad": 1.5344233333333333,
+      "trough_widths_deg": [
+        3.3968883310332387,
+        3.3966484967823405
+      ],
+      "stats": {
+        "wall_s": 238.1198046,
+        "setup_s": 0.1469434,
+        "steps": 210000.0,
+        "accepted": 210000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 628883.0,
+        "max_residual": 4.376447779765036e-06,
+        "pairs": 3144420.0,
+        "culled": 0.0,
+        "rays": 6288840.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 9.999999999999999e-06
+      }
+    }
+  ]
+}
