@@ -69,6 +69,48 @@ void test_rational_patch() {
             "Bezier continuation changed the endpoint polynomial");
 }
 
+void test_deformed_rational_patch() {
+    const Rect chart{{0, 1}, {0, 1}};
+    const Rect trimmed{{0.25, 0.75}, {0.25, 0.75}};
+    BezierSurface surface{3, 2, {}, chart};
+    SurfaceMode mode;
+    for (const double u : {0., 0.5, 1.}) {
+        for (const double v : {0., 1.}) {
+            surface.poles.push_back(homogeneous(exact({u, v, 0}), u == 1. ? 2. : 1.));
+            mode.displacements.push_back(exact({0, 0, u == 1. ? 1. : 0.}));
+        }
+    }
+    const std::array modes{mode};
+    const std::array amplitude_window{Interval{0.01, 0.03}};
+    const auto swept = surface.deformed(modes, amplitude_window);
+    const auto box = bounding_box(swept.support(trimmed));
+    const auto reference = [](double u, double amplitude) {
+        return amplitude * 2 * u * u / (1 + u * u);
+    };
+    for (const double u : {0.25, 0.5, 0.75}) {
+        for (const double amplitude : {0.01, 0.02, 0.03}) {
+            const std::array point_amplitude{Interval{amplitude}};
+            const auto deformed = surface.deformed(modes, point_amplitude);
+            const double z = reference(u, amplitude);
+            require(deformed.eval({u, 0.5})[2].contains(z), "wrong rational modal deformation");
+            require(box[2].contains(z), "restricted hull misses modal deformation");
+        }
+    }
+
+    const std::array amplitude{Interval{0.02}};
+    Model model;
+    model.trims.push_back(TrimDomain{{loop(trimmed.u, trimmed.v)}});
+    model.patches.push_back({surface.deformed(modes, amplitude), chart, 1, 0});
+    const auto stop = plane(chart, {0, 0, 0.06});
+    Options options;
+    options.distance_tolerance = 0.001;
+    const auto gap = distance(PreparedModel{std::move(model)}, stop, {}, 0, options);
+    const double exact_gap = 0.06 - reference(trimmed.u.hi, amplitude[0].lo);
+    require(gap.lower <= exact_gap && exact_gap <= gap.upper &&
+            gap.upper - gap.lower <= options.distance_tolerance && gap.witness.has_value(),
+            "deformed trim-edge gap not certified");
+}
+
 void test_trim_distance() {
     TrimDomain trim{{loop({-2, 2}, {-2, 2}), loop({-1, 1}, {-1, 1})}};
     require(trim.classify(Vec{0, 0, 0}) == TrimClass::outside, "hole membership");
@@ -162,6 +204,7 @@ int main() {
     try {
         test_interval();
         test_rational_patch();
+        test_deformed_rational_patch();
         test_trim_distance();
         test_translation();
         test_rotation();

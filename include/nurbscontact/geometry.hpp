@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <optional>
+#include <span>
 #include <variant>
 #include <vector>
 
@@ -30,6 +31,11 @@ struct BezierCurve {
     IVec box() const;
 };
 
+struct SurfaceMode {
+    // Cartesian displacements in the order of the surface's control points.
+    std::vector<IVec> displacements;
+};
+
 struct BezierSurface {
     // Consecutive entries vary in v. The source chart uses the supplied domain.
     std::size_t nu{};
@@ -38,6 +44,10 @@ struct BezierSurface {
     Rect domain;
     IVec eval(UV uv) const;
     std::vector<IVec> support(Rect rect) const;
+    // Keeps the material chart and weights. Interval amplitudes enclose a
+    // family of patches for support bounds.
+    BezierSurface deformed(std::span<const SurfaceMode> modes,
+                           std::span<const Interval> amplitudes) const;
 };
 
 struct Plane {

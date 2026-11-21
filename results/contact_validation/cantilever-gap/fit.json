@@ -1,0 +1,12 @@
+{
+  "parameters": {
+    "frequency_hz": 13.16439903027894,
+    "damping_ratio": 0.0055037205703069095,
+    "participation": 0.8877593541851766,
+    "upper_gap_mm": 0.9651841571378671,
+    "lower_gap_mm": 0.9874089057918443,
+    "log10_contact_rate_s2": 4.1170060619067606,
+    "contact_damping_s": 28.794271702553715
+  },
+  "reference_mean_normalized_mse": 0.293486863338077
+}

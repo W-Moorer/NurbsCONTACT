@@ -236,6 +236,61 @@ python benchmarks/contact_validation/clearance_speed_audit.py build/external-val
 python benchmarks/contact_validation/clearance_drive_report.py $drive $ref "$ref/drive-inertia"
 ~~~
 
+## Driven cantilever with two stops
+
+Anastasio and Marchesiello measured the base and tip acceleration of a
+170 mm steel cantilever with a 31 g tip mass. The reconstruction fixes
+the clamp and both motion limiters in the table frame. The archived input is the
+1024 Hz base acceleration. In the table frame, its modal participation
+produces a generalized inertial load. The measured output is the
+absolute acceleration at the sensor 150 mm from the clamp. The modal
+effective mass and sensor ratio use the reported dimensions and masses
+with the normalized static tip-load deflection shape. The two limiter
+faces use planar STEP proxies and unilateral linear normal
+spring–dashpot elements. The stiffness and damping are effective
+properties of the PLA and fabric interface.
+[Original dataset and setup description](https://doi.org/10.5281/zenodo.19205934)
+
+The first 22 s of each lower-amplitude random record determine one common
+set of seven parameters, with both gaps restricted to 0.5–1 mm. The
+model starts from zero relative motion and the first 2 s are omitted
+from all error scores. The full 03_random and 06_stepped_sine runs are
+held out. The simulation evaluates the source input using linear
+interpolation between samples and compares acceleration at the original
+experimental timestamps. The result uses zero timing offset and the
+source measurements have only the offset removal documented by their
+authors. The measurement has no separate contact-force channel. Contact
+counts and loads in the archive are simulated quantities.
+
+The held-out stepped-sine record gives 0.87 m/s² RMSE and 0.997
+correlation. With the same modal properties and both stops disabled, the
+RMSE is 4.73 m/s². The higher-level random record has 5.43 m/s² RMSE and
+0.629 correlation. The two geometry adapters agree at the reported
+timestamps. The nominal HHT step is 122.07 µs and the refined step is
+61.04 µs. The raw paired records retain the measured base and tip
+accelerations, native and mesh predictions, refined and contact-disabled
+predictions, and native displacement and contact forces. Source
+measurements in the paired files are by Dario Anastasio and Stefano
+Marchesiello under CC BY 4.0. The replay archive contains the STEP
+geometry and the base-acceleration load tables in the scene files.
+[Metrics](cantilever-gap/summary.json) · [Waveforms](cantilever-gap/cantilever-gap-response.pdf) · [Replay decks](cantilever-gap/step-replay.zip) · [Data license](https://creativecommons.org/licenses/by/4.0/)
+
+Run from the repository root with the OCCT release runtime on PATH and
+NumPy, SciPy, Numba and Matplotlib available.
+
+~~~powershell
+$work = 'build/cantilever-gap'
+$ref = 'results/contact_validation/cantilever-gap'
+New-Item -ItemType Directory -Force $work | Out-Null
+curl.exe --fail --location --output "$work/data.zip" https://zenodo.org/api/records/19205934/files/data.zip/content
+cmake --build build/occt --config Release --target nc_contact
+python benchmarks/contact_validation/cantilever_gap.py build/occt/Release/nc_contact.exe "$work/data.zip" "$work/run" --parameter-file "$ref/fit.json"
+python benchmarks/contact_validation/cantilever_gap_report.py "$work/run" $ref
+~~~
+
+Omit the parameter-file argument to repeat the fit on the two declared
+calibration records.
+
 ## Archived robot copper-ring insertion
 
 The archived records provide commanded and measured wrist pose and wrist force/torque for 300 attempts. The dataset covers four tooling slots and 13 commanded lateral offsets. The paired CSV includes transformed measurements from Mihael Simonič and Matevž Majcen Horvat's *Copper Rings Insertion Attempts Dataset*, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Each trial is registered to the first minimum of commanded Z. The model uses measured axial position relative to that command target. The measured tool-frame axial force is centered on the median of the first 35 samples. The evaluation window covers sample offsets −28 through +23. The files contain no timestamps, so the curves use sample index and the model uses rate-independent compliance.

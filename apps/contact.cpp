@@ -30,6 +30,10 @@ struct Coordinate {
     double mass, position, velocity, stiffness, damping, rest, load;
 };
 
+struct LoadSample {
+    double time, force;
+};
+
 struct Translation {
     std::size_t coordinate;
     Vec direction;
@@ -71,6 +75,7 @@ struct Input {
     std::vector<PointResistance> resistances;
     std::vector<TranslationalBushing> bushings;
     std::vector<Accelerometer> accelerometers;
+    std::vector<std::vector<LoadSample>> loads;
 };
 
 template<class T> T take(std::istream& in) {
@@ -193,6 +198,27 @@ Input read_scene(const Path& path,double deflection) {
     bool read_resistances=false, read_bushings=false, read_accelerometers=false, read_impact_laws=false;
     while (has_drives && !(in>>std::ws).eof()) {
         const auto block=take<std::string>(in);
+        if (block=="loads" && input.loads.empty()) {
+            const auto tables=take<unsigned>(in);
+            if (count==0 || tables>count)
+                throw std::invalid_argument("load tables require dynamic coordinates");
+            input.loads.resize(count);
+            for (unsigned i=0;i<tables;++i) {
+                expect(in,"load");
+                const auto index=take<unsigned>(in), size=take<unsigned>(in);
+                if (index>=count || size<2 || size>10000000 || !input.loads[index].empty())
+                    throw std::invalid_argument("invalid or duplicate coordinate load table");
+                auto& table=input.loads[index];
+                table.reserve(size);
+                for (unsigned j=0;j<size;++j) {
+                    const LoadSample sample{number(in),number(in)};
+                    if ((j==0 && sample.time!=0) || (j>0 && sample.time<=table.back().time))
+                        throw std::invalid_argument("load times must increase from zero");
+                    table.push_back(sample);
+                }
+            }
+            continue;
+        }
         if (block=="impact-laws" && !read_impact_laws) {
             read_impact_laws=true;
             const auto laws=take<unsigned>(in);
@@ -327,6 +353,15 @@ std::ofstream open_output(const Path& path) {
     return out;
 }
 
+double sampled_load(const std::vector<LoadSample>& table,double time) {
+    if (table.empty()) return 0;
+    const auto right=std::upper_bound(table.begin()+1,table.end()-1,time,
+                                      [](double t,const LoadSample& sample) {return t<sample.time;});
+    const auto& left=*(right-1);
+    const double fraction=std::clamp((time-left.time)/(right->time-left.time),0.,1.);
+    return std::lerp(left.force,right->force,fraction);
+}
+
 void simulate(const Path& scene,double deflection,double dt,double duration,unsigned stride,const Path& output) {
     if (!(std::isfinite(dt) && dt>0 && std::isfinite(duration) && duration>=dt && stride>0))
         throw std::invalid_argument("invalid step, duration or stride");
@@ -339,6 +374,10 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         const auto* table=std::get_if<std::vector<TranslationSample>>(&body.drive);
         if (table && steps*dt>table->back().time+1e-12)
             throw std::invalid_argument("simulation extends beyond prescribed translation table");
+    }
+    for (const auto& table:input.loads) {
+        if (!table.empty() && steps*dt>table.back().time+1e-12)
+            throw std::invalid_argument("simulation extends beyond prescribed coordinate load table");
     }
     const double setup_s=std::chrono::duration<double>(Clock::now()-setup).count();
     const auto n=input.coordinates.size();
@@ -358,6 +397,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         for (std::size_t i=0;i<n;++i) {
             const auto& coordinate=input.coordinates[i];
             out.value[i]=coordinate.load-coordinate.stiffness*(q_[i]-coordinate.rest)-coordinate.damping*v_[i];
+            if (!input.loads.empty()) out.value[i]+=sampled_load(input.loads[i],time);
             out.stiffness[i*n+i]=coordinate.stiffness;
             out.damping[i*n+i]=coordinate.damping;
             for (std::size_t j=0;j<state.size();++j) {

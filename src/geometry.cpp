@@ -255,6 +255,41 @@ std::vector<IVec> BezierSurface::support(Rect rect) const {
     return result;
 }
 
+BezierSurface BezierSurface::deformed(std::span<const SurfaceMode> modes,
+                                      std::span<const Interval> amplitudes) const {
+    if (modes.size() != amplitudes.size()) {
+        throw std::invalid_argument("each surface mode requires an amplitude");
+    }
+    const auto finite_interval = [](Interval value) {
+        return std::isfinite(value.lo) && std::isfinite(value.hi) && value.lo <= value.hi;
+    };
+    BezierSurface result = *this;
+    for (std::size_t mode = 0; mode < modes.size(); ++mode) {
+        const auto& displacements = modes[mode].displacements;
+        const Interval amplitude = amplitudes[mode];
+        if (displacements.size() != poles.size() || !finite_interval(amplitude)) {
+            throw std::invalid_argument("invalid surface mode or amplitude");
+        }
+        for (std::size_t point = 0; point < poles.size(); ++point) {
+            auto& pole = result.poles[point];
+            const Interval weight = pole[3];
+            if (!finite_interval(weight) || weight.lo <= 0) {
+                throw std::invalid_argument("modal surface requires positive finite weights");
+            }
+            for (std::size_t axis = 0; axis < 3; ++axis) {
+                if (!finite_interval(displacements[point][axis])) {
+                    throw std::invalid_argument("invalid modal pole displacement");
+                }
+                pole[axis] = pole[axis] + weight * amplitude * displacements[point][axis];
+                if (!finite_interval(pole[axis])) {
+                    throw std::overflow_error("modal pole coordinate is not finite");
+                }
+            }
+        }
+    }
+    return result;
+}
+
 IVec Plane::eval(UV uv) const { return origin + x * uv[0] + y * uv[1]; }
 
 std::vector<IVec> Plane::support(Rect rect) const {
