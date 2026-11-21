@@ -1,0 +1,165 @@
+{
+  "engine": "recurdyn",
+  "version": "10.1.40231.2023 x64",
+  "radius_m": 0.055,
+  "centered_pair": true,
+  "repeats": 3,
+  "runs": [
+    {
+      "case": "plane",
+      "step_s": 0.0005,
+      "median_integrate_s": 5.0759401000104845,
+      "times_s": [
+        4.922278999991249,
+        6.044551200000569,
+        5.0759401000104845
+      ],
+      "median_setup_s": 2.2322355000069365,
+      "setup_times_s": [
+        2.2322355000069365,
+        2.0690214000060223,
+        14.251026600017212
+      ],
+      "position_rms_mm": 0.00839527994856862,
+      "maximum_position_error_mm": 0.011908948235026667,
+      "force_rms_N": 0.012300111196633672,
+      "maximum_force_law_residual_N": 7.105427357601002e-14,
+      "solver_cpu_s": [
+        0.32,
+        0.37,
+        0.35
+      ],
+      "engine": "recurdyn"
+    },
+    {
+      "case": "plane",
+      "step_s": 0.00025,
+      "median_integrate_s": 5.671893099963199,
+      "times_s": [
+        6.084913200000301,
+        5.671893099963199,
+        5.285158499958925
+      ],
+      "median_setup_s": 3.7436964000226,
+      "setup_times_s": [
+        3.7436964000226,
+        4.00454280001577,
+        2.441709099977743
+      ],
+      "position_rms_mm": 0.0018345271272131073,
+      "maximum_position_error_mm": 0.00284968289410506,
+      "force_rms_N": 0.0031664170186639752,
+      "maximum_force_law_residual_N": 7.105427357601002e-14,
+      "solver_cpu_s": [
+        0.57,
+        0.45,
+        0.43
+      ],
+      "engine": "recurdyn"
+    },
+    {
+      "case": "plane",
+      "step_s": 0.000125,
+      "median_integrate_s": 5.281030400015879,
+      "times_s": [
+        5.026220300002024,
+        5.281030400015879,
+        5.342041000025347
+      ],
+      "median_setup_s": 2.1490990000311285,
+      "setup_times_s": [
+        2.1490990000311285,
+        3.2315553999505937,
+        2.1117938000243157
+      ],
+      "position_rms_mm": 0.0004273049509350697,
+      "maximum_position_error_mm": 0.0007137866138082205,
+      "force_rms_N": 0.0008027312950919389,
+      "maximum_force_law_residual_N": 7.105427357601002e-14,
+      "solver_cpu_s": [
+        0.62,
+        0.64,
+        0.61
+      ],
+      "engine": "recurdyn"
+    },
+    {
+      "case": "spheres",
+      "step_s": 0.0005,
+      "median_integrate_s": 5.089555699960329,
+      "times_s": [
+        4.870799899974372,
+        5.156013999949209,
+        5.089555699960329
+      ],
+      "median_setup_s": 3.327255200012587,
+      "setup_times_s": [
+        3.327255200012587,
+        2.7637852000189014,
+        3.5145887000253424
+      ],
+      "position_rms_mm": 0.006712625194122391,
+      "maximum_position_error_mm": 0.009537942133921659,
+      "force_rms_N": 0.014310576791119934,
+      "maximum_force_law_residual_N": 1.5631940186722204e-13,
+      "solver_cpu_s": [
+        0.31,
+        0.35,
+        0.34
+      ],
+      "engine": "recurdyn"
+    },
+    {
+      "case": "spheres",
+      "step_s": 0.00025,
+      "median_integrate_s": 5.0648471000022255,
+      "times_s": [
+        4.976515499991365,
+        5.334636000043247,
+        5.0648471000022255
+      ],
+      "median_setup_s": 2.346550199959893,
+      "setup_times_s": [
+        2.346550199959893,
+        2.2933992000180297,
+        3.4295541999745183
+      ],
+      "position_rms_mm": 0.0012641371900522004,
+      "maximum_position_error_mm": 0.0020105611363771536,
+      "force_rms_N": 0.003733199085027969,
+      "maximum_force_law_residual_N": 1.6342482922482304e-13,
+      "solver_cpu_s": [
+        0.41,
+        0.43,
+        0.42
+      ],
+      "engine": "recurdyn"
+    },
+    {
+      "case": "spheres",
+      "step_s": 0.000125,
+      "median_integrate_s": 5.280549500021152,
+      "times_s": [
+        4.948453199991491,
+        5.280549500021152,
+        5.327087700017728
+      ],
+      "median_setup_s": 2.3734135000267997,
+      "setup_times_s": [
+        2.588509499968495,
+        2.3734135000267997,
+        2.3379220999777317
+      ],
+      "position_rms_mm": 0.00029119938909623593,
+      "maximum_position_error_mm": 0.0005042876840399141,
+      "force_rms_N": 0.0009521082721633973,
+      "maximum_force_law_residual_N": 1.687538997430238e-13,
+      "solver_cpu_s": [
+        0.6,
+        0.58,
+        0.63
+      ],
+      "engine": "recurdyn"
+    }
+  ]
+}
