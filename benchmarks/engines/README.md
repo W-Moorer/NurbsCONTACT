@@ -28,6 +28,12 @@ contact evaluation, solve, and step logic are inside it. The fixtures
 isolate normal contact and time integration. The Chen OBB and triangle
 BVH comparisons address trimmed geometry and continuous clearance.
 
+The optional `--aes-fixtures` profile matches the 55 mm spheres, symmetric
+translation of the sphere pair, and 500, 250, and 125 µs time-step ladder
+of the [AES sphere benchmark](../aes/protocol.md). The reports retain model
+setup time separately from integration time. The historical profile remains
+the default for reproducing the earlier comparison.
+
 ## Reproduce on a common Linux host
 
 On Ubuntu 24.04, the build needs Open CASCADE development libraries

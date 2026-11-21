@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+from dataclasses import dataclass
 from importlib.metadata import version
 import json
 import math
@@ -14,25 +15,40 @@ from time import perf_counter
 import numpy as np
 
 
-RADIUS = .035
 LAYER = .012
 STIFFNESS = 5000.
 STANDOFF = .018
 SPEED = .45
 DURATION = .16
 CASES = ("plane", "spheres")
-STEPS = (.001,.0005,.00025)
 REPEATS = 7
 
 
-def case_values(case):
+@dataclass(frozen=True)
+class Fixtures:
+    radius: float
+    steps: tuple[float, ...]
+    centered_pair: bool = False
+
+
+LEGACY = Fixtures(.035, (.001, .0005, .00025))
+AES = Fixtures(.055, (.0005, .00025, .000125), centered_pair=True)
+
+
+def case_values(case, fixtures):
     if case=="plane":
-        return RADIUS+LAYER+STANDOFF,1.,1
-    return 2*RADIUS+LAYER+STANDOFF,.5,2
+        return fixtures.radius+LAYER+STANDOFF,1.,1
+    return 2*fixtures.radius+LAYER+STANDOFF,.5,2
 
 
-def exact(case,time):
-    _,mass,count = case_values(case)
+def initial_velocity(count, fixtures):
+    if count == 2 and fixtures.centered_pair:
+        return np.array([SPEED / 2, -SPEED / 2])
+    return np.array([0.] * (count - 1) + [-SPEED])
+
+
+def exact(case,time,fixtures):
+    _,mass,count = case_values(case,fixtures)
     omega = math.sqrt(STIFFNESS/mass)
     entry = STANDOFF/SPEED
     exit_ = entry+math.pi/omega
@@ -43,17 +59,18 @@ def exact(case,time):
     if count==1:
         q = displacement[:,None]
     else:
-        center = -.5*SPEED*time
+        center = np.mean(initial_velocity(count, fixtures))*time
         q = np.column_stack((center-.5*displacement,center+.5*displacement))
     return q,force
 
 
-def mujoco_runner(case,step,record,integrator):
+def mujoco_runner(case,step,record,integrator,fixtures):
     import mujoco
 
-    z,mass,count = case_values(case)
+    setup_start = perf_counter()
+    z,mass,count = case_values(case,fixtures)
     padding = LAYER/2 if count==2 else 0.
-    geom_radius = RADIUS+padding
+    geom_radius = fixtures.radius+padding
 
     def body(name,height):
         return (f'<body name="{name}" pos="0 0 {height:.17g}"><joint type="slide" axis="0 0 1"/>'
@@ -70,12 +87,12 @@ def mujoco_runner(case,step,record,integrator):
     model = mujoco.MjModel.from_xml_string(xml)
     data = mujoco.MjData(model)
     steps = round(DURATION/step)
-    data.qvel[-1] = -SPEED
+    data.qvel[:] = initial_velocity(count, fixtures)
     mujoco.mj_forward(model,data)
     if not record:
         t0 = perf_counter()
         mujoco.mj_step(model,data,nstep=steps)
-        return perf_counter()-t0
+        return t0-setup_start,perf_counter()-t0
     positions = np.empty((steps+1,count))
     forces = np.empty(steps+1)
     sample_force = np.zeros(6)
@@ -93,7 +110,7 @@ def mujoco_runner(case,step,record,integrator):
     return positions,forces
 
 
-def drake_runner(case,step,record,integrator):
+def drake_runner(case,step,record,integrator,fixtures):
     from pydrake.geometry import AddContactMaterial, HalfSpace, ProximityProperties, Sphere
     from pydrake.math import RigidTransform
     from pydrake.multibody.plant import AddMultibodyPlantSceneGraph, ContactModel, CoulombFriction
@@ -101,7 +118,8 @@ def drake_runner(case,step,record,integrator):
     from pydrake.systems.analysis import ResetIntegratorFromFlags, Simulator
     from pydrake.systems.framework import DiagramBuilder
 
-    z,_,count = case_values(case)
+    setup_start = perf_counter()
+    z,_,count = case_values(case,fixtures)
     padding = LAYER/2 if count==2 else 0.
     builder = DiagramBuilder()
     plant,_ = AddMultibodyPlantSceneGraph(builder,0.)
@@ -111,9 +129,9 @@ def drake_runner(case,step,record,integrator):
     AddContactMaterial(dissipation=0.,point_stiffness=2*STIFFNESS,friction=CoulombFriction(0.,0.),properties=props)
 
     def add_ball(name):
-        body = plant.AddRigidBody(name,SpatialInertia(1.,[0,0,0],UnitInertia.SolidSphere(RADIUS)))
+        body = plant.AddRigidBody(name,SpatialInertia(1.,[0,0,0],UnitInertia.SolidSphere(fixtures.radius)))
         joint = plant.AddJoint(PrismaticJoint(name,plant.world_frame(),body.body_frame(),[0,0,1]))
-        plant.RegisterCollisionGeometry(body,RigidTransform(),Sphere(RADIUS+padding),name,props)
+        plant.RegisterCollisionGeometry(body,RigidTransform(),Sphere(fixtures.radius+padding),name,props)
         return joint
 
     if count==1:
@@ -128,17 +146,15 @@ def drake_runner(case,step,record,integrator):
     pc = plant.GetMyMutableContextFromRoot(root)
     reference_position = np.zeros(count)
     reference_position[-1] = z
-    initial_velocity = np.zeros(count)
-    initial_velocity[-1] = -SPEED
     plant.SetPositions(pc,reference_position)
-    plant.SetVelocities(pc,initial_velocity)
+    plant.SetVelocities(pc,initial_velocity(count, fixtures))
     solver = ResetIntegratorFromFlags(sim,integrator,step)
     solver.set_fixed_step_mode(True)
     sim.Initialize()
     if not record:
         t0 = perf_counter()
         sim.AdvanceTo(DURATION)
-        return perf_counter()-t0
+        return t0-setup_start,perf_counter()-t0
     steps = round(DURATION/step)
     positions = np.empty((steps+1,count))
     forces = np.empty(steps+1)
@@ -154,8 +170,8 @@ def drake_runner(case,step,record,integrator):
     return positions,forces
 
 
-def nc_scene(folder,case):
-    z,_,count = case_values(case)
+def nc_scene(folder,case,fixtures):
+    z,_,count = case_values(case,fixtures)
     if count==1:
         bodies = [
             f'body "floor.step" 0 0 0 {LAYER} 0 0 1 0 0 0 0 -1 0 0 0 0',
@@ -166,7 +182,7 @@ def nc_scene(folder,case):
             'body "offset-sphere.step" 0 0 0 0 0 0 1 0 0 0 0 -1 0 0 0 1 0 0 0 1',
             f'body "offset-sphere.step" 0 0 0 {z} 0 0 1 0 0 0 0 -1 0 0 0 1 1 0 0 1',
         ]
-    coord = ["coordinate 1 0 0 0 0 0 0"]*(count-1)+[f"coordinate 1 0 {-SPEED} 0 0 0 0"]
+    coord = [f"coordinate 1 0 {speed} 0 0 0 0" for speed in initial_velocity(count, fixtures)]
     path = folder/f"{case}.scene"
     path.write_text("\n".join(("nc-contact-v1",f"gravity 0 0 0 {count} 2 1",*coord,*bodies,
                                f"probe 0 1 world 0 0 0 0 0 0 0 0 1 {STIFFNESS} 1 0 0 .001 .020"))+"\n",
@@ -174,16 +190,16 @@ def nc_scene(folder,case):
     return path
 
 
-def nc_models(exe,folder):
+def nc_models(exe,folder,fixtures):
     for name,args in (("floor",("box",1000,1000,10,-5)),
-                      ("sphere",("sphere",RADIUS*1000)),
-                      ("offset-sphere",("sphere",(RADIUS+LAYER/2)*1000))):
+                      ("sphere",("sphere",fixtures.radius*1000)),
+                      ("offset-sphere",("sphere",(fixtures.radius+LAYER/2)*1000))):
         subprocess.run([str(exe),"make",*map(str,args),str(folder/f"{name}.step")],
                        check=True,capture_output=True)
 
 
-def nc_runner(exe,folder,case,step,record,_,deflection=0.):
-    scene = nc_scene(folder,case)
+def nc_runner(exe,folder,case,step,record,_,fixtures,deflection=0.):
+    scene = nc_scene(folder,case,fixtures)
     prefix = folder/"nc"
     steps = round(DURATION/step)
     completed = subprocess.run([str(exe),str(scene),str(deflection),str(step),str(DURATION),
@@ -191,24 +207,26 @@ def nc_runner(exe,folder,case,step,record,_,deflection=0.):
     if completed.returncode:
         raise RuntimeError(completed.stderr)
     with prefix.with_suffix(".stats.csv").open(newline="") as file:
-        elapsed = float(next(csv.DictReader(file))["wall_s"])
+        stats = next(csv.DictReader(file))
     if not record:
-        return elapsed
+        return float(stats["setup_s"]),float(stats["wall_s"])
     data = np.genfromtxt(prefix.with_suffix(".csv"),delimiter=",",names=True)
-    count = case_values(case)[2]
+    count = case_values(case,fixtures)[2]
     return np.column_stack([data[f"q{i}"] for i in range(count)]),data["p0_normal_N"]
 
 
-def statistics(case,step,positions,forces,timings):
+def statistics(case,step,positions,forces,timings,fixtures):
     time = step*np.arange(round(DURATION/step)+1)
-    reference,expected_force = exact(case,time)
+    reference,expected_force = exact(case,time,fixtures)
     coordinate_error = positions-reference
     spring_force = STIFFNESS*np.maximum(0,-STANDOFF-(positions[:,-1]-(positions[:,0] if positions.shape[1]>1 else 0)))
     law_error = float(np.max(np.abs(spring_force-forces)))
     if not np.isfinite(positions).all() or not math.isfinite(law_error) or law_error>2e-6:
         raise ValueError(f"engine does not reproduce the specified one-contact law: {law_error:g} N")
+    setup, integrate = (list(values) for values in zip(*timings, strict=True))
     return {
-        "case":case,"step_s":step,"median_integrate_s":median(timings),"times_s":timings,
+        "case":case,"step_s":step,"median_integrate_s":median(integrate),"times_s":integrate,
+        "median_setup_s":median(setup),"setup_times_s":setup,
         "position_rms_mm":float(1000*np.sqrt(np.mean(coordinate_error**2))),
         "maximum_position_error_mm":float(1000*np.max(np.abs(coordinate_error))),
         "force_rms_N":float(np.sqrt(np.mean((forces-expected_force)**2))),
@@ -221,8 +239,10 @@ def main():
     parser.add_argument("output",type=Path)
     parser.add_argument("--backend",choices=("mujoco","drake","nurbs"),required=True)
     parser.add_argument("--nc-contact",type=Path)
+    parser.add_argument("--aes-fixtures",action="store_true",help="use 55 mm spheres and a stationary pair center of mass")
     args = parser.parse_args()
     backend = args.backend
+    fixtures = AES if args.aes_fixtures else LEGACY
     args.output.mkdir(parents=True,exist_ok=True)
     if backend=="mujoco":
         runner,integrators,release = mujoco_runner,("implicit","RK4"),version("mujoco")
@@ -232,16 +252,16 @@ def main():
         if args.nc_contact is None:
             parser.error("--nc-contact is required for the native backend")
         exe = args.nc_contact.resolve()
-        nc_models(exe,args.output)
+        nc_models(exe,args.output,fixtures)
         runner = lambda *params:nc_runner(exe,args.output,*params)
         integrators,release = ("HHT",),"workspace build"
     results = []
     for case in CASES:
         for integrator in integrators:
-            for step in STEPS:
-                positions,forces = runner(case,step,True,integrator)
-                timings = [runner(case,step,False,integrator) for i in range(REPEATS)]
-                result,trace = statistics(case,step,positions,forces,timings)
+            for step in fixtures.steps:
+                positions,forces = runner(case,step,True,integrator,fixtures)
+                timings = [runner(case,step,False,integrator,fixtures) for i in range(REPEATS)]
+                result,trace = statistics(case,step,positions,forces,timings,fixtures)
                 result.update({"engine":backend,"integrator":integrator})
                 results.append(result)
                 time,positions,forces,reference,expected_force = trace
@@ -255,6 +275,7 @@ def main():
     report = {
         "engine":backend,"version":release,"platform":platform.platform(),"host":platform.node(),
         "layer_m":LAYER,"stiffness_N_m":STIFFNESS,"mass_each_kg":1.,"initial_speed_m_s":SPEED,
+        "radius_m":fixtures.radius,"centered_pair":fixtures.centered_pair,
         "duration_s":DURATION,"stand_off_m":STANDOFF,"repetitions":REPEATS,"runs":results,
     }
     (args.output/"summary.json").write_text(json.dumps(report,indent=2)+"\n",encoding="utf-8")
