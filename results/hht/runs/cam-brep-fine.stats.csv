@@ -1,0 +1,2 @@
+scene,backend,facets,warm,cache_guard,repeat,duration,dt,steps,prep_us,wall_us,dofs,triangles,accepted,subdivisions,evaluations,newton,rejected,max_residual,min_guard,queries,analytic,cad_fallback,bvh_nodes,triangle_tests,guard_endpoint_evaluations
+cam-array,brep,24,1,1,0,120,0.0025000000000000001,48000,7022.1000000000004,1192132.5,12,588,48000,0,113194,65194,0,5.1207451380662176e-08,0.0090718045239251699,679170,679170,0,0,0,48002

@@ -1,0 +1,232 @@
+[
+  {
+    "label": "drop-brep-4ms",
+    "scene": "drop",
+    "backend": "brep",
+    "facets": 24,
+    "dt": 0.004,
+    "seconds": 0.2,
+    "repeats": 1,
+    "variant": ""
+  },
+  {
+    "label": "drop-brep-2ms",
+    "scene": "drop",
+    "backend": "brep",
+    "facets": 24,
+    "dt": 0.002,
+    "seconds": 0.2,
+    "repeats": 1,
+    "variant": ""
+  },
+  {
+    "label": "drop-brep",
+    "scene": "drop",
+    "backend": "brep",
+    "facets": 24,
+    "dt": 0.001,
+    "seconds": 0.2,
+    "repeats": 5,
+    "variant": ""
+  },
+  {
+    "label": "drop-brep-fine",
+    "scene": "drop",
+    "backend": "brep",
+    "facets": 24,
+    "dt": 0.0005,
+    "seconds": 0.2,
+    "repeats": 1,
+    "variant": ""
+  },
+  {
+    "label": "drop-mesh",
+    "scene": "drop",
+    "backend": "mesh",
+    "facets": 24,
+    "dt": 0.001,
+    "seconds": 0.2,
+    "repeats": 5,
+    "variant": ""
+  },
+  {
+    "label": "cam-brep",
+    "scene": "cam-array",
+    "backend": "brep",
+    "facets": 24,
+    "dt": 0.005,
+    "seconds": 120,
+    "repeats": 3,
+    "variant": ""
+  },
+  {
+    "label": "cam-mesh-12",
+    "scene": "cam-array",
+    "backend": "mesh",
+    "facets": 12,
+    "dt": 0.005,
+    "seconds": 120,
+    "repeats": 3,
+    "variant": ""
+  },
+  {
+    "label": "cam-mesh-24",
+    "scene": "cam-array",
+    "backend": "mesh",
+    "facets": 24,
+    "dt": 0.005,
+    "seconds": 120,
+    "repeats": 3,
+    "variant": ""
+  },
+  {
+    "label": "cam-mesh-48",
+    "scene": "cam-array",
+    "backend": "mesh",
+    "facets": 48,
+    "dt": 0.005,
+    "seconds": 120,
+    "repeats": 3,
+    "variant": ""
+  },
+  {
+    "label": "cam-mesh-96",
+    "scene": "cam-array",
+    "backend": "mesh",
+    "facets": 96,
+    "dt": 0.005,
+    "seconds": 120,
+    "repeats": 3,
+    "variant": ""
+  },
+  {
+    "label": "cam-brep-fine",
+    "scene": "cam-array",
+    "backend": "brep",
+    "facets": 24,
+    "dt": 0.0025,
+    "seconds": 120,
+    "repeats": 1,
+    "variant": ""
+  },
+  {
+    "label": "cam-brep-finest",
+    "scene": "cam-array",
+    "backend": "brep",
+    "facets": 24,
+    "dt": 0.00125,
+    "seconds": 120,
+    "repeats": 1,
+    "variant": ""
+  },
+  {
+    "label": "train-brep",
+    "scene": "ball-train",
+    "backend": "brep",
+    "facets": 24,
+    "dt": 0.005,
+    "seconds": 60,
+    "repeats": 3,
+    "variant": ""
+  },
+  {
+    "label": "train-mesh-24",
+    "scene": "ball-train",
+    "backend": "mesh",
+    "facets": 24,
+    "dt": 0.005,
+    "seconds": 60,
+    "repeats": 3,
+    "variant": ""
+  },
+  {
+    "label": "train-mesh-24-cold",
+    "scene": "ball-train",
+    "backend": "mesh",
+    "facets": 24,
+    "dt": 0.005,
+    "seconds": 60,
+    "repeats": 3,
+    "variant": "cold"
+  },
+  {
+    "label": "train-brep-fine",
+    "scene": "ball-train",
+    "backend": "brep",
+    "facets": 24,
+    "dt": 0.0025,
+    "seconds": 60,
+    "repeats": 1,
+    "variant": ""
+  },
+  {
+    "label": "train-brep-finest",
+    "scene": "ball-train",
+    "backend": "brep",
+    "facets": 24,
+    "dt": 0.00125,
+    "seconds": 60,
+    "repeats": 1,
+    "variant": ""
+  },
+  {
+    "label": "cam-stress",
+    "scene": "cam-array",
+    "backend": "brep",
+    "facets": 24,
+    "dt": 0.005,
+    "seconds": 300,
+    "repeats": 1,
+    "variant": ""
+  },
+  {
+    "label": "train-stress",
+    "scene": "ball-train",
+    "backend": "brep",
+    "facets": 24,
+    "dt": 0.005,
+    "seconds": 300,
+    "repeats": 1,
+    "variant": ""
+  },
+  {
+    "label": "cache-on",
+    "scene": "cam-array",
+    "backend": "brep",
+    "facets": 24,
+    "dt": 0.005,
+    "seconds": 18,
+    "repeats": 5,
+    "variant": ""
+  },
+  {
+    "label": "cache-off",
+    "scene": "cam-array",
+    "backend": "brep",
+    "facets": 24,
+    "dt": 0.005,
+    "seconds": 18,
+    "repeats": 5,
+    "variant": "uncached"
+  },
+  {
+    "label": "warm-mesh",
+    "scene": "ball-train",
+    "backend": "mesh",
+    "facets": 24,
+    "dt": 0.005,
+    "seconds": 6,
+    "repeats": 3,
+    "variant": ""
+  },
+  {
+    "label": "cold-mesh",
+    "scene": "ball-train",
+    "backend": "mesh",
+    "facets": 24,
+    "dt": 0.005,
+    "seconds": 6,
+    "repeats": 3,
+    "variant": "cold"
+  }
+]

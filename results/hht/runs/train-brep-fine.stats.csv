@@ -1,0 +1,2 @@
+scene,backend,facets,warm,cache_guard,repeat,duration,dt,steps,prep_us,wall_us,dofs,triangles,accepted,subdivisions,evaluations,newton,rejected,max_residual,min_guard,queries,analytic,cad_fallback,bvh_nodes,triangle_tests,guard_endpoint_evaluations
+ball-train,brep,24,1,1,0,60,0.0025000000000000001,24000,10574.1,2186110.5,12,6340,24000,0,48098,24098,0,3.6572411765689594e-12,0.0024292414799424542,4328910,4328910,0,0,0,24002

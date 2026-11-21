@@ -1,0 +1,12 @@
+{
+"scene":"drop",
+"geometry":[
+{"shape":"plate","center":[0,0,0],"u":[1,0,-0],"v":[-0,1,0],"axis":[0,0,1],"radius":0,"half":0,"half_u":0.38,"half_v":0.27000000000000002},
+{"shape":"sphere","center":[0,0,0],"u":[1,0,-0],"v":[-0,1,0],"axis":[0,0,1],"radius":0.055,"half":0,"half_u":0,"half_v":0}
+],
+"bodies":[
+{"name":"floor","geometry":0,"joint":"fixed","dof":0,"anchor":[0,0,0],"direction":[0,0,0]},
+{"name":"ball","geometry":1,"joint":"slide","dof":0,"anchor":[0,0,0],"direction":[0,0,1]}
+],
+"contacts":[[0,1]]
+}

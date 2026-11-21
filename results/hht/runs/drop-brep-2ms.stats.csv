@@ -1,0 +1,2 @@
+scene,backend,facets,warm,cache_guard,repeat,duration,dt,steps,prep_us,wall_us,dofs,triangles,accepted,subdivisions,evaluations,newton,rejected,max_residual,min_guard,queries,analytic,cad_fallback,bvh_nodes,triangle_tests,guard_endpoint_evaluations
+drop,brep,24,1,1,0,0.20000000000000001,0.002,100,8933.2000000000007,278.5,1,530,100,0,124,24,0,4.8183679268731794e-14,0.005600245623123298,125,125,0,0,0,102
