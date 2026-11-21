@@ -33,13 +33,14 @@ std::ofstream output(const fs::path& path) {
 Backend parse_backend(std::string_view value) {
     if (value == "brep") return Backend::cad;
     if (value == "mesh") return Backend::mesh;
+    if (value == "mesh-support") return Backend::mesh_support;
     if (value == "general-brep") return Backend::general_cad;
     throw std::invalid_argument("unknown geometry backend");
 }
 
 unsigned facets_arg(const char* value) {
     const int n = std::stoi(value);
-    if (n < 8 || n > 256 || n % 2) throw std::invalid_argument("even facet count must be between 8 and 256");
+    if (n < 8 || n > 8192 || n % 2) throw std::invalid_argument("even facet count must be between 8 and 8192");
     return static_cast<unsigned>(n);
 }
 

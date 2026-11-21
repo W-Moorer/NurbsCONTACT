@@ -38,13 +38,22 @@ struct QueryWork {
     std::size_t rays{};
     std::size_t evaluations{};
     std::size_t misses{};
+    std::size_t certificate_hits{};
     dynamics::TriangleStatistics mesh;
 };
 
 struct Flank {
+    struct Hint {
+        double parameter;
+        IVec point;
+    };
     Flank(const std::filesystem::path& path, double deflection, unsigned stations = 0);
     std::optional<double> probe(Vec local_point, Vec local_normal, double seed, double axial,
-                                unsigned station, QueryWork& work, double* slope = nullptr) const;
+                                unsigned station, QueryWork& work, double* slope = nullptr,
+                                double* parameter = nullptr) const;
+    std::optional<Interval> probe_bound(Vec local_point, Vec local_normal, double seed, double axial,
+                                        unsigned station, double target, QueryWork& work,
+                                        std::optional<Hint>* cached_point = nullptr) const;
     Handle(Geom_Surface) face;
     std::optional<dynamics::TriangleBvh> mesh;
     double u0{}, u1{}, v0{}, v1{};
@@ -53,8 +62,16 @@ private:
     struct Span {
         double low, high, inverse_width;
         std::array<Vec,4> coefficients;
+        std::array<IVec,4> enclosed;
+        std::array<IVec,4> control;
+    };
+    struct SectionBound {
+        IVec derivative;
+        bool continuous{true};
     };
     std::vector<std::vector<Span>> sections_;
+    std::vector<SectionBound> section_bounds_;
+    std::vector<std::vector<Vec>> polylines_;
 };
 
 void export_gear(const Gear& gear, const std::filesystem::path& solid,

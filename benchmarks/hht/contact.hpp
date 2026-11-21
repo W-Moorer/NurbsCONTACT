@@ -15,7 +15,7 @@ using dynamics::TriangleBvh;
 using dynamics::TriangleHint;
 
 enum class Shape { plate, sphere, cylinder };
-enum class Backend { cad, general_cad, mesh };
+enum class Backend { cad, general_cad, mesh, mesh_support };
 
 struct Statistics {
     std::size_t queries{};
@@ -35,6 +35,7 @@ struct Geometry {
     double half_u{};
     double half_v{};
     double motion_radius{};
+    unsigned facets{};
     std::unique_ptr<PreparedModel> native;
     std::unique_ptr<TriangleBvh> mesh;
 };

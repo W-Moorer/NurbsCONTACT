@@ -31,7 +31,10 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
+#include <limits>
 #include <numbers>
+#include <numeric>
 #include <stdexcept>
 
 namespace nc::gears {
@@ -204,6 +207,18 @@ Flank::Flank(const Path& path, double deflection, unsigned stations) {
     face = BRep_Tool::Surface(topo_face);
     BRepTools::UVBounds(topo_face,u0,u1,v0,v1);
     if (deflection > 0) mesh.emplace(bench::step_triangles(shape,deflection),4);
+    if (deflection <= -16 && deflection >= -16384 && std::floor(deflection) == deflection) {
+        const auto segments = static_cast<unsigned>(-deflection);
+        for (unsigned i=0; i<stations; ++i) {
+            const double v = std::lerp(v0,v1,(i+.5)/stations);
+            auto& points = polylines_.emplace_back();
+            points.reserve(segments+1);
+            for (unsigned j=0; j<=segments; ++j) {
+                const double u = std::lerp(u0,u1,static_cast<double>(j)/segments);
+                points.push_back(vector(face->Value(u,v).XYZ()));
+            }
+        }
+    }
     if (deflection != 0) return;
     for (unsigned i = 0; i < stations; ++i) {
         const double v = std::lerp(v0,v1,(i+.5)/stations);
@@ -215,6 +230,7 @@ Flank::Flank(const Path& path, double deflection, unsigned stations) {
         TColStd_Array1OfReal knots(1,decomposed.NbArcs()+1);
         decomposed.Knots(knots);
         auto& spans = sections_.emplace_back();
+        SectionBound section{};
         for (int j=1; j<=decomposed.NbArcs(); ++j) {
             const auto arc = decomposed.Arc(j);
             const Vec p0=vector(arc->Pole(1).XYZ()), p1=vector(arc->Pole(2).XYZ());
@@ -222,8 +238,21 @@ Flank::Flank(const Path& path, double deflection, unsigned stations) {
             const Vec d0=sub(p1,p0), d1=sub(p2,p1), d2=sub(p3,p2);
             const double width=knots(j+1)-knots(j);
             const std::array coefficients{p0,scale(d0,3),scale(sub(d1,d0),3),add(sub(d2,scale(d1,2)),d0)};
-            spans.push_back({knots(j),knots(j+1),1/width,coefficients});
+            const IVec h0 = exact(p1) - exact(p0);
+            const IVec h1 = exact(p2) - exact(p1);
+            const IVec h2 = exact(p3) - exact(p2);
+            const std::array enclosed{exact(p0), h0*3, (h1-h0)*3, h2-h1*2+h0};
+            spans.push_back({knots(j),knots(j+1),1/width,coefficients,enclosed,
+                             {exact(p0),exact(p1),exact(p2),exact(p3)}});
+            const Interval span_width = Interval{knots(j+1)} - knots(j);
+            if (j == 1) {
+                section.derivative = (h0*3)/span_width;
+            } else if (midpoint(spans[spans.size()-2].control.back()) != p0) {
+                section.continuous = false;
+            }
+            for (const IVec& d : {h0, h1, h2}) section.derivative = hull(section.derivative, (d*3)/span_width);
         }
+        section_bounds_.push_back(section);
     }
 }
 
@@ -240,9 +269,49 @@ double flank_fit(const Gear& g, const Flank& f) {
 }
 
 std::optional<double> Flank::probe(Vec p, Vec n, double seed, double axial, unsigned station,
-                                   QueryWork& work, double* slope) const {
+                                   QueryWork& work, double* slope, double* parameter) const {
     ++work.rays;
     const Vec tangent{n[1],-n[0],0};
+    if (!polylines_.empty()) {
+        const auto& points = polylines_[station];
+        const auto project = [&](std::size_t index) {
+            ++work.evaluations;
+            return dot3(sub(points[index],p),tangent);
+        };
+        // Bracket a crossing near the prescribed line-of-action seed.
+        // Select successive segments along the initial sign-change direction.
+        const auto last = points.size()-1;
+        const auto guess = static_cast<std::size_t>(std::clamp(seed,0.,1.) * last);
+        std::size_t lo = 0, hi = last;
+        double a = project(lo), b = project(hi);
+        if ((a <= 0 && b >= 0) || (b <= 0 && a >= 0)) {
+            bool use_guess = guess != lo && guess != hi;
+            while (hi-lo > 1) {
+                const std::size_t mid = use_guess ? guess : std::midpoint(lo,hi);
+                use_guess = false;
+                const double f = project(mid);
+                if ((a <= 0 && f >= 0) || (a >= 0 && f <= 0)) {
+                    hi = mid;
+                    b = f;
+                } else {
+                    lo = mid;
+                    a = f;
+                }
+            }
+            const Vec direction = sub(points[hi],points[lo]);
+            const double s = a == b ? 0 : -a/(b-a);
+            const double distance = dot3(sub(add(points[lo],scale(direction,s)),p),n);
+            if (std::abs(distance) <= ray_half_length) {
+                if (slope) {
+                    if (a == b) return std::nullopt;
+                    *slope = dot3(direction,n)/(b-a);
+                }
+                return distance;
+            }
+        }
+        ++work.misses;
+        return std::nullopt;
+    }
     if (mesh) {
         Vec normal;
         const auto hit = mesh->ray_first(sub(p,scale(n,ray_half_length)),n,2*ray_half_length,work.mesh,
@@ -256,6 +325,9 @@ std::optional<double> Flank::probe(Vec p, Vec n, double seed, double axial, unsi
     }
     double u = std::lerp(u0,u1,std::clamp(seed,0.,1.));
     const double v = std::lerp(v0,v1,std::clamp(axial,0.,1.));
+    double best_u = u;
+    double best_residual = std::numeric_limits<double>::infinity();
+    std::optional<double> best_distance;
     for (unsigned iteration = 0; iteration < 8; ++iteration) {
         Vec value,du;
         if (sections_.empty()) {
@@ -287,9 +359,16 @@ std::optional<double> Flank::probe(Vec p, Vec n, double seed, double axial, unsi
                     if (std::abs(derivative)<1e-10) break;
                     *slope=dot3(du,n)/derivative;
                 }
-                return distance;
+                if (!parameter) return distance;
+                if (std::abs(residual) < best_residual) {
+                    best_residual = std::abs(residual);
+                    best_u = u;
+                    best_distance = distance;
+                }
+                if (best_residual <= 4e-14) break;
+            } else {
+                break;
             }
-            break;
         }
         const double derivative = dot3(du,tangent);
         if (std::abs(derivative) < 1e-10) break;
@@ -297,8 +376,101 @@ std::optional<double> Flank::probe(Vec p, Vec n, double seed, double axial, unsi
         if (next == u) break;
         u=next;
     }
+    if (best_distance) {
+        *parameter = best_u;
+        return best_distance;
+    }
     ++work.misses;
     return std::nullopt;
+}
+
+std::optional<Interval> Flank::probe_bound(Vec p, Vec n, double seed, double axial, unsigned station,
+                                           double target, QueryWork& work, std::optional<Hint>* cached_point) const {
+    if (mesh || station >= sections_.size()) throw std::invalid_argument("bounded probe requires a cubic CAD section");
+    const auto& spans = sections_[station];
+    const auto& section = section_bounds_[station];
+    const IVec origin = exact(p), normal = exact(n), tangent = exact({n[1], -n[0], 0});
+    if (!section.continuous) return std::nullopt;
+    Interval derivative = dot(section.derivative, tangent);
+    double along_bound = magnitude(dot(section.derivative, normal));
+    auto begin = spans.begin();
+    auto end = spans.end();
+    if (derivative.contains(0)) {
+        // Bernstein hulls discard spans whose transverse projection cannot
+        // cross the ray. Prove monotonicity over the remaining contiguous range.
+        const auto may_intersect = [&](const Span& span) {
+            Interval projected = dot(span.control[0]-origin,tangent);
+            for (unsigned i=1; i<4; ++i) projected = hull(projected,dot(span.control[i]-origin,tangent));
+            return projected.contains(0);
+        };
+        begin = std::find_if(begin,end,may_intersect);
+        if (begin == end) return std::nullopt;
+        while (!may_intersect(*(end-1))) --end;
+        derivative = {infinity,-infinity};
+        along_bound = 0;
+        for (auto it=begin; it!=end; ++it) {
+            const Interval width = Interval{it->high} - it->low;
+            for (unsigned i=1; i<4; ++i) {
+                const IVec edge = (it->control[i]-it->control[i-1])*3;
+                derivative = hull(derivative,dot(edge,tangent)/width);
+                along_bound = std::max(along_bound,magnitude(dot(edge,normal)/width));
+            }
+        }
+        if (derivative.contains(0)) return std::nullopt;
+    }
+    const Interval first = dot(begin->control.front() - origin, tangent);
+    const Interval last = dot((end-1)->control.back() - origin, tangent);
+    if (!(first.hi <= 0 && last.lo >= 0) && !(last.hi <= 0 && first.lo >= 0)) return std::nullopt;
+    const double min_derivative = std::min(std::abs(derivative.lo), std::abs(derivative.hi));
+    const Interval sensitivity = Interval{along_bound} / min_derivative;
+    // The transverse residual bounds the parameter error. The longitudinal
+    // derivative then transports that error to the returned ray coordinate.
+    const auto ray_range = [&](const IVec& point, Interval slope_bound) {
+        const IVec offset = point - origin;
+        const double error = (magnitude(dot(offset, tangent)) * slope_bound).hi;
+        return dot(offset, normal) + Interval{-error, error};
+    };
+    if (cached_point && *cached_point && target > 0
+        && (*cached_point)->parameter >= begin->low && (*cached_point)->parameter <= (end-1)->high) {
+        const Interval bracket = ray_range((*cached_point)->point,sensitivity);
+        if ((Interval{bracket.hi} - bracket.lo).hi <= target && magnitude(bracket) <= ray_half_length) {
+            ++work.certificate_hits;
+            return bracket;
+        }
+    }
+    double u;
+    if (!probe(p, n, seed, axial, station, work, nullptr, &u)) return std::nullopt;
+    if (u < begin->low || u > (end-1)->high) return std::nullopt;
+    const auto iter = std::upper_bound(begin, end, u,
+        [](double x, const Span& span) { return x < span.high; });
+    const Span& span = iter == end ? *(end-1) : *iter;
+    const Interval t = (Interval{u} - span.low) / (Interval{span.high} - span.low);
+    const auto& c = span.enclosed;
+    const IVec point = ((c[3]*t + c[2])*t + c[1])*t + c[0];
+    if (cached_point) *cached_point = Hint{u,point};
+    Interval bracket = ray_range(point,sensitivity);
+    if (bracket.width() > 2e-13) {
+        const Interval f0 = dot(span.control.front()-origin,tangent);
+        const Interval f1 = dot(span.control.back()-origin,tangent);
+        if ((f0.hi <= 0 && f1.lo >= 0) || (f1.hi <= 0 && f0.lo >= 0)) {
+            Interval local_derivative{infinity,-infinity};
+            double local_along = 0;
+            for (unsigned i=1; i<4; ++i) {
+                // The common span width cancels from the slope ratio.
+                const IVec edge = span.control[i]-span.control[i-1];
+                local_derivative = hull(local_derivative,dot(edge,tangent));
+                local_along = std::max(local_along,magnitude(dot(edge,normal)));
+            }
+            if (!local_derivative.contains(0)) {
+                const Interval slope = Interval{local_along} /
+                    std::min(std::abs(local_derivative.lo),std::abs(local_derivative.hi));
+                const Interval tight = ray_range(point,slope);
+                bracket = {std::max(bracket.lo,tight.lo),std::min(bracket.hi,tight.hi)};
+            }
+        }
+    }
+    if (magnitude(bracket) > ray_half_length) return std::nullopt;
+    return bracket;
 }
 
 }  // namespace nc::gears

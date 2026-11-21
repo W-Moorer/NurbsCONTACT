@@ -250,19 +250,26 @@ double trimmed_weight(Vec p, Vec n, Vec start, Vec end) {
     return u*u*(3-2*u);
 }
 
+struct BoundedContactRequest {
+    double target;
+    bool reuse;
+};
+
 struct Pair {
     Stage stage;
     unsigned axial_stations;
     double omega;
     Flank a,b;
     std::vector<std::array<Vec,4>> ends;
+    std::vector<std::array<std::optional<Flank::Hint>, 4>> cached_a, cached_b;
     QueryWork work;
 
     Pair(Stage data, const Path& folder, const Case& scene, std::size_t index, double speed,
          double deflection, unsigned axial)
         : stage(std::move(data)), axial_stations(stage.driver.helix == 0 ? 1u : axial), omega(speed),
           a(component(folder,scene,index,'a',true),deflection,axial_stations),
-          b(component(folder,scene,index,'b',true),deflection,axial_stations) {
+          b(component(folder,scene,index,'b',true),deflection,axial_stations),
+          cached_a(axial_stations), cached_b(axial_stations) {
         for (unsigned i=0; i<axial_stations; ++i) {
             const double v=(i+.5)/axial_stations;
             ends.push_back({stage.driver.flank(0,v),stage.driver.flank(1,v),
@@ -272,7 +279,8 @@ struct Pair {
 
     Measurements evaluate(double q1, double q2, double time, Forces* force = nullptr,
                           std::size_t shaft = 0, std::size_t n = 0,
-                          ExperimentalContact* experimental = nullptr) {
+                          ExperimentalContact* experimental = nullptr,
+                          std::optional<BoundedContactRequest> bounded = std::nullopt) {
         const double alpha = stage.driver.transverse_pressure();
         const double cosine_base = std::cos(stage.beta_base());
         const Vec normal{std::sin(alpha),std::cos(alpha),0};
@@ -281,6 +289,7 @@ struct Pair {
         const double r1 = stage.driver.base_radius(), r2 = stage.wheel.base_radius();
         const double pitch = stage.base_pitch();
         const double lo = stage.low(), hi = stage.high();
+        const double max_candidates = bounded ? (std::ceil((hi - lo) / pitch) + 1) * axial_stations : 1;
         const double angle = std::remainder(omega*time,2*pi);
         const double angle_b = angle/stage.ratio();
         const double turn = (omega*time-angle)/(2*pi);
@@ -317,14 +326,34 @@ struct Pair {
                 const double u1 = ((rpa+s)/r1-stage.driver.roll_min())/(stage.driver.roll_max()-stage.driver.roll_min());
                 const double u2 = ((rpb-s)/r2-stage.wheel.roll_min())/(stage.wheel.roll_max()-stage.wheel.roll_min());
                 double slope_a, slope_b;
-                const auto sa = a.probe(local_a,normal_a,u1,v,station,work,flex ? &slope_a : nullptr);
-                const auto sb = b.probe(local_b,normal_b,u2,v,station,work,flex ? &slope_b : nullptr);
+                std::optional<double> sa, sb;
+                Interval gap_range;
+                if (bounded) {
+                    // Allocate the stage's torque budget over both rays and
+                    // all possible stations. The returned force bound uses
+                    // the actual brackets rather than assuming this target.
+                    const double target = bounded->target / (4 * max_candidates * weight * stiffness * mm
+                        * std::max(r1,r2) * mm * cosine_base * cosine_base);
+                    const auto slot = static_cast<std::size_t>((j % 4 + 4) % 4);
+                    auto* hint_a = bounded->reuse ? &cached_a[station][slot] : nullptr;
+                    auto* hint_b = bounded->reuse ? &cached_b[station][slot] : nullptr;
+                    const auto ra = a.probe_bound(local_a,normal_a,u1,v,station,target,work,hint_a);
+                    const auto rb = b.probe_bound(local_b,normal_b,u2,v,station,target,work,hint_b);
+                    if (ra && rb) {
+                        sa = ra->center();
+                        sb = rb->center();
+                        gap_range = (*rb - *ra) * cosine_base;
+                    }
+                } else {
+                    sa = a.probe(local_a,normal_a,u1,v,station,work,flex ? &slope_a : nullptr);
+                    sb = b.probe(local_b,normal_b,u2,v,station,work,flex ? &slope_b : nullptr);
+                }
                 if (!sa || !sb) {
                     out.valid=false;
                     continue;
                 }
                 const double gap = (*sb-*sa)*cosine_base;
-                out.min_gap = std::min(out.min_gap,gap);
+                out.min_gap = std::min(out.min_gap,bounded ? gap_range.lo : gap);
                 active_weight += weight;
                 std::array jacobian{-r1*cosine_base*mm,r2*cosine_base*mm};
                 const double k0=flex ? flex->at(s) : (experimental ? experimental->stiffness : stiffness);
@@ -343,6 +372,12 @@ struct Pair {
                     damping=weight*experimental->damping;
                 }
                 double normal_force = k*mm*std::max(0.,skin-gap);
+                Interval normal_range;
+                if (bounded) {
+                    const Interval depth = Interval{skin} - gap_range;
+                    normal_range = Interval{k} * mm * Interval{std::max(0.0,depth.lo), std::max(0.0,depth.hi)};
+                    normal_force = normal_range.center();
+                }
                 if (experimental) {
                     if (normal_force > 0) {
                         const auto& v=experimental->velocity;
@@ -354,7 +389,7 @@ struct Pair {
                     experimental->report.push_back({index,roll*180/pi,normal_force});
                 }
                 out.normal += normal_force;
-                if (normal_force <= 0) continue;
+                if (normal_force <= 0 && (!bounded || normal_range.hi <= 0)) continue;
                 out.tooth_weight += 1./axial_stations;
                 if (normal_force > out.peak_slice) {
                     out.peak_slice = normal_force;
@@ -363,8 +398,14 @@ struct Pair {
                 }
                 if (force) {
                     const std::array indices{shaft,shaft+1};
+                    double added_error = 0;
                     for (std::size_t i=0; i<2; ++i) {
+                        const double previous = force->value[indices[i]];
                         force->value[indices[i]] += jacobian[i]*normal_force;
+                        if (bounded) {
+                            const Interval allowed = Interval{previous} + jacobian[i] * normal_range;
+                            added_error = std::max(added_error, magnitude(allowed - force->value[indices[i]]));
+                        }
                         for (std::size_t j=0; j<2; ++j) {
                             force->stiffness[indices[i]*n+indices[j]] += k*jacobian[i]*jacobian[j];
                             if (experimental) {
@@ -373,6 +414,7 @@ struct Pair {
                             }
                         }
                     }
+                    if (bounded) force->error_bound = (Interval{force->error_bound} + added_error).hi;
                 }
             }
         }
@@ -431,7 +473,8 @@ struct Dynamics {
         return brake*(1+.26*raised-.34*released+.06*std::sin(2*pi*13*time));
     }
 
-    Forces evaluate(const Vector& q,const Vector& v,double time) {
+    Forces evaluate(const Vector& q,const Vector& v,double time,
+                    std::optional<BoundedContactRequest> bounded = std::nullopt) {
         const std::size_t n=q.size();
         Forces f{Vector(n),Vector(n*n),Vector(n*n)};
         for (std::size_t i=0; i<n; ++i) {
@@ -442,8 +485,9 @@ struct Dynamics {
         f.stiffness[0]=1800;
         f.damping[0]+=.6;
         f.value[n-1] -= load(time);
+        if (bounded) bounded->target /= static_cast<double>(pairs.size());
         for (std::size_t i=0; i<pairs.size(); ++i) {
-            last[i]=pairs[i].evaluate(q[i],q[i+1],time,&f,i,n);
+            last[i]=pairs[i].evaluate(q[i],q[i+1],time,&f,i,n,nullptr,bounded);
             if (!last[i].valid || last[i].min_gap < 0.002) {
                 f.value[0]=std::numeric_limits<double>::quiet_NaN();
             }
@@ -455,8 +499,12 @@ struct Dynamics {
 struct Frame { double time; Vector q,v; std::vector<Measurements> mesh; };
 
 void integrate(const Case& scene,const Path& geometry,double deflection,double dt,double duration,
-               const Path& prefix,unsigned repeats,unsigned stations) {
-    if (!(dt>0 && duration>0 && repeats && stations)) throw std::invalid_argument("invalid run protocol");
+               const Path& prefix,unsigned repeats,unsigned stations,unsigned trace_stride,
+               std::string_view force_strategy) {
+    if (!(dt>0 && duration>0 && repeats && stations && trace_stride)) {
+        throw std::invalid_argument("invalid run protocol");
+    }
+    if (force_strategy != "fixed" && deflection != 0) throw std::invalid_argument("bounded probes require CAD geometry");
     const auto steps = static_cast<std::size_t>(std::llround(duration/dt));
     if (std::abs(steps*dt-duration)>1e-12) throw std::invalid_argument("duration must be divisible by dt");
     const auto prep_start=Clock::now();
@@ -464,16 +512,31 @@ void integrate(const Case& scene,const Path& geometry,double deflection,double d
     const double setup=std::chrono::duration<double>(Clock::now()-prep_start).count();
     auto stats_out = output(prefix.string()+".stats.csv");
     stats_out << "repeat,deflection_mm,dt_s,duration_s,steps,wall_s,setup_s,accepted,subdivisions,evaluations,newton,"
-                 "probe_calls,surface_evaluations,probe_misses,bvh_nodes,triangle_tests,triangles,max_residual_Nm\n";
+                 "probe_calls,surface_evaluations,probe_misses,bvh_nodes,triangle_tests,triangles,max_residual_Nm,"
+                 "trace_stride,force_strategy,force_refinements,certificate_hits\n";
     std::vector<Frame> frames;
-    frames.reserve(steps+1);
+    frames.reserve(steps/trace_stride+2);
     HhtOptions opts;
     opts.absolute_tolerance=1e-7;
     opts.relative_tolerance=1e-7;
     opts.max_subdivisions=6;
-    const Hht integrator(system.mass,[&](const Vector& q,const Vector& v,double t){ return system.evaluate(q,v,t);},opts);
+    BoundedForceFunction bounded;
+    if (force_strategy != "fixed") {
+        bounded = [&](const Vector& q, const Vector& v, double t, const Vector&, double target) {
+            return system.evaluate(q, v, t, BoundedContactRequest{
+                force_strategy == "bounded-exact" ? 0 : target, force_strategy == "bounded-cache"});
+        };
+    }
+    const Hht integrator(system.mass,[&](const Vector& q,const Vector& v,double t){ return system.evaluate(q,v,t);},
+                         opts, {}, {}, std::move(bounded));
     for (unsigned repetition=0; repetition<repeats; ++repetition) {
-        for (auto& pair:system.pairs) pair.work={};
+        for (auto& pair:system.pairs) {
+            pair.work={};
+            if (force_strategy == "bounded-cache") {
+                std::fill(pair.cached_a.begin(), pair.cached_a.end(), std::array<std::optional<Flank::Hint>, 4>{});
+                std::fill(pair.cached_b.begin(), pair.cached_b.end(), std::array<std::optional<Flank::Hint>, 4>{});
+            }
+        }
         HhtStats stats;
         const auto start=Clock::now();
         State state=integrator.initialize(system.initial(),Vector(system.mass.size()));
@@ -488,14 +551,17 @@ void integrate(const Case& scene,const Path& geometry,double deflection,double d
                 std::cerr << '\n';
                 throw;
             }
-            if (repetition==0) frames.push_back({state.time,state.q,state.v,system.last});
+            if (repetition==0 && ((i+1)%trace_stride==0 || i+1==steps)) {
+                frames.push_back({state.time,state.q,state.v,system.last});
+            }
         }
         const double wall=std::chrono::duration<double>(Clock::now()-start).count();
-        std::size_t calls=0, evaluations=0, misses=0, nodes=0, tests=0, triangles=0;
+        std::size_t calls=0, evaluations=0, misses=0, nodes=0, tests=0, triangles=0, hits=0;
         for (const auto& p:system.pairs) {
             calls+=p.work.rays;
             evaluations+=p.work.evaluations;
             misses+=p.work.misses;
+            hits+=p.work.certificate_hits;
             nodes+=p.work.mesh.nodes;
             tests+=p.work.mesh.triangles;
             if (p.a.mesh) triangles+=p.a.mesh->triangles().size()+p.b.mesh->triangles().size();
@@ -503,7 +569,8 @@ void integrate(const Case& scene,const Path& geometry,double deflection,double d
         stats_out << repetition << ',' << deflection << ',' << dt << ',' << duration << ',' << steps << ',' << wall << ',' << setup
             << ',' << stats.accepted_steps << ',' << stats.subdivisions << ',' << stats.evaluations << ','
             << stats.newton_iterations << ',' << calls << ',' << evaluations << ',' << misses << ',' << nodes
-            << ',' << tests << ',' << triangles << ',' << stats.maximum_residual << '\n' << std::flush;
+            << ',' << tests << ',' << triangles << ',' << stats.maximum_residual << ',' << trace_stride
+            << ',' << force_strategy << ',' << stats.force_refinements << ',' << hits << '\n' << std::flush;
         std::cout << scene.name << ' ' << deflection << " mm pass " << repetition+1 << " " << wall << " s\n" << std::flush;
     }
     Dynamics audit(scene,geometry,0,stations);
@@ -521,8 +588,10 @@ void integrate(const Case& scene,const Path& geometry,double deflection,double d
         for (std::size_t i=0; i<system.pairs.size(); ++i) {
             const auto& stage = system.pairs[i].stage;
             const double te = (frame.q[i+1]-frame.q[i]/stage.ratio())*stage.wheel.base_radius()*1000;
-            const auto& m=frame.mesh[i];
             const auto d=audit.pairs[i].evaluate(frame.q[i],frame.q[i+1],frame.time);
+            // In bounded runs report the native load at the accepted state,
+            // independent of the last force evaluation used in line search.
+            const auto& m=force_strategy == "fixed" ? frame.mesh[i] : d;
             trace << ',' << m.normal << ',' << m.axial << ',' << te << ','
                 << (d.valid ? d.min_gap : std::numeric_limits<double>::quiet_NaN()) << ',' << m.min_gap << ','
                 << m.tooth_weight << ',' << m.first_tooth << ',' << m.first_z;
@@ -722,9 +791,16 @@ int main(int argc,char** argv) {
     try {
         if (argc==4 && std::string_view(argv[1])=="models") {
             make_models(configuration(argv[2],argv[3]),argv[3]);
-        } else if (argc==10 && std::string_view(argv[1])=="run") {
+        } else if (argc>=10 && argc<=12 && std::string_view(argv[1])=="run") {
+            const int trace_stride = argc>=11 ? std::stoi(argv[10]) : 1;
+            if (trace_stride<=0) throw std::invalid_argument("trace stride must be positive");
+            const std::string_view force_strategy = argc==12 ? argv[11] : "fixed";
+            if (force_strategy!="fixed" && force_strategy!="bounded-exact" && force_strategy!="bounded-cache") {
+                throw std::invalid_argument("unknown gear force strategy");
+            }
             integrate(configuration(argv[2]),argv[3],std::stod(argv[4]),std::stod(argv[5]),std::stod(argv[6]),
-                      argv[7],static_cast<unsigned>(std::stoi(argv[8])),static_cast<unsigned>(std::stoi(argv[9])));
+                      argv[7],static_cast<unsigned>(std::stoi(argv[8])),static_cast<unsigned>(std::stoi(argv[9])),
+                      static_cast<unsigned>(trace_stride),force_strategy);
         } else if ((argc==12 || argc==13) && std::string_view(argv[1])=="experiment") {
             experiment(configuration(argv[2],argv[3]),argv[3],std::stod(argv[4]),std::stod(argv[5]),std::stod(argv[6]),
                        std::stod(argv[7]),std::stod(argv[8]),std::stod(argv[9]),std::stod(argv[10]),argv[11],
@@ -734,7 +810,8 @@ int main(int argc,char** argv) {
                               std::stod(argv[6]),argv[7]);
         } else {
             std::cerr << "nc_gears models {spur|helical|reducer|rig28|rig28-flex|unsw} MODEL_DIR\n"
-                         "nc_gears run CASE MODEL_DIR DEFLECTION_MM DT_S DURATION_S PREFIX REPEATS AXIAL_STATIONS\n"
+                         "nc_gears run CASE MODEL_DIR DEFLECTION_MM DT_S DURATION_S PREFIX REPEATS AXIAL_STATIONS "
+                         "[TRACE_STRIDE [bounded-exact|bounded-cache]]\n"
                          "nc_gears experiment CASE MODEL_DIR DEFLECTION_MM RPM INPUT_NM DT_S DURATION_S K_N_M ZETA PREFIX [INERTIA_SCALE]\n"
                          "nc_gears statics rig28-flex MODEL_DIR DEFLECTION_MM INPUT_NM K_N_M FILE\n";
             return 2;

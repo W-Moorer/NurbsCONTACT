@@ -145,6 +145,25 @@ std::optional<PointPair> analytic_pair(const Geometry& a, Pose pa, const Geometr
     return PointPair{on_a, on_b, d};
 }
 
+std::optional<PointPair> polygon_support(const Geometry& a, Pose pa, const Geometry& b, Pose pb) {
+    if (a.kind != Shape::plate || b.kind != Shape::cylinder) return std::nullopt;
+    const Vec n = pa.rotate(a.axis);
+    if (dot3(n,pb.rotate(b.axis)) != 0) return std::nullopt;
+    const double u = dot3(n,pb.rotate(b.u));
+    const double v = dot3(n,pb.rotate(b.v));
+    constexpr double tau = 2*std::numbers::pi;
+    const double phase = std::atan2(-v,-u)*b.facets/tau;
+    const double angle = tau*std::round(phase)/b.facets;
+    const Vec on_b = pb.point(add(b.center,scale(circle(b,angle),b.radius)));
+    const Vec origin = pa.point(a.center);
+    const double d = dot3(n,sub(on_b,origin));
+    const Vec on_a = sub(on_b,scale(n,d));
+    const Vec local = sub(on_a,origin);
+    if (d <= 0 || std::abs(dot3(local,pa.rotate(a.u))) > a.half_u ||
+                 std::abs(dot3(local,pa.rotate(a.v))) > a.half_v) return std::nullopt;
+    return PointPair{on_a,on_b,d};
+}
+
 }  // namespace
 
 void make_step_models(const std::filesystem::path& folder) {
@@ -159,12 +178,13 @@ void make_step_models(const std::filesystem::path& folder) {
 }
 
 Geometry load_geometry(const std::filesystem::path& path, unsigned facets) {
-    if (facets < 8 || facets > 256 || facets % 2 != 0) throw std::invalid_argument("even facet count must be 8 to 256");
+    if (facets < 8 || facets > 8192 || facets % 2 != 0) throw std::invalid_argument("even facet count must be 8 to 8192");
     gp_Trsf scaling;
     scaling.SetScale(gp_Pnt{}, 0.001);
     const TopoDS_Shape original = read_step_shape(path);
     const auto model = BRepBuilderAPI_Transform(original, scaling, true).Shape();
     Geometry g;
+    g.facets = facets;
     unsigned planes = 0, balls = 0, cylinders = 0, total = 0;
     bool rectangular = false;
     bool full_round = true;
@@ -226,6 +246,7 @@ Geometry load_geometry(const std::filesystem::path& path, unsigned facets) {
     }
     g.motion_radius = (norm(exact(g.center)) + g.radius + g.half + g.half_u + g.half_v).hi;
     g.native = std::make_unique<PreparedModel>(adapt_occt(model));
+    if (g.kind == Shape::sphere && facets > 256) throw std::invalid_argument("sphere facet count exceeds 256");
     g.mesh = std::make_unique<TriangleBvh>(triangulate(g, facets), 2);
     return g;
 }
@@ -300,8 +321,14 @@ std::optional<PointPair> closest(
             return pair->distance <= skin ? pair : std::nullopt;
         }
     }
+    if (backend == Backend::mesh_support) {
+        if (const auto pair = polygon_support(a,pa,b,pb)) {
+            ++statistics.analytic;
+            return pair->distance <= skin ? pair : std::nullopt;
+        }
+    }
     const Pose placement = relative_pose(pa, pb);
-    if (backend == Backend::mesh) {
+    if (backend == Backend::mesh || backend == Backend::mesh_support) {
         auto result = a.mesh->closest_within(*b.mesh, placement, skin, hint, statistics.mesh);
         if (result) {
             result->a = pa.point(result->a);
@@ -328,6 +355,7 @@ std::optional<PointPair> closest(
 std::string_view name(Backend backend) {
     if (backend == Backend::cad) return "brep";
     if (backend == Backend::mesh) return "mesh";
+    if (backend == Backend::mesh_support) return "mesh-support";
     return "general-brep";
 }
 
