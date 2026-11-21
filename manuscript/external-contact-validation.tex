@@ -160,3 +160,66 @@ integration samples within each half-degree bin.}
 \label{fig:clearance-structural-flexibility}
 \end{figure}
 \fi
+
+\ifdefined\SpatialQuiet
+\paragraph{Spatial contact and measured point.}
+The spatial model retains both carriage translations and adds pitch,
+with the reported slider inertia as a nominal value. The sleeve spins
+with the rod, and three weighted axial stations on the finite STEP parts
+use the native surface normals. The probe forces contribute both
+resultant force and pitch torque through their velocity Jacobians.
+The predicted accelerometer output is the specific force along the
+body-fixed measurement axis at a configurable point. A prescribed
+circular translation and accelerating hinge verify the point-acceleration
+calculation against an analytic reference. A tilted pin test also
+checks the contact torque against the derivative of penalty energy.
+
+Across nine geometric and structural configurations, pitch can unload
+individual stations while another remains loaded through the reported
+separation window. The selected configuration lowers the
+\(90^\circ\)--\(180^\circ\) acceleration RMSE to \SpatialQuiet{} m/s\(^{2}\).
+At the published peak phase its acceleration is \SpatialPredicted{}
+m/s\(^{2}\), compared with \SpatialMeasured{} m/s\(^{2}\) in the
+digitized experiment. Reducing the step from 10 to 1 microsecond changes
+the predicted value there by \SpatialOneMicrosecondDelta{} m/s\(^{2}\).
+Figure~\ref{fig:clearance-spatial} plots the integration samples and
+the separate gaps at each station. The pitch properties and sensor
+coordinates remain sensitivity inputs.
+
+Five further trials release an axial mode at the sensor mount and
+preserve the baseline mass, first moment and nominal pitch inertia.
+The selected 26.5 Hz sensitivity case produces a minimum at
+\(\SpatialMountPhase^\circ\) with amplitude \SpatialMountPeak{}
+m/s\(^{2}\). A 70.5 Hz trial reaches \SpatialLargeMountPeak{} m/s\(^{2}\)
+and increases the sustained-loading RMSE to \SpatialLargeMountQuiet{}
+m/s\(^{2}\). The sampled contact remains loaded at one or more stations
+in the reported separation window. With the spatial settings fixed,
+the 150 rpm, 0.25 mm and 200 rpm, 0.50 mm runs have full-rate RMSEs
+of \SpatialTransferLow{} and \SpatialTransferBig{} m/s\(^{2}\).
+
+The thesis documenting the rig identifies slider ringing as a
+contributor to measured-point acceleration \cite{koshy2006}.
+An independent kinematic check integrates the envelopes of the
+published vector paths in Figs.~5(d) and 6(b). Under constant crank speed
+and rigid planar constraints, the distance from crank pin to slider pin
+lies between \(L-c\) and \(L+c\), where \(L\) is the rod length and \(c\)
+the radial clearance. This limits the departure from the ideal axial
+trajectory to \SpatialPlanarBound{} mm over \(25^\circ\)--\(85^\circ\).
+Even with the initial position and velocity free, the two acceleration
+envelopes require deviations of at least \SpatialFigFiveBound{} and
+\SpatialFigSixBound{} mm in that window. These bounds apply to the
+digitized envelopes and the stated kinematics. They show that center
+translation under those assumptions cannot account for the plotted
+measured-point signal. The Fig.~5(d) reconstruction also requires at
+least \SpatialPositionBound{} mm departure from the published position
+envelope in Fig.~5(b) when both are read at the same indicated angle.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{\ContactValidationPath ../clearance/spatial/spatial-response.pdf}
+\caption{Spatial clearance simulation at 200 rpm and 0.25 mm.
+The curves use the original encoder origin and raw integration samples.
+Negative gaps indicate compression at the corresponding station.}
+\label{fig:clearance-spatial}
+\end{figure}
+\fi

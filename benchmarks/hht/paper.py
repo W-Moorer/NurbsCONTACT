@@ -170,6 +170,32 @@ def external_validation_macros(root):
             "FlexPredicted": f"{flexible['impact_peaks'][0]['at_measured_phase_m_s2']:.1f}",
             "FlexRefinement": f"{report['half_step_common_grid_delta_m_s2']:.4f}",
         })
+    spatial_file = slider_file.parent / "spatial" / "summary.json"
+    if spatial_file.is_file():
+        report = json.loads(spatial_file.read_text(encoding="utf-8"))
+        spatial = report["refinements"]
+        a10 = spatial["10us"]["revolutions"][0]["sensor_at_measured_phase_m_s2"]
+        a1 = spatial["1us"]["revolutions"][0]["sensor_at_measured_phase_m_s2"]
+        audit = json.loads(spatial_file.with_name("reference-audit.json").read_text(encoding="utf-8"))["panels"]
+        mounts = {r["case"]:r for r in report["measurement_mount_screening"]}
+        near_phase = report["measurement_mount_refinement"]["revolutions"][0]
+        larger_peak = mounts["mount-70hz"]["revolutions"][0]
+        macros.update({
+            "SpatialMeasured": f"{spatial['10us']['measured_peak_m_s2']:.2f}",
+            "SpatialPredicted": f"{a10:.2f}",
+            "SpatialQuiet": f"{spatial['10us']['quiet_rmse_m_s2']:.2f}",
+            "SpatialOneMicrosecondDelta": f"{abs(a10-a1):.4f}",
+            "SpatialFigFiveBound": f"{audit['5d-clearance-experiment']['compatibility'][1]['necessary_peak_displacement_mm']:.3f}",
+            "SpatialFigSixBound": f"{audit['6b-clearance-experiment']['compatibility'][1]['necessary_peak_displacement_mm']:.3f}",
+            "SpatialPlanarBound": f"{audit['5d-clearance-experiment']['compatibility'][1]['rigid_planar_clearance_bound_mm']:.3f}",
+            "SpatialPositionBound": f"{audit['5d-clearance-experiment']['compatibility'][1]['necessary_difference_from_published_position_mm']:.3f}",
+            "SpatialMountPhase": f"{near_phase['window_min_phase_deg']:.2f}",
+            "SpatialMountPeak": f"{near_phase['window_min_m_s2']:.2f}",
+            "SpatialLargeMountPeak": f"{larger_peak['window_min_m_s2']:.2f}",
+            "SpatialLargeMountQuiet": f"{mounts['mount-70hz']['quiet_rmse_m_s2']:.2f}",
+            "SpatialTransferLow": f"{report['held_out']['150rpm-0.25mm']['raw_rmse_m_s2']:.2f}",
+            "SpatialTransferBig": f"{report['held_out']['200rpm-0.50mm']['raw_rmse_m_s2']:.2f}",
+        })
     return macros
 
 

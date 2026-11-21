@@ -1,0 +1,67 @@
+{
+  "case": "long-lever",
+  "parameters": {
+    "pitch_frequency": 160,
+    "pitch_damping": 0.2,
+    "pin_height": 0.035,
+    "sensor_height": 0.035,
+    "neutral_tilt": 0.005,
+    "sleeve_rotation": true,
+    "sections": 3,
+    "mount_frequency": 0,
+    "mount_mass": 0.03,
+    "mount_damping": 0.05
+  },
+  "rpm": 200,
+  "radial_clearance_mm": 0.25,
+  "cycles": 6,
+  "warm_phase_turn": null,
+  "phase_shift_deg": 0,
+  "output_filter": null,
+  "integration": {
+    "wall_s": 32.1439664,
+    "setup_s": 0.0160451,
+    "steps": 180000.0,
+    "accepted": 180000.0,
+    "subdivisions": 0.0,
+    "force_evaluations": 411679.0,
+    "max_residual": 8.956096894108256e-07,
+    "pairs": 1235040.0,
+    "culled": 0.0,
+    "rays": 2470080.0,
+    "missing": 0.0,
+    "triangle_tests": 0.0,
+    "step_s": 9.999999999999999e-06
+  },
+  "measured_phase_deg": 46.63339828565423,
+  "measured_peak_m_s2": -50.6817236961557,
+  "raw_rmse_m_s2": 6.957858598338703,
+  "quiet_rmse_m_s2": 4.206444345619815,
+  "quiet_max_abs_m_s2": 25.330166878790124,
+  "revolutions": [
+    {
+      "window_min_phase_deg": 42.01199999954813,
+      "window_min_m_s2": -16.733963281483238,
+      "minimum_inside_window": false,
+      "sensor_at_measured_phase_m_s2": -14.894523555670377,
+      "carriage_at_measured_phase_m_s2": -14.908140655021061,
+      "max_sensor_carriage_difference_m_s2": 0.05827237548575326,
+      "min_load_N": 11.091748805786237,
+      "all_sections_open_fraction": 0.0,
+      "partially_loaded_fraction": 1.0,
+      "max_clearance_for_any_section_um": 39.08489699242824
+    },
+    {
+      "window_min_phase_deg": 42.00000000190647,
+      "window_min_m_s2": -16.738500299528738,
+      "minimum_inside_window": false,
+      "sensor_at_measured_phase_m_s2": -14.8945235553406,
+      "carriage_at_measured_phase_m_s2": -14.908140655082544,
+      "max_sensor_carriage_difference_m_s2": 0.05827237463990542,
+      "min_load_N": 11.09701414804732,
+      "all_sections_open_fraction": 0.0,
+      "partially_loaded_fraction": 1.0,
+      "max_clearance_for_any_section_um": 39.08362172887897
+    }
+  ]
+}

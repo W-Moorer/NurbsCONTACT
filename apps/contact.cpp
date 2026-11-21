@@ -58,6 +58,11 @@ struct Body {
     Drive drive{};
 };
 
+struct Accelerometer {
+    std::size_t body;
+    Vec point, axis;
+};
+
 struct Input {
     Vec gravity;
     std::vector<Coordinate> coordinates;
@@ -65,6 +70,7 @@ struct Input {
     std::vector<ContactPair> pairs;
     std::vector<PointResistance> resistances;
     std::vector<TranslationalBushing> bushings;
+    std::vector<Accelerometer> accelerometers;
 };
 
 template<class T> T take(std::istream& in) {
@@ -184,9 +190,21 @@ Input read_scene(const Path& path,double deflection) {
             }
         }
     }
-    bool read_resistances=false, read_bushings=false;
+    bool read_resistances=false, read_bushings=false, read_accelerometers=false;
     while (has_drives && !(in>>std::ws).eof()) {
         const auto block=take<std::string>(in);
+        if (block=="accelerometers" && !read_accelerometers) {
+            read_accelerometers=true;
+            const auto sensors=take<unsigned>(in);
+            if (sensors>16384) throw std::invalid_argument("too many accelerometers");
+            for (unsigned i=0;i<sensors;++i) {
+                expect(in,"accelerometer");
+                const auto body=take<unsigned>(in);
+                if (body>=bodies) throw std::invalid_argument("invalid accelerometer body");
+                input.accelerometers.push_back({body,vector(in),unit(vector(in))});
+            }
+            continue;
+        }
         const bool sliding=block=="resistances" && !read_resistances;
         const bool elastic=block=="bushings" && !read_bushings;
         if (!sliding && !elastic) throw std::invalid_argument("unknown or duplicate element block");
@@ -258,6 +276,23 @@ std::vector<ContactBodyState> kinematics(const Input& input,const Vector& q,doub
         result.push_back(std::move(state));
     }
     return result;
+}
+
+double specific_force(const Accelerometer& sensor,const Body& body,const ContactBodyState& pose,
+                      const State& state,Vec base_acceleration,Vec gravity) {
+    const Vec arm=pose.pose.rotate(sensor.point);
+    Vec acceleration=sub(base_acceleration,gravity);
+    for (std::size_t i=0;i<state.a.size();++i) {
+        acceleration=add(acceleration,scale(pose.derivative[i].at(arm),state.a[i]));
+    }
+    if (body.hinge>=0) {
+        const auto i=static_cast<std::size_t>(body.hinge);
+        const ContactPose hinge{body.pivot,body.reference.axis,state.q[i]};
+        const Vec pivot_arm=hinge.rotate(sub(body.reference.origin,body.pivot));
+        const Vec spin=scale(body.reference.axis,state.v[i]);
+        acceleration=add(acceleration,cross3(spin,cross3(spin,add(pivot_arm,arm))));
+    }
+    return dot3(acceleration,pose.pose.rotate(sensor.axis));
 }
 
 std::ofstream open_output(const Path& path) {
@@ -340,6 +375,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         trace<<",b"<<j<<"_x_m,b"<<j<<"_y_m,b"<<j<<"_z_m,b"<<j<<"_angle_rad";
     for (std::size_t p=0;p<input.pairs.size();++p)
         trace<<",p"<<p<<"_gap_m,p"<<p<<"_normal_N,p"<<p<<"_friction_N,p"<<p<<"_hit";
+    for (std::size_t s=0;s<input.accelerometers.size();++s) trace<<",s"<<s<<"_a_m_s2";
     trace<<'\n';
     ContactWork audit;
     std::vector<ContactSample> values;
@@ -347,7 +383,8 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     for (const auto& item:samples) {
         trace<<item.time;
         for (std::size_t i=0;i<n;++i) trace<<','<<item.q[i]<<','<<item.v[i]<<','<<item.a[i];
-        const auto poses=kinematics(input,item.q,item.time);
+        const auto poses=kinematics(input,item.q,item.time,
+                                    input.accelerometers.empty() ? nullptr : &base_acceleration);
         for (const auto& body:poses)
             trace<<','<<body.pose.origin[0]<<','<<body.pose.origin[1]<<','<<body.pose.origin[2]<<','<<body.pose.angle;
         if (n) {
@@ -361,6 +398,11 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         }
         for (const auto& value:values)
             trace<<','<<value.gap<<','<<value.normal_force<<','<<length(value.friction)<<','<<value.resolved;
+        for (const auto& sensor:input.accelerometers) {
+            const auto body=sensor.body;
+            trace<<','<<specific_force(sensor,input.bodies[body],poses[body],item,
+                                       base_acceleration[body],input.gravity);
+        }
         trace<<'\n';
     }
     auto report=open_output(output.string()+".stats.csv");

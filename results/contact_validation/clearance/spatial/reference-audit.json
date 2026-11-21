@@ -1,0 +1,76 @@
+{
+  "source_sha256": "ad7d8d5d6b1e7080245cdd87f452a53880e1111df11c3c3ca0f4e9abfb0bc816",
+  "assumptions": "Published vector paths with linear interpolation between per-angle extrema, constant 200 rpm, initial position and velocity freely chosen, rigid planar rail and links.",
+  "panels": {
+    "5c-ideal-experiment": {
+      "window_minimum_phase_deg": 44.59590556919614,
+      "window_minimum_m_s2": -14.887169880532099,
+      "compatibility": [
+        {
+          "phase_window_deg": [
+            35,
+            72
+          ],
+          "necessary_peak_displacement_mm": 0.017424106134494532,
+          "rigid_planar_clearance_bound_mm": 0.2532038251479296
+        },
+        {
+          "phase_window_deg": [
+            25,
+            85
+          ],
+          "necessary_peak_displacement_mm": 0.0026927469015266873,
+          "rigid_planar_clearance_bound_mm": 0.25352176412918315
+        }
+      ]
+    },
+    "5d-clearance-experiment": {
+      "window_minimum_phase_deg": 46.62286196609839,
+      "window_minimum_m_s2": -50.55483946636795,
+      "compatibility": [
+        {
+          "phase_window_deg": [
+            35,
+            72
+          ],
+          "necessary_peak_displacement_mm": 0.6065803376272434,
+          "rigid_planar_clearance_bound_mm": 0.2532038251479296,
+          "necessary_difference_from_published_position_mm": 0.7856856218032047
+        },
+        {
+          "phase_window_deg": [
+            25,
+            85
+          ],
+          "necessary_peak_displacement_mm": 0.8174597261596176,
+          "rigid_planar_clearance_bound_mm": 0.25352176412918315,
+          "necessary_difference_from_published_position_mm": 0.8025577433889554
+        }
+      ]
+    },
+    "6b-clearance-experiment": {
+      "window_minimum_phase_deg": 46.63339828565423,
+      "window_minimum_m_s2": -50.6817236961557,
+      "compatibility": [
+        {
+          "phase_window_deg": [
+            35,
+            72
+          ],
+          "necessary_peak_displacement_mm": 0.4176074897816789,
+          "rigid_planar_clearance_bound_mm": 0.2532038251479296,
+          "necessary_difference_from_published_position_mm": 0.57681557300813
+        },
+        {
+          "phase_window_deg": [
+            25,
+            85
+          ],
+          "necessary_peak_displacement_mm": 0.5075492982377112,
+          "rigid_planar_clearance_bound_mm": 0.25352176412918315,
+          "necessary_difference_from_published_position_mm": 0.45537889854114366
+        }
+      ]
+    }
+  }
+}

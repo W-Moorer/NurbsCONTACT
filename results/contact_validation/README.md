@@ -78,6 +78,18 @@ bushings count
 bushing body_a body_b anchor_a_xyz anchor_b_xyz rest_xyz K_xyz C_xyz
 ~~~
 
+An optional accelerometer block records signed specific force along a
+body-fixed unit axis at the given local point. The output column
+`sN_a_m_s2` includes the HHT generalized accelerations, angular
+acceleration and centripetal terms, prescribed orbit acceleration, and
+gravity projected into the sensor axis. The block is available in v2
+scenes after the drives.
+
+~~~text
+accelerometers count
+accelerometer body_id point_local_xyz axis_local_xyz
+~~~
+
 ## Reproduce
 
 Set the OCCT runtime path using the [project build instructions](../../README.md#step-queries-on-windows). Run the commands from the workspace root.

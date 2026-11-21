@@ -47,6 +47,76 @@ The results archive includes the raw carriage, gap, and contact-force values at 
 
 - [Screened cases](clearance/flexibility/screening.json) · [Selected case and step refinement](clearance/flexibility/summary.json) · [Acceleration and raw envelopes](clearance/flexibility/structural-flexibility.pdf)
 
+### Spatial contact and the accelerometer
+
+Koshy's dissertation documents the slider-mounted accelerometers and notes
+that impact-induced structural ringing contributes to their readings. It
+reports a 200 kHz acquisition rate for the earlier rigid-rig tests at 101
+and 177 rpm with 1 mm clearance. The exact sensor coordinates, structural
+response and synchronized raw channels for the later 200 rpm test are
+unavailable from the two publications. [Dissertation, §§2.2.3 and 3.1](https://hdl.handle.net/10057/324) · [200 rpm test](https://doi.org/10.1007/s11071-010-9899-8)
+
+The spatial deck keeps both carriage translations and adds pitch with the
+reported slider inertia as a nominal pitch value. The sleeve spins with the
+rod. Three weighted axial stations query the finite STEP pin and sleeve
+with native normals. Their forces act through their own generalized
+Jacobians, including pitch torque. A body-fixed accelerometer reports the
+specific force at its configured offset. The probe weights sum to one.
+Pitch frequency, line-of-action height, sensor offset and neutral tilt are
+sensitivity parameters. The analytical sensor check combines a hinged body,
+prescribed circular translation and gravity.
+A tilted pin test checks the pitch torque by differentiating the contact
+penalty energy with respect to angle.
+
+An independent audit uses both published acceleration panels for the
+200 rpm, 0.25 mm case. For a rigid planar rod and ideal rail, the
+triangle inequality puts the distance from the crank pin to the slider
+pin in the interval from link length minus clearance to link length plus
+clearance. Over 25–85°, this limits the longitudinal departure from ideal
+motion to 0.254 mm. Twice integrating the lower and upper digitized
+graph envelopes and allowing arbitrary initial position and speed gives
+necessary excursions of 0.817 mm in Fig. 5(d) and 0.508 mm in Fig. 6(b).
+The zero-clearance control's corresponding lower estimate is 0.003 mm.
+The Fig. 5(d) acceleration and Fig. 5(b) position envelopes differ by at
+least 0.803 mm on the same phase window under the constant-speed conversion.
+This comparison concerns the published graph reconstructions and the
+ideal planar assumptions. The raw acceleration measured at the slider
+attachment can also include local structural motion. [Reference audit](clearance/spatial/reference-audit.json)
+
+The selected spatial case lowers the 90–180° acceleration RMSE from
+6.01 to 4.21 m/s². Its 46.63° prediction is −14.89 m/s² at both 10 and
+1 µs. Some axial stations unload while others remain compressed. A
+coupled 26.5 Hz accelerometer-mount trial generates a local minimum near
+46.53° at −19.70 m/s² at 5 µs. A 70.5 Hz trial reaches −40.76 m/s² with a
+90–180° RMSE of 20.47 m/s². No trial reaches the measured amplitude
+while preserving the sustained-loading response. The modal data and
+mount coordinates have not been identified from independent measurements.
+[Spatial cases, step refinement, and held-out results](clearance/spatial/summary.json) · [Spatial response figure](clearance/spatial/spatial-response.pdf)
+
+The selected scene and time-step refinement inputs can be
+regenerated with the following commands. The 1 µs run uses the state
+at the fourth completed revolution of the 5 µs run. A whole-period
+restart keeps the crank encoder origin.
+
+~~~powershell
+$contact = 'build/occt/Release/nc_contact.exe'
+$ref = 'results/contact_validation/clearance'
+$spatial = 'build/external-validation/spatial-reconstruction'
+$mount = 'build/external-validation/spatial-mount'
+python benchmarks/contact_validation/clearance_spatial.py $contact $spatial $ref --verify-sensor
+python benchmarks/contact_validation/clearance_spatial.py $contact $spatial $ref --cases long-lever --step-us 10 --cycles 6 --archive "$ref/spatial"
+python benchmarks/contact_validation/clearance_spatial.py $contact $spatial $ref --cases long-lever --step-us 5 --cycles 6
+$warm = "$spatial/200rpm-0.25mm-5us-6cycles/long-lever/200rpm-0.25mm-spatial.csv"
+python benchmarks/contact_validation/clearance_spatial.py $contact $spatial $ref --cases long-lever --step-us 1 --cycles 2 --warm-start $warm
+python benchmarks/contact_validation/clearance_spatial.py $contact $spatial $ref --cases long-lever --step-us 10 --cycles 6 --rpm 150
+python benchmarks/contact_validation/clearance_spatial.py $contact $spatial $ref --cases long-lever --step-us 10 --cycles 6 --clearance 0.50
+python benchmarks/contact_validation/clearance_spatial.py $contact $mount $ref --cases mount-26hz mount-36hz mount-70hz mount-heavy-28hz mount-heavy-45hz
+$warmMount = "$mount/200rpm-0.25mm-20us-5cycles/mount-26hz/200rpm-0.25mm-spatial.csv"
+python benchmarks/contact_validation/clearance_spatial.py $contact $mount $ref --cases mount-26hz --step-us 5 --cycles 2 --warm-start $warmMount --warm-turn 3
+python benchmarks/contact_validation/clearance_reference_audit.py build/external-validation/source/springer.pdf "$spatial/reference-audit.json"
+python benchmarks/contact_validation/clearance_spatial_report.py $spatial $mount $ref "$ref/spatial"
+~~~
+
 ## Archived robot copper-ring insertion
 
 The archived records provide commanded and measured wrist pose and wrist force/torque for 300 attempts. The dataset covers four tooling slots and 13 commanded lateral offsets. The paired CSV includes transformed measurements from Mihael Simonič and Matevž Majcen Horvat's *Copper Rings Insertion Attempts Dataset*, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Each trial is registered to the first minimum of commanded Z. The model uses measured axial position relative to that command target. The measured tool-frame axial force is centered on the median of the first 35 samples. The evaluation window covers sample offsets −28 through +23. The files contain no timestamps, so the curves use sample index and the model uses rate-independent compliance.
@@ -70,6 +140,8 @@ python benchmarks/contact_validation/clearance.py build/occt/Release/nc_contact.
 python benchmarks/contact_validation/clearance_revision.py build/occt/Release/nc_contact.exe build/external-validation/slider-revision results/contact_validation/clearance results/contact_validation/clearance/revised
 python benchmarks/contact_validation/clearance_flexibility.py build/occt/Release/nc_contact.exe build/external-validation/flex-screen results/contact_validation/clearance results/contact_validation/clearance/flexibility
 python benchmarks/contact_validation/clearance_flexibility.py build/occt/Release/nc_contact.exe build/external-validation/flex-selected results/contact_validation/clearance results/contact_validation/clearance/flexibility --selected compliant-guide
+python benchmarks/contact_validation/clearance_reference_audit.py build/external-validation/source/springer.pdf build/external-validation/reference-audit.json
+python benchmarks/contact_validation/clearance_spatial.py build/occt/Release/nc_contact.exe build/external-validation/spatial-reconstruction results/contact_validation/clearance --verify-sensor
 python benchmarks/contact_validation/insertion.py build/occt/Release/nc_contact.exe build/external-validation/source/insertion-dataset.zip build/external-validation/insertion results/contact_validation/insertion
 python benchmarks/contact_validation/external_plots.py results/contact_validation --animate
 python benchmarks/hht/paper.py results/hht
