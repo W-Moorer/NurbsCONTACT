@@ -59,6 +59,8 @@ struct ContactMaterial {
     double friction;
     double slip_speed;
     double maximum_depth;
+    double impact_dissipation{}; // dimensionless multiplier of closing speed / incidence speed
+    double approach_floor{};     // positive for an incidence-dependent law
 };
 
 enum class ContactDirection { world, body_a, anchors, contained, contained_radial };
@@ -77,6 +79,14 @@ struct ContactSample {
     Vec friction{};
     Vec witness_a{}, witness_b{};
     bool resolved{};
+    double gap_rate{std::numeric_limits<double>::quiet_NaN()};
+    double impact_speed{};
+};
+
+struct ImpactHistory {
+    double gap{std::numeric_limits<double>::quiet_NaN()};
+    double gap_rate{std::numeric_limits<double>::quiet_NaN()};
+    double impact_speed{};
 };
 
 // Sliding friction with a prescribed preload. The normal is in world space.
@@ -104,6 +114,7 @@ void add_translational_bushings(Forces& forces, std::span<const ContactBodyState
 // mode uses the centerline for the force differential of circular sections.
 bool add_contact_forces(Forces* forces, std::span<const ContactBodyState> bodies,
                         std::span<const ContactPair> pairs, const Vector& velocity,
-                        ContactWork& work, std::vector<ContactSample>* observations = nullptr);
+                        ContactWork& work, std::vector<ContactSample>* observations = nullptr,
+                        std::span<const ImpactHistory> previous = {});
 
 } // namespace nc::dynamics

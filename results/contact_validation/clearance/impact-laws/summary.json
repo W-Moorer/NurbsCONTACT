@@ -1,0 +1,737 @@
+{
+  "reference_doi": "https://doi.org/10.1007/s11071-010-9899-8",
+  "source_sha256": "ad7d8d5d6b1e7080245cdd87f452a53880e1111df11c3c3ca0f4e9abfb0bc816",
+  "published_curves": {
+    "figure6b": {
+      "first_half_minimum": {
+        "phase_deg": 46.63339828565423,
+        "acceleration_m_s2": -50.6817236961557
+      },
+      "impact_window_minimum": {
+        "phase_deg": 46.63339828565423,
+        "acceleration_m_s2": -50.6817236961557
+      },
+      "impact_half_prominence_width_deg": 8.32651862180294
+    },
+    "figure11c": {
+      "first_half_minimum": {
+        "phase_deg": 46.71909757705069,
+        "acceleration_m_s2": -50.711480789905494
+      },
+      "impact_window_minimum": {
+        "phase_deg": 46.71909757705069,
+        "acceleration_m_s2": -50.711480789905494
+      },
+      "impact_half_prominence_width_deg": 8.368914407373907
+    },
+    "figure11d": {
+      "first_half_minimum": {
+        "phase_deg": 6.213733818035176,
+        "acceleration_m_s2": -47.3888947304566
+      },
+      "impact_window_minimum": {
+        "phase_deg": 44.56582570662565,
+        "acceleration_m_s2": -28.045828446637273
+      },
+      "impact_half_prominence_width_deg": 3.7046525577843425
+    }
+  },
+  "isolated_rebound": [
+    {
+      "law": "ln",
+      "entry_m_s": 0.03,
+      "expected_rebound_ratio": 0.7149936995301143,
+      "measured_rebound_ratio": 0.7149937217406301
+    },
+    {
+      "law": "ln",
+      "entry_m_s": 0.15,
+      "expected_rebound_ratio": 0.7149936995301143,
+      "measured_rebound_ratio": 0.7149937422949314
+    },
+    {
+      "law": "exact",
+      "entry_m_s": 0.03,
+      "expected_rebound_ratio": 0.4599999999999999,
+      "measured_rebound_ratio": 0.4600000207711088
+    },
+    {
+      "law": "exact",
+      "entry_m_s": 0.15,
+      "expected_rebound_ratio": 0.4599999999999999,
+      "measured_rebound_ratio": 0.4600000398782361
+    }
+  ],
+  "screening": [
+    {
+      "measured_phase_deg": 46.63339828565423,
+      "measured_peak_m_s2": -50.6817236961557,
+      "raw_rmse_m_s2": 15.611320776890292,
+      "quiet_rmse_m_s2": 19.479255585245237,
+      "quiet_max_abs_m_s2": 442.57258976766457,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 52.967999999619906,
+          "window_min_m_s2": -24.63161947560074,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -4.851025235378659,
+          "carriage_at_measured_phase_m_s2": -4.851025235378659,
+          "max_sensor_carriage_difference_m_s2": 0.0,
+          "min_load_N": 4.92211369171376,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 0.0,
+          "max_clearance_for_any_section_um": -0.1296032327950669
+        },
+        {
+          "window_min_phase_deg": 51.88800000197125,
+          "window_min_m_s2": -37.677453833879476,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -4.356462067139992,
+          "carriage_at_measured_phase_m_s2": -4.356462067139992,
+          "max_sensor_carriage_difference_m_s2": 0.0,
+          "min_load_N": 3.90080977556282,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 0.0,
+          "max_clearance_for_any_section_um": -0.11099006173506676
+        }
+      ],
+      "case": "rigid-ln",
+      "rpm": 200,
+      "radial_clearance_mm": 0.25,
+      "cycles": 6,
+      "step_us": 10,
+      "phase_shift_deg": 0,
+      "output_filter": null,
+      "dissipation_coefficient": 0.5912999999999999,
+      "approach_floor_m_s": 0.0001,
+      "first_half_minimum_phase_deg": 2.159999999287052,
+      "first_half_minimum_m_s2": -54.57318771984344,
+      "integration": {
+        "wall_s": 16.3028524,
+        "setup_s": 0.0240078,
+        "steps": 180000.0,
+        "accepted": 180000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 509421.0,
+        "max_residual": 1.5560196377384372e-05,
+        "pairs": 509422.0,
+        "culled": 0.0,
+        "rays": 1018844.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 9.999999999999999e-06
+      },
+      "sampled_entries": [
+        8
+      ],
+      "at_approach_floor": [
+        0
+      ],
+      "within_sample_history_changes": [
+        0
+      ]
+    },
+    {
+      "measured_phase_deg": 46.63339828565423,
+      "measured_peak_m_s2": -50.6817236961557,
+      "raw_rmse_m_s2": 6.958435310722572,
+      "quiet_rmse_m_s2": 4.207074842121006,
+      "quiet_max_abs_m_s2": 25.3294772981759,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 42.01199999954813,
+          "window_min_m_s2": -16.734001222944272,
+          "minimum_inside_window": false,
+          "sensor_at_measured_phase_m_s2": -14.89450465017322,
+          "carriage_at_measured_phase_m_s2": -14.908076812772503,
+          "max_sensor_carriage_difference_m_s2": 0.05832168804825599,
+          "min_load_N": 11.091737295842815,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 39.08534036135142
+        },
+        {
+          "window_min_phase_deg": 42.00000000190647,
+          "window_min_m_s2": -16.738538305042812,
+          "minimum_inside_window": false,
+          "sensor_at_measured_phase_m_s2": -14.894504649843816,
+          "carriage_at_measured_phase_m_s2": -14.908076812525177,
+          "max_sensor_carriage_difference_m_s2": 0.058321686433821185,
+          "min_load_N": 11.097002643521222,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 39.08406485974778
+        }
+      ],
+      "case": "spatial-ln",
+      "rpm": 200,
+      "radial_clearance_mm": 0.25,
+      "cycles": 6,
+      "step_us": 10,
+      "phase_shift_deg": 0,
+      "output_filter": null,
+      "dissipation_coefficient": 0.5912999999999999,
+      "approach_floor_m_s": 0.0001,
+      "first_half_minimum_phase_deg": 1.3679999992818637,
+      "first_half_minimum_m_s2": -25.833148374500826,
+      "integration": {
+        "wall_s": 41.9478512,
+        "setup_s": 0.022791,
+        "steps": 180000.0,
+        "accepted": 180000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 401628.0,
+        "max_residual": 7.420332530094775e-07,
+        "pairs": 1204887.0,
+        "culled": 0.0,
+        "rays": 2409774.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 9.999999999999999e-06
+      },
+      "sampled_entries": [
+        2,
+        0,
+        2
+      ],
+      "at_approach_floor": [
+        0,
+        0,
+        0
+      ],
+      "within_sample_history_changes": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "measured_phase_deg": 46.63339828565423,
+      "measured_peak_m_s2": -50.6817236961557,
+      "raw_rmse_m_s2": 7.221292772552684,
+      "quiet_rmse_m_s2": 5.43170789663194,
+      "quiet_max_abs_m_s2": 25.960274515041053,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 46.54799999957785,
+          "window_min_m_s2": -19.702716750769692,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.702325144789924,
+          "carriage_at_measured_phase_m_s2": -14.957899196657344,
+          "max_sensor_carriage_difference_m_s2": 5.6244011786194825,
+          "min_load_N": 11.10704643256437,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.83989065432345
+        },
+        {
+          "window_min_phase_deg": 46.54800000193626,
+          "window_min_m_s2": -19.702707991042644,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.70232697152225,
+          "carriage_at_measured_phase_m_s2": -14.957897506393268,
+          "max_sensor_carriage_difference_m_s2": 5.624863342875392,
+          "min_load_N": 11.112645653815449,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.838460468634814
+        }
+      ],
+      "case": "mount-ln",
+      "rpm": 200,
+      "radial_clearance_mm": 0.25,
+      "cycles": 6,
+      "step_us": 10,
+      "phase_shift_deg": 0,
+      "output_filter": null,
+      "dissipation_coefficient": 0.5912999999999999,
+      "approach_floor_m_s": 0.0001,
+      "first_half_minimum_phase_deg": 4.991999999305605,
+      "first_half_minimum_m_s2": -33.43631957987797,
+      "integration": {
+        "wall_s": 42.9428836,
+        "setup_s": 0.0226035,
+        "steps": 180000.0,
+        "accepted": 180000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 401136.0,
+        "max_residual": 5.982405988265438e-07,
+        "pairs": 1203411.0,
+        "culled": 0.0,
+        "rays": 2406822.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 9.999999999999999e-06
+      },
+      "sampled_entries": [
+        2,
+        0,
+        2
+      ],
+      "at_approach_floor": [
+        0,
+        0,
+        0
+      ],
+      "within_sample_history_changes": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "measured_phase_deg": 46.63339828565423,
+      "measured_peak_m_s2": -50.6817236961557,
+      "raw_rmse_m_s2": 6.957650721133036,
+      "quiet_rmse_m_s2": 4.204931879225844,
+      "quiet_max_abs_m_s2": 25.295087929105822,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 42.01199999954813,
+          "window_min_m_s2": -16.73391320848735,
+          "minimum_inside_window": false,
+          "sensor_at_measured_phase_m_s2": -14.894508311165339,
+          "carriage_at_measured_phase_m_s2": -14.908087540272918,
+          "max_sensor_carriage_difference_m_s2": 0.05811839053678369,
+          "min_load_N": 11.091805154876987,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 39.08458627062232
+        },
+        {
+          "window_min_phase_deg": 42.00000000190647,
+          "window_min_m_s2": -16.738450480745435,
+          "minimum_inside_window": false,
+          "sensor_at_measured_phase_m_s2": -14.894508309937915,
+          "carriage_at_measured_phase_m_s2": -14.908087539888035,
+          "max_sensor_carriage_difference_m_s2": 0.058118389230060075,
+          "min_load_N": 11.097070160839499,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 39.08331080364896
+        }
+      ],
+      "case": "spatial-exact",
+      "rpm": 200,
+      "radial_clearance_mm": 0.25,
+      "cycles": 6,
+      "step_us": 10,
+      "phase_shift_deg": 0,
+      "output_filter": null,
+      "dissipation_coefficient": 1.6635059123379343,
+      "approach_floor_m_s": 0.0001,
+      "first_half_minimum_phase_deg": 1.3679999992818637,
+      "first_half_minimum_m_s2": -25.832384681161923,
+      "integration": {
+        "wall_s": 78.2771635,
+        "setup_s": 0.0342648,
+        "steps": 180000.0,
+        "accepted": 180000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 407017.0,
+        "max_residual": 4.976542237154769e-07,
+        "pairs": 1221054.0,
+        "culled": 0.0,
+        "rays": 2442108.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 9.999999999999999e-06
+      },
+      "sampled_entries": [
+        2,
+        0,
+        2
+      ],
+      "at_approach_floor": [
+        0,
+        0,
+        0
+      ],
+      "within_sample_history_changes": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "measured_phase_deg": 46.63339828565423,
+      "measured_peak_m_s2": -50.6817236961557,
+      "raw_rmse_m_s2": 7.221195752126585,
+      "quiet_rmse_m_s2": 5.431532054744543,
+      "quiet_max_abs_m_s2": 25.960098713024703,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 46.54799999957785,
+          "window_min_m_s2": -19.702195893077064,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.701807612577323,
+          "carriage_at_measured_phase_m_s2": -14.957702540992674,
+          "max_sensor_carriage_difference_m_s2": 5.6239227576127995,
+          "min_load_N": 11.107043965680708,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.83913472706516
+        },
+        {
+          "window_min_phase_deg": 46.54800000193626,
+          "window_min_m_s2": -19.702187248794008,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.701809552600142,
+          "carriage_at_measured_phase_m_s2": -14.957700839338477,
+          "max_sensor_carriage_difference_m_s2": 5.624384920695686,
+          "min_load_N": 11.112642574202969,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.83770474301731
+        }
+      ],
+      "case": "mount-exact",
+      "rpm": 200,
+      "radial_clearance_mm": 0.25,
+      "cycles": 6,
+      "step_us": 10,
+      "phase_shift_deg": 0,
+      "output_filter": null,
+      "dissipation_coefficient": 1.6635059123379343,
+      "approach_floor_m_s": 0.0001,
+      "first_half_minimum_phase_deg": 4.991999999305605,
+      "first_half_minimum_m_s2": -33.435914049641234,
+      "integration": {
+        "wall_s": 77.2064189,
+        "setup_s": 0.0748196,
+        "steps": 180000.0,
+        "accepted": 180000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 407524.0,
+        "max_residual": 6.331507030540862e-07,
+        "pairs": 1222575.0,
+        "culled": 0.0,
+        "rays": 2445150.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 9.999999999999999e-06
+      },
+      "sampled_entries": [
+        2,
+        0,
+        2
+      ],
+      "at_approach_floor": [
+        0,
+        0,
+        0
+      ],
+      "within_sample_history_changes": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "refinement": [
+    {
+      "measured_phase_deg": 46.63339828565423,
+      "measured_peak_m_s2": -50.6817236961557,
+      "raw_rmse_m_s2": 11.493454527879067,
+      "quiet_rmse_m_s2": 6.7618735946627195,
+      "quiet_max_abs_m_s2": 31.626839037108663,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 45.093599986048254,
+          "window_min_m_s2": -22.202033576575822,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -18.845727228465414,
+          "carriage_at_measured_phase_m_s2": -18.845727228465414,
+          "max_sensor_carriage_difference_m_s2": 0.0,
+          "min_load_N": 7.047077444652861,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 0.0,
+          "max_clearance_for_any_section_um": -0.1648115767333147
+        },
+        {
+          "window_min_phase_deg": 42.00119995668649,
+          "window_min_m_s2": -34.304378102781,
+          "minimum_inside_window": false,
+          "sensor_at_measured_phase_m_s2": -5.547253985047561,
+          "carriage_at_measured_phase_m_s2": -5.547253985047561,
+          "max_sensor_carriage_difference_m_s2": 0.0,
+          "min_load_N": 4.274937687728969,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 0.0,
+          "max_clearance_for_any_section_um": -0.11797785953379658
+        }
+      ],
+      "case": "rigid-ln",
+      "rpm": 200,
+      "radial_clearance_mm": 0.25,
+      "cycles": 6,
+      "step_us": 1.0,
+      "phase_shift_deg": 0,
+      "output_filter": null,
+      "dissipation_coefficient": 0.5912999999999999,
+      "approach_floor_m_s": 0.0001,
+      "first_half_minimum_phase_deg": 0.7715999896944226,
+      "first_half_minimum_m_s2": -37.09119891759995,
+      "integration": {
+        "wall_s": 212.22662,
+        "setup_s": 0.0414398,
+        "steps": 1800000.0,
+        "accepted": 1800000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 3716392.0,
+        "max_residual": 1.4370924944162589e-05,
+        "pairs": 3716393.0,
+        "culled": 0.0,
+        "rays": 7432786.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 1e-06
+      },
+      "sampled_entries": [
+        0
+      ],
+      "at_approach_floor": [
+        0
+      ],
+      "within_sample_history_changes": [
+        0
+      ],
+      "trough_widths_deg": [
+        3.4223169709254293,
+        null
+      ]
+    },
+    {
+      "measured_phase_deg": 46.63339828565423,
+      "measured_peak_m_s2": -50.6817236961557,
+      "raw_rmse_m_s2": 7.221035776109825,
+      "quiet_rmse_m_s2": 5.431458632811198,
+      "quiet_max_abs_m_s2": 25.960271545611235,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 46.542000004658384,
+          "window_min_m_s2": -19.702742422170644,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.70234486749439,
+          "carriage_at_measured_phase_m_s2": -14.957637370142528,
+          "max_sensor_carriage_difference_m_s2": 5.624412160236776,
+          "min_load_N": 11.109832710231881,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.8391766394814
+        },
+        {
+          "window_min_phase_deg": 46.54200000701684,
+          "window_min_m_s2": -19.702733055997783,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.702346831527603,
+          "carriage_at_measured_phase_m_s2": -14.957635682640738,
+          "max_sensor_carriage_difference_m_s2": 5.62487442476097,
+          "min_load_N": 11.109852276185336,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.839178266168034
+        }
+      ],
+      "case": "mount-ln",
+      "rpm": 200,
+      "radial_clearance_mm": 0.25,
+      "cycles": 6,
+      "step_us": 5.0,
+      "phase_shift_deg": 0,
+      "output_filter": null,
+      "dissipation_coefficient": 0.5912999999999999,
+      "approach_floor_m_s": 0.0001,
+      "first_half_minimum_phase_deg": 4.986000004386142,
+      "first_half_minimum_m_s2": -33.43633651296025,
+      "integration": {
+        "wall_s": 173.9149166,
+        "setup_s": 0.0270294,
+        "steps": 360000.0,
+        "accepted": 360000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 766507.0,
+        "max_residual": 1.5209418005590614e-06,
+        "pairs": 2299524.0,
+        "culled": 0.0,
+        "rays": 4599048.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 4.9999999999999996e-06
+      },
+      "sampled_entries": [
+        2,
+        0,
+        2
+      ],
+      "at_approach_floor": [
+        0,
+        0,
+        0
+      ],
+      "within_sample_history_changes": [
+        0,
+        0,
+        0
+      ],
+      "trough_widths_deg": [
+        6.041794307698005,
+        6.043397064191595
+      ]
+    }
+  ],
+  "spatial_widths_deg": [
+    null,
+    null
+  ],
+  "held_out": [
+    {
+      "measured_phase_deg": 44.4112919640406,
+      "measured_peak_m_s2": -10.08643406011177,
+      "raw_rmse_m_s2": 3.0678473656051075,
+      "quiet_rmse_m_s2": 3.453759336487133,
+      "quiet_max_abs_m_s2": 14.317665704029533,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 55.998000002179644,
+          "window_min_m_s2": -7.831468159196675,
+          "minimum_inside_window": false,
+          "sensor_at_measured_phase_m_s2": -5.445686614352758,
+          "carriage_at_measured_phase_m_s2": -8.87308785819315,
+          "max_sensor_carriage_difference_m_s2": 3.4282982998118685,
+          "min_load_N": 6.686430204977309,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 41.55848775799255
+        },
+        {
+          "window_min_phase_deg": 55.998000004538085,
+          "window_min_m_s2": -7.831479060901046,
+          "minimum_inside_window": false,
+          "sensor_at_measured_phase_m_s2": -5.445681612751301,
+          "carriage_at_measured_phase_m_s2": -8.873087847943706,
+          "max_sensor_carriage_difference_m_s2": 3.428303548224088,
+          "min_load_N": 6.686430281104186,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 41.55848776450817
+        }
+      ],
+      "case": "mount-ln",
+      "rpm": 150,
+      "radial_clearance_mm": 0.25,
+      "cycles": 6,
+      "step_us": 10,
+      "phase_shift_deg": 0,
+      "output_filter": null,
+      "dissipation_coefficient": 0.5912999999999999,
+      "approach_floor_m_s": 0.0001,
+      "first_half_minimum_phase_deg": 26.136000001984172,
+      "first_half_minimum_m_s2": -16.528545634756433,
+      "integration": {
+        "wall_s": 114.5467744,
+        "setup_s": 0.0479477,
+        "steps": 240000.0,
+        "accepted": 240000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 508679.0,
+        "max_residual": 4.440468447941548e-07,
+        "pairs": 1526040.0,
+        "culled": 0.0,
+        "rays": 3052080.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 1e-05
+      },
+      "sampled_entries": [
+        6,
+        0,
+        2
+      ],
+      "at_approach_floor": [
+        0,
+        0,
+        0
+      ],
+      "within_sample_history_changes": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "measured_phase_deg": 46.633457798307965,
+      "measured_peak_m_s2": -96.25104626331068,
+      "raw_rmse_m_s2": 14.132000128913598,
+      "quiet_rmse_m_s2": 14.842526448443754,
+      "quiet_max_abs_m_s2": 37.819877454466265,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 53.591999999623994,
+          "window_min_m_s2": -22.387632687043837,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -18.046720678789058,
+          "carriage_at_measured_phase_m_s2": -14.75451009643459,
+          "max_sensor_carriage_difference_m_s2": 10.628737944212038,
+          "min_load_N": 11.040938637330727,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 39.22087006211217
+        },
+        {
+          "window_min_phase_deg": 53.592000001982456,
+          "window_min_m_s2": -22.38832679763764,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -18.046598439045734,
+          "carriage_at_measured_phase_m_s2": -14.754499802896438,
+          "max_sensor_carriage_difference_m_s2": 10.62956100257589,
+          "min_load_N": 11.046918072739132,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 39.21901499457682
+        }
+      ],
+      "case": "mount-ln",
+      "rpm": 200,
+      "radial_clearance_mm": 0.5,
+      "cycles": 6,
+      "step_us": 10,
+      "phase_shift_deg": 0,
+      "output_filter": null,
+      "dissipation_coefficient": 0.5912999999999999,
+      "approach_floor_m_s": 0.0001,
+      "first_half_minimum_phase_deg": 9.875999999337601,
+      "first_half_minimum_m_s2": -40.3568479492882,
+      "integration": {
+        "wall_s": 92.1057035,
+        "setup_s": 0.0429971,
+        "steps": 180000.0,
+        "accepted": 180000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 417952.0,
+        "max_residual": 1.6459529153106667e-06,
+        "pairs": 1253859.0,
+        "culled": 0.0,
+        "rays": 2507718.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 9.999999999999999e-06
+      },
+      "sampled_entries": [
+        2,
+        0,
+        4
+      ],
+      "at_approach_floor": [
+        0,
+        0,
+        0
+      ],
+      "within_sample_history_changes": [
+        0,
+        0,
+        0
+      ]
+    }
+  ]
+}

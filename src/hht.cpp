@@ -59,10 +59,11 @@ struct Trial {
 
 }  // namespace
 
-Hht::Hht(Vector diagonal_mass, ForceFunction forces, HhtOptions options, ClearanceFunction clearance)
+Hht::Hht(Vector diagonal_mass, ForceFunction forces, HhtOptions options, ClearanceFunction clearance,
+         HistoryForceFunction historical_forces)
     : mass_(std::move(diagonal_mass)), forces_(std::move(forces)),
-      options_(options), clearance_(std::move(clearance)) {
-    if (!forces_ || mass_.empty() || !finite(mass_) ||
+      options_(options), clearance_(std::move(clearance)), historical_forces_(std::move(historical_forces)) {
+    if ((!forces_ && !historical_forces_) || mass_.empty() || !finite(mass_) ||
         std::any_of(mass_.begin(), mass_.end(), [](double m) { return m <= 0; }) ||
         !(options.alpha >= -1.0 / 3 && options.alpha <= 0) ||
         !(std::isfinite(options.absolute_tolerance) && options.absolute_tolerance > 0) ||
@@ -80,12 +81,12 @@ State Hht::initialize(Vector q, Vector v, double time) const {
     if (clearance_ && !(clearance_(q, q) > options_.minimum_clearance)) {
         throw std::invalid_argument("initial state fails the clearance guard");
     }
-    Forces f = forces_(q, v, time);
+    Forces f = historical_forces_ ? historical_forces_(q, v, time, {}) : forces_(q, v, time);
     validate(f, n);
     if (!finite(f.value)) throw std::invalid_argument("nonfinite initial force");
     Vector acceleration(n);
     for (std::size_t i = 0; i < n; ++i) acceleration[i] = f.value[i] / mass_[i];
-    return {time, std::move(q), std::move(v), std::move(acceleration), std::move(f.value)};
+    return {time, std::move(q), std::move(v), std::move(acceleration), std::move(f.value), std::move(f.history)};
 }
 
 bool Hht::solve(const State& start, double dt, State& result, HhtStats& statistics) const {
@@ -110,7 +111,9 @@ bool Hht::solve(const State& start, double dt, State& result, HhtStats& statisti
             trial.state.q[i] = q_predict[i] + position_scale * trial.state.a[i];
             trial.state.v[i] = v_predict[i] + velocity_scale * trial.state.a[i];
         }
-        trial.forces = forces_(trial.state.q, trial.state.v, trial.state.time);
+        trial.forces = historical_forces_
+            ? historical_forces_(trial.state.q, trial.state.v, trial.state.time, start.history)
+            : forces_(trial.state.q, trial.state.v, trial.state.time);
         ++statistics.evaluations;
         validate(trial.forces, n);
         trial.residual.resize(n);
@@ -129,6 +132,7 @@ bool Hht::solve(const State& start, double dt, State& result, HhtStats& statisti
         if (current.error <= tolerance && std::isfinite(current.error)) {
             statistics.maximum_residual = std::max(statistics.maximum_residual, current.error);
             current.state.force = std::move(current.forces.value);
+            current.state.history = std::move(current.forces.history);
             result = std::move(current.state);
             return true;
         }

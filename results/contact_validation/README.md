@@ -90,6 +90,20 @@ accelerometers count
 accelerometer body_id point_local_xyz axis_local_xyz
 ~~~
 
+A v2 scene with dynamic coordinates can also set an incidence-dependent
+normal law for individual probes. The compressive force is
+`max(0, K * depth^n * (1 - kappa * gap_rate / approach_speed))`.
+Positive gap rate means opening. The solver estimates the approach speed
+from the previous accepted state and the entry step, holds it through
+compression, and clears it upon reopening. The positive floor supplies
+a finite speed for grazing and for initially compressed states. A probe
+with this law records `pN_gap_rate_m_s` and `pN_impact_speed_m_s`.
+
+~~~text
+impact-laws count
+impact probe_id kappa minimum_approach_speed_m_s
+~~~
+
 ## Reproduce
 
 Set the OCCT runtime path using the [project build instructions](../../README.md#step-queries-on-windows). Run the commands from the workspace root.

@@ -59,7 +59,8 @@ std::optional<WorldHit> hit(const ContactBodyState& body, Vec ray, Vec direction
 
 bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState& b,
               const ContactPair& pair, const Vector& velocity,
-              ContactWork& work, ContactSample& sample, bool observe) {
+              ContactWork& work, ContactSample& sample, bool observe,
+              const ImpactHistory& previous) {
     ++work.pairs;
     const Vec anchor_a = a.pose.point(pair.anchor_a);
     const Vec anchor_b = b.pose.point(pair.anchor_b);
@@ -99,15 +100,15 @@ bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState&
     sample.resolved = true;
     sample.witness_a = left->point;
     sample.witness_b = right->point;
-    if (sample.gap >= 0) return true;
-
     const auto& material = pair.material;
     const double depth = -sample.gap;
+    const bool incident_law = material.approach_floor>0;
+    if (depth<=0 && !incident_law) return true;
     if (depth > material.maximum_depth) return false;
     const Vec normal_a = radial ? normal : left->normal;
     const Vec normal_b = radial ? normal : right->normal;
     const double cos_a = dot3(normal_a,normal), cos_b = dot3(normal_b,normal);
-    if (std::abs(cos_a)<1e-6 || std::abs(cos_b)<1e-6) return false;
+    if (std::abs(cos_a)<1e-6 || std::abs(cos_b)<1e-6) return depth<=0;
 
     const std::size_t n = velocity.size();
     Vector jacobian(n);
@@ -135,9 +136,29 @@ bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState&
         rate += jacobian[i]*velocity[i];
         slip = add(slip,scale(tangent[i],velocity[i]));
     }
+    sample.gap_rate = rate;
+    if (depth<=0) return true;
+
     const double elastic = material.stiffness*std::pow(depth,material.exponent);
-    const double damping_exponent = .5*(material.exponent-1);
-    const double c = material.rate*std::pow(depth,damping_exponent);
+    double damping_exponent = .5*(material.exponent-1);
+    double c;
+    if (incident_law) {
+        if (previous.gap<0 && previous.impact_speed>0) {
+            sample.impact_speed = previous.impact_speed;
+        } else {
+            double incidence = -rate;
+            if (previous.gap>=0 && std::isfinite(previous.gap_rate)) {
+                // Interpolate the end-point rates at the sign change of the gap.
+                const double fraction = previous.gap/(previous.gap+depth);
+                incidence = -std::lerp(previous.gap_rate,rate,fraction);
+            }
+            sample.impact_speed = std::max(material.approach_floor,incidence);
+        }
+        damping_exponent = material.exponent;
+        c = elastic*material.impact_dissipation/sample.impact_speed;
+    } else {
+        c = material.rate*std::pow(depth,damping_exponent);
+    }
     const double normal_force = elastic-c*rate;
     if (normal_force<=0) return true;
     const double tangent_speed = std::hypot(length(slip), material.slip_speed);
@@ -241,14 +262,19 @@ void add_translational_bushings(Forces& forces, std::span<const ContactBodyState
 
 bool add_contact_forces(Forces* forces, std::span<const ContactBodyState> bodies,
                         std::span<const ContactPair> pairs, const Vector& velocity,
-                        ContactWork& work, std::vector<ContactSample>* observations) {
+                        ContactWork& work, std::vector<ContactSample>* observations,
+                        std::span<const ImpactHistory> previous) {
+    if (!previous.empty() && previous.size()!=pairs.size())
+        throw std::invalid_argument("contact history must match the probe count");
     if (observations) {
         observations->clear();
         observations->reserve(pairs.size());
     }
-    for (const auto& pair:pairs) {
+    for (std::size_t i=0; i<pairs.size(); ++i) {
+        const auto& pair = pairs[i];
         ContactSample sample;
-        if (!evaluate(forces,bodies[pair.a],bodies[pair.b],pair,velocity,work,sample,observations!=nullptr)) {
+        const ImpactHistory start = previous.empty() ? ImpactHistory{} : previous[i];
+        if (!evaluate(forces,bodies[pair.a],bodies[pair.b],pair,velocity,work,sample,observations!=nullptr,start)) {
             return false;
         }
         if (observations) observations->push_back(sample);

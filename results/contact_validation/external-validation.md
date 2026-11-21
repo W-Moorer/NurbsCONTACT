@@ -117,6 +117,45 @@ python benchmarks/contact_validation/clearance_reference_audit.py build/external
 python benchmarks/contact_validation/clearance_spatial_report.py $spatial $mount $ref "$ref/spatial"
 ~~~
 
+### Dissipation set by the closing speed
+
+The shared HHT runner now carries a closing speed for each selected
+probe. It uses the previous accepted and current trial states to estimate
+the rate at the gap crossing. Each accepted compressed state retains
+its incident speed. Newton trial iterations and rolled-back subdivisions
+leave the incoming state intact.
+
+Flores Eq. 3 uses a dimensionless multiplier of 0.5913 for the reported
+restitution parameter 0.46. For an isolated impact under this law,
+integrating the compression equation gives
+`w(kappa) = w(-kappa * rebound_ratio)` with `w(z) = z - log(1 + z)`.
+At 0.03 and 0.15 m/s the generic STEP impact reproduces the resulting
+ratio 0.714994. Solving this equation for a ratio of 0.46 and repeating
+the STEP tests verifies both versions independently of the linkage.
+
+The published rigid simulation's deepest first-half trough is at
+6.21°, whereas the published experiment's is at 46.63°. The numerical
+and experimental curves therefore supply distinct checks. The
+reconstruction tests the two-coordinate planar rig, the eight-coordinate
+spatial rig, and the nine-coordinate sensor-mount rig with the same
+contact integrator. The report gives the half-prominence widths relative
+to the shoulders inside 42–56°, load and openings inside the reported
+43–63° separation interval, and raw acceleration RMSE over 90–180°.
+The final two turns retain the original encoder phase and integration
+samples. [Original study](https://doi.org/10.1007/s11071-010-9899-8) · [Metrics and isolated-impact checks](clearance/impact-laws/summary.json) · [Published and reconstructed curves](clearance/impact-laws/impact-law-response.pdf)
+
+~~~powershell
+$contact = 'build/occt/Release/nc_contact.exe'
+$ref = 'results/contact_validation/clearance'
+$impact = 'build/external-validation/flores-impact-laws'
+python benchmarks/contact_validation/clearance_impacts.py $contact $impact $ref --verify
+python benchmarks/contact_validation/clearance_impacts.py $contact $impact $ref --cases rigid-ln --step-us 1
+python benchmarks/contact_validation/clearance_impacts.py $contact $impact $ref --cases mount-ln --step-us 5
+python benchmarks/contact_validation/clearance_impacts.py $contact $impact $ref --cases mount-ln --rpm 150
+python benchmarks/contact_validation/clearance_impacts.py $contact $impact $ref --cases mount-ln --clearance 0.50
+python benchmarks/contact_validation/clearance_impact_report.py $impact build/external-validation/source/springer.pdf $ref "$ref/impact-laws"
+~~~
+
 ## Archived robot copper-ring insertion
 
 The archived records provide commanded and measured wrist pose and wrist force/torque for 300 attempts. The dataset covers four tooling slots and 13 commanded lateral offsets. The paired CSV includes transformed measurements from Mihael Simonič and Matevž Majcen Horvat's *Copper Rings Insertion Attempts Dataset*, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Each trial is registered to the first minimum of commanded Z. The model uses measured axial position relative to that command target. The measured tool-frame axial force is centered on the median of the first 35 samples. The evaluation window covers sample offsets −28 through +23. The files contain no timestamps, so the curves use sample index and the model uses rate-independent compliance.

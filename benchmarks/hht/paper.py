@@ -196,6 +196,34 @@ def external_validation_macros(root):
             "SpatialTransferLow": f"{report['held_out']['150rpm-0.25mm']['raw_rmse_m_s2']:.2f}",
             "SpatialTransferBig": f"{report['held_out']['200rpm-0.50mm']['raw_rmse_m_s2']:.2f}",
         })
+    impact_file = slider_file.parent / "impact-laws" / "summary.json"
+    if impact_file.is_file():
+        report = json.loads(impact_file.read_text(encoding="utf-8"))
+        measured = report["published_curves"]["figure6b"]
+        original = report["published_curves"]["figure11d"]["first_half_minimum"]
+        rigid, mount = report["refinement"]
+        event = mount["revolutions"][0]
+        screening = {row["case"]: row for row in report["screening"]}
+        spatial_ln, spatial_exact = screening["spatial-ln"], screening["spatial-exact"]
+        low, large = report["held_out"]
+        macros.update({
+            "IncidentLNBounce": f"{report['isolated_rebound'][0]['measured_rebound_ratio']:.3f}",
+            "IncidentRigidPhase": f"{rigid['first_half_minimum_phase_deg']:.2f}",
+            "IncidentRigidPeak": f"{rigid['first_half_minimum_m_s2']:.2f}",
+            "IncidentRigidQuietCoarse": f"{screening['rigid-ln']['quiet_rmse_m_s2']:.2f}",
+            "IncidentRigidQuietFine": f"{rigid['quiet_rmse_m_s2']:.2f}",
+            "IncidentOriginalPhase": f"{original['phase_deg']:.2f}",
+            "IncidentOriginalPeak": f"{original['acceleration_m_s2']:.2f}",
+            "IncidentMountPhase": f"{event['window_min_phase_deg']:.2f}",
+            "IncidentMountPeak": f"{event['window_min_m_s2']:.2f}",
+            "IncidentMountLoad": f"{event['min_load_N']:.2f}",
+            "IncidentMeasuredWidth": f"{measured['impact_half_prominence_width_deg']:.2f}",
+            "IncidentMountWidth": f"{mount['trough_widths_deg'][0]:.2f}",
+            "IncidentSpatialQuiet": f"{spatial_ln['quiet_rmse_m_s2']:.2f}",
+            "IncidentExactQuiet": f"{spatial_exact['quiet_rmse_m_s2']:.2f}",
+            "IncidentTransferLow": f"{low['raw_rmse_m_s2']:.2f}",
+            "IncidentTransferLarge": f"{large['raw_rmse_m_s2']:.2f}",
+        })
     return macros
 
 

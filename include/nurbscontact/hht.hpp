@@ -14,9 +14,13 @@ struct Forces {
     // Row-major approximations of -dF/dq and -dF/dv.
     Vector stiffness;
     Vector damping;
+    // Proposed internal state for this force evaluation.
+    Vector history{};
 };
 
 using ForceFunction = std::function<Forces(const Vector&, const Vector&, double)>;
+// The final argument is the history at the start of the attempted step.
+using HistoryForceFunction = std::function<Forces(const Vector&, const Vector&, double, const Vector&)>;
 using ClearanceFunction = std::function<double(const Vector&, const Vector&)>;
 
 struct HhtOptions {
@@ -34,6 +38,7 @@ struct State {
     Vector v;
     Vector a;
     Vector force;
+    Vector history{};
 };
 
 struct HhtStats {
@@ -48,7 +53,8 @@ struct HhtStats {
 
 class Hht {
 public:
-    Hht(Vector diagonal_mass, ForceFunction forces, HhtOptions options = {}, ClearanceFunction clearance = {});
+    Hht(Vector diagonal_mass, ForceFunction forces, HhtOptions options = {}, ClearanceFunction clearance = {},
+        HistoryForceFunction historical_forces = {});
 
     State initialize(Vector q, Vector v, double time = 0) const;
     void step(State& state, double dt, HhtStats& statistics) const;
@@ -61,6 +67,7 @@ private:
     ForceFunction forces_;
     HhtOptions options_;
     ClearanceFunction clearance_;
+    HistoryForceFunction historical_forces_;
 };
 
 }  // namespace nc::dynamics

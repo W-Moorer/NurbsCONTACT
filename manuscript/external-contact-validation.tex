@@ -223,3 +223,54 @@ Negative gaps indicate compression at the corresponding station.}
 \label{fig:clearance-spatial}
 \end{figure}
 \fi
+
+\ifdefined\IncidentLNBounce
+\paragraph{Per-impact dissipation.}
+We also implemented the published normal law
+\(F=\max(0,Kd^{3/2}(1+\kappa\dot d/v_{\mathrm{in}}))\).
+Here \(d\) is compression and \(v_{\mathrm{in}}\) is the closing speed
+at entry. Accepted HHT states store this speed for each probe and clear
+it upon reopening. The published coefficient
+\(\kappa=3(1-e^2)/4\), with \(e=0.46\), gives an isolated rebound
+speed ratio of \IncidentLNBounce{} at both 0.03 and 0.15 m/s.
+Separating the isolated impact equation in compression and speed gives
+\(w(\kappa)=w(-\kappa e_{\mathrm{iso}})\), where
+\(w(z)=z-\log(1+z)\). A second coefficient satisfies this relation
+at \(e_{\mathrm{iso}}=0.46\). All four STEP tests agree with the
+corresponding analytic rebound ratio.
+
+At the published \(1\,\mu\mathrm{s}\) step, the planar two-coordinate
+reconstruction has its deepest first-half trough at
+\(\IncidentRigidPhase^\circ\) (\IncidentRigidPeak{} m/s\(^{2}\)).
+The original rigid simulation in Fig.~11(d) has its deepest
+first-half trough at \(\IncidentOriginalPhase^\circ\)
+(\IncidentOriginalPeak{} m/s\(^{2}\)). The experiment's first-half
+minimum is at \(46.63^\circ\) (\(-50.68\) m/s\(^{2}\)).
+Reducing the planar step from \(10\) to \(1\,\mu\mathrm{s}\) changes its
+\(90^\circ\)--\(180^\circ\) RMSE from \IncidentRigidQuietCoarse{} to
+\IncidentRigidQuietFine{} m/s\(^{2}\).
+The 26.5 Hz mount has a trough at \(\IncidentMountPhase^\circ\)
+(\IncidentMountPeak{} m/s\(^{2}\)). Its half-prominence width in
+the \(42^\circ\)--\(56^\circ\) window is \(\IncidentMountWidth^\circ\),
+against \(\IncidentMeasuredWidth^\circ\) for the experimental curve.
+The minimum summed contact load is \IncidentMountLoad{} N during the
+reported separation interval in that revolution.
+Changing the restitution law yields sustained-loading RMSEs of
+\IncidentSpatialQuiet{} and \IncidentExactQuiet{} m/s\(^{2}\) in the
+spatial model. With the mount parameters held fixed, the 150 rpm,
+0.25 mm and 200 rpm, 0.50 mm cases have full-rate RMSEs of
+\IncidentTransferLow{} and \IncidentTransferLarge{} m/s\(^{2}\).
+Figure~\ref{fig:clearance-incident} compares the unfiltered responses
+at their recorded phases.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{\ContactValidationPath ../clearance/impact-laws/impact-law-response.pdf}
+\caption{Effect of the per-impact normal law on the clearance benchmark.
+The published numerical curve is digitized from Fig.~11(d).
+The planar reconstruction uses a \(1\,\mu\mathrm{s}\) step.
+The center and right panels show the \(5\,\mu\mathrm{s}\) mount and
+\(10\,\mu\mathrm{s}\) spatial responses alongside the experiment.}
+\label{fig:clearance-incident}
+\end{figure}
+\fi

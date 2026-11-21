@@ -41,18 +41,21 @@ void check_rollback() {
     HhtOptions options;
     options.minimum_clearance = 0.8;
     options.max_subdivisions = 2;
-    Hht integrator({1},[](const Vector&,const Vector&,double) {
-        return Forces{{0},{0},{0}};
-    }, options, [](const Vector& a,const Vector& b) {return std::min(a[0],b[0]);});
+    Hht integrator({1},{},options,[](const Vector& a,const Vector& b) {return std::min(a[0],b[0]);},
+                   [](const Vector&,const Vector&,double,const Vector& history) {
+        return Forces{{0},{0},{0},{history.empty() ? 0. : history[0]+1}};
+    });
     State state = integrator.initialize({1},{-1});
     HhtStats stats;
     bool failed=false;
     try { integrator.step(state,.5,stats); }
     catch (const std::runtime_error&) { failed=true; }
-    require(failed && state.time==0 && state.q[0]==1 && stats.accepted_steps==0, "failed HHT step must roll back");
+    require(failed && state.time==0 && state.q[0]==1 && state.history==Vector{0} && stats.accepted_steps==0,
+            "failed HHT step must roll back motion and internal history");
     integrator.step(state,.1,stats);
     require(state.time==.1 && std::abs(state.q[0]-.9)<1e-15 && stats.minimum_clearance>.8,
             "HHT could not continue after rejected step");
+    require(state.history==Vector{1}, "only an accepted HHT evaluation may update history");
 }
 
 void check_point_resistance() {

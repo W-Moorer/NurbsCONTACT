@@ -190,9 +190,25 @@ Input read_scene(const Path& path,double deflection) {
             }
         }
     }
-    bool read_resistances=false, read_bushings=false, read_accelerometers=false;
+    bool read_resistances=false, read_bushings=false, read_accelerometers=false, read_impact_laws=false;
     while (has_drives && !(in>>std::ws).eof()) {
         const auto block=take<std::string>(in);
+        if (block=="impact-laws" && !read_impact_laws) {
+            read_impact_laws=true;
+            const auto laws=take<unsigned>(in);
+            if (count==0 || laws>pairs)
+                throw std::invalid_argument("impact laws require dynamic coordinates and valid probe IDs");
+            for (unsigned i=0;i<laws;++i) {
+                expect(in,"impact");
+                const auto probe=take<unsigned>(in);
+                const auto dissipation=number(in), floor=number(in);
+                if (probe>=pairs || input.pairs[probe].material.approach_floor>0 || dissipation<0 || floor<=0)
+                    throw std::invalid_argument("invalid or duplicate impact law");
+                input.pairs[probe].material.impact_dissipation=dissipation;
+                input.pairs[probe].material.approach_floor=floor;
+            }
+            continue;
+        }
         if (block=="accelerometers" && !read_accelerometers) {
             read_accelerometers=true;
             const auto sensors=take<unsigned>(in);
@@ -295,6 +311,14 @@ double specific_force(const Accelerometer& sensor,const Body& body,const Contact
     return dot3(acceleration,pose.pose.rotate(sensor.axis));
 }
 
+std::vector<ImpactHistory> impact_history(const Vector& history) {
+    std::vector<ImpactHistory> result;
+    result.reserve(history.size()/3);
+    for (std::size_t i=0;i<history.size();i+=3)
+        result.push_back({history[i],history[i+1],history[i+2]});
+    return result;
+}
+
 std::ofstream open_output(const Path& path) {
     if (!path.parent_path().empty()) std::filesystem::create_directories(path.parent_path());
     std::ofstream out(path);
@@ -318,6 +342,8 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     }
     const double setup_s=std::chrono::duration<double>(Clock::now()-setup).count();
     const auto n=input.coordinates.size();
+    const bool has_history=std::any_of(input.pairs.begin(),input.pairs.end(),
+                                      [](const auto& pair) {return pair.material.approach_floor>0;});
     Vector mass,q,v;
     for (const auto& coordinate:input.coordinates) {
         mass.push_back(coordinate.mass);
@@ -326,7 +352,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     }
     ContactWork work;
     std::vector<Vec> base_acceleration;
-    const auto force=[&](const Vector& q_,const Vector& v_,double time) {
+    const auto evaluate_force=[&](const Vector& q_,const Vector& v_,double time,const Vector& previous) {
         const auto state=kinematics(input,q_,time,&base_acceleration);
         Forces out{Vector(n),Vector(n*n),Vector(n*n)};
         for (std::size_t i=0;i<n;++i) {
@@ -343,8 +369,18 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         }
         if (!input.resistances.empty()) add_point_resistances(out,state,input.resistances,v_);
         if (!input.bushings.empty()) add_translational_bushings(out,state,input.bushings,v_);
-        if (!add_contact_forces(&out,state,input.pairs,v_,work))
+        std::vector<ContactSample> contacts;
+        if (!add_contact_forces(&out,state,input.pairs,v_,work,has_history ? &contacts : nullptr,
+                                impact_history(previous))) {
             out.value[0]=std::numeric_limits<double>::quiet_NaN();
+        } else if (has_history) {
+            out.history.reserve(3*contacts.size());
+            for (const auto& contact:contacts) {
+                out.history.push_back(contact.gap);
+                out.history.push_back(contact.gap_rate);
+                out.history.push_back(contact.impact_speed);
+            }
+        }
         return out;
     };
     HhtOptions options;
@@ -355,7 +391,13 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     samples.reserve(steps/stride+2);
     const auto start=Clock::now();
     if (n>0) {
-        Hht solver(mass,force,options);
+        ForceFunction force;
+        HistoryForceFunction historical_force;
+        if (has_history) historical_force=evaluate_force;
+        else force=[&](const Vector& q_,const Vector& v_,double time) {
+            return evaluate_force(q_,v_,time,{});
+        };
+        Hht solver(mass,std::move(force),options,{},std::move(historical_force));
         auto state=solver.initialize(q,v);
         samples.push_back(state);
         for (std::size_t s=1;s<=steps;++s) {
@@ -376,6 +418,12 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     for (std::size_t p=0;p<input.pairs.size();++p)
         trace<<",p"<<p<<"_gap_m,p"<<p<<"_normal_N,p"<<p<<"_friction_N,p"<<p<<"_hit";
     for (std::size_t s=0;s<input.accelerometers.size();++s) trace<<",s"<<s<<"_a_m_s2";
+    if (has_history) {
+        for (std::size_t p=0;p<input.pairs.size();++p) {
+            if (input.pairs[p].material.approach_floor>0)
+                trace<<",p"<<p<<"_gap_rate_m_s,p"<<p<<"_impact_speed_m_s";
+        }
+    }
     trace<<'\n';
     ContactWork audit;
     std::vector<ContactSample> values;
@@ -388,7 +436,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         for (const auto& body:poses)
             trace<<','<<body.pose.origin[0]<<','<<body.pose.origin[1]<<','<<body.pose.origin[2]<<','<<body.pose.angle;
         if (n) {
-            if (!add_contact_forces(nullptr,poses,input.pairs,item.v,audit,&values))
+            if (!add_contact_forces(nullptr,poses,input.pairs,item.v,audit,&values,impact_history(item.history)))
                 throw std::runtime_error("invalid saved contact state");
         } else {
             const auto replay_start=Clock::now();
@@ -402,6 +450,12 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             const auto body=sensor.body;
             trace<<','<<specific_force(sensor,input.bodies[body],poses[body],item,
                                        base_acceleration[body],input.gravity);
+        }
+        if (has_history) {
+            for (std::size_t p=0;p<input.pairs.size();++p) {
+                if (input.pairs[p].material.approach_floor>0)
+                    trace<<','<<values[p].gap_rate<<','<<values[p].impact_speed;
+            }
         }
         trace<<'\n';
     }
