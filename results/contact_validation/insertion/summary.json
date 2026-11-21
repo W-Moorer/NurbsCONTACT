@@ -1,0 +1,62 @@
+{
+  "source": "https://zenodo.org/records/6364950",
+  "archive_md5": "61029a290d4512382cd6a11e53def18a",
+  "axial_stiffness_N_m": 2118.8543766571024,
+  "identified_stop_relative_to_command_target_m": {
+    "0": 0.0028303466198959363,
+    "x+1": 0.0037237501480322528,
+    "x+2": 0.0026101150205272436,
+    "x+3": 0.0027101677361668942,
+    "x-1": 0.002821557470187872,
+    "x-2": 0.0024536976475851456,
+    "x-3": 0.0029038020427929437,
+    "y+1": 0.0029551983080321614,
+    "y+2": 0.0027027571459159565,
+    "y+3": 0.0028098314023734796,
+    "y-1": 0.003358911792847164,
+    "y-2": 0.004249036518807732,
+    "y-3": 0.002435417117828909
+  },
+  "sample_window_inclusive": [
+    -28,
+    23
+  ],
+  "reference": "tool-frame axial force, precontact median removed",
+  "clock": "source sample index; no timestamp or sample-rate metadata",
+  "metrics": {
+    "calibration": {
+      "slots": [
+        1,
+        2
+      ],
+      "count": 150,
+      "rmse_N": 1.8295132744640938,
+      "median_trial_rmse_N": 1.6675968399509933,
+      "zero_force_baseline_rmse_N": 3.155674868975124,
+      "replicate_median_rmse_N": 0.7317052781834649,
+      "peak_MAE_N": 5.293423930784847,
+      "peak_bias_N": -5.257832635707394,
+      "late_window_mean_force_MAE_N": 1.102619831717467,
+      "median_measured_peak_N": 8.332455,
+      "median_simulated_peak_N": 3.251413516991832,
+      "max_backend_delta_N": 0.0
+    },
+    "holdout": {
+      "slots": [
+        3,
+        4
+      ],
+      "count": 150,
+      "rmse_N": 2.108744935029778,
+      "median_trial_rmse_N": 2.0108301415986833,
+      "zero_force_baseline_rmse_N": 3.0058074396817656,
+      "replicate_median_rmse_N": 0.7622185470091956,
+      "peak_MAE_N": 4.9270809062407945,
+      "peak_bias_N": -4.783749777172488,
+      "late_window_mean_force_MAE_N": 1.175938969223027,
+      "median_measured_peak_N": 8.102865000000001,
+      "median_simulated_peak_N": 2.335569942797747,
+      "max_backend_delta_N": 0.0
+    }
+  }
+}

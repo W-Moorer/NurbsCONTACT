@@ -209,6 +209,9 @@ We additionally sample 17 poses per production motion and directly compare the n
 \IfFileExists{contact-validation-results.tex}{%
   \input{contact-validation-results.tex}%
   \input{contact-validation.tex}%
+  \ifdefined\ExternalSliderPosition
+    \input{external-contact-validation.tex}%
+  \fi
 }{}
 
 \section{Scope and conclusion}

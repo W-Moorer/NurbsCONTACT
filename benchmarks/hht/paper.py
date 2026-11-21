@@ -5,6 +5,7 @@ import json
 import os
 import shutil
 import subprocess
+from statistics import median
 from pathlib import Path
 
 
@@ -101,6 +102,58 @@ def production_rows(summary):
     return rows
 
 
+def external_validation_macros(root):
+    slider_file = root / "clearance" / "summary.json"
+    ring_file = root / "insertion" / "summary.json"
+    if not (slider_file.exists() and ring_file.exists()):
+        return {}
+    slider = json.loads(slider_file.read_text(encoding="utf-8"))
+    comparison = {run["backend"]: run for run in slider["runs"]
+                  if run["rpm"] == 200 and run["clearance_mm"] == .25}
+    brep = comparison["brep"]
+    half = comparison["brep-half-step"]
+    mesh = comparison["mesh5um"]
+    matched = {}
+    for run in slider["runs"]:
+        if "wall_s" in run:
+            matched.setdefault((run["rpm"], run["clearance_mm"]), {})[run["backend"]] = run["wall_s"]
+    time_ratios = [group["brep"]/group["mesh5um"] for group in matched.values()
+                   if {"brep", "mesh5um"} <= group.keys()]
+    ring = json.loads(ring_file.read_text(encoding="utf-8"))["metrics"]["holdout"]
+    macros = {
+        "ExternalSliderPosition": f"{brep['position_rmse_mm']:.2f}",
+        "ExternalSliderRmse": f"{brep['uniform_phase_acceleration_rmse_m_s2']:.2f}",
+        "ExternalSliderIdealRmse": f"{brep['ideal_joint_acceleration_rmse_m_s2']:.2f}",
+        "ExternalSliderHalfRmse": f"{half['uniform_phase_acceleration_rmse_m_s2']:.2f}",
+        "ExternalSliderMeasuredPhase": f"{brep['measured_first_negative_peak_angle_deg']:.1f}",
+        "ExternalSliderPredictedPhase": f"{brep['simulated_first_negative_peak_angle_deg']:.1f}",
+        "ExternalSliderHalfPhase": f"{half['simulated_first_negative_peak_angle_deg']:.1f}",
+        "ExternalSliderBrepGeometry": scientific(brep["max_geometric_gap_error_um"]),
+        "ExternalSliderMeshGeometry": f"{mesh['max_geometric_gap_error_um']:.2f}",
+        "ExternalSliderSpeedRatio": f"{mesh['wall_s']/brep['wall_s']:.2f}",
+        "ExternalSliderMedianTimeRatio": f"{median(time_ratios):.2f}",
+        "ExternalSliderTimingCases": str(len(time_ratios)),
+        "ExternalRingCount": str(ring["count"]),
+        "ExternalRingRmse": f"{ring['rmse_N']:.2f}",
+        "ExternalRingZero": f"{ring['zero_force_baseline_rmse_N']:.2f}",
+        "ExternalRingRepeat": f"{ring['replicate_median_rmse_N']:.2f}",
+        "ExternalRingMeasuredPeak": f"{ring['median_measured_peak_N']:.2f}",
+        "ExternalRingPredictedPeak": f"{ring['median_simulated_peak_N']:.2f}",
+    }
+    if "extended_run" in slider:
+        extended = slider["extended_run"]
+        macros["ExternalSliderExtendedSteps"] = f"{int(extended['accepted']):,}"
+        macros["ExternalSliderExtendedPhase"] = f"{extended['simulated_first_negative_peak_angle_deg']:.1f}"
+    return macros
+
+
+def paper_output_path(results: Path) -> Path:
+    project = Path(__file__).resolve().parents[2]
+    if results.resolve() == project / "results" / "hht":
+        return project / "docs" / "hht.pdf"
+    return results / "paper" / "hht.pdf"
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("results", type=Path)
@@ -121,6 +174,8 @@ def main():
     ]
     for name, value in macro_values(summary).items():
         lines.append(rf"\newcommand{{\{name}}}{{{value}}}")
+    for name, value in external_validation_macros(args.results.parent / "contact_validation").items():
+        lines.append(rf"\newcommand{{\{name}}}{{{value}}}")
     lines.extend([r"\newcommand{\PerformanceRows}{%", *table_rows(summary), "}"])
     lines.extend([r"\newcommand{\ProductionRows}{%", *production_rows(summary), "}"])
     (source / "hht-results.tex").write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -133,7 +188,7 @@ def main():
          f"-outdir={build.as_posix()}", "hht.tex"],
         cwd=source, check=True,
     )
-    output = args.results / "paper" / "hht.pdf"
+    output = paper_output_path(args.results)
     output.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(build / "hht.pdf", output)
     print(output)

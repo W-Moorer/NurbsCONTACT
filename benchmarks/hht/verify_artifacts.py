@@ -9,6 +9,8 @@ import fitz
 import numpy as np
 from PIL import Image, ImageDraw
 
+from paper import paper_output_path
+
 
 def sheet(items, size, columns, path):
     rows = (len(items) + columns - 1) // columns
@@ -57,7 +59,7 @@ def verify_paper(root, qa):
                 panels.append((name, png.copy()))
     sheet(panels, (620, 390), 2, qa/"figures.png")
 
-    with fitz.open(root/"paper"/"hht.pdf") as paper:
+    with fitz.open(paper_output_path(root)) as paper:
         previews = []
         pages = []
         for index, page in enumerate(paper, start=1):

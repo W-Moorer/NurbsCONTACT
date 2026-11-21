@@ -47,11 +47,11 @@ The CLI prints JSON. Time uses the units supplied with the velocity, rotations u
 
 The `nc_hht` benchmark couples prismatic and fixed-axis rigid joints through frictionless compliant contact. It compares native STEP boundaries against an AABB hierarchy of triangle faces using the same implicit HHT-α solver and interval clearance acceptance test. The examples include analytic validation, a six-cam assembly, and a driven twelve-ball train.
 
-The `nc_contact` runner loads STEP components, generalized coordinates, material parameters and contact probes from a scene file. One signed-gap and compliance implementation serves all loaded scenes. A backend switch changes the surface query between native B-rep and an AABB hierarchy of triangles. The experimental validation covers optical trajectories for rebound and sliding, and electrical contact durations for steel-sphere impact on a beam. [Model interface and reproduction](results/contact_validation/README.md)
+The `nc_contact` runner loads STEP components, generalized coordinates, material parameters and contact probes from a scene file. One signed-gap and compliance implementation serves all loaded scenes. A backend switch changes the surface query between native B-rep and an AABB hierarchy of triangles. The experimental comparisons cover rebound and sliding trajectories, electrical contact durations for steel-sphere impact on a beam, clearance-joint slider motion, and axial force replay for copper-ring insertion. [Model interface and reproduction](results/contact_validation/README.md)
 
 - [Experiment protocol and reproduction](results/hht/README.md)
 - [Validated numerical summary](results/hht/metrics/summary.json)
-- [LaTeX source](manuscript/hht.tex) and [compiled paper](results/hht/paper/hht.pdf)
+- [LaTeX source](manuscript/hht.tex) and [final paper](docs/hht.pdf)
 
 ## Industrial transmission and bearing benchmarks
 

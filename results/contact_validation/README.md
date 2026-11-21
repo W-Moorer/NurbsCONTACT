@@ -15,6 +15,8 @@ The native adapter compiles planar faces with linear trimming wires and uses the
 | GAUGE rebound | 60 mm rubber ball, vertical reduced coordinate. Compare ball center height at original 30 Hz times. Initial height and speed follow a quadratic fit to five descending, pre-impact frames with fixed gravity. | Trial IDs 1–5 determine one damping ratio. IDs 6–22 are held out, with a fixed 1 s scoring horizon after the initial state. |
 | GAUGE incline | 50 mm wood, plastic and metal cubes with three translational coordinates. The first three board poses set its fixed frame. Compare center position along the board while the cube remains fully supported. | IDs 1–5 per material determine one kinetic friction coefficient from the supported motion. The remaining records use those frozen values. Metal trial 17 is absent in the pinned publication. The initial projected speed uses the two adjacent early frames, which are excluded from scoring. |
 | Steel ball striking a beam | 70 mm steel sphere and one vertical beam mode. The measured observable is the duration of the first electrical contact pulse at midspan. | All 27 measurements are predictions with stiffness from reported elastic constants and curvature. The beam modal frequency comes from its measured displacement spectrum and its modal mass is half the beam mass. The duration points come from Qi and Yin's Fig. 17. |
+| Slider-crank with pin–bore clearance | Prescribed crank with dynamic rod rotation and slider translation. Compare slider travel and acceleration on the published encoder angle. | Seven clearance–speed combinations from the vector paths of the publisher PDF. Use published material and restitution parameters without fitting measured curves. |
+| Robot copper-ring insertion | Prescribed measured wrist height and a reduced axial ring–stop STEP interface. Compare tool-frame axial force. | Calibrate one stiffness and 13 offset-specific stop heights on slots 1–2. Evaluate on 150 held-out trials from slots 3–4. |
 
 The same nominal STEP parts are used by both backends. These STEP reconstructions use the dimensions of the published geometry, including GAUGE's released assets, and the reported steel specimens. GAUGE scoring uses neither a fitted time shift nor a fitted trajectory transform. The rebound score is for the vertical component. The slide score is for supported translation. The beam score covers the first pulse in every reported speed condition. The coarser camera data support rebound heights and trajectory timing at the recorded cadence. Electrical pulse duration provides the independent high-bandwidth observable.
 
@@ -29,8 +31,9 @@ Seven serial timing repeats give triangle-BVH to B-rep integration time ratios o
 - [GAUGE error distributions and per-trial results](summary.json) · [Original URLs, data revision and checksums](sources.json) · [Paired sampled curves](curves)
 - [Electrical duration metrics](beam/summary.json) · [Paired durations](beam/comparison.csv) · [Digitization and source coordinates](beam/measured.csv)
 - [Force, position and gap traces](runs) · [Scene decks](scenes) · [Performance repetitions](timing.json)
-- [Measured-versus-simulated figure](figures/contact-validation.pdf) · [LaTeX paper](../hht/paper/hht.pdf)
+- [Measured-versus-simulated figure](figures/contact-validation.pdf) · [Final paper](../../docs/hht.pdf)
 - [Multi-view animations](animations/index.json)
+- [Clearance and copper-ring results, models, evidence limits and reproduction](external-validation.md)
 
 ## Scene format
 
@@ -41,10 +44,22 @@ nc-contact-v1
 gravity gx gy gz number_of_coordinates number_of_bodies number_of_probes
 coordinate mass q0 v0 spring_K spring_C rest_q applied_load
 body "file.step" mass origin_xyz axis_xyz angle com_local_xyz hinge_index pivot_xyz ntranslations [coordinate_id direction_xyz]...
-probe body_a body_b world|body-a|anchors anchor_a_xyz anchor_b_xyz normal_xyz K exponent C mu slip_speed max_depth
+probe body_a body_b world|body-a|anchors|contained|contained-radial anchor_a_xyz anchor_b_xyz normal_xyz K exponent C mu slip_speed max_depth
 ~~~
 
 `C` multiplies `depth^((exponent-1)/2)` and the gap-closing speed. The solver clips a tensile normal response to zero. The output includes the generalized states, body poses, signed probe gaps and predicted forces. A probe outside a trim is reported as unresolved at that location. Multiple probes can be specified for one pair.
+
+For a contained probe, place A's anchor in the cavity and B's anchor inside the contained part. The ray leaves each anchor along the same centerline towards the near cavity wall. At concentric centers, `normal_xyz` in A's frame defines the fallback direction. A missed trimmed surface rejects a contained probe. `contained-radial` uses the centerline for the force differential in both backends and applies to circular sections. Each backend still computes the gap from its own geometry.
+
+The `nc-contact-v2` header adds a drive block after all probes. It accepts a prescribed translation orbit or a tabulated translation. An orbit translates a body by rotating its arm around the given axis at constant angular velocity. The orbit acceleration supplies the base-inertia force through the body's mass and center-of-mass Jacobian. A tabulated drive linearly interpolates consecutive world-space offsets and requires a prescribed body. A v2 scene with zero dynamic coordinates evaluates the same contact law on prescribed poses at the requested sample times.
+
+~~~text
+drives count
+body_id orbit arm_xyz axis_xyz angular_speed
+body_id table row_count
+time dx dy dz
+...
+~~~
 
 ## Reproduce
 

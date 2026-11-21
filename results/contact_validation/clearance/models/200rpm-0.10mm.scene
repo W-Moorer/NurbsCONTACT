@@ -1,0 +1,9 @@
+nc-contact-v2
+gravity 0 0 0 2 2 1
+coordinate 0.040725 0 -3.490658503988659 0 0 0 0
+coordinate 1.013 .35 0 0 0 0 0
+body "sleeve.step" 0 0 0 0 0 0 1 0 0 0 0 -1 0 0 0 1 1 1 0 0
+body "pin-0.10mm.step" 1.13 .3 0 0 0 0 1 0 -0.15 0 0 0 0 0 0 0
+probe 0 1 contained-radial 0 0 0 0 0 0 -1 0 0 167948837835.15 1.5 268633.4132564566 .01 .001 .0005
+drives 1
+1 orbit .05 0 0 0 0 1 20.943951023931955

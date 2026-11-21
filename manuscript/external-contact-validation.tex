@@ -1,0 +1,82 @@
+\subsection{Clearance joints and copper-ring insertion}
+\label{sec:external-contact-cases}
+
+For pin--bore pairs the probe starts at each component's axis and intersects
+both surfaces along the outward centerline. The ordered wall-to-pin separation
+defines the signed gap, so crossing the wall cannot switch the probe to a
+different side of the bore. For circular sections the centerline gives the
+exact normal differential. The same projected differential was used in both
+backends, with the gap evaluated on the actual faces or triangles. The
+prescribed movement of the crank pivot enters the gap rate and the inertia
+terms through its velocity and acceleration.
+
+We reconstructed the horizontal \href{https://doi.org/10.1007/s11071-010-9899-8}{Flores et al. slider--crank rig}
+from the published 50 mm crank, 300 mm rod, link inertias, and 22.25 mm sleeve
+diameter. The rod center of mass was placed at midspan and its tabulated
+inertia was treated as centroidal. The two dynamic
+coordinates are rod angle and slider translation. We used the authors'
+elastic constants, friction coefficient and restitution coefficient, with
+no fit to the digitized accelerometer traces. We extracted the measured
+paths directly from the PDF of Figs.~5(b), 6, and 8. Each simulation runs six
+revolutions and compares the last two on the published encoder angle.
+
+At 200 rpm and 0.25 mm radial clearance, B-rep reproduced the gross travel
+with a \ExternalSliderPosition{} mm position RMSE. Acceleration RMSE was
+\ExternalSliderRmse{} m/s\(^{2}\), and the first-half-revolution negative
+extremum occurred at \ExternalSliderPredictedPhase{} degrees in the model and
+\ExternalSliderMeasuredPhase{} degrees in the experiment. Halving the step
+from 10 to 5 microseconds gave \ExternalSliderHalfRmse{} m/s\(^{2}\) and
+\ExternalSliderHalfPhase{} degrees. The unresolved phase discrepancy
+persists under this step reduction. An ideal-joint kinematic baseline gives
+\ExternalSliderIdealRmse{} m/s\(^{2}\) on the same phase grid.
+\ifdefined\ExternalSliderExtendedSteps
+The 30-revolution run accepted \ExternalSliderExtendedSteps{} time steps.
+In the final two revolutions the negative extremum is at
+\ExternalSliderExtendedPhase{} degrees within the first half revolution.
+\fi
+As a geometry check at the computed
+poses, the maximum gap error against ideal circular clearance was
+\ExternalSliderBrepGeometry{} micrometers for native surfaces and
+\ExternalSliderMeshGeometry{} micrometers for the 5 micrometer tessellation.
+The corresponding triangle-to-native integration-time ratio for the
+representative run was \ExternalSliderSpeedRatio{}. Across
+\ExternalSliderTimingCases{} matched conditions, native integration took
+a median of \ExternalSliderMedianTimeRatio{} times the 5 micrometer mesh
+time, with one timing per condition and backend.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{\ContactValidationPath clearance-slider-validation.pdf}
+\caption{Slider--crank comparison. Travel follows the displacement trace,
+while the modeled acceleration differs around impact. Triangle faceting
+increases the acceleration error.}
+\label{fig:clearance-slider-validation}
+\end{figure}
+
+The \href{https://doi.org/10.5281/zenodo.6364950}{copper-ring insertion data}
+contain commanded and measured wrist positions and tool-frame wrench samples
+from four fixture slots. The
+\href{https://doi.org/10.3390/s22207962}{experimental description} reports a
+deformable ring with two lugs. We use a reduced axial interface consisting of
+an annulus and a stop plane, since the available data lack tooling dimensions
+and a ring deformation model. Measured wrist translation drives the contact
+probe. The commanded turnaround sets the axial origin and aligns the sample
+indices. Slots 1 and 2 determine one axial stiffness and one effective stop
+height per offset. Slots 3 and 4 have no force input to the fit.
+
+Across \ExternalRingCount{} held-out trials the force RMSE is
+\ExternalRingRmse{} N, compared with \ExternalRingZero{} N for a zero-force
+baseline and \ExternalRingRepeat{} N for within-slot, within-offset
+variation about the repeat median. The measured and replay median peaks are
+\ExternalRingMeasuredPeak{} N and \ExternalRingPredictedPeak{} N,
+respectively. The planar axial witness gives the same output with both
+geometry backends. These results quantify the axial surrogate's ability to
+reproduce the recorded force, with substantial residual error in the peak.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{\ContactValidationPath copper-ring-validation.pdf}
+\caption{Held-out copper-ring force histories and peaks. Shading shows the
+measured interquartile interval. Time is represented by sample index.}
+\label{fig:copper-ring-validation}
+\end{figure}

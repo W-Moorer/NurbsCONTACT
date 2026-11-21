@@ -49,6 +49,7 @@ struct ContactBodyState {
     const ContactSurface* surface;
     ContactPose pose;
     std::vector<Twist> derivative;
+    Twist prescribed{};
 };
 
 struct ContactMaterial {
@@ -60,7 +61,7 @@ struct ContactMaterial {
     double maximum_depth;
 };
 
-enum class ContactDirection { world, body_a, anchors };
+enum class ContactDirection { world, body_a, anchors, contained, contained_radial };
 
 struct ContactPair {
     std::size_t a, b;
@@ -78,8 +79,9 @@ struct ContactSample {
     bool resolved{};
 };
 
-// Each probe finds the two facing trimmed surfaces independently. An absent
-// hit is an open probe. The caller can put multiple probes on a component.
+// Exterior probes treat an absent hit as open. A contained probe starts at
+// the cavity and part anchors and rejects a missing wall or part. The radial
+// mode uses the centerline for the force differential of circular sections.
 bool add_contact_forces(Forces* forces, std::span<const ContactBodyState> bodies,
                         std::span<const ContactPair> pairs, const Vector& velocity,
                         ContactWork& work, std::vector<ContactSample>* observations = nullptr);

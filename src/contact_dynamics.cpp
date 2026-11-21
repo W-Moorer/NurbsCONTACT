@@ -32,17 +32,23 @@ struct WorldHit {
 };
 
 std::optional<WorldHit> hit(const ContactBodyState& body, Vec ray, Vec direction,
-                             ContactWork& work) {
+                            ContactWork& work, bool from_anchor=false) {
     const Vec local_ray = body.pose.inverse_rotate(sub(ray,body.pose.origin));
     const Vec local_direction = body.pose.inverse_rotate(direction);
     const auto box = body.surface->bounds();
     constexpr double margin = 1e-8;
     const double low = -maximum_projection(box, scale(local_direction,-1))-margin;
     const double high = maximum_projection(box, local_direction)+margin;
-    const double shift = low-dot3(local_ray,local_direction);
+    const double projected = dot3(local_ray,local_direction);
+    const double shift = from_anchor ? 0 : low-projected;
+    const double distance = high-(from_anchor ? projected : low);
     ++work.rays;
+    if (distance<0) {
+        ++work.missing;
+        return std::nullopt;
+    }
     const auto result = body.surface->first_hit(add(local_ray,scale(local_direction,shift)),
-                                                 local_direction,high-low,work);
+                                                 local_direction,distance,work);
     if (!result) {
         ++work.missing;
         return std::nullopt;
@@ -59,14 +65,19 @@ bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState&
     const Vec anchor_b = b.pose.point(pair.anchor_b);
     const Vec axis = sub(anchor_b,anchor_a);
     const double center_distance = length(axis);
+    const bool radial = pair.direction==ContactDirection::contained_radial;
+    const bool contained = pair.direction==ContactDirection::contained || radial;
+    const bool moving_axis = (pair.direction==ContactDirection::anchors || contained)
+                             && center_distance>1e-12;
     Vec normal = pair.normal;
-    if (pair.direction==ContactDirection::anchors) {
-        if (center_distance<=1e-12) return false;
-        normal = scale(axis, 1/center_distance);
-    } else if (pair.direction==ContactDirection::body_a) {
+    if (moving_axis) {
+        normal = scale(axis, (contained ? -1 : 1)/center_distance);
+    } else if (pair.direction==ContactDirection::anchors) {
+        return false;
+    } else if (pair.direction==ContactDirection::body_a || contained) {
         normal = a.pose.rotate(normal);
     }
-    if (!observe) {
+    if (!observe && !contained) {
         const auto lower = dot3(sub(b.pose.origin,a.pose.origin),normal)
             -maximum_projection(a.surface->bounds(),a.pose.inverse_rotate(normal))
             -maximum_projection(b.surface->bounds(),b.pose.inverse_rotate(scale(normal,-1)));
@@ -75,11 +86,15 @@ bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState&
             return true;
         }
     }
-    const auto left = hit(a,anchor_b,scale(normal,-1),work);
-    if (!left) return true;
-    const auto right = hit(b,anchor_b,normal,work);
-    if (!right) return true;
-    const double lambda_a = -left->along, lambda_b = right->along;
+    // For containment the two anchors lie on the same ray line. Each ray
+    // starts in its own region, so crossing the bore rim cannot switch walls.
+    const Vec outward = scale(normal,-1);
+    const auto left = hit(a,contained ? anchor_a : anchor_b,outward,work,contained);
+    if (!left) return !contained;
+    const auto right = hit(b,anchor_b,contained ? outward : normal,work,contained);
+    if (!right) return !contained;
+    const double lambda_a = (contained ? center_distance : 0)-left->along;
+    const double lambda_b = contained ? -right->along : right->along;
     sample.gap = lambda_b-lambda_a;
     sample.resolved = true;
     sample.witness_a = left->point;
@@ -89,31 +104,34 @@ bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState&
     const auto& material = pair.material;
     const double depth = -sample.gap;
     if (depth > material.maximum_depth) return false;
-    const double cos_a = dot3(left->normal,normal), cos_b = dot3(right->normal,normal);
+    const Vec normal_a = radial ? normal : left->normal;
+    const Vec normal_b = radial ? normal : right->normal;
+    const double cos_a = dot3(normal_a,normal), cos_b = dot3(normal_b,normal);
     if (std::abs(cos_a)<1e-6 || std::abs(cos_b)<1e-6) return false;
 
     const std::size_t n = velocity.size();
     Vector jacobian(n);
     std::vector<Vec> tangent(n);
-    double rate=0;
-    Vec slip{};
-    for (std::size_t i=0;i<n;++i) {
-        const auto& da = a.derivative[i];
-        const auto& db = b.derivative[i];
+    const auto differential = [&](const Twist& da, const Twist& db) {
         const Vec ray_rate = db.at(sub(anchor_b,b.pose.origin));
         Vec normal_rate{};
-        if (pair.direction==ContactDirection::anchors) {
+        if (moving_axis) {
             const Vec offset_rate = sub(ray_rate,da.at(sub(anchor_a,a.pose.origin)));
-            normal_rate = scale(tangential(offset_rate,normal),1/center_distance);
-        } else if (pair.direction==ContactDirection::body_a) {
+            normal_rate = scale(tangential(offset_rate,normal),(contained ? -1 : 1)/center_distance);
+        } else if (pair.direction==ContactDirection::body_a || contained) {
             normal_rate = cross3(da.angular,normal);
         }
         const Vec a_rate = da.at(sub(left->point,a.pose.origin));
         const Vec b_rate = db.at(sub(right->point,b.pose.origin));
-        const double la = dot3(left->normal,sub(sub(a_rate,ray_rate),scale(normal_rate,lambda_a)))/cos_a;
-        const double lb = dot3(right->normal,sub(sub(b_rate,ray_rate),scale(normal_rate,lambda_b)))/cos_b;
-        jacobian[i] = lb-la;
-        tangent[i] = tangential(sub(b_rate,a_rate),normal);
+        const double la = dot3(normal_a,sub(sub(a_rate,ray_rate),scale(normal_rate,lambda_a)))/cos_a;
+        const double lb = dot3(normal_b,sub(sub(b_rate,ray_rate),scale(normal_rate,lambda_b)))/cos_b;
+        return std::pair{lb-la,tangential(sub(b_rate,a_rate),normal)};
+    };
+    auto [rate,slip] = differential(a.prescribed,b.prescribed);
+    for (std::size_t i=0;i<n;++i) {
+        const auto [gradient,relative] = differential(a.derivative[i],b.derivative[i]);
+        jacobian[i] = gradient;
+        tangent[i] = relative;
         rate += jacobian[i]*velocity[i];
         slip = add(slip,scale(tangent[i],velocity[i]));
     }

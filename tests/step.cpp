@@ -67,10 +67,40 @@ void check_directional_contact(const TopoDS_Shape& a, const TopoDS_Shape& b) {
     require(rim && std::abs(rim->distance-.002)<1e-11,"compiled planar trim missed the supported area");
 }
 
+void check_contained_contact() {
+    using namespace nc::dynamics;
+    const auto blank=BRepPrimAPI_MakeCylinder(gp_Ax2(gp_Pnt(0,0,-1),gp_Dir(0,0,1)),2.,2.).Shape();
+    const auto tool=BRepPrimAPI_MakeCylinder(gp_Ax2(gp_Pnt(0,0,-2),gp_Dir(0,0,1)),1.,4.).Shape();
+    const auto bore=BRepAlgoAPI_Cut(blank,tool).Shape();
+    const auto pin=BRepPrimAPI_MakeCylinder(gp_Ax2(gp_Pnt(0,0,-1),gp_Dir(0,0,1)),.8,2.).Shape();
+    const ContactPair pair{0,1,{},{},ContactDirection::contained,{-1,0,0},{1000,1,2,0,.001,.0003}};
+    for (double mesh:{0.,.000001}) {
+        const auto a=contact_surface(bore,mesh),b=contact_surface(pin,mesh);
+        std::vector<ContactBodyState> bodies{{a.get(),{},{{}}}, {b.get(),{},{{{1,0,0},{}}}}};
+        ContactWork work;
+        std::vector<ContactSample> samples;
+        const std::span pairs(&pair,1);
+        const Vector velocity{0};
+        require(add_contact_forces(nullptr,bodies,pairs,velocity,work,&samples) &&
+                samples[0].resolved && std::abs(samples[0].gap-.0002)<2e-6,
+                "concentric bore clearance did not resolve");
+        bodies[1].pose.origin[0]=.00025;
+        bodies[1].prescribed.linear[0]=.1;
+        Forces force{Vector(1),Vector(1),Vector(1)};
+        require(add_contact_forces(&force,bodies,pairs,velocity,work,&samples) &&
+                std::abs(samples[0].gap+.00005)<2e-6 && std::abs(force.value[0]+.25)<.003,
+                "contained signed depth or prescribed force is wrong");
+        bodies[1].pose.origin[0]=.0014;
+        require(!add_contact_forces(nullptr,bodies,pairs,velocity,work,&samples),
+                "a deeply escaped pin switched to the far bore wall");
+    }
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
     try {
+        check_contained_contact();
         const fs::path fixtures = argc == 2 ? fs::path(argv[1]) : fs::path("step_fixtures");
         fs::create_directories(fixtures);
         const auto block_a = BRepPrimAPI_MakeBox(gp_Pnt(-0.1, -0.1, -0.2), 0.2, 0.2, 0.2).Shape();

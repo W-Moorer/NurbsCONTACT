@@ -1,10 +1,13 @@
 #include "nurbscontact/occt_contact.hpp"
 
+#include <BRepAlgoAPI_Cut.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
+#include <BRepPrimAPI_MakeCylinder.hxx>
 #include <BRepPrimAPI_MakeSphere.hxx>
 #include <STEPControl_Writer.hxx>
 #include <Standard_Failure.hxx>
 
+#include <algorithm>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
@@ -14,6 +17,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <variant>
 
 namespace {
 
@@ -31,6 +35,18 @@ struct Translation {
     Vec direction;
 };
 
+struct Orbit {
+    Vec arm, axis;
+    double speed;
+};
+
+struct TranslationSample {
+    double time;
+    Vec displacement;
+};
+
+using Drive = std::variant<std::monostate,Orbit,std::vector<TranslationSample>>;
+
 struct Body {
     std::shared_ptr<const ContactSurface> surface;
     double mass;
@@ -39,6 +55,7 @@ struct Body {
     std::vector<Translation> translations;
     int hinge;
     Vec pivot;
+    Drive drive{};
 };
 
 struct Input {
@@ -75,14 +92,16 @@ void expect(std::istream& in,std::string_view expected) {
 Input read_scene(const Path& path,double deflection) {
     std::ifstream in(path);
     if (!in) throw std::runtime_error("could not open scene "+path.string());
-    expect(in,"nc-contact-v1");
+    const auto version=take<std::string>(in);
+    const bool has_drives=version=="nc-contact-v2";
+    if (version!="nc-contact-v1" && !has_drives) throw std::invalid_argument("unknown scene version");
     expect(in,"gravity");
     Input input;
     input.gravity=vector(in);
     const auto count=take<unsigned>(in);
     const auto bodies=take<unsigned>(in);
     const auto pairs=take<unsigned>(in);
-    if (!(count>0 && bodies>=2 && pairs>0) || count>1024 || bodies>1024 || pairs>16384)
+    if ((!has_drives && count==0) || bodies<2 || pairs==0 || count>1024 || bodies>1024 || pairs>16384)
         throw std::invalid_argument("invalid scene counts");
     for (unsigned i=0;i<count;++i) {
         expect(in,"coordinate");
@@ -121,6 +140,8 @@ Input read_scene(const Path& path,double deflection) {
         if (mode=="world") direction=ContactDirection::world;
         else if (mode=="body-a") direction=ContactDirection::body_a;
         else if (mode=="anchors") direction=ContactDirection::anchors;
+        else if (mode=="contained") direction=ContactDirection::contained;
+        else if (mode=="contained-radial") direction=ContactDirection::contained_radial;
         else throw std::invalid_argument("unknown probe direction");
         ContactPair pair{a,b,vector(in),vector(in),direction,unit(vector(in)),
                          {number(in),number(in),number(in),number(in),number(in),number(in)}};
@@ -129,13 +150,47 @@ Input read_scene(const Path& path,double deflection) {
                 m.maximum_depth>0)) throw std::invalid_argument("invalid contact material");
         input.pairs.push_back(pair);
     }
+    if (has_drives) {
+        expect(in,"drives");
+        const auto drives=take<unsigned>(in);
+        if (drives>bodies) throw std::invalid_argument("too many drives");
+        for (unsigned i=0;i<drives;++i) {
+            const auto index=take<unsigned>(in);
+            if (index>=bodies) throw std::invalid_argument("invalid drive body");
+            auto& body=input.bodies[index];
+            if (!std::holds_alternative<std::monostate>(body.drive))
+                throw std::invalid_argument("duplicate body drive");
+            const auto kind=take<std::string>(in);
+            if (kind=="orbit") {
+                body.drive=Orbit{vector(in),unit(vector(in)),number(in)};
+            } else if (kind=="table") {
+                if (body.hinge>=0 || !body.translations.empty())
+                    throw std::invalid_argument("tabulated drive requires a prescribed body");
+                const auto size=take<unsigned>(in);
+                if (size<2 || size>10000000) throw std::invalid_argument("invalid drive table size");
+                std::vector<TranslationSample> table;
+                table.reserve(size);
+                for (unsigned j=0;j<size;++j) {
+                    TranslationSample item{number(in),vector(in)};
+                    if ((j==0 && item.time!=0) || (j>0 && item.time<=table.back().time))
+                        throw std::invalid_argument("table times must increase from zero");
+                    table.push_back(item);
+                }
+                body.drive=std::move(table);
+            } else {
+                throw std::invalid_argument("unknown translation drive");
+            }
+        }
+    }
     if (!(in>>std::ws).eof()) throw std::invalid_argument("extra fields in scene");
     return input;
 }
 
-std::vector<ContactBodyState> kinematics(const Input& input,const Vector& q) {
+std::vector<ContactBodyState> kinematics(const Input& input,const Vector& q,double time,
+                                         std::vector<Vec>* base_accelerations=nullptr) {
     std::vector<ContactBodyState> result;
     result.reserve(input.bodies.size());
+    if (base_accelerations) base_accelerations->clear();
     for (const Body& body:input.bodies) {
         ContactBodyState state{body.surface.get(),body.reference,std::vector<Twist>(q.size())};
         if (body.hinge>=0) {
@@ -151,6 +206,23 @@ std::vector<ContactBodyState> kinematics(const Input& input,const Vector& q) {
             auto& data=state.derivative[item.coordinate].linear;
             data=add(data,item.direction);
         }
+        Vec acceleration{};
+        if (const auto* orbit=std::get_if<Orbit>(&body.drive)) {
+            const Vec offset=ContactPose{{},orbit->axis,time*orbit->speed}.rotate(orbit->arm);
+            const Vec spin=scale(orbit->axis,orbit->speed);
+            state.pose.origin=add(state.pose.origin,offset);
+            state.prescribed.linear=cross3(spin,offset);
+            acceleration=cross3(spin,state.prescribed.linear);
+        } else if (const auto* table=std::get_if<std::vector<TranslationSample>>(&body.drive)) {
+            const auto end=std::upper_bound(table->begin(),table->end()-1,time,
+                [](double t,const TranslationSample& row) { return t<row.time; });
+            const auto& a=*(end-1);
+            const auto& b=*end;
+            state.prescribed.linear=scale(sub(b.displacement,a.displacement),1/(b.time-a.time));
+            const Vec offset=add(a.displacement,scale(state.prescribed.linear,std::min(time,b.time)-a.time));
+            state.pose.origin=add(state.pose.origin,offset);
+        }
+        if (base_accelerations) base_accelerations->push_back(acceleration);
         result.push_back(std::move(state));
     }
     return result;
@@ -167,9 +239,16 @@ std::ofstream open_output(const Path& path) {
 void simulate(const Path& scene,double deflection,double dt,double duration,unsigned stride,const Path& output) {
     if (!(std::isfinite(dt) && dt>0 && std::isfinite(duration) && duration>=dt && stride>0))
         throw std::invalid_argument("invalid step, duration or stride");
-    const auto steps=static_cast<std::size_t>(std::ceil(duration/dt));
+    const double step_count=duration/dt;
+    const double roundoff=8*std::numeric_limits<double>::epsilon()*step_count;
+    const auto steps=static_cast<std::size_t>(std::ceil(step_count-roundoff));
     const auto setup=Clock::now();
     const Input input=read_scene(scene,deflection);
+    for (const auto& body:input.bodies) {
+        const auto* table=std::get_if<std::vector<TranslationSample>>(&body.drive);
+        if (table && steps*dt>table->back().time+1e-12)
+            throw std::invalid_argument("simulation extends beyond prescribed translation table");
+    }
     const double setup_s=std::chrono::duration<double>(Clock::now()-setup).count();
     const auto n=input.coordinates.size();
     Vector mass,q,v;
@@ -179,8 +258,9 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         v.push_back(coordinate.velocity);
     }
     ContactWork work;
-    const auto force=[&](const Vector& q_,const Vector& v_,double) {
-        const auto state=kinematics(input,q_);
+    std::vector<Vec> base_acceleration;
+    const auto force=[&](const Vector& q_,const Vector& v_,double time) {
+        const auto state=kinematics(input,q_,time,&base_acceleration);
         Forces out{Vector(n),Vector(n*n),Vector(n*n)};
         for (std::size_t i=0;i<n;++i) {
             const auto& coordinate=input.coordinates[i];
@@ -190,7 +270,8 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             for (std::size_t j=0;j<state.size();++j) {
                 const auto& body=input.bodies[j];
                 const auto offset=state[j].pose.rotate(body.center_of_mass);
-                out.value[i]+=body.mass*dot3(input.gravity,state[j].derivative[i].at(offset));
+                out.value[i]+=body.mass*dot3(sub(input.gravity,base_acceleration[j]),
+                                             state[j].derivative[i].at(offset));
             }
         }
         if (!add_contact_forces(&out,state,input.pairs,v_,work))
@@ -200,16 +281,22 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     HhtOptions options;
     options.absolute_tolerance=1e-9;
     options.relative_tolerance=1e-8;
-    Hht solver(mass,force,options);
     HhtStats stats;
     std::vector<State> samples;
     samples.reserve(steps/stride+2);
     const auto start=Clock::now();
-    auto state=solver.initialize(q,v);
-    samples.push_back(state);
-    for (std::size_t s=1;s<=steps;++s) {
-        solver.step(state,dt,stats);
-        if (s%stride==0 || s==steps) samples.push_back(state);
+    if (n>0) {
+        Hht solver(mass,force,options);
+        auto state=solver.initialize(q,v);
+        samples.push_back(state);
+        for (std::size_t s=1;s<=steps;++s) {
+            solver.step(state,dt,stats);
+            if (s%stride==0 || s==steps) samples.push_back(state);
+        }
+    } else {
+        for (std::size_t s=0;s<=steps;++s) {
+            if (s%stride==0 || s==steps) samples.push_back({s*dt,{},{},{},{}});
+        }
     }
     const double wall=std::chrono::duration<double>(Clock::now()-start).count();
     auto trace=open_output(output.string()+".csv");
@@ -222,21 +309,29 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     trace<<'\n';
     ContactWork audit;
     std::vector<ContactSample> values;
+    double replay_s=0;
     for (const auto& item:samples) {
         trace<<item.time;
         for (std::size_t i=0;i<n;++i) trace<<','<<item.q[i]<<','<<item.v[i]<<','<<item.a[i];
-        const auto poses=kinematics(input,item.q);
+        const auto poses=kinematics(input,item.q,item.time);
         for (const auto& body:poses)
             trace<<','<<body.pose.origin[0]<<','<<body.pose.origin[1]<<','<<body.pose.origin[2]<<','<<body.pose.angle;
-        if (!add_contact_forces(nullptr,poses,input.pairs,item.v,audit,&values))
-            throw std::runtime_error("invalid saved contact state");
+        if (n) {
+            if (!add_contact_forces(nullptr,poses,input.pairs,item.v,audit,&values))
+                throw std::runtime_error("invalid saved contact state");
+        } else {
+            const auto replay_start=Clock::now();
+            if (!add_contact_forces(nullptr,poses,input.pairs,item.v,work,&values))
+                throw std::runtime_error("invalid prescribed contact state");
+            replay_s+=std::chrono::duration<double>(Clock::now()-replay_start).count();
+        }
         for (const auto& value:values)
             trace<<','<<value.gap<<','<<value.normal_force<<','<<length(value.friction)<<','<<value.resolved;
         trace<<'\n';
     }
     auto report=open_output(output.string()+".stats.csv");
     report<<"wall_s,setup_s,steps,accepted,subdivisions,force_evaluations,max_residual,pairs,culled,rays,missing,triangle_tests\n"
-        <<wall<<','<<setup_s<<','<<steps<<','<<stats.accepted_steps<<','<<stats.subdivisions<<','<<stats.evaluations
+        <<(n ? wall : replay_s)<<','<<setup_s<<','<<steps<<','<<stats.accepted_steps<<','<<stats.subdivisions<<','<<stats.evaluations
         <<','<<stats.maximum_residual<<','<<work.pairs<<','<<work.culled<<','<<work.rays<<','<<work.missing
         <<','<<work.mesh.triangles<<'\n';
     if (!trace || !report) throw std::runtime_error("failed to write contact run");
@@ -259,8 +354,23 @@ void export_fixture(int argc,char** argv) {
             throw std::invalid_argument("invalid box dimensions");
         shape=BRepPrimAPI_MakeBox(gp_Pnt(-x/2,-y/2,z_center-z/2),x,y,z).Shape();
         file=argv[7];
+    } else if ((kind=="cylinder" || kind=="annulus") && argc==(kind=="cylinder" ? 6 : 7)) {
+        const double outer=std::stod(argv[3]), height=std::stod(argv[4]);
+        const double inner=kind=="annulus" ? std::stod(argv[5]) : 0;
+        if (!(outer>inner && inner>=0 && height>0 && std::isfinite(outer+height)))
+            throw std::invalid_argument("invalid cylinder dimensions");
+        const gp_Ax2 axis(gp_Pnt(0,0,-height/2),gp_Dir(0,0,1));
+        shape=BRepPrimAPI_MakeCylinder(axis,outer,height).Shape();
+        if (inner>0) {
+            const gp_Ax2 extended(gp_Pnt(0,0,-height/2-1),gp_Dir(0,0,1));
+            BRepAlgoAPI_Cut cut(shape,BRepPrimAPI_MakeCylinder(extended,inner,height+2).Shape());
+            if (!cut.IsDone()) throw std::runtime_error("could not cut fixture bore");
+            shape=cut.Shape();
+        }
+        file=argv[argc-1];
     } else {
-        throw std::invalid_argument("fixture syntax: make sphere R_MM FILE or make box X_MM Y_MM Z_MM CENTER_Z_MM FILE");
+        throw std::invalid_argument("fixture syntax: make sphere R FILE, make box X Y Z CENTER_Z FILE, "
+                                    "make cylinder R H FILE or make annulus R H BORE_R FILE (mm)");
     }
     if (!file.parent_path().empty()) std::filesystem::create_directories(file.parent_path());
     STEPControl_Writer writer;
