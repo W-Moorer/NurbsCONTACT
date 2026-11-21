@@ -1,0 +1,668 @@
+{
+  "experiment_doi": "https://doi.org/10.1007/s11071-010-9899-8",
+  "raw_sample_contract": "Final two out of six revolutions; raw and encoder-phase aligned.",
+  "screening": [
+    {
+      "measured_phase_deg": 46.63339828565423,
+      "measured_peak_m_s2": -50.6817236961557,
+      "raw_rmse_m_s2": 7.221292772552684,
+      "quiet_rmse_m_s2": 5.43170789663194,
+      "quiet_max_abs_m_s2": 25.960274515041053,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 46.54799999957785,
+          "window_min_m_s2": -19.702716750769692,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.702325144789924,
+          "carriage_at_measured_phase_m_s2": -14.957899196657344,
+          "max_sensor_carriage_difference_m_s2": 5.6244011786194825,
+          "min_load_N": 11.10704643256437,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.83989065432345
+        },
+        {
+          "window_min_phase_deg": 46.54800000193626,
+          "window_min_m_s2": -19.702707991042644,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.70232697152225,
+          "carriage_at_measured_phase_m_s2": -14.957897506393268,
+          "max_sensor_carriage_difference_m_s2": 5.624863342875392,
+          "min_load_N": 11.112645653815449,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.838460468634814
+        }
+      ],
+      "case": "control",
+      "step_us": 10,
+      "rpm": 200,
+      "clearance_mm": 0.25,
+      "cycles": 6,
+      "phase_shift_deg": 0,
+      "output_filter": null,
+      "stiffness_scale": 1.0,
+      "rod_mass_properties": {
+        "total_mass_kg": 1.13,
+        "center_from_wrist_m": 0.15,
+        "first_moment_about_wrist_kg_m": 0.16949999999999998,
+        "total_centroidal_inertia_kgm2": 0.015300000000000001,
+        "core_centroidal_inertia_kgm2": 0.012279207920792082
+      },
+      "rigid_planar_bound_25_to_85_deg_mm": 0.25352176412918315,
+      "auxiliary_bearings": [],
+      "trough_widths_deg": [
+        6.027781503162586,
+        6.044168754584966
+      ],
+      "stats": {
+        "wall_s": 38.2585361,
+        "setup_s": 0.012645,
+        "steps": 180000.0,
+        "accepted": 180000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 401136.0,
+        "max_residual": 5.982405988265438e-07,
+        "pairs": 1203411.0,
+        "culled": 0.0,
+        "rays": 2406822.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 9.999999999999999e-06
+      }
+    },
+    {
+      "measured_phase_deg": 46.63339828565423,
+      "measured_peak_m_s2": -50.6817236961557,
+      "raw_rmse_m_s2": 7.213625745630926,
+      "quiet_rmse_m_s2": 5.413583454525176,
+      "quiet_max_abs_m_s2": 25.928436131683753,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 46.45199999957722,
+          "window_min_m_s2": -19.73526824733279,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.733744391209584,
+          "carriage_at_measured_phase_m_s2": -14.960348501629252,
+          "max_sensor_carriage_difference_m_s2": 5.622864721276148,
+          "min_load_N": 11.113213318183782,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.83710028441609
+        },
+        {
+          "window_min_phase_deg": 46.45200000193563,
+          "window_min_m_s2": -19.735244493767468,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.733743284391956,
+          "carriage_at_measured_phase_m_s2": -14.960347922646742,
+          "max_sensor_carriage_difference_m_s2": 5.623310287742495,
+          "min_load_N": 11.118771603226008,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.83567007070474
+        }
+      ],
+      "case": "needle",
+      "step_us": 10,
+      "rpm": 200,
+      "clearance_mm": 0.25,
+      "cycles": 6,
+      "phase_shift_deg": 0,
+      "output_filter": null,
+      "stiffness_scale": 1.0,
+      "rod_mass_properties": {
+        "total_mass_kg": 1.13,
+        "center_from_wrist_m": 0.15,
+        "first_moment_about_wrist_kg_m": 0.16949999999999998,
+        "total_centroidal_inertia_kgm2": 0.015300000000000001,
+        "core_centroidal_inertia_kgm2": 0.012279207920792082
+      },
+      "rigid_planar_bound_25_to_85_deg_mm": 0.2585922606055946,
+      "auxiliary_bearings": [
+        {
+          "geometry_error_m": 2.222614453595284e-18,
+          "radial_clearance_um": 5.0,
+          "maximum_load_N": 53.93109873900542,
+          "window_maximum_load_N": 36.78432318817952,
+          "window_open_fraction": 0.0,
+          "window_eccentricity_um": 5.227560962809725
+        }
+      ],
+      "trough_widths_deg": [
+        5.92270524079386,
+        5.9391569623987905
+      ],
+      "stats": {
+        "wall_s": 75.2204892,
+        "setup_s": 0.0369943,
+        "steps": 180000.0,
+        "accepted": 180000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 535992.0,
+        "max_residual": 2.1874714642988735e-06,
+        "pairs": 2143972.0,
+        "culled": 0.0,
+        "rays": 4287944.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 9.999999999999999e-06
+      }
+    },
+    {
+      "measured_phase_deg": 46.63339828565423,
+      "measured_peak_m_s2": -50.6817236961557,
+      "raw_rmse_m_s2": 7.23464135944865,
+      "quiet_rmse_m_s2": 5.430543596602267,
+      "quiet_max_abs_m_s2": 25.978769306658613,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 46.52399999957769,
+          "window_min_m_s2": -19.779955796560596,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.779422021592957,
+          "carriage_at_measured_phase_m_s2": -15.121681776592286,
+          "max_sensor_carriage_difference_m_s2": 5.679475136173799,
+          "min_load_N": 11.306076467307303,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.718007229666604
+        },
+        {
+          "window_min_phase_deg": 46.464000001935744,
+          "window_min_m_s2": -19.78737556814972,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.786055972672866,
+          "carriage_at_measured_phase_m_s2": -15.10686664880257,
+          "max_sensor_carriage_difference_m_s2": 5.561502755066156,
+          "min_load_N": 11.239733806595229,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.73760639927677
+        }
+      ],
+      "case": "both",
+      "step_us": 10,
+      "rpm": 200,
+      "clearance_mm": 0.25,
+      "cycles": 6,
+      "phase_shift_deg": 0,
+      "output_filter": null,
+      "stiffness_scale": 1.0,
+      "rod_mass_properties": {
+        "total_mass_kg": 1.13,
+        "center_from_wrist_m": 0.15,
+        "first_moment_about_wrist_kg_m": 0.16949999999999998,
+        "total_centroidal_inertia_kgm2": 0.015300000000000001,
+        "core_centroidal_inertia_kgm2": 0.012279207920792082
+      },
+      "rigid_planar_bound_25_to_85_deg_mm": 0.2677191603158713,
+      "auxiliary_bearings": [
+        {
+          "geometry_error_m": 1.5043305143236374e-18,
+          "radial_clearance_um": 5.0,
+          "maximum_load_N": 53.922406006156834,
+          "window_maximum_load_N": 36.77075706051004,
+          "window_open_fraction": 0.0,
+          "window_eccentricity_um": 5.227477646036202
+        },
+        {
+          "geometry_error_m": 2.2751304963250507e-18,
+          "radial_clearance_um": 9.0,
+          "maximum_load_N": 56.781926821022665,
+          "window_maximum_load_N": 36.49211932131836,
+          "window_open_fraction": 0.0,
+          "window_eccentricity_um": 9.193400713115551
+        }
+      ],
+      "trough_widths_deg": [
+        6.028452028849905,
+        5.97487033474885
+      ],
+      "stats": {
+        "wall_s": 99.7810335,
+        "setup_s": 0.0500929,
+        "steps": 180000.0,
+        "accepted": 180000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 538287.0,
+        "max_residual": 2.1226225648263153e-06,
+        "pairs": 2691440.0,
+        "culled": 0.0,
+        "rays": 5382880.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 9.999999999999999e-06
+      }
+    },
+    {
+      "measured_phase_deg": 46.63339828565423,
+      "measured_peak_m_s2": -50.6817236961557,
+      "raw_rmse_m_s2": 7.204048303684601,
+      "quiet_rmse_m_s2": 5.40443042614641,
+      "quiet_max_abs_m_s2": 25.912844178882096,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 46.295999999576196,
+          "window_min_m_s2": -19.729118934467788,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.72425781883277,
+          "carriage_at_measured_phase_m_s2": -15.0253339810124,
+          "max_sensor_carriage_difference_m_s2": 5.825657639993331,
+          "min_load_N": 11.822341851339198,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.54416339582612
+        },
+        {
+          "window_min_phase_deg": 46.29600000193466,
+          "window_min_m_s2": -19.753723952103538,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.748427924584316,
+          "carriage_at_measured_phase_m_s2": -14.805795302011466,
+          "max_sensor_carriage_difference_m_s2": 5.733347619187082,
+          "min_load_N": 10.895730557144914,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.941679604664884
+        }
+      ],
+      "case": "both-half",
+      "step_us": 10,
+      "rpm": 200,
+      "clearance_mm": 0.25,
+      "cycles": 6,
+      "phase_shift_deg": 0,
+      "output_filter": null,
+      "stiffness_scale": 1.0,
+      "rod_mass_properties": {
+        "total_mass_kg": 1.13,
+        "center_from_wrist_m": 0.15,
+        "first_moment_about_wrist_kg_m": 0.16949999999999998,
+        "total_centroidal_inertia_kgm2": 0.015300000000000001,
+        "core_centroidal_inertia_kgm2": 0.012279207920792082
+      },
+      "rigid_planar_bound_25_to_85_deg_mm": 0.26062045986863236,
+      "auxiliary_bearings": [
+        {
+          "geometry_error_m": 2.0659133583532385e-18,
+          "radial_clearance_um": 2.5,
+          "maximum_load_N": 56.78269356258025,
+          "window_maximum_load_N": 37.40278399239088,
+          "window_open_fraction": 0.0,
+          "window_eccentricity_um": 2.6828168581756797
+        },
+        {
+          "geometry_error_m": 3.3017344283972627e-18,
+          "radial_clearance_um": 4.5,
+          "maximum_load_N": 93.65114152791571,
+          "window_maximum_load_N": 56.46907134828311,
+          "window_open_fraction": 0.0,
+          "window_eccentricity_um": 4.7022355041270805
+        }
+      ],
+      "trough_widths_deg": [
+        6.2179758430654815,
+        5.895928409078003
+      ],
+      "stats": {
+        "wall_s": 100.2229115,
+        "setup_s": 0.0464392,
+        "steps": 180000.0,
+        "accepted": 180000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 540057.0,
+        "max_residual": 2.854643343222496e-06,
+        "pairs": 2700290.0,
+        "culled": 0.0,
+        "rays": 5400580.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 9.999999999999999e-06
+      }
+    },
+    {
+      "measured_phase_deg": 46.63339828565423,
+      "measured_peak_m_s2": -50.6817236961557,
+      "raw_rmse_m_s2": 7.198449261804575,
+      "quiet_rmse_m_s2": 5.383002838809341,
+      "quiet_max_abs_m_s2": 25.911296622590978,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 46.6319999995784,
+          "window_min_m_s2": -19.735132272191102,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.735132063003512,
+          "carriage_at_measured_phase_m_s2": -15.168508600264344,
+          "max_sensor_carriage_difference_m_s2": 5.501036469291973,
+          "min_load_N": 11.064194528157687,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.825151309356684
+        },
+        {
+          "window_min_phase_deg": 46.128000001933515,
+          "window_min_m_s2": -19.767099514904437,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -19.755423576595593,
+          "carriage_at_measured_phase_m_s2": -14.647907162086318,
+          "max_sensor_carriage_difference_m_s2": 5.298561249216867,
+          "min_load_N": 10.715276809967484,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.99901727448529
+        }
+      ],
+      "case": "both-compliant",
+      "step_us": 10,
+      "rpm": 200,
+      "clearance_mm": 0.25,
+      "cycles": 6,
+      "phase_shift_deg": 0,
+      "output_filter": null,
+      "stiffness_scale": 0.1,
+      "rod_mass_properties": {
+        "total_mass_kg": 1.13,
+        "center_from_wrist_m": 0.15,
+        "first_moment_about_wrist_kg_m": 0.16949999999999998,
+        "total_centroidal_inertia_kgm2": 0.015300000000000001,
+        "core_centroidal_inertia_kgm2": 0.012279207920792082
+      },
+      "rigid_planar_bound_25_to_85_deg_mm": 0.2677191603158713,
+      "auxiliary_bearings": [
+        {
+          "geometry_error_m": 2.137911158869854e-18,
+          "radial_clearance_um": 5.0,
+          "maximum_load_N": 54.64887875663973,
+          "window_maximum_load_N": 36.87209848591181,
+          "window_open_fraction": 0.0,
+          "window_eccentricity_um": 6.0576669777500465
+        },
+        {
+          "geometry_error_m": 2.273436430430542e-18,
+          "radial_clearance_um": 9.0,
+          "maximum_load_N": 76.55087757746081,
+          "window_maximum_load_N": 40.495978308402954,
+          "window_open_fraction": 0.0,
+          "window_eccentricity_um": 9.962188940107861
+        }
+      ],
+      "trough_widths_deg": [
+        6.146074775418093,
+        5.614247566405012
+      ],
+      "stats": {
+        "wall_s": 238.0927232,
+        "setup_s": 0.1090552,
+        "steps": 180000.0,
+        "accepted": 180000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 538005.0,
+        "max_residual": 1.2784258061337983e-06,
+        "pairs": 2690030.0,
+        "culled": 0.0,
+        "rays": 5380060.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 9.999999999999999e-06
+      }
+    }
+  ],
+  "refinement": {
+    "measured_phase_deg": 46.63339828565423,
+    "measured_peak_m_s2": -50.6817236961557,
+    "raw_rmse_m_s2": 7.234436877519341,
+    "quiet_rmse_m_s2": 5.430302363696952,
+    "quiet_max_abs_m_s2": 25.97873494742137,
+    "revolutions": [
+      {
+        "window_min_phase_deg": 46.530000004658305,
+        "window_min_m_s2": -19.780238106791124,
+        "minimum_inside_window": true,
+        "sensor_at_measured_phase_m_s2": -19.77969715931022,
+        "carriage_at_measured_phase_m_s2": -15.12075445298917,
+        "max_sensor_carriage_difference_m_s2": 5.679072197645748,
+        "min_load_N": 11.30778783511805,
+        "all_sections_open_fraction": 0.0,
+        "partially_loaded_fraction": 1.0,
+        "max_clearance_for_any_section_um": 38.71779486674769
+      },
+      {
+        "window_min_phase_deg": 46.470000007016324,
+        "window_min_m_s2": -19.787687419366268,
+        "minimum_inside_window": true,
+        "sensor_at_measured_phase_m_s2": -19.786355476988707,
+        "carriage_at_measured_phase_m_s2": -15.106024669792875,
+        "max_sensor_carriage_difference_m_s2": 5.561041269563249,
+        "min_load_N": 11.236335209376012,
+        "all_sections_open_fraction": 0.0,
+        "partially_loaded_fraction": 1.0,
+        "max_clearance_for_any_section_um": 38.73866530365241
+      }
+    ],
+    "case": "both",
+    "step_us": 5.0,
+    "rpm": 200,
+    "clearance_mm": 0.25,
+    "cycles": 6,
+    "phase_shift_deg": 0,
+    "output_filter": null,
+    "stiffness_scale": 1.0,
+    "rod_mass_properties": {
+      "total_mass_kg": 1.13,
+      "center_from_wrist_m": 0.15,
+      "total_centroidal_inertia_kgm2": 0.015300000000000001,
+      "core_centroidal_inertia_kgm2": 0.012279207920792082
+    },
+    "rigid_planar_bound_25_to_85_deg_mm": 0.2677191603158713,
+    "auxiliary_bearings": [
+      {
+        "geometry_error_m": 3.031530918223141e-18,
+        "radial_clearance_um": 5.0,
+        "maximum_load_N": 53.92175561485326,
+        "window_maximum_load_N": 36.77519712271048,
+        "window_open_fraction": 0.0,
+        "window_eccentricity_um": 5.227498726581797
+      },
+      {
+        "geometry_error_m": 2.273436430430542e-18,
+        "radial_clearance_um": 9.0,
+        "maximum_load_N": 56.78530048019086,
+        "window_maximum_load_N": 36.50257647309066,
+        "window_open_fraction": 0.0,
+        "window_eccentricity_um": 9.19343605007868
+      }
+    ],
+    "trough_widths_deg": [
+      6.042578044952549,
+      5.973994019167044
+    ],
+    "stats": {
+      "wall_s": 355.9804018,
+      "setup_s": 0.0794896,
+      "steps": 360000.0,
+      "accepted": 360000.0,
+      "subdivisions": 0.0,
+      "force_evaluations": 896669.0,
+      "max_residual": 4.339684947923805e-06,
+      "pairs": 4483350.0,
+      "culled": 0.0,
+      "rays": 8966700.0,
+      "missing": 0.0,
+      "triangle_tests": 0.0,
+      "step_s": 4.9999999999999996e-06
+    }
+  },
+  "held_out": [
+    {
+      "measured_phase_deg": 44.4112919640406,
+      "measured_peak_m_s2": -10.08643406011177,
+      "raw_rmse_m_s2": 3.0485942449980565,
+      "quiet_rmse_m_s2": 3.3324067618231052,
+      "quiet_max_abs_m_s2": 14.097245792114693,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 55.998000002179644,
+          "window_min_m_s2": -7.747814402459372,
+          "minimum_inside_window": false,
+          "sensor_at_measured_phase_m_s2": -5.408875159583991,
+          "carriage_at_measured_phase_m_s2": -8.861491411952674,
+          "max_sensor_carriage_difference_m_s2": 3.4542450230521506,
+          "min_load_N": 6.692347358327089,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 41.55590620700915
+        },
+        {
+          "window_min_phase_deg": 55.998000004538085,
+          "window_min_m_s2": -7.815664583428083,
+          "minimum_inside_window": false,
+          "sensor_at_measured_phase_m_s2": -5.4101423246372775,
+          "carriage_at_measured_phase_m_s2": -8.924163537561187,
+          "max_sensor_carriage_difference_m_s2": 3.518359913787741,
+          "min_load_N": 6.788683491684949,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 41.474281293311236
+        }
+      ],
+      "case": "both",
+      "step_us": 10,
+      "rpm": 150,
+      "clearance_mm": 0.25,
+      "cycles": 6,
+      "phase_shift_deg": 0,
+      "output_filter": null,
+      "stiffness_scale": 1.0,
+      "rod_mass_properties": {
+        "total_mass_kg": 1.13,
+        "center_from_wrist_m": 0.15,
+        "total_centroidal_inertia_kgm2": 0.015300000000000001,
+        "core_centroidal_inertia_kgm2": 0.012279207920792082
+      },
+      "rigid_planar_bound_25_to_85_deg_mm": 0.2677191603158713,
+      "auxiliary_bearings": [
+        {
+          "geometry_error_m": 2.23362588190959e-18,
+          "radial_clearance_um": 5.0,
+          "maximum_load_N": 31.84961679102496,
+          "window_maximum_load_N": 20.79632482392771,
+          "window_open_fraction": 0.0,
+          "window_eccentricity_um": 5.155515971271545
+        },
+        {
+          "geometry_error_m": 2.273436430430542e-18,
+          "radial_clearance_um": 9.0,
+          "maximum_load_N": 34.27006188836869,
+          "window_maximum_load_N": 21.12871502364702,
+          "window_open_fraction": 0.0,
+          "window_eccentricity_um": 9.134239970802573
+        }
+      ],
+      "trough_widths_deg": [
+        null,
+        null
+      ],
+      "stats": {
+        "wall_s": 289.7084469,
+        "setup_s": 0.1093189,
+        "steps": 240000.0,
+        "accepted": 240000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 674040.0,
+        "max_residual": 1.9346672313069746e-06,
+        "pairs": 3370205.0,
+        "culled": 0.0,
+        "rays": 6740410.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 1e-05
+      }
+    },
+    {
+      "measured_phase_deg": 46.633457798307965,
+      "measured_peak_m_s2": -96.25104626331068,
+      "raw_rmse_m_s2": 14.192600467813026,
+      "quiet_rmse_m_s2": 14.948361884222376,
+      "quiet_max_abs_m_s2": 37.88784802894273,
+      "revolutions": [
+        {
+          "window_min_phase_deg": 53.37599999962258,
+          "window_min_m_s2": -22.570218544453663,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -18.11995008447765,
+          "carriage_at_measured_phase_m_s2": -15.140563540786117,
+          "max_sensor_carriage_difference_m_s2": 11.69625248443978,
+          "min_load_N": 11.58582726866261,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.835244747209565
+        },
+        {
+          "window_min_phase_deg": 53.376000001981026,
+          "window_min_m_s2": -22.574276384851988,
+          "minimum_inside_window": true,
+          "sensor_at_measured_phase_m_s2": -18.130157485878637,
+          "carriage_at_measured_phase_m_s2": -15.140839920165979,
+          "max_sensor_carriage_difference_m_s2": 11.672783158293074,
+          "min_load_N": 11.572280130713743,
+          "all_sections_open_fraction": 0.0,
+          "partially_loaded_fraction": 1.0,
+          "max_clearance_for_any_section_um": 38.854145921363155
+        }
+      ],
+      "case": "both",
+      "step_us": 10,
+      "rpm": 200,
+      "clearance_mm": 0.5,
+      "cycles": 6,
+      "phase_shift_deg": 0,
+      "output_filter": null,
+      "stiffness_scale": 1.0,
+      "rod_mass_properties": {
+        "total_mass_kg": 1.13,
+        "center_from_wrist_m": 0.15,
+        "total_centroidal_inertia_kgm2": 0.015300000000000001,
+        "core_centroidal_inertia_kgm2": 0.012279207920792082
+      },
+      "rigid_planar_bound_25_to_85_deg_mm": 0.5212472655887201,
+      "auxiliary_bearings": [
+        {
+          "geometry_error_m": 2.1565458837094487e-18,
+          "radial_clearance_um": 5.0,
+          "maximum_load_N": 74.05848412494092,
+          "window_maximum_load_N": 36.41238848484279,
+          "window_open_fraction": 0.0,
+          "window_eccentricity_um": 5.225836113634357
+        },
+        {
+          "geometry_error_m": 2.2717423645360335e-18,
+          "radial_clearance_um": 9.0,
+          "maximum_load_N": 105.92077533995744,
+          "window_maximum_load_N": 55.64981906528214,
+          "window_open_fraction": 0.0,
+          "window_eccentricity_um": 9.250791520844233
+        }
+      ],
+      "trough_widths_deg": [
+        3.65180317965104,
+        3.654928040026846
+      ],
+      "stats": {
+        "wall_s": 246.0289908,
+        "setup_s": 0.1325504,
+        "steps": 180000.0,
+        "accepted": 180000.0,
+        "subdivisions": 0.0,
+        "force_evaluations": 539118.0,
+        "max_residual": 2.339662018614047e-06,
+        "pairs": 2695595.0,
+        "culled": 0.0,
+        "rays": 5391190.0,
+        "missing": 0.0,
+        "triangle_tests": 0.0,
+        "step_s": 9.999999999999999e-06
+      }
+    }
+  ]
+}

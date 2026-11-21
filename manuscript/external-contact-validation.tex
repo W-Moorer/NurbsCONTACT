@@ -274,3 +274,26 @@ The center and right panels show the \(5\,\mu\mathrm{s}\) mount and
 \label{fig:clearance-incident}
 \end{figure}
 \fi
+
+\ifdefined\BearingFinePhase
+\paragraph{Auxiliary bearing clearances.}
+Releasing the 5 and 9 micrometer clearances listed for the needle and
+shaft bearings adds two planar translations at each joint. The rod
+center uses the same mass and first moment, with the parallel-axis
+contribution moved from its hinge inertia to translation. Both joints
+use circular STEP envelopes, a Hertz stiffness and the same per-impact
+normal law, with friction set to zero. At \(5\,\mu\mathrm{s}\), the mount response reaches
+\BearingFinePeak{} m/s\(^{2}\) at \(\BearingFinePhase^\circ\) with a
+half-prominence width of \BearingFineWidth{} degrees. The maximum
+fraction with all three probe gaps positive is \BearingFineOpen\%
+across the two reported separation intervals. The first revolution
+has a minimum summed main-joint load of \BearingFineLoad{} N.
+The sustained-loading RMSE is \BearingFineQuiet{} m/s\(^{2}\), and
+halving the step changes it by \BearingQuietDelta{} m/s\(^{2}\).
+The 150 rpm,
+0.25 mm and 200 rpm, 0.50 mm cases give raw RMSEs of \BearingTransferLow{}
+and \BearingTransferLarge{} m/s\(^{2}\), respectively. Adding both
+nominal clearances increases the rigid-planar displacement bound to
+\BearingRigidBound{} mm, below the excursions inferred from the
+published acceleration envelopes.
+\fi

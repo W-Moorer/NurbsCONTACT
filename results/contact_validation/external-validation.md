@@ -156,6 +156,39 @@ python benchmarks/contact_validation/clearance_impacts.py $contact $impact $ref 
 python benchmarks/contact_validation/clearance_impact_report.py $impact build/external-validation/source/springer.pdf $ref "$ref/impact-laws"
 ~~~
 
+### Auxiliary bearing clearances
+
+Table 1 lists 5 µm of clearance at the crank–rod needle bearing and
+9 µm at the shaft ball bearings. The reference simulation treats these
+joints as ideal. The sensitivity decks give the rod core two in-plane
+translations at its mass center. Its rotational coordinate uses the
+centroidal inertia. The reconstructed total rod mass, first moment and
+centroidal inertia are checked against the fixed-bearing deck. The
+second variant releases the shaft center in plane and assigns the
+published 17.900 kg assembly mass to those coordinates. The reported
+rotational inertia of 0.460327 kg·m² belongs to the shaft rotation,
+which remains prescribed at the test speed.
+
+Circular STEP envelopes proxy the rolling bearings. A radial Hertz
+law supplies the nominal load and an alternative uses one tenth of
+that stiffness. A half-clearance case tests the diametral interpretation
+of Table 1. These models assume frictionless auxiliary contacts and
+zero belt preload. The measured bearing force–deflection curves and
+belt loads are unavailable. Every auxiliary gap is checked against
+the independent circular center-distance formula in the saved samples.
+[Published bearing dimensions](https://doi.org/10.1007/s11071-010-9899-8) · [Metrics](clearance/auxiliary-bearings/summary.json) · [Raw comparison](clearance/auxiliary-bearings/auxiliary-bearing-response.pdf)
+
+~~~powershell
+$contact = 'build/occt/Release/nc_contact.exe'
+$ref = 'results/contact_validation/clearance'
+$bearings = 'build/external-validation/flores-bearings'
+python benchmarks/contact_validation/clearance_bearings.py $contact $bearings $ref
+python benchmarks/contact_validation/clearance_bearings.py $contact $bearings $ref --cases both --step-us 5
+python benchmarks/contact_validation/clearance_bearings.py $contact $bearings $ref --cases both --rpm 150
+python benchmarks/contact_validation/clearance_bearings.py $contact $bearings $ref --cases both --clearance 0.50
+python benchmarks/contact_validation/clearance_bearing_report.py $bearings $ref "$ref/auxiliary-bearings"
+~~~
+
 ## Archived robot copper-ring insertion
 
 The archived records provide commanded and measured wrist pose and wrist force/torque for 300 attempts. The dataset covers four tooling slots and 13 commanded lateral offsets. The paired CSV includes transformed measurements from Mihael Simonič and Matevž Majcen Horvat's *Copper Rings Insertion Attempts Dataset*, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Each trial is registered to the first minimum of commanded Z. The model uses measured axial position relative to that command target. The measured tool-frame axial force is centered on the median of the first 35 samples. The evaluation window covers sample offsets −28 through +23. The files contain no timestamps, so the curves use sample index and the model uses rate-independent compliance.

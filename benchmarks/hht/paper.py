@@ -224,6 +224,26 @@ def external_validation_macros(root):
             "IncidentTransferLow": f"{low['raw_rmse_m_s2']:.2f}",
             "IncidentTransferLarge": f"{large['raw_rmse_m_s2']:.2f}",
         })
+    bearing_file = slider_file.parent / "auxiliary-bearings" / "summary.json"
+    if bearing_file.is_file():
+        report = json.loads(bearing_file.read_text(encoding="utf-8"))
+        coarse = {row["case"]: row for row in report["screening"]}
+        fine = report["refinement"]
+        event = fine["revolutions"][0]
+        low, large = report["held_out"]
+        open_fraction = max(row["all_sections_open_fraction"] for row in fine["revolutions"])
+        macros.update({
+            "BearingFinePhase": f"{event['window_min_phase_deg']:.2f}",
+            "BearingFinePeak": f"{event['window_min_m_s2']:.2f}",
+            "BearingFineWidth": f"{fine['trough_widths_deg'][0]:.2f}" if fine["trough_widths_deg"][0] else r"\textemdash",
+            "BearingFineLoad": f"{event['min_load_N']:.2f}",
+            "BearingFineOpen": f"{100*open_fraction:.2f}",
+            "BearingFineQuiet": f"{fine['quiet_rmse_m_s2']:.2f}",
+            "BearingQuietDelta": f"{abs(coarse['both']['quiet_rmse_m_s2']-fine['quiet_rmse_m_s2']):.5f}",
+            "BearingRigidBound": f"{fine['rigid_planar_bound_25_to_85_deg_mm']:.3f}",
+            "BearingTransferLow": f"{low['raw_rmse_m_s2']:.2f}",
+            "BearingTransferLarge": f"{large['raw_rmse_m_s2']:.2f}",
+        })
     return macros
 
 

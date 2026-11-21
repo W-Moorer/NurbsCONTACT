@@ -32,11 +32,11 @@ def ideal_position_and_speed(angle):
     return position, speed
 
 
-def gap_displacement_bound(angle):
+def gap_displacement_bound(angle, clearance=CLEARANCE):
     height = CRANK*np.sin(angle)
     ideal = np.sqrt(ROD**2-height**2)
-    return np.maximum(np.sqrt((ROD+CLEARANCE)**2-height**2)-ideal,
-                      ideal-np.sqrt((ROD-CLEARANCE)**2-height**2))
+    return np.maximum(np.sqrt((ROD+clearance)**2-height**2)-ideal,
+                      ideal-np.sqrt((ROD-clearance)**2-height**2))
 
 
 def integrated_displacement(time, acceleration):
