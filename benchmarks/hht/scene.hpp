@@ -70,16 +70,29 @@ class Dynamics {
 public:
     Dynamics(const Scene& scene, Backend backend, bool warm);
     dynamics::Forces forces(const dynamics::Vector& q, const dynamics::Vector& v, double time);
+    dynamics::Forces bounded_forces(const dynamics::Vector& q, const dynamics::Vector& v, double time,
+                                    double target, bool reuse);
     const Statistics& statistics() const { return statistics_; }
     double peak_force() const { return peak_force_; }
+    std::size_t excluded_pairs() const { return reused_exclusions_; }
+    std::size_t approximated_pairs() const { return approximated_pairs_; }
+    std::size_t bounded_pairs() const { return bounded_pairs_; }
 
 private:
+    struct Exclusion {
+        double q_a{}, q_b{};
+        double lower{};
+    };
+
+    dynamics::Forces external_forces(const dynamics::Vector& q, const dynamics::Vector& v, double time) const;
     const Scene& scene_;
     Backend backend_;
     bool warm_;
     std::vector<TriangleHint> hints_;
     Statistics statistics_;
     double peak_force_{};
+    std::vector<std::optional<Exclusion>> exclusions_;
+    std::size_t reused_exclusions_{}, approximated_pairs_{}, bounded_pairs_{};
 };
 
 struct Diagnostics {

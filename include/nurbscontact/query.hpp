@@ -25,6 +25,7 @@ struct Options {
     bool inherit_time{true};
     bool eager_trim{true};
     bool axial_time{true};
+    bool guided_witness{};
 };
 
 struct Stats {
@@ -36,6 +37,7 @@ struct Stats {
     std::size_t direction_windows{};
     std::size_t axial_rejected{};
     std::size_t axial_clipped{};
+    std::size_t guided_attempts{};
 };
 
 struct Witness {

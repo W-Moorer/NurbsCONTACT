@@ -37,6 +37,52 @@ void check_oscillator() {
     }
 }
 
+void check_bounded_force_decisions() {
+    const auto force = [](double x) { return -100 * x; };
+    std::size_t coarse_calls = 0;
+    HhtOptions options;
+    options.max_subdivisions = 0;
+    Hht integrator({1}, {}, options, {}, {},
+        [&](const Vector& q, const Vector&, double, const Vector&, double target) {
+            coarse_calls += target > 0;
+            const double bound = target / 2;
+            const double nominal = force(q[0]);
+            const double estimate = nominal + bound;
+            return Forces{{estimate}, {100}, {0}, {}, up(std::abs(estimate - nominal))};
+        });
+    State state = integrator.initialize({1}, {0});
+    HhtStats stats;
+    for (int i = 0; i < 30; ++i) {
+        const double previous = force(state.q[0]);
+        integrator.step(state, .005, stats);
+        const double next = force(state.q[0]);
+        const double residual = state.a[0] - (1 + options.alpha) * next + options.alpha * previous;
+        const double limit = options.absolute_tolerance + options.relative_tolerance *
+            std::max(std::abs(previous), std::abs(next));
+        require(std::abs(residual) <= limit && std::abs(residual) <= stats.maximum_residual,
+                "bounded HHT accepted a state beyond the true residual tolerance");
+    }
+    require(coarse_calls > 0 && stats.force_refinements > 0 && stats.accepted_steps == 30,
+            "bounded HHT did not exercise its coarse and refined decisions");
+
+    Hht unresolved({1}, {}, options, {}, {},
+        [](const Vector&, const Vector&, double time, const Vector&, double) {
+            // The nominal force is 1 after the initial state. A zero estimate
+            // cannot certify convergence while this uncertainty persists.
+            return Forces{{0}, {0}, {0}, {}, time > 0 ? 1.0 : 0.0};
+        });
+    State old = unresolved.initialize({0}, {0});
+    HhtStats rejected;
+    bool failed = false;
+    try {
+        unresolved.step(old, .005, rejected);
+    } catch (const std::runtime_error&) {
+        failed = true;
+    }
+    require(failed && old.time == 0 && rejected.accepted_steps == 0,
+            "unresolved force interval was mistaken for a converged step");
+}
+
 void check_rollback() {
     HhtOptions options;
     options.minimum_clearance = 0.8;
@@ -161,6 +207,7 @@ void check_triangle_bvh() {
 int main() {
     try {
         check_oscillator();
+        check_bounded_force_decisions();
         check_rollback();
         check_point_resistance();
         check_translational_bushing();

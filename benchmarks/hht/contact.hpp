@@ -46,6 +46,11 @@ struct BoundedPose {
     IVec point(IVec p) const { return origin + rotate(p); }
 };
 
+struct BoundedPair {
+    IVec a, b, normal;
+    Interval gap;
+};
+
 void make_step_models(const std::filesystem::path& folder);
 Geometry load_geometry(const std::filesystem::path& path, unsigned facets);
 std::optional<PointPair> closest(
@@ -53,6 +58,7 @@ std::optional<PointPair> closest(
     TriangleHint* hint, Statistics& statistics
 );
 double safe_gap(const Geometry& a, BoundedPose pa, const Geometry& b, BoundedPose pb);
+std::optional<BoundedPair> bounded_pair(const Geometry& a, BoundedPose pa, const Geometry& b, BoundedPose pb);
 std::string_view name(Backend backend);
 
 }  // namespace nc::hht_bench

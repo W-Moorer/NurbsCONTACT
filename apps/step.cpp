@@ -1,6 +1,7 @@
 #include "nurbscontact/occt.hpp"
 #include "nurbscontact/query.hpp"
 
+#include <chrono>
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
@@ -55,13 +56,15 @@ void sample(const Sample& sample) {
     std::cout << "]}";
 }
 
-void details(const Stats& stats, const std::optional<Witness>& witness) {
+void details(const Stats& stats, const std::optional<Witness>& witness, std::optional<double> query_us) {
     std::cout << ",\"visited\":" << stats.visited << ",\"spatial_splits\":" << stats.spatial_splits
               << ",\"time_splits\":" << stats.time_splits << ",\"trim_rejected\":" << stats.trim_rejected
               << ",\"direction_rejected\":" << stats.direction_rejected
               << ",\"direction_windows\":" << stats.direction_windows
               << ",\"axial_rejected\":" << stats.axial_rejected << ",\"axial_clipped\":" << stats.axial_clipped
-              << ",\"witness\":";
+              << ",\"guided_attempts\":" << stats.guided_attempts;
+    if (query_us) std::cout << ",\"query_us\":" << *query_us;
+    std::cout << ",\"witness\":";
     if (witness) {
         std::cout << "{\"time\":" << witness->time << ",\"a\":";
         sample(witness->a);
@@ -79,7 +82,8 @@ void usage() {
               << "  --translation x y z  --velocity x y z  --axis x y z\n"
               << "  --angle radians  --omega radians-per-time  --time t0 t1\n"
               << "  --clearance length  --distance-tol length  --time-tol time\n"
-              << "  --max-nodes count  --swept-box-only  --chord-box  --no-inheritance  --late-trim  --no-axial\n";
+              << "  --max-nodes count  --swept-box-only  --chord-box  --no-inheritance  --late-trim  --no-axial\n"
+              << "  --guided-witness  --query-time\n";
 }
 
 }  // namespace
@@ -97,6 +101,7 @@ int main(int argc, char** argv) {
         Interval time{0, 1};
         double clearance = 0;
         Options options;
+        bool query_time = false;
         for (int i = 4; i < argc; ++i) {
             const std::string_view option{argv[i]};
             const auto scalar = [&]() {
@@ -134,24 +139,34 @@ int main(int argc, char** argv) {
             else if (option == "--no-inheritance") options.inherit_time = false;
             else if (option == "--late-trim") options.eager_trim = false;
             else if (option == "--no-axial") options.axial_time = false;
+            else if (option == "--guided-witness") options.guided_witness = true;
+            else if (option == "--query-time") query_time = true;
             else throw std::invalid_argument("unknown option " + std::string(option));
         }
         const PreparedModel a{read_step(argv[2])};
         const PreparedModel b{read_step(argv[3])};
         std::cout << std::setprecision(17);
+        using Clock = std::chrono::steady_clock;
+        const auto start = Clock::now();
+        const auto measured = [&]() -> std::optional<double> {
+            if (!query_time) return std::nullopt;
+            return std::chrono::duration<double, std::micro>(Clock::now() - start).count();
+        };
         if (command == "distance") {
             const auto result = distance(a, b, motion, time.lo, options);
+            const auto elapsed = measured();
             std::cout << "{\"lower\":";
             number(result.lower);
             std::cout << ",\"upper\":";
             number(result.upper);
-            details(result.statistics, result.witness);
+            details(result.statistics, result.witness, elapsed);
         } else {
             const auto result = sweep(a, b, motion, time, clearance, options);
+            const auto elapsed = measured();
             std::cout << "{\"status\":\"" << label(result.status) << "\",\"safe_prefix\":" << result.safe_prefix
                       << ",\"witness_time\":";
             number(result.witness_time.value_or(infinity));
-            details(result.statistics, result.witness);
+            details(result.statistics, result.witness, elapsed);
         }
     } catch (const Standard_Failure& e) {
         std::cerr << e.GetMessageString() << '\n';

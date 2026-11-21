@@ -69,9 +69,13 @@ void oscillator(const fs::path& file) {
 struct Snapshot { double t; Vector q; Vector v; double peak_force; };
 
 void simulation(std::string_view scene_name, Backend backend, unsigned facets, double step, double duration,
-                const fs::path& models, const fs::path& prefix, int repeats, bool warm, bool cache_guard) {
+                const fs::path& models, const fs::path& prefix, int repeats, bool warm, bool cache_guard,
+                std::string_view force_strategy) {
     if (!(std::isfinite(step) && step > 0 && std::isfinite(duration) && duration >= step) ||
         duration / step > 1'000'000 || repeats < 1) throw std::invalid_argument("invalid simulation duration");
+    if (force_strategy != "fixed" && backend != Backend::cad) {
+        throw std::invalid_argument("bounded force strategies require the analytic CAD fixture backend");
+    }
     const auto prep_start = Clock::now();
     const Scene scene = make_scene(scene_name, models, facets);
     const double prep = microseconds(prep_start,Clock::now());
@@ -80,7 +84,8 @@ void simulation(std::string_view scene_name, Backend backend, unsigned facets, d
     auto summary = output(prefix.string()+".stats.csv");
     summary << "scene,backend,facets,warm,cache_guard,repeat,duration,dt,steps,prep_us,wall_us,dofs,triangles,accepted,"
                "subdivisions,evaluations,newton,rejected,max_residual,min_guard,queries,analytic,cad_fallback,"
-               "bvh_nodes,triangle_tests,guard_endpoint_evaluations\n";
+               "bvh_nodes,triangle_tests,guard_endpoint_evaluations,force_strategy,force_refinements,"
+               "bounded_pairs,approximated_pairs,reused_exclusions\n";
     auto description = output(prefix.string()+".json");
     write_description(description, scene);
     std::vector<Snapshot> trajectory;
@@ -93,16 +98,27 @@ void simulation(std::string_view scene_name, Backend backend, unsigned facets, d
         ClearanceGuard guard(scene,cache_guard);
         HhtOptions options;
         options.minimum_clearance = 0.0005;
+        BoundedForceFunction bounded;
+        if (force_strategy != "fixed") {
+            bounded = [&](const Vector& q, const Vector& v, double t, const Vector&, double target) {
+                return system.bounded_forces(q, v, t, force_strategy == "bounded-exact" ? 0 : target,
+                                             force_strategy == "bounded-cache");
+            };
+        }
         Hht stepper(scene.mass, [&](const Vector& q,const Vector& v,double t){return system.forces(q,v,t);}, options,
-            [&](const Vector& a,const Vector& b){return guard.check(a,b);});
+            [&](const Vector& a,const Vector& b){return guard.check(a,b);}, {}, std::move(bounded));
         State state = stepper.initialize(scene.q,scene.v);
         HhtStats stats;
         const auto start = Clock::now();
-        if (repetition == 0) trajectory.push_back({state.time,state.q,state.v,system.peak_force()});
+        const auto record = [&] {
+            const double peak = force_strategy == "fixed" ? system.peak_force() : state.history.at(0);
+            trajectory.push_back({state.time,state.q,state.v,peak});
+        };
+        if (repetition == 0) record();
         for (std::size_t i = 0; i < steps; ++i) {
             const double target = h*static_cast<double>(i+1);
             stepper.step(state,target-state.time,stats);
-            if (repetition == 0) trajectory.push_back({state.time,state.q,state.v,system.peak_force()});
+            if (repetition == 0) record();
         }
         const double elapsed = microseconds(start,Clock::now());
         const Statistics& q = system.statistics();
@@ -112,7 +128,9 @@ void simulation(std::string_view scene_name, Backend backend, unsigned facets, d
                 << ',' << stats.evaluations << ',' << stats.newton_iterations << ',' << stats.rejected_trials
                 << ',' << stats.maximum_residual << ',' << stats.minimum_clearance << ',' << q.queries << ','
                 << q.analytic << ',' << q.cad_fallback << ',' << q.mesh.nodes << ',' << q.mesh.triangles
-                << ',' << guard.endpoint_evaluations() << '\n';
+                << ',' << guard.endpoint_evaluations() << ',' << force_strategy << ',' << stats.force_refinements
+                << ',' << system.bounded_pairs() << ',' << system.approximated_pairs() << ','
+                << system.excluded_pairs() << '\n';
         summary.flush();
         std::cout << scene.name << ' ' << name(backend) << " pass " << repetition+1 << ' ' << elapsed/1e6 << " s\n";
     }
@@ -229,17 +247,20 @@ int main(int argc, char** argv) {
         else if (action == "trimmed-queries" && argc == 4) trimmed_queries(argv[2],argv[3]);
         else if (action == "run" && (argc == 10 || argc == 11)) {
             const std::string_view variant = argc == 11 ? argv[10] : "";
-            if (variant != "" && variant != "cold" && variant != "uncached") {
+            const bool bounded = variant == "bounded" || variant == "bounded-cache" || variant == "bounded-exact";
+            if (variant != "" && variant != "cold" && variant != "uncached" && !bounded) {
                 throw std::invalid_argument("unsupported timing variant");
             }
             simulation(argv[2],parse_backend(argv[3]),facets_arg(argv[4]),std::stod(argv[5]),
-                       std::stod(argv[6]),argv[7],argv[8],std::stoi(argv[9]),variant != "cold",variant != "uncached");
+                       std::stod(argv[6]),argv[7],argv[8],std::stoi(argv[9]),variant != "cold",variant != "uncached",
+                       bounded ? variant : "fixed");
         } else {
             std::cerr << "nc_hht models MODEL_DIR\n"
                          "nc_hht oscillator OUTPUT.csv\n"
                          "nc_hht cam-queries MODEL_DIR OUTPUT.csv\n"
                          "nc_hht trimmed-queries BORE_STEP_DIR OUTPUT.csv\n"
-                         "nc_hht run SCENE BACKEND FACETS DT DURATION MODEL_DIR PREFIX REPEATS [cold|uncached]\n";
+                         "nc_hht run SCENE BACKEND FACETS DT DURATION MODEL_DIR PREFIX REPEATS "
+                         "[cold|uncached|bounded-exact|bounded|bounded-cache]\n";
             return 2;
         }
     } catch (const Standard_Failure& e) {

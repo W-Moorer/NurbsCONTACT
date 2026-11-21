@@ -25,12 +25,11 @@ Scene drop(const std::filesystem::path& models, unsigned facets) {
     return s;
 }
 
-Scene cams(const std::filesystem::path& models, unsigned facets) {
+Scene cams(const std::filesystem::path& models, unsigned facets, std::size_t count) {
     Scene s;
-    s.name = "cam-array";
+    s.name = count == 1 ? "cam" : "cam-array";
     s.geometry.push_back(load_geometry(models/"follower.step", facets));
     s.geometry.push_back(load_geometry(models/"cam.step", facets));
-    constexpr std::size_t count = 6;
     constexpr double speed = 4.0;
     for (std::size_t i = 0; i < count; ++i) {
         const double angle = 0.35 * static_cast<double>(i);
@@ -50,6 +49,21 @@ Scene cams(const std::filesystem::path& models, unsigned facets) {
             s.springs.push_back({2*i+1, 2*(i-1)+1, 95, 0.45, 0, 0});
         }
     }
+    return s;
+}
+
+Scene two_ball(const std::filesystem::path& models, unsigned facets) {
+    Scene s;
+    s.name = "two-ball";
+    s.geometry.push_back(load_geometry(models/"ball.step", facets));
+    const double spacing = 2 * s.geometry[0].radius + contact_skin + 0.018;
+    s.bodies = {{"ball A", 0, {}, {1,0,0}, Joint::slide, 0},
+                {"ball B", 0, {spacing,0,0}, {1,0,0}, Joint::slide, 1}};
+    s.contacts = {{0,1,contact_skin,stiffness}};
+    s.mass = {1,1};
+    s.q = {0,0};
+    s.v = {.225,-.225};
+    s.load = {0,0};
     return s;
 }
 
@@ -94,10 +108,27 @@ double travel(const Body& body, const Geometry& g, const Vector& start, const Ve
     return (Interval{delta} * norm(exact(body.direction))).hi;
 }
 
+double slope_bound(const Body& body, const Geometry& g) {
+    if (body.joint == Joint::hinge) return g.motion_radius;
+    return body.joint == Joint::slide ? norm(exact(body.direction)).hi : 0;
+}
+
+double joint_coordinate(const Body& body, const Vector& q) {
+    return body.joint == Joint::fixed ? 0 : q[body.dof];
+}
+
 double gradient(const Body& body, Vec witness, Vec n) {
     if (body.joint == Joint::slide) return dot3(n, body.direction);
     if (body.joint == Joint::hinge) {
         return dot3(n, cross3(Vec{0,0,1}, sub(witness, body.anchor)));
+    }
+    return 0;
+}
+
+Interval gradient(const Body& body, IVec witness, IVec n) {
+    if (body.joint == Joint::slide) return dot(n, exact(body.direction));
+    if (body.joint == Joint::hinge) {
+        return dot(n, cross(exact({0, 0, 1}), witness - exact(body.anchor)));
     }
     return 0;
 }
@@ -133,7 +164,9 @@ void vector_json(std::ostream& out, Vec v) {
 
 Scene make_scene(std::string_view name, const std::filesystem::path& models, unsigned facets) {
     if (name == "drop") return drop(models, facets);
-    if (name == "cam-array") return cams(models, facets);
+    if (name == "two-ball") return two_ball(models, facets);
+    if (name == "cam") return cams(models, facets, 1);
+    if (name == "cam-array") return cams(models, facets, 6);
     if (name == "ball-train") return train(models, facets);
     throw std::invalid_argument("unknown HHT scene");
 }
@@ -186,12 +219,12 @@ double ClearanceGuard::check(const Vector& start, const Vector& end) {
 }
 
 Dynamics::Dynamics(const Scene& scene, Backend backend, bool warm)
-    : scene_(scene), backend_(backend), warm_(warm), hints_(scene.contacts.size()) {}
+    : scene_(scene), backend_(backend), warm_(warm), hints_(scene.contacts.size()),
+      exclusions_(scene.contacts.size()) {}
 
-Forces Dynamics::forces(const Vector& q, const Vector& v, double time) {
+Forces Dynamics::external_forces(const Vector& q, const Vector& v, double time) const {
     const std::size_t n = q.size();
     Forces result{scene_.load, Vector(n*n), Vector(n*n)};
-    peak_force_ = 0;
     if (scene_.name == "ball-train") {
         result.value[0] += 5.5 * std::sin(7.5*time) + 2.5 * std::sin(18.0*time);
     }
@@ -209,7 +242,13 @@ Forces Dynamics::forces(const Vector& q, const Vector& v, double time) {
         spring_tangent(result.stiffness, spring, spring.stiffness, n);
         spring_tangent(result.damping, spring, spring.damping, n);
     }
+    return result;
+}
 
+Forces Dynamics::forces(const Vector& q, const Vector& v, double time) {
+    const std::size_t n = q.size();
+    Forces result = external_forces(q, v, time);
+    peak_force_ = 0;
     std::vector<Pose> positions;
     positions.reserve(scene_.bodies.size());
     for (const Body& body : scene_.bodies) positions.push_back(pose(body, q));
@@ -239,6 +278,95 @@ Forces Dynamics::forces(const Vector& q, const Vector& v, double time) {
             for (const auto& [j, jj] : jacobian) result.stiffness[i*n+j] += pair.stiffness*ji*jj;
         }
     }
+    return result;
+}
+
+Forces Dynamics::bounded_forces(const Vector& q, const Vector& v, double time, double target, bool reuse) {
+    const std::size_t n = q.size();
+    Forces result = external_forces(q, v, time);
+    peak_force_ = 0;
+
+    struct Candidate { std::size_t index; double magnitude; };
+    std::vector<Candidate> candidates;
+    std::vector<BoundedPose> poses;
+    poses.reserve(scene_.bodies.size());
+    for (const Body& body : scene_.bodies) poses.push_back(bounded_pose(body, q));
+    for (std::size_t i = 0; i < scene_.contacts.size(); ++i) {
+        const Contact& contact = scene_.contacts[i];
+        const Body& a = scene_.bodies[contact.a];
+        const Body& b = scene_.bodies[contact.b];
+        const Geometry& ga = scene_.geometry[a.geometry];
+        const Geometry& gb = scene_.geometry[b.geometry];
+        const double qa = joint_coordinate(a, q);
+        const double qb = joint_coordinate(b, q);
+        const double slope_a = slope_bound(a, ga);
+        const double slope_b = slope_bound(b, gb);
+        if (reuse && exclusions_[i]) {
+            const Exclusion& cache = *exclusions_[i];
+            const Interval closing = Interval{magnitude(Interval{qa} - cache.q_a)} * slope_a
+                + Interval{magnitude(Interval{qb} - cache.q_b)} * slope_b;
+            if ((Interval{cache.lower} - closing).lo > contact.skin) {
+                ++reused_exclusions_;
+                continue;
+            }
+        }
+
+        ++statistics_.queries;
+        const double lower = safe_gap(ga, poses[contact.a], gb, poses[contact.b]);
+        if (lower > contact.skin) {
+            if (reuse) exclusions_[i] = Exclusion{qa, qb, lower};
+            continue;
+        }
+        // Keep potentially touching pairs on the explicit evaluation path.
+        const double bound = lower > 0 ? ((Interval{contact.skin} - lower) * contact.stiffness
+            * (Interval{slope_a} + slope_b)).hi : infinity;
+        candidates.push_back({i, bound});
+    }
+    std::stable_sort(candidates.begin(), candidates.end(), [](const Candidate& a, const Candidate& b) {
+        return a.magnitude > b.magnitude;
+    });
+    std::vector<double> remaining(candidates.size() + 1);
+    for (std::size_t i = candidates.size(); i-- > 0;) {
+        remaining[i] = (Interval{remaining[i + 1]} + candidates[i].magnitude).hi;
+    }
+
+    std::vector<Interval> force_range(result.value.begin(), result.value.end());
+    std::size_t i = 0;
+    for (; i < candidates.size() && (target == 0 || remaining[i] > target); ++i) {
+        const Contact& contact = scene_.contacts[candidates[i].index];
+        const Body& a = scene_.bodies[contact.a];
+        const Body& b = scene_.bodies[contact.b];
+        ++bounded_pairs_;
+        const auto pair = bounded_pair(scene_.geometry[a.geometry], poses[contact.a],
+                                       scene_.geometry[b.geometry], poses[contact.b]);
+        if (!pair) {
+            result.value[0] = std::numeric_limits<double>::quiet_NaN();
+            return result;
+        }
+        const Interval depth = Interval{contact.skin} - pair->gap;
+        if (depth.hi <= 0) continue;
+        const Interval force = contact.stiffness * Interval{std::max(depth.lo, 0.0), depth.hi};
+        peak_force_ = std::max(peak_force_, force.center());
+        const std::array<std::pair<std::size_t, Interval>, 2> jacobian{{
+            {a.dof, -gradient(a, pair->a, pair->normal)}, {b.dof, gradient(b, pair->b, pair->normal)}
+        }};
+        for (const auto& [dof, ji] : jacobian) {
+            if (ji.is_zero()) continue;
+            force_range[dof] = force_range[dof] + ji * force;
+            for (const auto& [other, jj] : jacobian) {
+                result.stiffness[dof*n+other] += contact.stiffness * ji.center() * jj.center();
+            }
+        }
+    }
+    approximated_pairs_ += candidates.size() - i;
+    for (std::size_t j = 0; j < n; ++j) {
+        result.value[j] = force_range[j].center();
+        const double error = magnitude(force_range[j] - result.value[j]);
+        result.error_bound = std::max(result.error_bound, (Interval{error} + remaining[i]).hi);
+    }
+    // Keep the accepted trial's force diagnostic even when line search
+    // subsequently refined another trial at a different configuration.
+    result.history = {peak_force_};
     return result;
 }
 

@@ -67,6 +67,11 @@ public:
 
     SinCos trig(Interval time) const { return sin_cos(angle_ + time * omega_); }
     IVec point(IVec p, Interval time, SinCos sc) const { return terms(p).eval(time, sc); }
+    Vec local_guess(Vec world, double time, SinCos sc) const {
+        const IVec relative = exact(world) - position_ - velocity_ * time;
+        const IVec axial = axis_ * dot(axis_, relative);
+        return midpoint(axial + (relative - axial) * sc.cos - cross(axis_, relative) * sc.sin);
+    }
     bool constant_rotation() const { return omega_ == 0; }
     IVec translation_velocity() const { return velocity_; }
 
@@ -228,6 +233,69 @@ public:
         return node.witnesses;
     }
 
+    std::optional<Sample> planar_projection(std::size_t id, Vec target) const {
+        const FacePatch& face = patch(id);
+        const auto* plane = std::get_if<Plane>(&face.surface);
+        if (!plane) return std::nullopt;
+        const IVec delta = exact(target) - plane->origin;
+        const double xx = dot(plane->x, plane->x).center(), xy = dot(plane->x, plane->y).center();
+        const double yy = dot(plane->y, plane->y).center();
+        const double dx = dot(delta, plane->x).center(), dy = dot(delta, plane->y).center();
+        const double determinant = xx*yy - xy*xy;
+        if (!(determinant > 0)) return std::nullopt;
+        const double u = (dx*yy - dy*xy) / determinant;
+        const double v = (dy*xx - dx*xy) / determinant;
+        const auto contained = [&](UV p) {
+            return face.domain.u.lo <= p[0].lo && p[0].hi <= face.domain.u.hi &&
+                face.domain.v.lo <= p[1].lo && p[1].hi <= face.domain.v.hi;
+        };
+        if (contained({u, v}) && trim(id).classify(Vec{u, v, 0}) == TrimClass::inside) {
+            return Sample{{u, v}, plane->eval({u, v}), {FeatureKind::face, face.face_id}};
+        }
+
+        // The one-dimensional search proposes parameters. Only the outward
+        // evaluation of a point on the original trim can serve as a witness.
+        std::optional<Sample> best;
+        double nearest = infinity;
+        for (const auto& loop : trim(id).loops) {
+            for (const TrimCurve& edge : loop) {
+                const auto distance = [&](double t) {
+                    const IVec uv = evaluate(edge.geometry, t);
+                    const double x = uv[0].center() - u, y = uv[1].center() - v;
+                    return xx*x*x + 2*xy*x*y + yy*y*y;
+                };
+                constexpr int intervals = 12;
+                int index = 0;
+                double lowest = distance(0);
+                for (int i = 1; i <= intervals; ++i) {
+                    const double d = distance(static_cast<double>(i) / intervals);
+                    if (d < lowest) { index = i; lowest = d; }
+                }
+                double lo = static_cast<double>(std::max(0, index - 1)) / intervals;
+                double hi = static_cast<double>(std::min(intervals, index + 1)) / intervals;
+                for (int i = 0; i < 32; ++i) {
+                    const double left = std::lerp(lo, hi, 1.0 / 3);
+                    const double right = std::lerp(lo, hi, 2.0 / 3);
+                    if (distance(left) < distance(right)) hi = right;
+                    else lo = left;
+                }
+                for (double t : {std::midpoint(lo, hi), static_cast<double>(index) / intervals}) {
+                    const IVec full = evaluate(edge.geometry, t);
+                    const UV uv{full[0], full[1]};
+                    if (!contained(uv)) continue;
+                    const IVec point = plane->eval(uv);
+                    const double d = norm(point - exact(target)).hi;
+                    if (d < nearest) {
+                        const Feature feature = t == 0 ? edge.start : t == 1 ? edge.end : edge.feature;
+                        best = Sample{uv, point, feature};
+                        nearest = d;
+                    }
+                }
+            }
+        }
+        return best;
+    }
+
     std::pair<std::size_t, std::size_t> children(std::size_t id) {
         Node& node = nodes_[id];
         if (node.first != missing) return {node.first, node.second};
@@ -309,6 +377,33 @@ double sample_pair(SearchTree& a, SearchTree& b, Pair pair, const Trajectory& mo
         }
     }
     return upper;
+}
+
+std::optional<Witness> guided_planar_pair(const SearchTree& a, const SearchTree& b, Pair pair,
+                                          const Trajectory& motion, double t, double threshold) {
+    const SinCos sc = motion.trig(t);
+    const auto run = [&](bool start_from_b) -> std::optional<Witness> {
+        std::optional<Sample> point_a, point_b;
+        if (start_from_b) {
+            const Vec center_a = midpoint(a[pair.a].box);
+            point_b = b.planar_projection(pair.b, motion.local_guess(center_a, t, sc));
+            if (!point_b) return std::nullopt;
+            point_b->position = motion.point(point_b->position, t, sc);
+            point_a = a.planar_projection(pair.a, midpoint(point_b->position));
+        } else {
+            const Vec center_b = midpoint(motion.point(exact(midpoint(b[pair.b].box)), t, sc));
+            point_a = a.planar_projection(pair.a, center_b);
+            if (!point_a) return std::nullopt;
+            point_b = b.planar_projection(pair.b, motion.local_guess(midpoint(point_a->position), t, sc));
+            if (point_b) point_b->position = motion.point(point_b->position, t, sc);
+        }
+        if (point_a && point_b && norm(point_b->position - point_a->position).hi <= threshold) {
+            return Witness{*point_a, *point_b, t};
+        }
+        return std::nullopt;
+    };
+    if (auto witness = run(false)) return witness;
+    return run(true);
 }
 
 struct DistanceTask {
@@ -524,6 +619,7 @@ SweepResult sweep(const PreparedModel& a, const PreparedModel& b, const Motion& 
     const double time_resolution = options.time_tolerance * 0.25;
     const bool axial_enabled = options.axial_time && trajectory.constant_rotation();
     std::map<std::pair<std::size_t, std::size_t>, std::optional<Interval>> axial_windows;
+    std::map<std::pair<std::size_t, std::size_t>, double> last_guidance;
 
     while (!queue.empty() && result.statistics.visited < options.max_nodes) {
         const auto [pair, pending] = queue.top();
@@ -592,6 +688,20 @@ SweepResult sweep(const PreparedModel& a, const PreparedModel& b, const Motion& 
                     confirmed = sample_time;
                     result.witness = candidate;
                     break;
+                }
+            }
+            const double proposal_time = axial_start ? early : window.center();
+            if (options.guided_witness && tree_a.leaf(pair.a) && tree_b.leaf(pair.b) && proposal_time < confirmed &&
+                (axial_start || window.width() <= options.time_tolerance) && result.statistics.guided_attempts < 24) {
+                const auto key = std::pair{node_a.patch, node_b.patch};
+                const auto found = last_guidance.find(key);
+                if (found == last_guidance.end() || std::abs(proposal_time - found->second) >= time_resolution) {
+                    last_guidance[key] = proposal_time;
+                    ++result.statistics.guided_attempts;
+                    if (auto candidate = guided_planar_pair(tree_a, tree_b, pair, trajectory, proposal_time, clearance)) {
+                        confirmed = proposal_time;
+                        result.witness = std::move(candidate);
+                    }
                 }
             }
             if (window.lo >= confirmed) break;

@@ -253,6 +253,42 @@ double safe_gap(const Geometry& a, BoundedPose pa, const Geometry& b, BoundedPos
     return (dot(n, offset) - support_radius).lo;
 }
 
+std::optional<BoundedPair> bounded_pair(const Geometry& a, BoundedPose pa, const Geometry& b, BoundedPose pb) {
+    const IVec center_a = pa.point(exact(a.center));
+    const IVec center_b = pb.point(exact(b.center));
+    const IVec offset = center_b - center_a;
+    if (a.kind == Shape::sphere && b.kind == Shape::sphere) {
+        const Interval distance = norm(offset);
+        const Interval gap = distance - a.radius - b.radius;
+        if (gap.lo <= 0) return std::nullopt;
+        const IVec n = offset / distance;
+        return BoundedPair{center_a + n * a.radius, center_b - n * b.radius, n, gap};
+    }
+    if (a.kind != Shape::plate || b.kind == Shape::plate) return std::nullopt;
+    const IVec axis_a = pa.rotate(exact(a.axis));
+    const IVec n = axis_a / norm(axis_a);
+    IVec on_b = center_b;
+    if (b.kind == Shape::sphere) {
+        on_b = on_b - n * b.radius;
+    } else {
+        const IVec axis_b = pb.rotate(exact(b.axis));
+        const Interval component = dot(n, axis_b);
+        if (component.lo > 0) on_b = on_b - axis_b * b.half;
+        else if (component.hi < 0) on_b = on_b + axis_b * b.half;
+        else if (!component.is_zero()) return std::nullopt;
+        const IVec radial = n - axis_b * component;
+        const Interval radius = norm(radial);
+        if (radius.lo > 0) on_b = on_b - (radial / radius) * b.radius;
+        else if (!radius.is_zero()) return std::nullopt;
+    }
+    const Interval gap = dot(n, on_b - center_a);
+    const IVec on_a = on_b - n * gap;
+    const IVec local = on_a - center_a;
+    if (gap.lo <= 0 || magnitude(dot(local, pa.rotate(exact(a.u)))) > a.half_u ||
+        magnitude(dot(local, pa.rotate(exact(a.v)))) > a.half_v) return std::nullopt;
+    return BoundedPair{on_a, on_b, n, gap};
+}
+
 std::optional<PointPair> closest(
     const Geometry& a, Pose pa, const Geometry& b, Pose pb, Backend backend, double skin,
     TriangleHint* hint, Statistics& statistics

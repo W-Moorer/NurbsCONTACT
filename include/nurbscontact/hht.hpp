@@ -16,11 +16,16 @@ struct Forces {
     Vector damping;
     // Proposed internal state for this force evaluation.
     Vector history{};
+    // Infinity-norm error bound on value, for bounded force evaluations.
+    double error_bound{};
 };
 
 using ForceFunction = std::function<Forces(const Vector&, const Vector&, double)>;
 // The final argument is the history at the start of the attempted step.
 using HistoryForceFunction = std::function<Forces(const Vector&, const Vector&, double, const Vector&)>;
+// Receives the step-start history and the requested force error bound. Zero
+// requests the tightest available evaluation. Return the actual error bound.
+using BoundedForceFunction = std::function<Forces(const Vector&, const Vector&, double, const Vector&, double)>;
 using ClearanceFunction = std::function<double(const Vector&, const Vector&)>;
 
 struct HhtOptions {
@@ -39,6 +44,7 @@ struct State {
     Vector a;
     Vector force;
     Vector history{};
+    double force_error{};
 };
 
 struct HhtStats {
@@ -49,12 +55,13 @@ struct HhtStats {
     std::size_t rejected_trials{};
     double maximum_residual{};
     double minimum_clearance{std::numeric_limits<double>::infinity()};
+    std::size_t force_refinements{};
 };
 
 class Hht {
 public:
     Hht(Vector diagonal_mass, ForceFunction forces, HhtOptions options = {}, ClearanceFunction clearance = {},
-        HistoryForceFunction historical_forces = {});
+        HistoryForceFunction historical_forces = {}, BoundedForceFunction bounded_forces = {});
 
     State initialize(Vector q, Vector v, double time = 0) const;
     void step(State& state, double dt, HhtStats& statistics) const;
@@ -68,6 +75,7 @@ private:
     HhtOptions options_;
     ClearanceFunction clearance_;
     HistoryForceFunction historical_forces_;
+    BoundedForceFunction bounded_forces_;
 };
 
 }  // namespace nc::dynamics

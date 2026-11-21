@@ -1,4 +1,5 @@
 #include "nurbscontact/hht.hpp"
+#include "nurbscontact/interval.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -23,6 +24,14 @@ void validate(const Forces& f, std::size_t n) {
     if (f.value.size() != n || f.stiffness.size() != n * n || f.damping.size() != n * n) {
         throw std::invalid_argument("force and tangent sizes must agree with mass");
     }
+    if (!(std::isfinite(f.error_bound) && f.error_bound >= 0)) {
+        throw std::invalid_argument("force error bound must be finite and nonnegative");
+    }
+}
+
+Interval force_norm(const Vector& value, double bound) {
+    const Interval norm = Interval{max_norm(value)} + Interval{-bound, bound};
+    return {std::max(0.0, norm.lo), norm.hi};
 }
 
 bool solve_positive_definite(Vector& matrix, Vector& rhs) {
@@ -55,15 +64,18 @@ struct Trial {
     Forces forces;
     Vector residual;
     double error{};
+    Interval residual_norm;
+    bool refined{};
 };
 
 }  // namespace
 
 Hht::Hht(Vector diagonal_mass, ForceFunction forces, HhtOptions options, ClearanceFunction clearance,
-         HistoryForceFunction historical_forces)
+         HistoryForceFunction historical_forces, BoundedForceFunction bounded_forces)
     : mass_(std::move(diagonal_mass)), forces_(std::move(forces)),
-      options_(options), clearance_(std::move(clearance)), historical_forces_(std::move(historical_forces)) {
-    if ((!forces_ && !historical_forces_) || mass_.empty() || !finite(mass_) ||
+      options_(options), clearance_(std::move(clearance)), historical_forces_(std::move(historical_forces)),
+      bounded_forces_(std::move(bounded_forces)) {
+    if ((!forces_ && !historical_forces_ && !bounded_forces_) || mass_.empty() || !finite(mass_) ||
         std::any_of(mass_.begin(), mass_.end(), [](double m) { return m <= 0; }) ||
         !(options.alpha >= -1.0 / 3 && options.alpha <= 0) ||
         !(std::isfinite(options.absolute_tolerance) && options.absolute_tolerance > 0) ||
@@ -81,12 +93,17 @@ State Hht::initialize(Vector q, Vector v, double time) const {
     if (clearance_ && !(clearance_(q, q) > options_.minimum_clearance)) {
         throw std::invalid_argument("initial state fails the clearance guard");
     }
-    Forces f = historical_forces_ ? historical_forces_(q, v, time, {}) : forces_(q, v, time);
+    Forces f = bounded_forces_ ? bounded_forces_(q, v, time, {}, 0)
+        : historical_forces_ ? historical_forces_(q, v, time, {}) : forces_(q, v, time);
     validate(f, n);
     if (!finite(f.value)) throw std::invalid_argument("nonfinite initial force");
+    if (bounded_forces_ && f.error_bound > options_.absolute_tolerance) {
+        throw std::invalid_argument("initial force remains uncertain at the tightest available evaluation");
+    }
     Vector acceleration(n);
     for (std::size_t i = 0; i < n; ++i) acceleration[i] = f.value[i] / mass_[i];
-    return {time, std::move(q), std::move(v), std::move(acceleration), std::move(f.value), std::move(f.history)};
+    return {time, std::move(q), std::move(v), std::move(acceleration),
+            std::move(f.value), std::move(f.history), f.error_bound};
 }
 
 bool Hht::solve(const State& start, double dt, State& result, HhtStats& statistics) const {
@@ -104,15 +121,16 @@ bool Hht::solve(const State& start, double dt, State& result, HhtStats& statisti
         v_predict[i] = start.v[i] + dt * (1 - gamma) * start.a[i];
     }
 
-    const auto evaluate = [&](Vector acceleration) {
+    const auto evaluate = [&](Vector acceleration, double requested_error) {
         Trial trial;
         trial.state = {start.time + dt, Vector(n), Vector(n), std::move(acceleration), {}};
         for (std::size_t i = 0; i < n; ++i) {
             trial.state.q[i] = q_predict[i] + position_scale * trial.state.a[i];
             trial.state.v[i] = v_predict[i] + velocity_scale * trial.state.a[i];
         }
-        trial.forces = historical_forces_
-            ? historical_forces_(trial.state.q, trial.state.v, trial.state.time, start.history)
+        trial.forces = bounded_forces_
+            ? bounded_forces_(trial.state.q, trial.state.v, trial.state.time, start.history, requested_error)
+            : historical_forces_ ? historical_forces_(trial.state.q, trial.state.v, trial.state.time, start.history)
             : forces_(trial.state.q, trial.state.v, trial.state.time);
         ++statistics.evaluations;
         validate(trial.forces, n);
@@ -122,17 +140,56 @@ bool Hht::solve(const State& start, double dt, State& result, HhtStats& statisti
                                 alpha * start.force[i];
         }
         trial.error = finite(trial.residual) ? max_norm(trial.residual) : std::numeric_limits<double>::infinity();
+        trial.residual_norm = trial.error;
+        trial.refined = requested_error == 0;
+        if (bounded_forces_ && std::isfinite(trial.error)) {
+            trial.residual_norm = 0;
+            const Interval current_error{-trial.forces.error_bound, trial.forces.error_bound};
+            const Interval start_error{-start.force_error, start.force_error};
+            for (std::size_t i = 0; i < n; ++i) {
+                const Interval ri = Interval{mass_[i]} * trial.state.a[i]
+                    - residual_scale * (Interval{trial.forces.value[i]} + current_error)
+                    + alpha * (Interval{start.force[i]} + start_error);
+                const double lower = ri.contains(0) ? 0 : std::min(std::abs(ri.lo), std::abs(ri.hi));
+                trial.residual_norm.lo = std::max(trial.residual_norm.lo, lower);
+                trial.residual_norm.hi = std::max(trial.residual_norm.hi, magnitude(ri));
+            }
+        }
         return trial;
     };
 
-    Trial current = evaluate(start.a);
+    // Tighten only if the current bound cannot decide the convergence or
+    // line-search test. A budget-exhausted oracle keeps its uncertainty.
+    const auto refine = [&](Trial& trial) {
+        if (trial.refined || trial.forces.error_bound == 0) return;
+        trial = evaluate(trial.state.a, 0);
+        ++statistics.force_refinements;
+    };
+    const Interval start_norm = force_norm(start.force, start.force_error);
+    const auto convergence_tolerance = [&](const Trial& trial) {
+        const Interval current_norm = force_norm(trial.forces.value, trial.forces.error_bound);
+        return Interval{options_.absolute_tolerance} + options_.relative_tolerance * Interval{
+            std::max(start_norm.lo, current_norm.lo), std::max(start_norm.hi, current_norm.hi)};
+    };
+    constexpr double force_fraction = 0.1;
+    const auto request_force_error = [&](double scale) {
+        return bounded_forces_ && std::isfinite(scale)
+            ? force_fraction * std::max(options_.absolute_tolerance, scale) / residual_scale : 0;
+    };
+    Trial current = evaluate(start.a, request_force_error(max_norm(start.force)));
     for (unsigned iteration = 0; iteration <= options_.max_iterations; ++iteration) {
-        const double tolerance = options_.absolute_tolerance + options_.relative_tolerance *
+        double tolerance = options_.absolute_tolerance + options_.relative_tolerance *
             std::max(max_norm(current.forces.value), max_norm(start.force));
-        if (current.error <= tolerance && std::isfinite(current.error)) {
-            statistics.maximum_residual = std::max(statistics.maximum_residual, current.error);
+        if (bounded_forces_) {
+            const Interval interval = convergence_tolerance(current);
+            if (current.residual_norm.hi > interval.lo && current.residual_norm.lo <= interval.hi) refine(current);
+            tolerance = convergence_tolerance(current).lo;
+        }
+        if (current.residual_norm.hi <= tolerance && std::isfinite(current.residual_norm.hi)) {
+            statistics.maximum_residual = std::max(statistics.maximum_residual, current.residual_norm.hi);
             current.state.force = std::move(current.forces.value);
             current.state.history = std::move(current.forces.history);
+            current.state.force_error = current.forces.error_bound;
             result = std::move(current.state);
             return true;
         }
@@ -150,18 +207,29 @@ bool Hht::solve(const State& start, double dt, State& result, HhtStats& statisti
         if (!solve_positive_definite(tangent, correction)) return false;
         ++statistics.newton_iterations;
         bool improved = false;
+        const bool coarse = bounded_forces_ && !current.refined && current.forces.error_bound > 0;
+        const double requested_error = request_force_error(current.error);
         for (double fraction = 1; fraction >= 1.0 / 128; fraction *= 0.5) {
             Vector acceleration = current.state.a;
             for (std::size_t i = 0; i < n; ++i) acceleration[i] += fraction * correction[i];
-            Trial next = evaluate(std::move(acceleration));
-            if (next.error < current.error) {
+            Trial next = evaluate(std::move(acceleration), requested_error);
+            if (bounded_forces_ && next.residual_norm.hi >= current.residual_norm.lo &&
+                next.residual_norm.lo < current.residual_norm.hi) {
+                refine(next);
+                if (next.residual_norm.hi >= current.residual_norm.lo &&
+                    next.residual_norm.lo < current.residual_norm.hi) refine(current);
+            }
+            if (next.residual_norm.hi < current.residual_norm.lo) {
                 current = std::move(next);
                 improved = true;
                 break;
             }
             ++statistics.rejected_trials;
         }
-        if (!improved) return false;
+        if (!improved) {
+            if (!coarse) return false;
+            refine(current);
+        }
     }
     return false;
 }
@@ -186,7 +254,8 @@ bool Hht::advance(State& state, double dt, HhtStats& statistics, unsigned depth)
 void Hht::step(State& state, double dt, HhtStats& statistics) const {
     const std::size_t n = mass_.size();
     if (!(dt > 0) || !std::isfinite(dt) || state.time + dt == state.time || state.q.size() != n ||
-        state.v.size() != n || state.a.size() != n || state.force.size() != n) {
+        state.v.size() != n || state.a.size() != n || state.force.size() != n ||
+        (bounded_forces_ && !(std::isfinite(state.force_error) && state.force_error >= 0))) {
         throw std::invalid_argument("invalid HHT time step or state");
     }
     State candidate = state;
