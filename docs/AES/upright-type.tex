@@ -1,0 +1,13 @@
+% Uniform, upright manuscript styling, including template-generated labels.
+\usepackage{fontspec}
+\setmainfont{Times New Roman}[BoldFont={Times New Roman},ItalicFont={Times New Roman},BoldItalicFont={Times New Roman}]
+\setsansfont{Arial}[BoldFont={Arial},ItalicFont={Arial},BoldItalicFont={Arial}]
+\setmonofont{Consolas}[BoldFont={Consolas},ItalicFont={Consolas},BoldItalicFont={Consolas}]
+\usepackage[math-style=upright]{unicode-math}
+\setmathfont{STIXTwoMath-Regular.otf}
+\renewcommand{\boldsymbol}[1]{\symup{#1}}
+\renewcommand{\mathbf}[1]{\symup{#1}}
+\renewcommand{\mathcal}[1]{\symsfup{#1}}
+\renewcommand{\em}{\upshape\mdseries}
+\renewcommand{\bfseries}{\mdseries}
+\renewcommand{\itshape}{\upshape}

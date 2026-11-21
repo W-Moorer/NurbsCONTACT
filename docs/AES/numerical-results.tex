@@ -1,0 +1,117 @@
+\section{Numerical study}
+\label{sec:evaluation}
+We answer three questions. How closely do the force and motion histories follow closed-form solutions? Can CAD clearance be certified at times where a coarse geometric approximation or a sampling-only witness search becomes unreliable? What is the online cost of each geometry representation at a prescribed tolerance on mechanism response?
+
+The C++ implementations use Release builds and binary64 arithmetic. The Windows STEP runs use MSVC and Open CASCADE 7.9.3 on an AMD Ryzen 9 5900X. We give setup and online integration time separately and exclude trace serialization. Cam setup includes the common model preparation used by the selected backend. The refinement ladders use one to three repeats per setting. A serial timing batch repeats the selected cam and spur configurations three times and the selected reducer configurations twice. We report the median online time for repeated configurations. The Linux engine results were obtained on the same workstation under WSL. The RecurDyn timings report the Windows solver and process interface separately. Software versions, individual timing records and precise settings are in the repository.
+
+\subsection{Sphere against a plane and translating sphere pair}
+\label{sec:analytic}
+The first fixture places a 1 kg sphere of radius 55 mm above a fixed plane. The second places two identical spheres on the line of centers with a stationary center of mass. The initial closing speed is 0.45 m/s and the initial distance beyond the 12 mm activation layer is $\ell=18$ mm. We set $k=5{,}000$ N/m and omit gravity and physical damping. The effective mass is $m_e=1$ kg for the plane and $m_e=0.5$ kg for the sphere pair. Motion is free until $t_0=\ell/v_0=40$ ms. The positive compression within the activation layer then follows an undamped oscillator with $\omega=\sqrt{k/m_e}$ and $t_e=t_0+\pi/\omega$. The closing displacement is
+\begin{equation}
+ c(t)=\begin{cases}
+ v_0t,&0\leq t\leq t_0,\\
+ \ell+\dfrac{v_0}{\omega}\sin[\omega(t-t_0)],& t_0<t\leq t_e,\\
+ \ell-v_0(t-t_e),& t>t_e.
+ \end{cases}
+ \label{eq:halfsine}
+\end{equation}
+The normal force is $k[c(t)-\ell]_+$. We integrate for 160 ms at 500, 250 and 125~\microsec{}, covering free approach, the complete loading pulse and free release. Figures~\ref{fig:plane} and~\ref{fig:spheres} show the finest-step bounded CAD solutions and their analytic references. At this step the minimum positive bounds on clearance during integration are 5.64 mm for the plane fixture and 7.50 mm for the sphere pair. The force residual test is performed at every accepted bounded HHT step.
+
+\resultfigure{plane}{Sphere approaching a plane with a positive contact layer. The Blender panels show the nominal surfaces and the gap near maximum compression. The curves show the center displacement and normal force over the complete run.}{fig:plane}
+\resultfigure{spheres}{Two identical translating spheres. The axis of motion lies along the line of centers. The curves show relative closure and normal force, including the interval after both bodies leave the contact layer.}{fig:spheres}
+
+Table~\ref{tab:spheres} compares the fine-step results. For the native engine comparisons, contact padding implements the same layer with each engine's normal collision geometry. The recorded engine force is checked against the shared force law along the engine's own trajectory. On both fixtures, all three external engines match that force law to within $10^{-9}$ N. We use MuJoCo 4.0.1 with the implicit integrator and RK4, and Drake 1.58.0 with third-order Runge--Kutta. RecurDyn 2023 uses its native sphere contacts and reports a separate normal-force channel. Its requested maximum step and its result sampling interval equal the stated step. Its process wall times include the analysis call and result handling. These measurements are separate from the Linux timing batch.
+
+\begin{table}[pos=!htbp]
+\caption{Analytical fixtures at a nominal step of 125~\microsec{}. Position and force errors are RMS deviations from the closed-form solution. Windows RecurDyn process time includes result handling.}
+\label{tab:spheres}
+\centering\small
+\begin{tabular}{lrrrrrr}\toprule
+ & \multicolumn{3}{c}{Sphere--plane} & \multicolumn{3}{c}{Two spheres} \\
+ \cmidrule(lr){2-4}\cmidrule(lr){5-7}
+ Solver & Position & Force & Online & Position & Force & Online \\
+ & (\micron) & (mN) & (ms) & (\micron) & (mN) & (ms) \\\midrule
+ CAD/HHT fixed, Linux & 0.0744 & 0.184 & 2.14 & 0.0878 & 0.219 & 2.31 \\
+ CAD/HHT bounded cache, Linux & 0.0744 & 0.184 & 3.95 & 0.0878 & 0.219 & 3.79 \\
+ MuJoCo, implicit & 0.171 & 0.121 & 6.06 & 0.178 & 0.144 & 7.22 \\
+ MuJoCo, RK4 & 0.0221 & $1.17\times10^{-6}$ & 18.77 & 0.00131 & $2.78\times10^{-6}$ & 26.41 \\
+ Drake, RK3 & 0.0233 & $5.72\times10^{-4}$ & 56.57 & 0.000874 & $9.63\times10^{-4}$ & 67.20 \\
+ RecurDyn, Windows & 0.427 & 0.803 & 5281 & 0.291 & 0.952 & 5281 \\
+ \bottomrule\end{tabular}
+\end{table}
+
+At 125~\microsec{}, the bounded oracle reuses 927 inactive-pair exclusions in the plane fixture and 1,029 in the two-sphere fixture. The intervals preserve the force and position errors of the fixed native solver at the reported precision. On these cheap primitive evaluations the interval machinery increases time relative to the direct native force path. MuJoCo with RK4 and Drake with RK3 produce smaller position errors at the finest step. The comparison therefore records the effect of the selected time integrator along with that of the contact representation.
+
+\subsection{Disk passing a circular trim}
+\label{sec:trim}
+A disk of radius $a=0.25$ mm translates through the plane of a circular opening with radius $r=1$ mm. If its axis has in-plane eccentricity $e$, its minimum rim gap is $g=r-a-e$. With the disk at height $z(t)$, the separation near the inner rim is $\sqrt{g^2+z(t)^2}$. The threshold is $\delta=0.03125$ mm. For a monotonically approaching disk the first entry occurs at height $\sqrt{\delta^2-g^2}$ if $g\leq\delta$. For $g>\delta$ the path is clear. We use the actual binary64 input offsets to compute the analytic times in high-precision arithmetic. Figure~\ref{fig:trim} shows the diagonal case. A counterbored pin provides an additional trim fixture with the same positive-gap construction at the throat rim.
+
+\resultfigure{trim}{Disk crossing a circular trim on an eccentric path. The enlarged views show the disk edge against the critical rim. The graph gives the analytical threshold-entry and near-miss curves for the $3{:}4$ diagonal direction with signed gap offsets of $-100$ nm and $+100$ nm. The dashed marker locates the analytical first entry. Shading gives the bracket returned by the guided query.}{fig:trim}
+
+Together the trim fixtures supply 34 translations over a normalized time interval of $[0,1]$. The scan varies the signed gap about the threshold between $-10$ and $+10$~\micron{}, including two exact-equality paths and offsets of 10 and 100 nm in a $3{:}4$ diagonal direction. We request a time width of $5\times10^{-4}$ and cap the native search at 200,000 tasks. Each variant runs three times. The independent audit checks the reported status, inclusion of the analytic first time in any bracket and the enclosed distance between the witness points. Guidance raises the number of within-target results from 29 to 32. The three newly witnessed diagonal entries finish in median times of 0.494, 0.616 and 1.586 ms. Ordinary sampling in these same cases exhausts the task limit after median times of 2.127, 2.415 and 3.190 s. The two exact-equality paths retain safe prefixes.
+
+A separate baseline batch uses the same configurations and target time width. A swept triangle BVH at a 6.104 nm nominal tessellation deflection matches the analytic result within target on all 34 paths. Its pooled preparation time is 0.282 s for the disk/plate fixture and 2.620 s for the pin/counterbore fixture. The swept mesh search operates on the triangulations. CAD conservative advancement with bounded static distance and mesh-guided CAD verification each deliver a complete CAD outcome within target in 4 of 34 paths. Numerical Open CASCADE distance advancement is within target and consistent with the analytic result in 17 paths. The native sweep uses original-boundary witnesses and exclusions. Table~\ref{tab:events} gives both the cost of matching the numerical time bracket and the geometry on which the result holds for the recovered paths.
+
+\begin{table}[pos=!htbp]
+\centering\small
+\caption{Online medians for the three recovered diagonal entries. The mesh column selects the fastest tested deflection at each path whose bracket contains the analytic event and meets the target width. The guided results certify a bracket on the nominal CAD. Ordinary sampling exhausts its work budget on these paths. The mesh and witness studies were timed in separate batches.}
+\label{tab:events}
+\begin{tabular}{lrrrr}\toprule
+Path & Guided & Ordinary & Mesh & Mesh deflection \\
+ & (ms) & (ms) & (ms) & (nm) \\\midrule
+Disk, $-100$ nm & 0.616 & 2415 & 19.82 & 48.829 \\
+Disk, $-10$ nm & 0.494 & 2127 & 88.43 & 6.104 \\
+Counterbore, $-10$ nm & 1.586 & 3190 & 131.36 & 48.829 \\
+\bottomrule\end{tabular}
+\end{table}
+
+\FloatBarrier
+\subsection{Industrial mechanisms at matched accuracy}
+\label{sec:industrial}
+The three mechanism runs cover a driven cam and single follower, a 24/48-tooth spur pair, and a two-stage spur--helical reducer with 24/48 and 22/44 teeth. The gear input is driven at 1,800 r/min. The cam rotates at approximately 4 rad/s with elastic drive and a 3.2 N follower preload. Its moment of inertia is 0.007 kg\,m$^2$ and the follower has a mass of 0.48 kg. The cam uses the 12 mm activation layer and 5,000 N/m stiffness of the primitive cases. The cam runs for 20 s, the spur pair for 2 s and the reducer for 3 s. These durations cover approximately 13, 60 and 90 input revolutions, respectively. The gear law uses a 0.055 mm activation gap and a nominal stiffness of $1.6\times10^8$ N/m before axial and end weighting. The brake includes a load rise near 0.10 s, a release near 0.24 s, and a periodic component. The two-stage train uses one common shaft coordinate and two axial gear planes. The STEP models, material and load data are provided with the runs.
+
+We compare the entire time histories against refined native solutions on common output grids of 1 ms for the cam and 20~\microsec{} for the gears. Position error is RMS follower displacement error or RMS transmission error at the driven base circle. Force error is the RMS force difference divided by the reference RMS force. The reducer must satisfy the joint tolerance in both stages. The native reference steps are 62.5~\microsec{} for the cam, 2.5~\microsec{} for the spur pair, and 5~\microsec{} with 63 helical sections for the reducer. The cam is refined from 1 ms and the gears from 20~\microsec{}. We evaluate three accuracy targets of 0.5~\micron{} and 2\%, 1~\micron{} and 5\%, and 2~\micron{} and 10\%. Table~\ref{tab:industrial} gives representative settings. The accompanying results retain the full ladders and sampled peak-force differences.
+
+\begin{table}[pos=!htbp]
+\centering\small
+\caption{Representative mechanism settings. Position and force errors are RMS, and both error columns show the larger stage result for the reducer. Geometry settings refer to the number of cam polygon sides, the segments per gear section, or the mesher deflection. Online time excludes setup.}
+\label{tab:industrial}
+\begin{tabular}{llrrrrr}\toprule
+Case & Geometry query & Step & Position & Force & Setup & Online \\
+ & & (\microsec) & (\micron) & (\%) & (s) & (s) \\\midrule
+Cam & Native CAD & 125 & 0.286 & 0.04 & 0.015 & 1.60 \\
+ & Polygon support, 8192 & 125 & 0.261 & 0.04 & 0.037 & 1.78 \\
+ & Polygon support, 512 & 250 & 0.794 & 0.10 & 0.016 & 0.71 \\
+Spur & Native CAD & 5 & 0.037 & 0.89 & 0.017 & 4.03 \\
+ & Polyline, 1024 & 5 & 0.037 & 0.89 & 0.018 & 3.94 \\
+ & Triangle BVH, 391 nm & 5 & 0.256 & 3.35 & 3.832 & 47.81 \\
+Reducer & Native CAD, 31 sections & 10 & 0.243 & 4.52 & 0.023 & 41.04 \\
+ & Polyline, 256 & 10 & 0.244 & 4.55 & 0.028 & 41.45 \\
+ & Triangle BVH, 1.563~\micron & 10 & 1.451 & 23.61 & 2.130 & 414.81 \\
+ & Native CAD, 31 sections & 5 & 0.007 & 0.11 & 0.024 & 79.24 \\
+\bottomrule\end{tabular}
+\end{table}
+
+\paragraph{Flat-follower cam.}
+The rotating cylinder has a 105 mm radius and an eccentricity of 24 mm. The rendered model and key histories are in Fig.~\ref{fig:cam}. The general mesh query searches a BVH on the same regular faceted cam used by the fast polygon support query. The latter selects the nearest support vertex in the correct direction and checks the plane projection against the finite follower. At 125~\microsec{}, the native solution takes a median of 1.60 s. The selected polygonal configuration meeting 0.5~\micron{} and 2\% takes 1.78 s. At 1~\micron{} and 5\%, the 512-sided polygon at 250~\microsec{} has 0.794~\micron{} displacement error and finishes in 0.71 s. This setting benefits from partial cancellation between faceting and time-discretization error. Its advantage at that tolerance demonstrates the need to search configurations of each representation independently.
+
+The Drake comparison uses a cylinder with the 12 mm layer incorporated into its radius and a prismatic half-space. This preserves the maximum radial support height, force, eccentric torque, prescribed inertia and spring-damper loads of the model. At 125~\microsec{}, the Linux HHT and Drake RK2 runs meet the 0.5~\micron{} target with displacement errors of 0.286 and 0.402~\micron{}. Their median online times over five runs are 1.96 and 12.06 s, respectively. The point-level force law agrees within $1.5\times10^{-13}$ N along the Drake trajectories.
+
+\resultfigure{cam}{Eccentric cam and flat follower. The full 20 s response compares the follower displacement and normal force of native CAD and the efficient polygon support baseline at the same time step.}{fig:cam}
+
+\paragraph{Single-stage spur pair.}
+For the spur mesh we compare native flank sections against both a general triangle BVH and a faster piecewise-linear section representation. The section baseline preserves the same tooth-pair selection, sampled axial geometry, stiffness and line-of-action projection as the native method. At 5~\microsec{}, the native and 1024-segment polyline solutions meet the finest joint tolerance with nearly identical errors. The serial median times are 4.03 and 3.94 s and their repeat ranges overlap. The best observed triangle-BVH force error at this step is 3.35\% for the 391 nm mesh setting, which requires 47.81 s in the refinement batch. Figure~\ref{fig:spur} compares the native and tuned section solutions over the load-rise window. The force-waveform error at 10~\microsec{} already exceeds 5\% for the native method, so refining geometry alone does not achieve the tighter target.
+
+\resultfigure{spur}{Single-stage spur pair and close-up of the tooth contact region. The transmission error and total mesh force show the load-rise interval at a 5~\microsec{} internal step. The two curves nearly coincide.}{fig:spur}
+
+\paragraph{Two-stage reducer.}
+The complex model places a spur stage upstream of a 22-degree helical stage. The native 31-section, 10~\microsec{} setting completes the full 3 s with worst-stage errors of 0.243~\micron{} and 4.52\%. The 256-segment section baseline at the same step gives 0.244~\micron{} and 4.55\%. In the serial batch, both methods take approximately 41 s and their repeat ranges overlap. The tested triangle settings resolve the helical stage more closely than the spur stage. At 5~\microsec{}, increasing the native axial quadrature from 31 to 63 sections changes the worst stage by 0.007~\micron{} and 0.11\%. The second stage is shown in Fig.~\ref{fig:reducer}. Direct engine-to-engine comparisons use the analytical fixtures and the cam, where a common native contact law can be checked from independent traces. The gearing comparisons hold the projected contact law fixed within the same HHT implementation.
+
+\resultfigure{reducer}{Two-stage reducer rendered from its STEP solids. The contact enlargement and the response curves focus on the helical stage. The window covers the applied load increase. The displayed 31- and 63-section runs use the same 5~\microsec{} time step.}{fig:reducer}
+
+\subsection{Effect of force enclosures and reuse}
+\label{sec:ablation}
+We compare the fixed native force kernel, the bounded kernel with tight evaluation, and the residual-driven mode with reuse. At 500~\microsec{} over 20 s, the cam's residual-driven mode with reuse records 113 omitted low-force pairs, 692 revalidated exclusions and 119 precision refinements in 40,000 accepted steps. In this batch the tight and adaptive cached bounded runs take 2.07 and 1.96 s. The original direct force computation takes 0.59 s. The three modes have a 4.479~\micron{} displacement RMS error relative to the 62.5~\microsec{} reference. Most of this error is associated with the integration step.
+
+At a 10~\microsec{} step over 2 s, the spur gear's tight and cached bounded variants complete with the same reported trajectory and force errors as the fixed native kernel. The cached run obtains over $3.5\times 10^5$ accepted ray-coordinate enclosures from prior points but also reaches the tighter evaluation on most steps. Its online time is higher than that of the tight bounded mode in the paired ablation. In a separate 0.2 s diagnostic that reaches the first reducer load transient at a 20~\microsec{} internal step, both bounded variants complete all 10,000 steps. The cached version reuses over $9\times10^5$ ray-coordinate enclosures. It also requires 9,987 refinements and takes more time than the tight version in this diagnostic. These effects depend on how often a trial changes the active contacts or yields overlapping residual intervals. The timings show a strong benefit for guided clearance on the hard trim paths and a geometry-dependent cost at matched dynamics accuracy.
+\FloatBarrier

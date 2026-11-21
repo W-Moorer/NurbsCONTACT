@@ -1,0 +1,207 @@
+{
+  "duration_s": 20.0,
+  "reference": "native-62",
+  "repeats": 5,
+  "runs": [
+    {
+      "engine": "NurbsCONTACT",
+      "step_s": 0.001,
+      "online_s": [
+        0.224151406,
+        0.203751117,
+        0.236075656,
+        0.189458814,
+        0.243030029
+      ],
+      "setup_s": 0.145762994,
+      "response": "follower",
+      "position_rms_um": 18.053466754199118,
+      "position_max_um": 82.67690889339485,
+      "force_rms_N": 0.09077810262386157,
+      "force_rms_pct": 2.5676439681957572,
+      "force_peak_error_pct": 0.0237091047426985,
+      "median_online_s": 0.224151406
+    },
+    {
+      "engine": "NurbsCONTACT",
+      "step_s": 0.000125,
+      "online_s": [
+        2.485541502,
+        1.669181999,
+        1.957255742,
+        1.871580982,
+        2.078166006
+      ],
+      "setup_s": 0.08381152,
+      "response": "follower",
+      "position_rms_um": 0.28615761407083645,
+      "position_max_um": 1.4332502303975037,
+      "force_rms_N": 0.0014373198477934859,
+      "force_rms_pct": 0.0406543597066206,
+      "force_peak_error_pct": 0.0007152747109703557,
+      "median_online_s": 1.957255742
+    },
+    {
+      "engine": "NurbsCONTACT",
+      "step_s": 0.00025,
+      "online_s": [
+        1.1590590349999998,
+        0.8613232900000001,
+        0.9588582950000001,
+        0.930321705,
+        0.917062567
+      ],
+      "setup_s": 0.063537616,
+      "response": "follower",
+      "position_rms_um": 1.2018282017111357,
+      "position_max_um": 5.7373439842391125,
+      "force_rms_N": 0.006040999940728291,
+      "force_rms_pct": 0.170868707445365,
+      "force_peak_error_pct": 0.0008146578351141098,
+      "median_online_s": 0.930321705
+    },
+    {
+      "engine": "NurbsCONTACT",
+      "step_s": 0.0005,
+      "online_s": [
+        0.5910504179999999,
+        0.519218762,
+        0.742021586,
+        0.5463720479999999,
+        0.521987651
+      ],
+      "setup_s": 0.07995659699999999,
+      "response": "follower",
+      "position_rms_um": 4.478504747045734,
+      "position_max_um": 20.546656785812996,
+      "force_rms_N": 0.022531131449301557,
+      "force_rms_pct": 0.6372894133085587,
+      "force_peak_error_pct": 0.003909511403638718,
+      "median_online_s": 0.5463720479999999
+    },
+    {
+      "engine": "NurbsCONTACT",
+      "step_s": 6.25e-05,
+      "online_s": [
+        3.740182748,
+        3.378965644,
+        5.155395817,
+        3.706873773,
+        4.2410574400000005
+      ],
+      "setup_s": 0.053480373,
+      "response": "follower",
+      "position_rms_um": 0.0,
+      "position_max_um": 0.0,
+      "force_rms_N": 0.0,
+      "force_rms_pct": 0.0,
+      "force_peak_error_pct": 0.0,
+      "median_online_s": 3.740182748
+    },
+    {
+      "engine": "Drake",
+      "version": "1.58.0",
+      "step_s": 0.001,
+      "online_s": [
+        3.018240562000017,
+        2.643912159000024,
+        2.5519556980000004,
+        3.0300425739999923,
+        3.420510484999994
+      ],
+      "setup_s": 0.00917527000001428,
+      "max_force_law_error_N": 1.4033219031261979e-13,
+      "response": "follower",
+      "position_rms_um": 11.387339901658631,
+      "position_max_um": 55.20127326447046,
+      "force_rms_N": 0.0576149497318651,
+      "force_rms_pct": 1.629629545903724,
+      "force_peak_error_pct": 0.012249403194505397,
+      "median_online_s": 3.018240562000017
+    },
+    {
+      "engine": "Drake",
+      "version": "1.58.0",
+      "step_s": 0.0005,
+      "online_s": [
+        4.125429589000021,
+        3.094378336000034,
+        2.858179500999995,
+        2.9513370599999575,
+        2.9861477629999627
+      ],
+      "setup_s": 0.004309734999992543,
+      "max_force_law_error_N": 1.3944401189291966e-13,
+      "response": "follower",
+      "position_rms_um": 4.506302815885095,
+      "position_max_um": 17.79958019482164,
+      "force_rms_N": 0.022753717012617324,
+      "force_rms_pct": 0.6435852100099204,
+      "force_peak_error_pct": 0.0014592451749873053,
+      "median_online_s": 2.9861477629999627
+    },
+    {
+      "engine": "Drake",
+      "version": "1.58.0",
+      "step_s": 0.00025,
+      "online_s": [
+        5.195894221999993,
+        5.13155913099996,
+        6.04380798599999,
+        5.670642867000026,
+        5.580499100999987
+      ],
+      "setup_s": 0.003825629999994362,
+      "max_force_law_error_N": 1.3944401189291966e-13,
+      "response": "follower",
+      "position_rms_um": 1.357210118190232,
+      "position_max_um": 5.4459856422516,
+      "force_rms_N": 0.006847928816693077,
+      "force_rms_pct": 0.19369256034873417,
+      "force_peak_error_pct": 0.00021443791677091837,
+      "median_online_s": 5.580499100999987
+    },
+    {
+      "engine": "Drake",
+      "version": "1.58.0",
+      "step_s": 0.000125,
+      "online_s": [
+        15.465899029999946,
+        17.413159666000013,
+        12.06463716099995,
+        11.15678051599997,
+        11.328844801999992
+      ],
+      "setup_s": 0.005412968000030105,
+      "max_force_law_error_N": 1.4033219031261979e-13,
+      "response": "follower",
+      "position_rms_um": 0.40244294233609235,
+      "position_max_um": 1.6433097252237239,
+      "force_rms_N": 0.0020304242064457263,
+      "force_rms_pct": 0.057430220679548005,
+      "force_peak_error_pct": 0.00012416023590951567,
+      "median_online_s": 12.06463716099995
+    },
+    {
+      "engine": "Drake",
+      "version": "1.58.0",
+      "step_s": 6.25e-05,
+      "online_s": [
+        21.954247513999974,
+        18.510080482000035,
+        18.549910373999978,
+        16.703547484000012,
+        21.35939844400002
+      ],
+      "setup_s": 0.003774354000029234,
+      "max_force_law_error_N": 1.3944401189291966e-13,
+      "response": "follower",
+      "position_rms_um": 0.1748092825048848,
+      "position_max_um": 0.7891367083054379,
+      "force_rms_N": 0.0008800365874397707,
+      "force_rms_pct": 0.024891692712437796,
+      "force_peak_error_pct": 0.0001555696466174764,
+      "median_online_s": 18.549910373999978
+    }
+  ]
+}

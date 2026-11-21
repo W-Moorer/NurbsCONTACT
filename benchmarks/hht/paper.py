@@ -5,6 +5,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -220,8 +221,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("results", type=Path)
     parser.add_argument("--macros-only", action="store_true")
+    parser.add_argument("--legacy", action="store_true", help="Build the original HHT benchmark paper")
     args = parser.parse_args()
     project = Path(__file__).resolve().parents[2]
+    if args.results.resolve() == project / "results" / "hht" and not (args.macros_only or args.legacy):
+        subprocess.run([sys.executable, str(project / "docs" / "AES" / "build.py")], check=True)
+        return
     source = project / "manuscript"
     summary = json.loads((args.results / "metrics" / "summary.json").read_text(encoding="utf-8"))
     figures = (args.results / "figures").resolve()
@@ -250,7 +255,7 @@ def main():
          f"-outdir={build.as_posix()}", "manuscript.tex"],
         cwd=source, check=True,
     )
-    output = paper_output_path(args.results)
+    output = build / "legacy-manuscript.pdf" if args.results.resolve() == project / "results" / "hht" else paper_output_path(args.results)
     output.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(build / "manuscript.pdf", output)
     print(output)

@@ -22,6 +22,7 @@ using Clock = std::chrono::steady_clock;
 constexpr double mm = .001;
 constexpr double skin = .055;
 constexpr double stiffness = 1.6e8;
+constexpr double minimum_probe_gap = .002;
 constexpr double tip_margin = .12;
 constexpr double tip_transition = .75;
 
@@ -337,8 +338,14 @@ struct Pair {
                     const auto slot = static_cast<std::size_t>((j % 4 + 4) % 4);
                     auto* hint_a = bounded->reuse ? &cached_a[station][slot] : nullptr;
                     auto* hint_b = bounded->reuse ? &cached_b[station][slot] : nullptr;
-                    const auto ra = a.probe_bound(local_a,normal_a,u1,v,station,target,work,hint_a);
-                    const auto rb = b.probe_bound(local_b,normal_b,u2,v,station,target,work,hint_b);
+                    auto ra = a.probe_bound(local_a,normal_a,u1,v,station,target,work,hint_a);
+                    auto rb = b.probe_bound(local_b,normal_b,u2,v,station,target,work,hint_b);
+                    if (ra && rb && bounded->reuse && ((*rb-*ra)*cosine_base).lo <= minimum_probe_gap) {
+                        // A low-weight ray may meet the force budget while its
+                        // bracket is too wide for the independent gap check.
+                        ra = a.probe_bound(local_a,normal_a,u1,v,station,0,work,hint_a);
+                        rb = b.probe_bound(local_b,normal_b,u2,v,station,0,work,hint_b);
+                    }
                     if (ra && rb) {
                         sa = ra->center();
                         sb = rb->center();
@@ -488,7 +495,7 @@ struct Dynamics {
         if (bounded) bounded->target /= static_cast<double>(pairs.size());
         for (std::size_t i=0; i<pairs.size(); ++i) {
             last[i]=pairs[i].evaluate(q[i],q[i+1],time,&f,i,n,nullptr,bounded);
-            if (!last[i].valid || last[i].min_gap < 0.002) {
+            if (!last[i].valid || last[i].min_gap < minimum_probe_gap) {
                 f.value[0]=std::numeric_limits<double>::quiet_NaN();
             }
         }

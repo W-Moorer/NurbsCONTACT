@@ -54,3 +54,29 @@ Use `--aes-fixtures` with the [engine runner](../engines/README.md#reproduce-on-
 The cam includes a regular-polygon support query in addition to the general triangle BVH. Both use the same polygon geometry. The support query selects the extremal side vertex and uses a general mesh search if the projection misses the finite follower. The gear comparisons include a stage-specific polygonal alternative. It discretizes each of the same CAD sections into a piecewise-linear curve and intersects a line-of-action ray by bracketing its transverse zero, without the overhead of traversing a 3D BVH. Its segment count is the number of intervals per axial section. `--series tight-mesh` refines the discrete geometry of both baselines, `--series section-mesh` runs the gear polygonal alternative, and `--series time-check` adds a 2.5 µs native run. `--series bounded` runs the nonlinear force-decision ablation. The case selector can limit a study to any mechanism. `industrial_accuracy.py` merges the resulting folders and audits all completed traces against the converged native references.
 
 The [Drake cam adapter](../engines/drake_cam.py) uses a revolute cylinder and a prismatic half-space, with 12 mm added to the cylinder's contact radius. It preserves the mass, rotational inertia, driven spring-damper relation, follower preload and frictionless force law. It verifies the recorded contact force against the cylinder/plane law along each of Drake's computed trajectories. `engine_cam_accuracy.py` compares this output with the equivalent native cam runs from the same Linux environment.
+
+## Manuscript timing batch
+
+[Paper measurements](../../results/aes/paper-measurements.json) contain the individual times and accuracy audit of the serial batch. [The full industrial ladder](../../results/aes/industrial-windows.csv) retains the original configuration sweeps and their timings. The serial batch controls for other benchmark processes on the workstation. Its medians supply the selected cam, spur, and reducer costs in the manuscript.
+
+```powershell
+$work = 'build/aes-benchmark'
+$timings = "$work/final-timing"
+$hht = 'build/occt/Release/nc_hht.exe'
+$gears = 'build/occt/Release/nc_gears.exe'
+$models = 'results/gears/models'
+$cam = "$work/industrial-cam2/cam-models"
+& $hht run cam brep 24 0.000125 20 $cam "$timings/cam-native" 3
+& $hht run cam mesh-support 8192 0.000125 20 $cam "$timings/cam-polygon" 3
+& $hht run cam mesh-support 512 0.00025 20 $cam "$timings/cam-polygon-relaxed" 3
+& $gears run spur $models 0 5e-6 2 "$timings/spur-native" 3 31 4
+& $gears run spur $models -1024 5e-6 2 "$timings/spur-polyline" 3 31 4
+& $gears run reducer $models 0 1e-5 3 "$timings/reducer-native" 2 31 2
+& $gears run reducer $models -256 1e-5 3 "$timings/reducer-polyline" 2 31 2
+& $gears run reducer $models 0 2e-5 0.2 "$work/reducer-fixed-ablation" 1 31 1 fixed
+& $gears run reducer $models 0 2e-5 0.2 "$work/reducer-bounded-exact-ablation" 1 31 1 bounded-exact
+& $gears run reducer $models 0 2e-5 0.2 "$work/reducer-bounded-cache-guardfix" 1 31 1 bounded-cache
+python benchmarks/aes/paper_measurements.py $work results/aes/paper-measurements.json
+```
+
+The bounded diagnostic covers the first load rise. It includes the rule that a candidate interval must be tightened if the force budget allows it but its gap interval overlaps the gear clearance floor.

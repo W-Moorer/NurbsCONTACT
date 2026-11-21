@@ -52,7 +52,7 @@ The `nc_contact` runner loads STEP components, generalized coordinates, material
 - [Experiment protocol and reproduction](results/hht/README.md)
 - [Validated numerical summary](results/hht/metrics/summary.json)
 - [Rigid-body comparison with native MuJoCo and Drake](benchmarks/engines/README.md)
-- [LaTeX source](manuscript/manuscript.tex) and [final paper](docs/manuscript.pdf)
+- [AES manuscript source](docs/AES/Residual-Aware-CAD-Contact.tex) and [compiled paper](docs/manuscript.pdf)
 
 ## Industrial transmission and bearing benchmarks
 
