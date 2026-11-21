@@ -1,0 +1,48 @@
+{
+  "pitch_stiffness_N_m": 137580102.43812168,
+  "tooth_damping_ratio": 0.1,
+  "cases": {
+    "b": {
+      "rms": 232.26389374902215,
+      "data_rms": 195.0282837956688,
+      "test_peak": 462.2981376,
+      "prediction_peak": 672.0971120113248,
+      "test_peak_to_peak": 462.2981376,
+      "prediction_peak_to_peak": 672.0971120113248,
+      "peak_angle_error_deg": 1.0,
+      "loss": {
+        "measured_zero_span_deg": [
+          19.25,
+          22.0
+        ],
+        "model_zero_span_deg": [
+          22.5,
+          23.0
+        ],
+        "model_internal_zero_span_deg": [
+          22.5,
+          24.0
+        ],
+        "model_internal_zero_intervals_deg": [
+          [
+            22.5,
+            24.0
+          ]
+        ],
+        "zero_overlap_fraction": 0.0,
+        "min_force_in_measured_zero_N": 40.51289845203651,
+        "max_force_in_measured_zero_N": 604.1938190062884
+      }
+    },
+    "c": {
+      "rms": 345.125924282642,
+      "data_rms": 678.4588579842358,
+      "test_peak": 1078.26087,
+      "prediction_peak": 1205.0531347607434,
+      "test_peak_to_peak": 1078.26087,
+      "prediction_peak_to_peak": 1205.0531347607434,
+      "peak_angle_error_deg": 2.875
+    }
+  },
+  "constraint": "NASA DANST 5821 Hz highest frequency in the frozen single-pair pitch linearization"
+}

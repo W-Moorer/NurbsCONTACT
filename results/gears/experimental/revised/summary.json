@@ -1,0 +1,637 @@
+{
+  "settings": {
+    "pitch_stiffness_override_N_m": 0.0,
+    "tooth_damping_ratio": 0.1,
+    "duration_s": 0.48,
+    "nominal_step_s": 1e-06
+  },
+  "statics": {
+    "b": {
+      "brep": {
+        "max_force_balance_error_N": 1.9807146145467414e-08,
+        "te_peak_to_peak_um": 9.932536081996652,
+        "double_loaded_fraction": 0.044642857142857144,
+        "min_gap_um": 52.975406217414324,
+        "pitch_stiffness_N_m": 172821907.30727077
+      },
+      "mesh": {
+        "max_force_balance_error_N": 1.2830128071072977e-08,
+        "te_peak_to_peak_um": 10.411866920730965,
+        "double_loaded_fraction": 0.044642857142857144,
+        "min_gap_um": 52.96719583540344,
+        "pitch_stiffness_N_m": 172821907.30727077,
+        "te_delta_to_brep_um_rms": 0.5496983198706128
+      }
+    },
+    "a": {
+      "brep": {
+        "max_force_balance_error_N": 2.0539800971164368e-08,
+        "te_peak_to_peak_um": 8.758761885455883,
+        "double_loaded_fraction": 0.12946428571428573,
+        "min_gap_um": 49.27869797592314,
+        "pitch_stiffness_N_m": 172821907.30727077
+      },
+      "mesh": {
+        "max_force_balance_error_N": 2.037666035903385e-08,
+        "te_peak_to_peak_um": 9.283561382471781,
+        "double_loaded_fraction": 0.125,
+        "min_gap_um": 49.278697975844835,
+        "pitch_stiffness_N_m": 172821907.30727077,
+        "te_delta_to_brep_um_rms": 0.5419961767992495
+      }
+    },
+    "d": {
+      "brep": {
+        "max_force_balance_error_N": 1.9635081116575748e-08,
+        "te_peak_to_peak_um": 6.9773078483194695,
+        "double_loaded_fraction": 0.25,
+        "min_gap_um": 44.10290134255055,
+        "pitch_stiffness_N_m": 172821907.30727077
+      },
+      "mesh": {
+        "max_force_balance_error_N": 1.9530034478520975e-08,
+        "te_peak_to_peak_um": 7.492467629690516,
+        "double_loaded_fraction": 0.25,
+        "min_gap_um": 44.102901342539134,
+        "pitch_stiffness_N_m": 172821907.30727077,
+        "te_delta_to_brep_um_rms": 0.5361960096208898
+      }
+    }
+  },
+  "conditions": {
+    "a": {
+      "rpm": 2000,
+      "input_torque_Nm": 33.731899999999996,
+      "legacy_brep": {
+        "rms": 63.05519010288768,
+        "data_rms": 638.3975186653014,
+        "test_peak": 908.8713021,
+        "prediction_peak": 826.2134297,
+        "test_peak_to_peak": 908.8713021,
+        "prediction_peak_to_peak": 826.2134297,
+        "peak_angle_error_deg": 4.625
+      },
+      "legacy_mesh": {
+        "rms": 66.7465333349465,
+        "data_rms": 638.3975186653014,
+        "test_peak": 908.8713021,
+        "prediction_peak": 854.7333668,
+        "test_peak_to_peak": 908.8713021,
+        "prediction_peak_to_peak": 854.7333668,
+        "peak_angle_error_deg": 1.25
+      },
+      "inertia_only": {
+        "rms": 67.81116113797471,
+        "data_rms": 638.3975186653014,
+        "test_peak": 908.8713021,
+        "prediction_peak": 867.3390565712764,
+        "test_peak_to_peak": 908.8713021,
+        "prediction_peak_to_peak": 867.3390565712764,
+        "peak_angle_error_deg": 4.25,
+        "min_gap_um": 40.08881688234034,
+        "late_wave_delta_N_rms": 0.01233096685239935,
+        "work": {
+          "rpm": 2000.0,
+          "input_torque_Nm": 33.731899999999996,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.48,
+          "steps": 480000.0,
+          "accepted": 480000.0,
+          "subdivisions": 0.0,
+          "wall_s": 4.1371881,
+          "setup_s": 0.0120375,
+          "stiffness_N_m": 60000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0,
+          "probe_calls": 3099394.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 1.8298624673840358e-07
+        }
+      },
+      "brep": {
+        "rms": 125.44885226198386,
+        "data_rms": 638.3975186653014,
+        "test_peak": 908.8713021,
+        "prediction_peak": 972.3014537887401,
+        "test_peak_to_peak": 908.8713021,
+        "prediction_peak_to_peak": 972.3014537887401,
+        "peak_angle_error_deg": 5.25,
+        "min_gap_um": 48.62722123455026,
+        "late_wave_delta_N_rms": 0.06909058516113559,
+        "work": {
+          "rpm": 2000.0,
+          "input_torque_Nm": 33.731899999999996,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.48,
+          "steps": 480000.0,
+          "accepted": 480001.0,
+          "subdivisions": 1.0,
+          "wall_s": 3.9690258,
+          "setup_s": 0.0177054,
+          "stiffness_N_m": 172821907.30727077,
+          "damping_ratio": 0.1,
+          "deflection_mm": 0.0,
+          "probe_calls": 3096048.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 1.1272535738182654e-08
+        }
+      },
+      "mesh": {
+        "rms": 128.5525377280991,
+        "data_rms": 638.3975186653014,
+        "test_peak": 908.8713021,
+        "prediction_peak": 982.2753065643602,
+        "test_peak_to_peak": 908.8713021,
+        "prediction_peak_to_peak": 982.2753065643602,
+        "peak_angle_error_deg": 3.375,
+        "min_gap_um": 48.90539607331057,
+        "late_wave_delta_N_rms": 0.1380772360908269,
+        "work": {
+          "rpm": 2000.0,
+          "input_torque_Nm": 33.731899999999996,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.48,
+          "steps": 480000.0,
+          "accepted": 480000.0,
+          "subdivisions": 0.0,
+          "wall_s": 17.7695211,
+          "setup_s": 8.0056739,
+          "stiffness_N_m": 172821907.30727077,
+          "damping_ratio": 0.1,
+          "deflection_mm": 0.0015625,
+          "probe_calls": 3095908.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 49950379.0,
+          "max_residual_Nm": 1.1116751680306791e-07
+        },
+        "delta_to_brep_N_rms": 43.13705845851222
+      }
+    },
+    "b": {
+      "rpm": 4000,
+      "input_torque_Nm": 11.4832,
+      "legacy_brep": {
+        "rms": 146.7120722084789,
+        "data_rms": 195.0282837956688,
+        "test_peak": 462.2981376,
+        "prediction_peak": 348.1102387,
+        "test_peak_to_peak": 462.2981376,
+        "prediction_peak_to_peak": 348.1102387,
+        "peak_angle_error_deg": 1.0,
+        "loss": {
+          "measured_zero_span_deg": [
+            19.25,
+            22.0
+          ],
+          "model_zero_span_deg": [],
+          "zero_overlap_fraction": 0.0,
+          "min_force_in_measured_zero_N": 247.3378352,
+          "max_force_in_measured_zero_N": 263.5625526
+        }
+      },
+      "legacy_mesh": {
+        "rms": 150.00087728017934,
+        "data_rms": 195.0282837956688,
+        "test_peak": 462.2981376,
+        "prediction_peak": 362.3631872,
+        "test_peak_to_peak": 462.2981376,
+        "prediction_peak_to_peak": 362.3631872,
+        "peak_angle_error_deg": -5.375,
+        "loss": {
+          "measured_zero_span_deg": [
+            19.25,
+            22.0
+          ],
+          "model_zero_span_deg": [],
+          "zero_overlap_fraction": 0.0,
+          "min_force_in_measured_zero_N": 144.8808939,
+          "max_force_in_measured_zero_N": 362.3631872
+        }
+      },
+      "inertia_only": {
+        "rms": 173.70844550170338,
+        "data_rms": 195.0282837956688,
+        "test_peak": 462.2981376,
+        "prediction_peak": 464.8963489704488,
+        "test_peak_to_peak": 462.2981376,
+        "prediction_peak_to_peak": 464.8963489704488,
+        "peak_angle_error_deg": 0.75,
+        "min_gap_um": 45.97603282357785,
+        "late_wave_delta_N_rms": 0.0245347469642793,
+        "work": {
+          "rpm": 4000.0,
+          "input_torque_Nm": 11.4832,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.48,
+          "steps": 480000.0,
+          "accepted": 480000.0,
+          "subdivisions": 0.0,
+          "wall_s": 6.2774643,
+          "setup_s": 0.0129066,
+          "stiffness_N_m": 60000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0,
+          "probe_calls": 3101702.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 7.431417052838896e-07
+        },
+        "loss": {
+          "measured_zero_span_deg": [
+            19.25,
+            22.0
+          ],
+          "model_zero_span_deg": [],
+          "zero_overlap_fraction": 0.0,
+          "min_force_in_measured_zero_N": 79.53570243363016,
+          "max_force_in_measured_zero_N": 406.30012891044095
+        }
+      },
+      "brep": {
+        "rms": 226.44916154577407,
+        "data_rms": 195.0282837956688,
+        "test_peak": 462.2981376,
+        "prediction_peak": 611.2664909181295,
+        "test_peak_to_peak": 462.2981376,
+        "prediction_peak_to_peak": 611.2664909181295,
+        "peak_angle_error_deg": 1.125,
+        "min_gap_um": 50.92345766041809,
+        "late_wave_delta_N_rms": 0.1414648330562328,
+        "work": {
+          "rpm": 4000.0,
+          "input_torque_Nm": 11.4832,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.48,
+          "steps": 480000.0,
+          "accepted": 480000.0,
+          "subdivisions": 0.0,
+          "wall_s": 9.7336787,
+          "setup_s": 0.0524848,
+          "stiffness_N_m": 172821907.30727077,
+          "damping_ratio": 0.1,
+          "deflection_mm": 0.0,
+          "probe_calls": 3096192.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 1.3639184132108184e-07
+        },
+        "loss": {
+          "measured_zero_span_deg": [
+            19.25,
+            22.0
+          ],
+          "model_zero_span_deg": [],
+          "zero_overlap_fraction": 0.0,
+          "min_force_in_measured_zero_N": 112.41036630726565,
+          "max_force_in_measured_zero_N": 500.3572680089366
+        }
+      },
+      "mesh": {
+        "rms": 230.43020069203084,
+        "data_rms": 195.0282837956688,
+        "test_peak": 462.2981376,
+        "prediction_peak": 698.0675989680791,
+        "test_peak_to_peak": 462.2981376,
+        "prediction_peak_to_peak": 698.0675989680791,
+        "peak_angle_error_deg": 1.125,
+        "min_gap_um": 50.436664638439765,
+        "late_wave_delta_N_rms": 0.3397695570637659,
+        "work": {
+          "rpm": 4000.0,
+          "input_torque_Nm": 11.4832,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.48,
+          "steps": 480000.0,
+          "accepted": 480004.0,
+          "subdivisions": 4.0,
+          "wall_s": 18.0092033,
+          "setup_s": 11.1071544,
+          "stiffness_N_m": 172821907.30727077,
+          "damping_ratio": 0.1,
+          "deflection_mm": 0.0015625,
+          "probe_calls": 3096570.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 49971072.0,
+          "max_residual_Nm": 4.3652910830527247e-07
+        },
+        "delta_to_brep_N_rms": 42.90016338757807,
+        "loss": {
+          "measured_zero_span_deg": [
+            19.25,
+            22.0
+          ],
+          "model_zero_span_deg": [],
+          "zero_overlap_fraction": 0.0,
+          "min_force_in_measured_zero_N": 58.7582385523779,
+          "max_force_in_measured_zero_N": 564.876086958874
+        }
+      },
+      "brep_fine_step": {
+        "rms": 226.60629144356844,
+        "data_rms": 195.0282837956688,
+        "test_peak": 462.2981376,
+        "prediction_peak": 611.7436258368664,
+        "test_peak_to_peak": 462.2981376,
+        "prediction_peak_to_peak": 611.7436258368664,
+        "peak_angle_error_deg": 1.125,
+        "min_gap_um": 50.92763236082792,
+        "late_wave_delta_N_rms": 0.1441275748140898,
+        "work": {
+          "rpm": 4000.0,
+          "input_torque_Nm": 11.4832,
+          "axial_stations": 1.0,
+          "dt_s": 5e-07,
+          "duration_s": 0.48,
+          "steps": 960000.0,
+          "accepted": 960000.0,
+          "subdivisions": 0.0,
+          "wall_s": 8.2000989,
+          "setup_s": 0.0158853,
+          "stiffness_N_m": 172821907.30727077,
+          "damping_ratio": 0.1,
+          "deflection_mm": 0.0,
+          "probe_calls": 6191716.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 3.337941817393997e-08
+        },
+        "delta_to_brep_N_rms": 1.2985153904062783,
+        "loss": {
+          "measured_zero_span_deg": [
+            19.25,
+            22.0
+          ],
+          "model_zero_span_deg": [],
+          "zero_overlap_fraction": 0.0,
+          "min_force_in_measured_zero_N": 112.30120841405702,
+          "max_force_in_measured_zero_N": 500.52547380694375
+        }
+      }
+    },
+    "c": {
+      "rpm": 6000,
+      "input_torque_Nm": 33.731899999999996,
+      "legacy_brep": {
+        "rms": 148.787899844557,
+        "data_rms": 678.4588579842358,
+        "test_peak": 1078.26087,
+        "prediction_peak": 866.2611468,
+        "test_peak_to_peak": 1078.26087,
+        "prediction_peak_to_peak": 866.2611468,
+        "peak_angle_error_deg": 1.5
+      },
+      "legacy_mesh": {
+        "rms": 151.6779926702045,
+        "data_rms": 678.4588579842358,
+        "test_peak": 1078.26087,
+        "prediction_peak": 920.1329415,
+        "test_peak_to_peak": 1078.26087,
+        "prediction_peak_to_peak": 920.1329415,
+        "peak_angle_error_deg": -2.125
+      },
+      "inertia_only": {
+        "rms": 164.65731774156862,
+        "data_rms": 678.4588579842358,
+        "test_peak": 1078.26087,
+        "prediction_peak": 904.9572086469947,
+        "test_peak_to_peak": 1078.26087,
+        "prediction_peak_to_peak": 904.9572086469947,
+        "peak_angle_error_deg": 1.125,
+        "min_gap_um": 39.04231377584039,
+        "late_wave_delta_N_rms": 0.012561904692311839,
+        "work": {
+          "rpm": 6000.0,
+          "input_torque_Nm": 33.731899999999996,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.48,
+          "steps": 480000.0,
+          "accepted": 480000.0,
+          "subdivisions": 0.0,
+          "wall_s": 3.6620994,
+          "setup_s": 0.0101233,
+          "stiffness_N_m": 60000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0,
+          "probe_calls": 3144198.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 5.900155896076953e-07
+        }
+      },
+      "brep": {
+        "rms": 332.55488180965847,
+        "data_rms": 678.4588579842358,
+        "test_peak": 1078.26087,
+        "prediction_peak": 1158.0515110722663,
+        "test_peak_to_peak": 1078.26087,
+        "prediction_peak_to_peak": 1158.0515110722663,
+        "peak_angle_error_deg": -2.875,
+        "min_gap_um": 47.59599257782487,
+        "late_wave_delta_N_rms": 0.6328305595978803,
+        "work": {
+          "rpm": 6000.0,
+          "input_torque_Nm": 33.731899999999996,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.48,
+          "steps": 480000.0,
+          "accepted": 480005.0,
+          "subdivisions": 5.0,
+          "wall_s": 3.4096364,
+          "setup_s": 0.0157873,
+          "stiffness_N_m": 172821907.30727077,
+          "damping_ratio": 0.1,
+          "deflection_mm": 0.0,
+          "probe_calls": 3096628.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 2.494289416121731e-07
+        }
+      },
+      "mesh": {
+        "rms": 331.11562102198315,
+        "data_rms": 678.4588579842358,
+        "test_peak": 1078.26087,
+        "prediction_peak": 1221.175207488514,
+        "test_peak_to_peak": 1078.26087,
+        "prediction_peak_to_peak": 1221.175207488514,
+        "peak_angle_error_deg": -2.5,
+        "min_gap_um": 47.170289993758495,
+        "late_wave_delta_N_rms": 0.9400535866884187,
+        "work": {
+          "rpm": 6000.0,
+          "input_torque_Nm": 33.731899999999996,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.48,
+          "steps": 480000.0,
+          "accepted": 480002.0,
+          "subdivisions": 2.0,
+          "wall_s": 15.5599121,
+          "setup_s": 9.0319888,
+          "stiffness_N_m": 172821907.30727077,
+          "damping_ratio": 0.1,
+          "deflection_mm": 0.0015625,
+          "probe_calls": 3101728.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 50073451.0,
+          "max_residual_Nm": 9.430383443032042e-07
+        },
+        "delta_to_brep_N_rms": 53.57278783244782
+      }
+    },
+    "d": {
+      "rpm": 6000,
+      "input_torque_Nm": 67.46379999999999,
+      "legacy_brep": {
+        "rms": 90.76815336942047,
+        "data_rms": 1258.4932820425918,
+        "test_peak": 1785.163779,
+        "prediction_peak": 1708.847334,
+        "test_peak_to_peak": 1661.9185228,
+        "prediction_peak_to_peak": 1420.1463441,
+        "peak_angle_error_deg": 0.625
+      },
+      "legacy_mesh": {
+        "rms": 96.44796680075952,
+        "data_rms": 1258.4932820425918,
+        "test_peak": 1785.163779,
+        "prediction_peak": 1700.616243,
+        "test_peak_to_peak": 1661.9185228,
+        "prediction_peak_to_peak": 1381.9626988,
+        "peak_angle_error_deg": 0.375
+      },
+      "inertia_only": {
+        "rms": 90.65786747163422,
+        "data_rms": 1258.4932820425918,
+        "test_peak": 1785.163779,
+        "prediction_peak": 1702.9348341682892,
+        "test_peak_to_peak": 1661.9185228,
+        "prediction_peak_to_peak": 1364.6404472582985,
+        "peak_angle_error_deg": -2.375,
+        "min_gap_um": 26.728949038003734,
+        "late_wave_delta_N_rms": 0.012219469831233789,
+        "work": {
+          "rpm": 6000.0,
+          "input_torque_Nm": 67.46379999999999,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.48,
+          "steps": 480000.0,
+          "accepted": 480000.0,
+          "subdivisions": 0.0,
+          "wall_s": 3.5498848,
+          "setup_s": 0.0097403,
+          "stiffness_N_m": 60000000.0,
+          "damping_ratio": 0.2,
+          "deflection_mm": 0.0,
+          "probe_calls": 3148786.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 3.2470801125672466e-07
+        }
+      },
+      "brep": {
+        "rms": 260.0708222295673,
+        "data_rms": 1258.4932820425918,
+        "test_peak": 1785.163779,
+        "prediction_peak": 1689.79398914397,
+        "test_peak_to_peak": 1661.9185228,
+        "prediction_peak_to_peak": 1689.79398914397,
+        "peak_angle_error_deg": -2.25,
+        "min_gap_um": 44.96319898165836,
+        "late_wave_delta_N_rms": 0.7186934235693169,
+        "work": {
+          "rpm": 6000.0,
+          "input_torque_Nm": 67.46379999999999,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.48,
+          "steps": 480000.0,
+          "accepted": 480004.0,
+          "subdivisions": 4.0,
+          "wall_s": 3.7630636,
+          "setup_s": 0.0165596,
+          "stiffness_N_m": 172821907.30727077,
+          "damping_ratio": 0.1,
+          "deflection_mm": 0.0,
+          "probe_calls": 3096380.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 1.0809750145002184e-07
+        }
+      },
+      "mesh": {
+        "rms": 261.95572934544765,
+        "data_rms": 1258.4932820425918,
+        "test_peak": 1785.163779,
+        "prediction_peak": 1778.1330626245522,
+        "test_peak_to_peak": 1661.9185228,
+        "prediction_peak_to_peak": 1778.1330626245522,
+        "peak_angle_error_deg": -2.25,
+        "min_gap_um": 44.654686560835714,
+        "late_wave_delta_N_rms": 1.0795495502977182,
+        "work": {
+          "rpm": 6000.0,
+          "input_torque_Nm": 67.46379999999999,
+          "axial_stations": 1.0,
+          "dt_s": 1e-06,
+          "duration_s": 0.48,
+          "steps": 480000.0,
+          "accepted": 480004.0,
+          "subdivisions": 4.0,
+          "wall_s": 17.4783287,
+          "setup_s": 12.618833,
+          "stiffness_N_m": 172821907.30727077,
+          "damping_ratio": 0.1,
+          "deflection_mm": 0.0015625,
+          "probe_calls": 3098192.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 49990170.0,
+          "max_residual_Nm": 1.1003197229741968e-06
+        },
+        "delta_to_brep_N_rms": 55.25518131251117
+      },
+      "brep_fine_step": {
+        "rms": 260.38042098140403,
+        "data_rms": 1258.4932820425918,
+        "test_peak": 1785.163779,
+        "prediction_peak": 1690.4732726579407,
+        "test_peak_to_peak": 1661.9185228,
+        "prediction_peak_to_peak": 1690.4732726579407,
+        "peak_angle_error_deg": -2.25,
+        "min_gap_um": 44.96526545740085,
+        "late_wave_delta_N_rms": 0.7158684087086243,
+        "work": {
+          "rpm": 6000.0,
+          "input_torque_Nm": 67.46379999999999,
+          "axial_stations": 1.0,
+          "dt_s": 5e-07,
+          "duration_s": 0.48,
+          "steps": 960000.0,
+          "accepted": 960002.0,
+          "subdivisions": 2.0,
+          "wall_s": 7.3704067,
+          "setup_s": 0.0126423,
+          "stiffness_N_m": 172821907.30727077,
+          "damping_ratio": 0.1,
+          "deflection_mm": 0.0,
+          "probe_calls": 6191204.0,
+          "probe_misses": 0.0,
+          "triangles_tested": 0.0,
+          "max_residual_Nm": 1.4830769501372743e-08
+        },
+        "delta_to_brep_N_rms": 1.7776758667260442
+      }
+    }
+  }
+}

@@ -1,0 +1,203 @@
+{
+  "target_plateau_deg": [
+    16.0,
+    25.0
+  ],
+  "torque_N_m": 33.731899999999996,
+  "source": "NASA TM-103232 Fig. 7(c) DANST static line, approximate endpoints",
+  "threshold_fraction_of_static_load": 0.99,
+  "trials": [
+    {
+      "pitch_stiffness_N_m": 50000000.0,
+      "plateau_deg": [
+        16.504474502976674,
+        24.24923100063426
+      ],
+      "endpoint_rms_deg": 0.6395891707034272
+    },
+    {
+      "pitch_stiffness_N_m": 52500000.0,
+      "plateau_deg": [
+        16.38906667909662,
+        24.363026522832644
+      ],
+      "endpoint_rms_deg": 0.5277821953220585
+    },
+    {
+      "pitch_stiffness_N_m": 55000000.0,
+      "plateau_deg": [
+        16.331061399019312,
+        24.47687461295835
+      ],
+      "endpoint_rms_deg": 0.4377566792683459
+    },
+    {
+      "pitch_stiffness_N_m": 57500000.0,
+      "plateau_deg": [
+        16.21583939477668,
+        24.533586735824382
+      ],
+      "endpoint_rms_deg": 0.3634060933284676
+    },
+    {
+      "pitch_stiffness_N_m": 60000000.0,
+      "plateau_deg": [
+        16.100621992022223,
+        24.647518424278037
+      ],
+      "endpoint_rms_deg": 0.25919881028079444
+    },
+    {
+      "pitch_stiffness_N_m": 62500000.0,
+      "plateau_deg": [
+        16.04276474900351,
+        24.7042952431831
+      ],
+      "endpoint_rms_deg": 0.21127011970635473
+    },
+    {
+      "pitch_stiffness_N_m": 65000000.0,
+      "plateau_deg": [
+        15.927668057158373,
+        24.818291730729523
+      ],
+      "endpoint_rms_deg": 0.1382928144852733
+    },
+    {
+      "pitch_stiffness_N_m": 67500000.0,
+      "plateau_deg": [
+        15.86991097461186,
+        24.87512799234092
+      ],
+      "endpoint_rms_deg": 0.12750720141083205
+    },
+    {
+      "pitch_stiffness_N_m": 70000000.0,
+      "plateau_deg": [
+        15.812151492948324,
+        24.93198617518029
+      ],
+      "endpoint_rms_deg": 0.14126737409633905
+    },
+    {
+      "pitch_stiffness_N_m": 72500000.0,
+      "plateau_deg": [
+        15.75443903246486,
+        24.98886360966516
+      ],
+      "endpoint_rms_deg": 0.17381629377950114
+    },
+    {
+      "pitch_stiffness_N_m": 75000000.0,
+      "plateau_deg": [
+        15.696771094800303,
+        25.04575790274344
+      ],
+      "endpoint_rms_deg": 0.21684274787514227
+    },
+    {
+      "pitch_stiffness_N_m": 77500000.0,
+      "plateau_deg": [
+        15.639143680466574,
+        25.1026669619071
+      ],
+      "endpoint_rms_deg": 0.26529020752229415
+    },
+    {
+      "pitch_stiffness_N_m": 80000000.0,
+      "plateau_deg": [
+        15.581552585169394,
+        25.159588912043056
+      ],
+      "endpoint_rms_deg": 0.3166755909645574
+    },
+    {
+      "pitch_stiffness_N_m": 82500000.0,
+      "plateau_deg": [
+        15.523993892112708,
+        25.15928315640132
+      ],
+      "endpoint_rms_deg": 0.35493164036133434
+    },
+    {
+      "pitch_stiffness_N_m": 85000000.0,
+      "plateau_deg": [
+        15.466464071344493,
+        25.216298679057495
+      ],
+      "endpoint_rms_deg": 0.40709071822402876
+    },
+    {
+      "pitch_stiffness_N_m": 87500000.0,
+      "plateau_deg": [
+        15.40889239700928,
+        25.27326784504379
+      ],
+      "endpoint_rms_deg": 0.46047992000103066
+    },
+    {
+      "pitch_stiffness_N_m": 90000000.0,
+      "plateau_deg": [
+        15.40860823899805,
+        25.27298378658861
+      ],
+      "endpoint_rms_deg": 0.46057809474683176
+    },
+    {
+      "pitch_stiffness_N_m": 92500000.0,
+      "plateau_deg": [
+        15.351145576590278,
+        25.33005669530703
+      ],
+      "endpoint_rms_deg": 0.5147569741612827
+    },
+    {
+      "pitch_stiffness_N_m": 95000000.0,
+      "plateau_deg": [
+        15.350830470860425,
+        25.38704486680323
+      ],
+      "endpoint_rms_deg": 0.5344271730002264
+    },
+    {
+      "pitch_stiffness_N_m": 97500000.0,
+      "plateau_deg": [
+        15.293402421259875,
+        25.386858539238137
+      ],
+      "endpoint_rms_deg": 0.5696225362741856
+    },
+    {
+      "pitch_stiffness_N_m": 100000000.0,
+      "plateau_deg": [
+        15.23593840869885,
+        25.443890083733166
+      ],
+      "endpoint_rms_deg": 0.624831385950755
+    },
+    {
+      "pitch_stiffness_N_m": 102500000.0,
+      "plateau_deg": [
+        15.235719842523814,
+        25.443715808231335
+      ],
+      "endpoint_rms_deg": 0.6249031435295437
+    },
+    {
+      "pitch_stiffness_N_m": 105000000.0,
+      "plateau_deg": [
+        15.178287253578903,
+        25.500767565534037
+      ],
+      "endpoint_rms_deg": 0.6804336824121027
+    }
+  ],
+  "selected": {
+    "pitch_stiffness_N_m": 67500000.0,
+    "plateau_deg": [
+      15.86991097461186,
+      24.87512799234092
+    ],
+    "endpoint_rms_deg": 0.12750720141083205
+  }
+}

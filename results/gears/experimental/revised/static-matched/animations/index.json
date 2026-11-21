@@ -1,0 +1,18 @@
+[
+  {
+    "view": "isometric",
+    "path": "nasa-b-isometric.mp4",
+    "frames": 96,
+    "fps": 24,
+    "first_sample_s": 0.42000099999568086,
+    "last_sample_s": 0.4221409999956236
+  },
+  {
+    "view": "face",
+    "path": "nasa-b-face.mp4",
+    "frames": 96,
+    "fps": 24,
+    "first_sample_s": 0.42000099999568086,
+    "last_sample_s": 0.4221409999956236
+  }
+]

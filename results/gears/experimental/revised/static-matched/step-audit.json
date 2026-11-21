@@ -1,0 +1,28 @@
+{
+  "case": "NASA Fig. 7(b), revised static-calibrated B-rep",
+  "dt_s": 2.5e-07,
+  "median_output_interval_s": 9.999999999177334e-07,
+  "rmse_to_original_1us_N": 1.331961532414245,
+  "rmse_to_0p5us_N": 0.9702365979994394,
+  "rmse_to_nasa_N": 203.247804353233,
+  "loss": {
+    "measured_zero_span_deg": [
+      19.25,
+      22.0
+    ],
+    "model_zero_span_deg": [],
+    "model_internal_zero_span_deg": [],
+    "model_internal_zero_intervals_deg": [],
+    "zero_overlap_fraction": 0.0,
+    "min_force_in_measured_zero_N": 125.82864286795427,
+    "max_force_in_measured_zero_N": 456.4857902158995
+  },
+  "raw_selected_tooth_samples": 51409,
+  "raw_selected_unique_tooth_ids": 449,
+  "raw_selected_min_force_N": 125.21460008708335,
+  "raw_selected_zero_count": 0,
+  "raw_internal_zero_count": 0,
+  "elapsed_wall_s": 59.8707349,
+  "accepted": 1920000,
+  "probe_misses": 0
+}
