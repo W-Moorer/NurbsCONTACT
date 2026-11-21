@@ -57,6 +57,9 @@ public:
     // Output points are expressed in A's frame. The cutoff merely limits search.
     std::optional<PointPair> closest_within(const TriangleBvh& b, Pose b_in_a, double cutoff,
                                             TriangleHint* hint, TriangleStatistics& statistics) const;
+    // Numerical Euclidean proximity test over an affine translation of B.
+    bool swept_within(const TriangleBvh& b, Vec start, Vec end, double cutoff,
+                      TriangleHint& hint, TriangleStatistics& statistics) const;
     // Parameter of the first two-sided hit and, if requested, its unnormalized face normal.
     std::optional<double> ray_first(Vec origin, Vec direction, double maximum,
                                     TriangleStatistics& statistics, Vec* hit_normal = nullptr) const;

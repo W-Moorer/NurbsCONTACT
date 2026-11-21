@@ -120,6 +120,45 @@ double size(Box a) {
     return std::max({extent[0], extent[1], extent[2]});
 }
 
+Box translate_sweep(Box box, Vec start, Vec end) {
+    for (std::size_t i = 0; i < 3; ++i) {
+        box.lo[i] = down(box.lo[i] + std::min(start[i], end[i]));
+        box.hi[i] = up(box.hi[i] + std::max(start[i], end[i]));
+    }
+    return box;
+}
+
+bool prism_within(const Triangle& a, const Triangle& b, Vec start, Vec end, double cutoff) {
+    const Triangle bottom{add(b[0], start), add(b[1], start), add(b[2], start)};
+    const Triangle top{add(b[0], end), add(b[1], end), add(b[2], end)};
+    if (closest_triangles(a, bottom).distance <= cutoff) return true;
+    if (start == end) return false;
+    if (closest_triangles(a, top).distance <= cutoff) return true;
+
+    // A triangle strictly inside the prism need not meet any boundary face.
+    const Vec u = sub(bottom[1], bottom[0]);
+    const Vec v = sub(bottom[2], bottom[0]);
+    const Vec w = sub(end, start);
+    const double volume = dot3(u, cross3(v, w));
+    if (volume != 0) {
+        for (Vec vertex : a) {
+            const Vec p = sub(vertex, bottom[0]);
+            const double r = dot3(p, cross3(v, w)) / volume;
+            const double s = dot3(u, cross3(p, w)) / volume;
+            const double t = dot3(u, cross3(v, p)) / volume;
+            if (r >= 0 && s >= 0 && r + s <= 1 && t >= 0 && t <= 1) return true;
+        }
+    }
+    // The end triangles and six side triangles also cover the whole swept
+    // set when the translation is in the plane of B.
+    for (std::size_t i = 0; i < 3; ++i) {
+        const std::size_t j = (i + 1) % 3;
+        if (closest_triangles(a, {bottom[i], bottom[j], top[j]}).distance <= cutoff ||
+            closest_triangles(a, {bottom[i], top[j], top[i]}).distance <= cutoff) return true;
+    }
+    return false;
+}
+
 }  // namespace
 
 Pose relative_pose(Pose a, Pose b) {
@@ -229,6 +268,39 @@ std::optional<PointPair> TriangleBvh::closest_within(const TriangleBvh& b, Pose 
     }
     if (hint && result) *hint = best;
     return result;
+}
+
+bool TriangleBvh::swept_within(const TriangleBvh& b, Vec start, Vec end, double cutoff,
+                               TriangleHint& hint, TriangleStatistics& statistics) const {
+    if (!(cutoff >= 0) || !std::isfinite(cutoff)) throw std::invalid_argument("invalid swept proximity cutoff");
+    const double limit = up(cutoff * cutoff);
+    const auto test = [&](std::size_t i, std::size_t j) {
+        if (separation(triangle_boxes_[i], translate_sweep(b.triangle_boxes_[j], start, end)) > limit) return false;
+        ++statistics.triangles;
+        if (!prism_within(triangles_[i], b.triangles_[j], start, end, cutoff)) return false;
+        hint = {i, j, true};
+        return true;
+    };
+    const auto visit = [&](const auto& self, std::size_t i, std::size_t j) -> bool {
+        const Node& a_node = nodes_[i];
+        const Node& b_node = b.nodes_[j];
+        if (separation(a_node.box, translate_sweep(b_node.box, start, end)) > limit) return false;
+        ++statistics.nodes;
+        if (a_node.leaf() && b_node.leaf()) {
+            for (std::size_t a_id = a_node.begin; a_id < a_node.end; ++a_id) {
+                for (std::size_t b_id = b_node.begin; b_id < b_node.end; ++b_id) {
+                    if (test(ids_[a_id], b.ids_[b_id])) return true;
+                }
+            }
+            return false;
+        }
+        if (b_node.leaf() || (!a_node.leaf() && size(a_node.box) >= size(b_node.box))) {
+            return self(self, a_node.first, j) || self(self, a_node.second, j);
+        }
+        return self(self, i, b_node.first) || self(self, i, b_node.second);
+    };
+    return (hint.valid && hint.a < triangles_.size() && hint.b < b.triangles_.size() && test(hint.a, hint.b)) ||
+        visit(visit, 0, 0);
 }
 
 std::optional<double> TriangleBvh::ray_first(Vec origin, Vec direction, double maximum,

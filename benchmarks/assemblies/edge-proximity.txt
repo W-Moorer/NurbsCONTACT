@@ -1,0 +1,8 @@
+# Same STEP plate and disk as nc_clearance_followup audit, with two intermediate gaps.
+# name A B start-x start-y start-z velocity-x velocity-y velocity-z clearance
+trim-edge-entry 1 2 .7265625 0 .375 0 0 -1 .03125
+edge-entry-100nm 1 2 .71885 0 .375 0 0 -1 .03125
+narrow-edge-entry 1 2 .71875001490116119 0 .375 0 0 -1 .03125
+exact-edge-graze 1 2 .71875 0 .375 0 0 -1 .03125
+near-edge-miss 1 2 .71874988079071045 0 .375 0 0 -1 .03125
+edge-miss-100nm 1 2 .71865 0 .375 0 0 -1 .03125

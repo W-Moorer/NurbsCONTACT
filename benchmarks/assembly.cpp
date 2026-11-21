@@ -1,5 +1,6 @@
 #include "nurbscontact/occt.hpp"
 #include "nurbscontact/query.hpp"
+#include "clearance_baselines.hpp"
 #include "step_triangles.hpp"
 
 #include <BRepAdaptor_Surface.hxx>
@@ -22,9 +23,11 @@
 
 #include <chrono>
 #include <fstream>
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <queue>
+#include <span>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -196,6 +199,14 @@ Reference reference_check(const Component& a, const Component& b, const Motion& 
     return result;
 }
 
+struct ComparisonMethod {
+    const char* name;
+    double deflection{};
+    double prep_us{};
+    std::size_t triangles{};
+    std::function<nc::bench::ClearanceTiming()> run;
+};
+
 struct Scenario {
     std::string name;
     std::size_t a{};
@@ -229,6 +240,136 @@ const char* status(SweepStatus value) {
     if (value == SweepStatus::clear) return "clear";
     if (value == SweepStatus::hit) return "hit";
     return "unresolved";
+}
+
+void compare(const std::vector<Component>& components, const char* config, const char* filename, int repeats,
+             bool refine_mesh = false) {
+    using Clock = std::chrono::steady_clock;
+    using nc::bench::ClearanceTiming;
+    using nc::bench::distance_advancement;
+    using nc::bench::mesh_ccd;
+    using nc::dynamics::TriangleBvh;
+    constexpr Options settings{2e-4, 5e-4, 200'000};
+    constexpr std::array standard_deflections{.05, .0125, .003125};
+    constexpr std::array edge_deflections{.05, .0125, .003125, .000390625, .000048828125, .000006103515625};
+    const std::span<const double> deflections = refine_mesh ? std::span<const double>(edge_deflections)
+                                                            : std::span<const double>(standard_deflections);
+    constexpr std::size_t max_calls = 256;
+    constexpr double numerical_margin = 1e-6;
+    if (repeats < 1) throw std::invalid_argument("repetition count must be positive");
+    const auto elapsed = [](Clock::time_point start) {
+        return std::chrono::duration<double, std::micro>(Clock::now() - start).count();
+    };
+    const auto cases = read_cases(config, components.size());
+    std::ofstream out(filename);
+    out.exceptions(std::ios::badbit | std::ios::failbit);
+    out << std::setprecision(17) << "scene,method,deflection_mm,repeat,clearance_mm,time_tolerance,status,"
+        "lower_time,upper_time,query_us,prepare_us,calls,nodes,primitives,triangles,"
+        "reference_status,reference_lower,reference_upper\n";
+    for (const Scenario& scene : cases) {
+        const Component& ca = components[scene.a - 1];
+        const Component& cb = components[scene.b - 1];
+        const auto reference = reference_check(ca, cb, scene.motion, scene.clearance);
+        const double speed = norm(exact(scene.motion.velocity)).hi;
+
+        auto start = Clock::now();
+        const PreparedModel a{adapt_occt(ca.shape)};
+        const PreparedModel b{adapt_occt(cb.shape)};
+        const double native_prep = elapsed(start);
+
+        start = Clock::now();
+        const TopoDS_Shape fa = boundary(ca.shape);
+        const TopoDS_Shape fb = boundary(cb.shape);
+        BRepExtrema_DistShapeShape extrema;
+        extrema.SetDeflection(1e-9);
+        extrema.LoadS1(fa);
+        const double occt_prep = elapsed(start);
+        std::vector<ComparisonMethod> methods;
+        methods.push_back({"native-sweep", 0, native_prep, 0, [&] {
+            const auto answer = sweep(a, b, scene.motion, {0, 1}, scene.clearance, settings);
+            return ClearanceTiming{answer.status, answer.safe_prefix, answer.witness_time, 1,
+                                   answer.statistics.visited};
+        }});
+        const auto cad_advance = [&](std::optional<double> candidate) {
+            std::size_t nodes = 0;
+            const auto sample = [&](double t, double span) {
+                if (nodes >= settings.max_nodes) return DistanceResult{};
+                Options spatial = settings;
+                spatial.distance_tolerance = std::max(settings.distance_tolerance, speed * span / 8);
+                spatial.max_nodes = std::min<std::size_t>(8192, settings.max_nodes - nodes);
+                DistanceResult result = distance(a, b, scene.motion, t, spatial);
+                nodes += result.statistics.visited;
+                return result;
+            };
+            return distance_advancement(sample, speed, scene.clearance, settings.time_tolerance, max_calls, candidate);
+        };
+        methods.push_back({"cad-ca-bounds", 0, native_prep, 0, [&] {
+            return cad_advance(std::nullopt);
+        }});
+        methods.push_back({"occt-ca", 0, occt_prep, 0, [&] {
+            const auto sample = [&](double t, double) {
+                const Vec x = nc::dynamics::add(scene.motion.translation, nc::dynamics::scale(scene.motion.velocity, t));
+                gp_Trsf shift;
+                shift.SetTranslation(gp_Vec{x[0], x[1], x[2]});
+                extrema.LoadS2(fb.Moved(TopLoc_Location{shift}));
+                if (!extrema.Perform() || !extrema.IsDone()) return DistanceResult{};
+                const double d = extrema.Value();
+                DistanceResult result;
+                result.lower = down(d - numerical_margin);
+                result.upper = up(d + numerical_margin);
+                return result;
+            };
+            return distance_advancement(sample, speed, scene.clearance, settings.time_tolerance, max_calls);
+        }});
+
+        struct MeshPair { TriangleBvh a; TriangleBvh b; };
+        std::vector<MeshPair> meshes;
+        meshes.reserve(deflections.size());
+        const auto make_mesh = [](const TopoDS_Shape& shape, double h) {
+            BRepBuilderAPI_Copy copy(shape, true, false);
+            return TriangleBvh{nc::bench::step_triangles(copy.Shape(), h), 2};
+        };
+        for (const double h : deflections) {
+            start = Clock::now();
+            meshes.push_back({make_mesh(ca.shape, h), make_mesh(cb.shape, h)});
+            const double mesh_prep = elapsed(start);
+            const auto count = meshes.back().a.triangles().size() + meshes.back().b.triangles().size();
+            const auto mesh_query = [&, index = meshes.size() - 1] {
+                const auto& mesh = meshes[index];
+                return mesh_ccd(mesh.a, mesh.b, scene.motion, scene.clearance, settings.time_tolerance);
+            };
+            methods.push_back({"mesh-bvh-ccd", h, mesh_prep, count, mesh_query});
+            if (h == standard_deflections.back()) {
+                methods.push_back({"mesh-ccd-cad-bounds", h, mesh_prep + native_prep, count, [&, mesh_query] {
+                    const auto prediction = mesh_query();
+                    auto answer = cad_advance(prediction.upper);
+                    answer.calls += prediction.calls;
+                    answer.primitives = prediction.primitives;
+                    return answer;
+                }});
+            }
+        }
+        for (auto& method : methods) method.run();
+        for (int i = 0; i < repeats; ++i) {
+            for (std::size_t m = 0; m < methods.size(); ++m) {
+                auto& method = methods[(m + i) % methods.size()];
+                start = Clock::now();
+                const auto answer = method.run();
+                const double query_us = elapsed(start);
+                out << scene.name << ',' << method.name << ',' << method.deflection << ',' << i << ','
+                    << scene.clearance << ',' << settings.time_tolerance << ',' << status(answer.status) << ','
+                    << answer.lower << ',';
+                if (answer.upper) out << *answer.upper;
+                out << ',' << query_us << ',' << method.prep_us << ',' << answer.calls << ',' << answer.nodes << ','
+                    << answer.primitives << ',' << method.triangles << ',' << status(reference.status) << ','
+                    << reference.lower << ',';
+                if (reference.upper) out << *reference.upper;
+                out << '\n';
+            }
+        }
+        out.flush();
+        std::cout << scene.name << " continuous baselines measured\n" << std::flush;
+    }
 }
 
 void measure_clearance(
@@ -371,11 +512,20 @@ int main(int argc, char** argv) {
                     std::string_view{argv[1]} == "measure-all");
         } else if (argc == 5 && std::string_view{argv[1]} == "clearance") {
             measure_clearance(read_components(argv[2]), argv[3], argv[4]);
+        } else if (argc == 6 && std::string_view{argv[1]} == "compare") {
+            compare(read_components(argv[2]), argv[3], argv[4], std::stoi(argv[5]));
+        } else if ((argc == 7 || (argc == 8 && std::string_view{argv[7]} == "--refine-mesh")) &&
+                   std::string_view{argv[1]} == "compare-pair") {
+            const std::vector<Component> parts{{read_step_shape(argv[2]), {}, {}},
+                                               {read_step_shape(argv[3]), {}, {}}};
+            compare(parts, argv[4], argv[5], std::stoi(argv[6]), argc == 8);
         } else {
             std::cerr << "Usage: nc_assembly_bench catalog ASSEMBLY.step OUTPUT.csv\n"
                          "       nc_assembly_bench measure ASSEMBLY.step CASES.txt OUTPUT.csv REPEATS\n"
                          "       nc_assembly_bench measure-all ASSEMBLY.step CASES.txt OUTPUT.csv REPEATS\n"
-                         "       nc_assembly_bench clearance ASSEMBLY.step CASES.txt OUTPUT.csv\n";
+                         "       nc_assembly_bench clearance ASSEMBLY.step CASES.txt OUTPUT.csv\n"
+                         "       nc_assembly_bench compare ASSEMBLY.step CASES.txt OUTPUT.csv REPEATS\n"
+                         "       nc_assembly_bench compare-pair A.step B.step CASES.txt OUTPUT.csv REPEATS [--refine-mesh]\n";
             return 2;
         }
     } catch (const Standard_Failure& e) {

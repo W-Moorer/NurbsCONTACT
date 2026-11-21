@@ -108,6 +108,15 @@ void check_triangle_bvh() {
     TriangleStatistics counts;
     const auto hit=one.closest_within(two,{},0,nullptr,counts);
     require(hit && hit->distance==0,"zero cutoff missed a triangle crossing");
+    const Triangle interior{{{.25,.25,1},{.5,.25,1},{.25,.5,1}}};
+    const TriangleBvh insert({interior});
+    TriangleHint swept_hint;
+    require(insert.swept_within(one, {}, {0,0,2}, 0, swept_hint, counts) &&
+            !insert.swept_within(one, {}, {0,0,.8}, .19, swept_hint, counts) &&
+            insert.swept_within(one, {}, {0,0,.8}, .21, swept_hint, counts),
+            "swept triangle missed interior containment or used the wrong clearance");
+    require(one.swept_within(one, {-4,0,0}, {4,0,0}, 0, swept_hint, counts),
+            "coplanar swept triangle missed a pass-through");
     const Triangle raised{{{0,0,1},{0,2,1},{2,0,1}}};
     const TriangleBvh ray_model({plate,raised},1);
     Vec raised_normal{},plate_normal{};

@@ -1,0 +1,5 @@
+# Same generated step parts as nc_clearance_followup counterbore.
+# name A B start-x start-y start-z velocity-x velocity-y velocity-z clearance
+throat-pass 1 2 .375 0 3 0 0 -4 .03125
+shoulder-entry 1 2 .4140625 0 3 0 0 -4 .03125
+mouth-entry 1 2 .9765625 0 3 0 0 -4 .03125
