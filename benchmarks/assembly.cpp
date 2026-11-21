@@ -243,7 +243,7 @@ const char* status(SweepStatus value) {
 }
 
 void compare(const std::vector<Component>& components, const char* config, const char* filename, int repeats,
-             bool refine_mesh = false) {
+             bool refine_mesh = false, bool use_numerical_reference = true) {
     using Clock = std::chrono::steady_clock;
     using nc::bench::ClearanceTiming;
     using nc::bench::distance_advancement;
@@ -269,7 +269,8 @@ void compare(const std::vector<Component>& components, const char* config, const
     for (const Scenario& scene : cases) {
         const Component& ca = components[scene.a - 1];
         const Component& cb = components[scene.b - 1];
-        const auto reference = reference_check(ca, cb, scene.motion, scene.clearance);
+        std::optional<Reference> reference;
+        if (use_numerical_reference) reference = reference_check(ca, cb, scene.motion, scene.clearance);
         const double speed = norm(exact(scene.motion.velocity)).hi;
 
         auto start = Clock::now();
@@ -361,9 +362,13 @@ void compare(const std::vector<Component>& components, const char* config, const
                     << answer.lower << ',';
                 if (answer.upper) out << *answer.upper;
                 out << ',' << query_us << ',' << method.prep_us << ',' << answer.calls << ',' << answer.nodes << ','
-                    << answer.primitives << ',' << method.triangles << ',' << status(reference.status) << ','
-                    << reference.lower << ',';
-                if (reference.upper) out << *reference.upper;
+                    << answer.primitives << ',' << method.triangles << ',';
+                if (reference) {
+                    out << status(reference->status) << ',' << reference->lower << ',';
+                    if (reference->upper) out << *reference->upper;
+                } else {
+                    out << "not-run,,";
+                }
                 out << '\n';
             }
         }
@@ -514,18 +519,26 @@ int main(int argc, char** argv) {
             measure_clearance(read_components(argv[2]), argv[3], argv[4]);
         } else if (argc == 6 && std::string_view{argv[1]} == "compare") {
             compare(read_components(argv[2]), argv[3], argv[4], std::stoi(argv[5]));
-        } else if ((argc == 7 || (argc == 8 && std::string_view{argv[7]} == "--refine-mesh")) &&
-                   std::string_view{argv[1]} == "compare-pair") {
+        } else if (argc >= 7 && argc <= 9 && std::string_view{argv[1]} == "compare-pair") {
+            bool refine_mesh = false;
+            bool use_numerical_reference = true;
+            for (int i = 7; i < argc; ++i) {
+                const std::string_view option{argv[i]};
+                if (option == "--refine-mesh") refine_mesh = true;
+                else if (option == "--external-reference") use_numerical_reference = false;
+                else throw std::invalid_argument("unknown compare-pair option");
+            }
             const std::vector<Component> parts{{read_step_shape(argv[2]), {}, {}},
                                                {read_step_shape(argv[3]), {}, {}}};
-            compare(parts, argv[4], argv[5], std::stoi(argv[6]), argc == 8);
+            compare(parts, argv[4], argv[5], std::stoi(argv[6]), refine_mesh, use_numerical_reference);
         } else {
             std::cerr << "Usage: nc_assembly_bench catalog ASSEMBLY.step OUTPUT.csv\n"
                          "       nc_assembly_bench measure ASSEMBLY.step CASES.txt OUTPUT.csv REPEATS\n"
                          "       nc_assembly_bench measure-all ASSEMBLY.step CASES.txt OUTPUT.csv REPEATS\n"
                          "       nc_assembly_bench clearance ASSEMBLY.step CASES.txt OUTPUT.csv\n"
                          "       nc_assembly_bench compare ASSEMBLY.step CASES.txt OUTPUT.csv REPEATS\n"
-                         "       nc_assembly_bench compare-pair A.step B.step CASES.txt OUTPUT.csv REPEATS [--refine-mesh]\n";
+                         "       nc_assembly_bench compare-pair A.step B.step CASES.txt OUTPUT.csv REPEATS"
+                         " [--refine-mesh] [--external-reference]\n";
             return 2;
         }
     } catch (const Standard_Failure& e) {

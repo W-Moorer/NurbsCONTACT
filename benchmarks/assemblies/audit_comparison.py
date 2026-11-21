@@ -84,8 +84,9 @@ def outcome(row, analytic):
     return result, agreement, width, ref_kind, ref_status
 
 
-def summarize(paths, repeats):
-    analytic = analytic_references()
+def summarize(paths, repeats, analytic=None):
+    if analytic is None:
+        analytic = analytic_references()
     groups = defaultdict(list)
     all_methods = defaultdict(set)
     for path in paths:

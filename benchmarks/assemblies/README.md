@@ -84,6 +84,8 @@ The mesh-assisted CAD method cuts the two eccentric wheel bolt query medians fro
 
 In the analytic edge-entry case with minimum separation 100 nm below the threshold, the native sweep completes in 1.68 ms. The 3.125 µm mesh brackets an event too early. Refining the mesh to 48.828 nm gives the quickest compatible mesh bracket of the tested meshes at 4.29 ms. In the exact grazing case the native sweep excludes earlier times and leaves the upper end unresolved.
 
+The [threshold scan](threshold-scan/README.md) measures correctness, model preparation and online cost as two analytic STEP fixtures approach the threshold from both sides.
+
 ### Reproduce the continuous comparison
 
 The commands below assume an OCCT Release build and the runtime environment from the [root instructions](../../README.md).
