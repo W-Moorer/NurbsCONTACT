@@ -5,7 +5,6 @@ import json
 import os
 import shutil
 import subprocess
-from statistics import median
 from pathlib import Path
 
 
@@ -102,171 +101,42 @@ def production_rows(summary):
     return rows
 
 
-def external_validation_macros(root):
-    slider_file = root / "clearance" / "summary.json"
-    if not slider_file.exists():
-        return {}
-    slider = json.loads(slider_file.read_text(encoding="utf-8"))
-    comparison = {run["backend"]: run for run in slider["runs"]
-                  if run["rpm"] == 200 and run["clearance_mm"] == .25}
-    brep = comparison["brep"]
-    half = comparison["brep-half-step"]
-    mesh = comparison["mesh5um"]
-    matched = {}
-    for run in slider["runs"]:
-        if "wall_s" in run:
-            matched.setdefault((run["rpm"], run["clearance_mm"]), {})[run["backend"]] = run["wall_s"]
-    time_ratios = [group["brep"]/group["mesh5um"] for group in matched.values()
-                   if {"brep", "mesh5um"} <= group.keys()]
-    macros = {
-        "ExternalSliderPosition": f"{brep['position_rmse_mm']:.2f}",
-        "ExternalSliderRmse": f"{brep['uniform_phase_acceleration_rmse_m_s2']:.2f}",
-        "ExternalSliderIdealRmse": f"{brep['ideal_joint_acceleration_rmse_m_s2']:.2f}",
-        "ExternalSliderHalfRmse": f"{half['uniform_phase_acceleration_rmse_m_s2']:.2f}",
-        "ExternalSliderMeasuredPhase": f"{brep['measured_first_negative_peak_angle_deg']:.1f}",
-        "ExternalSliderPredictedPhase": f"{brep['simulated_first_negative_peak_angle_deg']:.1f}",
-        "ExternalSliderHalfPhase": f"{half['simulated_first_negative_peak_angle_deg']:.1f}",
-        "ExternalSliderBrepGeometry": scientific(brep["max_geometric_gap_error_um"]),
-        "ExternalSliderMeshGeometry": f"{mesh['max_geometric_gap_error_um']:.2f}",
-        "ExternalSliderSpeedRatio": f"{mesh['wall_s']/brep['wall_s']:.2f}",
-        "ExternalSliderMedianTimeRatio": f"{median(time_ratios):.2f}",
-        "ExternalSliderTimingCases": str(len(time_ratios)),
-    }
-    if "extended_run" in slider:
-        extended = slider["extended_run"]
-        macros["ExternalSliderExtendedSteps"] = f"{int(extended['accepted']):,}"
-        macros["ExternalSliderExtendedPhase"] = f"{extended['simulated_first_negative_peak_angle_deg']:.1f}"
-    revised_file = slider_file.parent / "revised" / "summary.json"
-    if revised_file.is_file():
-        revision = json.loads(revised_file.read_text(encoding="utf-8"))
-        comparison = {(run["rpm"], run["clearance_mm"], run["variant"]): run for run in revision["runs"]}
-        mounted = comparison[200, .25, "mounted"]
-        candidate = comparison[200, .25, "revised"]
-        transferred = comparison[150, .25, "revised"]
-        macros.update({
-            "ExternalDampedBefore": f"{mounted['raw_sample_rmse_m_s2']:.2f}",
-            "ExternalDampedAfter": f"{candidate['raw_sample_rmse_m_s2']:.2f}",
-            "ExternalDampedQuietBefore": f"{mounted['quiet_window_rmse_m_s2']:.2f}",
-            "ExternalDampedQuietAfter": f"{candidate['quiet_window_rmse_m_s2']:.2f}",
-            "ExternalDampedPeakBefore": f"{mounted['quiet_window_max_abs_acceleration_m_s2']:.1f}",
-            "ExternalDampedPeakAfter": f"{candidate['quiet_window_max_abs_acceleration_m_s2']:.1f}",
-            "ExternalDampedDepthBefore": f"{-mounted['minimum_gap_um']:.2f}",
-            "ExternalDampedDepthAfter": f"{-candidate['minimum_gap_um']:.2f}",
-            "ExternalDampedHalfStep": f"{revision['half_step_waveform_delta_rmse_m_s2']:.4f}",
-            "ExternalDampedIndependent": f"{transferred['raw_sample_rmse_m_s2']:.2f}",
-        })
-    flex_file = slider_file.parent / "flexibility" / "summary.json"
-    if flex_file.is_file():
-        report = json.loads(flex_file.read_text(encoding="utf-8"))
-        by_case = {row["case"]:row for row in report["runs"]}
-        control, flexible = by_case["rigid"], by_case["flex"]
-        macros.update({
-            "FlexQuietControl": f"{control['quiet_window_rmse_m_s2']:.2f}",
-            "FlexQuietModel": f"{flexible['quiet_window_rmse_m_s2']:.2f}",
-            "FlexPeakControl": f"{control['quiet_window_max_abs_acceleration_m_s2']:.2f}",
-            "FlexPeakModel": f"{flexible['quiet_window_max_abs_acceleration_m_s2']:.2f}",
-            "FlexDepth": f"{-flexible['minimum_gap_um']:.2f}",
-            "FlexObserved": f"{flexible['measured_peak_m_s2']:.1f}",
-            "FlexPredicted": f"{flexible['impact_peaks'][0]['at_measured_phase_m_s2']:.1f}",
-            "FlexRefinement": f"{report['half_step_common_grid_delta_m_s2']:.4f}",
-        })
-    spatial_file = slider_file.parent / "spatial" / "summary.json"
-    if spatial_file.is_file():
-        report = json.loads(spatial_file.read_text(encoding="utf-8"))
-        spatial = report["refinements"]
-        a10 = spatial["10us"]["revolutions"][0]["sensor_at_measured_phase_m_s2"]
-        a1 = spatial["1us"]["revolutions"][0]["sensor_at_measured_phase_m_s2"]
-        audit = json.loads(spatial_file.with_name("reference-audit.json").read_text(encoding="utf-8"))["panels"]
-        mounts = {r["case"]:r for r in report["measurement_mount_screening"]}
-        near_phase = report["measurement_mount_refinement"]["revolutions"][0]
-        larger_peak = mounts["mount-70hz"]["revolutions"][0]
-        macros.update({
-            "SpatialMeasured": f"{spatial['10us']['measured_peak_m_s2']:.2f}",
-            "SpatialPredicted": f"{a10:.2f}",
-            "SpatialQuiet": f"{spatial['10us']['quiet_rmse_m_s2']:.2f}",
-            "SpatialOneMicrosecondDelta": f"{abs(a10-a1):.4f}",
-            "SpatialFigFiveBound": f"{audit['5d-clearance-experiment']['compatibility'][1]['necessary_peak_displacement_mm']:.3f}",
-            "SpatialFigSixBound": f"{audit['6b-clearance-experiment']['compatibility'][1]['necessary_peak_displacement_mm']:.3f}",
-            "SpatialPlanarBound": f"{audit['5d-clearance-experiment']['compatibility'][1]['rigid_planar_clearance_bound_mm']:.3f}",
-            "SpatialPositionBound": f"{audit['5d-clearance-experiment']['compatibility'][1]['necessary_difference_from_published_position_mm']:.3f}",
-            "SpatialMountPhase": f"{near_phase['window_min_phase_deg']:.2f}",
-            "SpatialMountPeak": f"{near_phase['window_min_m_s2']:.2f}",
-            "SpatialLargeMountPeak": f"{larger_peak['window_min_m_s2']:.2f}",
-            "SpatialLargeMountQuiet": f"{mounts['mount-70hz']['quiet_rmse_m_s2']:.2f}",
-            "SpatialTransferLow": f"{report['held_out']['150rpm-0.25mm']['raw_rmse_m_s2']:.2f}",
-            "SpatialTransferBig": f"{report['held_out']['200rpm-0.50mm']['raw_rmse_m_s2']:.2f}",
-        })
-    impact_file = slider_file.parent / "impact-laws" / "summary.json"
-    if impact_file.is_file():
-        report = json.loads(impact_file.read_text(encoding="utf-8"))
-        measured = report["published_curves"]["figure6b"]
-        original = report["published_curves"]["figure11d"]["first_half_minimum"]
-        rigid, mount = report["refinement"]
-        event = mount["revolutions"][0]
-        screening = {row["case"]: row for row in report["screening"]}
-        spatial_ln, spatial_exact = screening["spatial-ln"], screening["spatial-exact"]
-        low, large = report["held_out"]
-        macros.update({
-            "IncidentLNBounce": f"{report['isolated_rebound'][0]['measured_rebound_ratio']:.3f}",
-            "IncidentRigidPhase": f"{rigid['first_half_minimum_phase_deg']:.2f}",
-            "IncidentRigidPeak": f"{rigid['first_half_minimum_m_s2']:.2f}",
-            "IncidentRigidQuietCoarse": f"{screening['rigid-ln']['quiet_rmse_m_s2']:.2f}",
-            "IncidentRigidQuietFine": f"{rigid['quiet_rmse_m_s2']:.2f}",
-            "IncidentOriginalPhase": f"{original['phase_deg']:.2f}",
-            "IncidentOriginalPeak": f"{original['acceleration_m_s2']:.2f}",
-            "IncidentMountPhase": f"{event['window_min_phase_deg']:.2f}",
-            "IncidentMountPeak": f"{event['window_min_m_s2']:.2f}",
-            "IncidentMountLoad": f"{event['min_load_N']:.2f}",
-            "IncidentMeasuredWidth": f"{measured['impact_half_prominence_width_deg']:.2f}",
-            "IncidentMountWidth": f"{mount['trough_widths_deg'][0]:.2f}",
-            "IncidentSpatialQuiet": f"{spatial_ln['quiet_rmse_m_s2']:.2f}",
-            "IncidentExactQuiet": f"{spatial_exact['quiet_rmse_m_s2']:.2f}",
-            "IncidentTransferLow": f"{low['raw_rmse_m_s2']:.2f}",
-            "IncidentTransferLarge": f"{large['raw_rmse_m_s2']:.2f}",
-        })
-    bearing_file = slider_file.parent / "auxiliary-bearings" / "summary.json"
-    if bearing_file.is_file():
-        report = json.loads(bearing_file.read_text(encoding="utf-8"))
-        coarse = {row["case"]: row for row in report["screening"]}
-        fine = report["refinement"]
-        event = fine["revolutions"][0]
-        low, large = report["held_out"]
-        open_fraction = max(row["all_sections_open_fraction"] for row in fine["revolutions"])
-        macros.update({
-            "BearingFinePhase": f"{event['window_min_phase_deg']:.2f}",
-            "BearingFinePeak": f"{event['window_min_m_s2']:.2f}",
-            "BearingFineWidth": f"{fine['trough_widths_deg'][0]:.2f}" if fine["trough_widths_deg"][0] else r"\textemdash",
-            "BearingFineLoad": f"{event['min_load_N']:.2f}",
-            "BearingFineOpen": f"{100*open_fraction:.2f}",
-            "BearingFineQuiet": f"{fine['quiet_rmse_m_s2']:.2f}",
-            "BearingQuietDelta": f"{abs(coarse['both']['quiet_rmse_m_s2']-fine['quiet_rmse_m_s2']):.5f}",
-            "BearingRigidBound": f"{fine['rigid_planar_bound_25_to_85_deg_mm']:.3f}",
-            "BearingTransferLow": f"{low['raw_rmse_m_s2']:.2f}",
-            "BearingTransferLarge": f"{large['raw_rmse_m_s2']:.2f}",
-        })
-    drive_file = slider_file.parent / "drive-inertia" / "summary.json"
-    if drive_file.is_file():
-        report = json.loads(drive_file.read_text(encoding="utf-8"))
-        audit = json.loads(drive_file.with_name("speed-audit.json").read_text(encoding="utf-8"))
-        bound = "rigid_clearance_0p264mm_lower_bound_fraction"
-        drive = report["refinement"]
-        event = drive["revolutions"][0]
-        worst = max(row["max_speed_deviation_fraction"] for row in (*report["screening"],drive))
-        low, large = report["held_out"]
-        macros.update({
-            "DriveSpeedLower": f"{drive['encoder_speed_rpm'][0]:.2f}",
-            "DriveSpeedUpper": f"{drive['encoder_speed_rpm'][1]:.2f}",
-            "DriveMaxDeviation": f"{100*worst:.2f}",
-            "DriveBoundFigSix": f"{100*audit['panels']['6b-clearance-experiment'][bound]:.2f}",
-            "DriveBoundFigFive": f"{100*audit['panels']['5d-clearance-experiment'][bound]:.2f}",
-            "DrivePhase": f"{event['window_min_phase_deg']:.2f}",
-            "DrivePeak": f"{event['window_min_m_s2']:.2f}",
-            "DriveLoad": f"{event['min_load_N']:.2f}",
-            "DriveQuiet": f"{drive['quiet_rmse_m_s2']:.2f}",
-            "DriveTransferLow": f"{low['raw_rmse_m_s2']:.2f}",
-            "DriveTransferLarge": f"{large['raw_rmse_m_s2']:.2f}",
-        })
-    return macros
+def engine_benchmark_macros(root, source):
+    summary_file = root / "summary.json"
+    if not summary_file.is_file():
+        return []
+    report = json.loads(summary_file.read_text(encoding="utf-8"))
+    engines = report["engines"]
+    figure = Path(os.path.relpath((root/"engine-comparison.pdf").resolve(),source))
+    mappings = [
+        ("nurbs", "HHT", "STEP/HHT"),
+        ("mujoco", "implicit", "MuJoCo implicit"),
+        ("mujoco", "RK4", "MuJoCo RK4"),
+        ("drake", "runge_kutta3", "Drake RK3"),
+    ]
+    peak = max(row["maximum_force_law_residual_N"] for engine in engines.values()
+               for row in engine["runs"])
+    commands = [
+        rf"\newcommand{{\EngineFigurePath}}{{\detokenize{{{figure.as_posix()}}}}}",
+        rf"\newcommand{{\EngineMuJoCoVersion}}{{{engines['mujoco']['version']}}}",
+        rf"\newcommand{{\EngineDrakeVersion}}{{{engines['drake']['version']}}}",
+        rf"\newcommand{{\EngineForceResidual}}{{{scientific(peak)}}}",
+    ]
+    errors = []
+    times = []
+    for engine, method, name in mappings:
+        by_case = {row["case"]:row for row in engines[engine]["runs"]
+                   if row["integrator"]==method and row["step_s"]==.001}
+        plane, spheres = by_case["plane"], by_case["spheres"]
+        errors.append(
+            f"  {name} & {1000*plane['position_rms_mm']:.3f} & {1000*spheres['position_rms_mm']:.3f} & "
+            rf"{plane['force_rms_N']:.6f} & {spheres['force_rms_N']:.6f} \\"
+        )
+        times.append(rf"  {name} & {1e6*plane['median_integrate_s']:.1f} & {1e6*spheres['median_integrate_s']:.1f} \\")
+    commands.extend([r"\newcommand{\EngineBenchmarkRows}{%", *errors, "}"])
+    if report["timings_share_platform"]:
+        commands.extend([r"\newcommand{\EngineTimingRows}{%", *times, "}"])
+    return commands
 
 
 def paper_output_path(results: Path) -> Path:
@@ -274,24 +144,6 @@ def paper_output_path(results: Path) -> Path:
     if results.resolve() == project / "results" / "hht":
         return project / "docs" / "manuscript.pdf"
     return results / "paper" / "manuscript.pdf"
-
-
-def nasa_selected_macros(root):
-    report_file = root / "summary.json"
-    if not report_file.is_file() or not (root / "figures" / "nasa-single-tooth-selected.pdf").is_file():
-        return []
-    report = json.loads(report_file.read_text(encoding="utf-8"))
-    comparisons = report["comparisons"]
-    rows = [r"\newcommand{\NasaSelectedRows}{%"]
-    for panel in "acd":
-        case = comparisons[f"nasa-{panel}"]
-        cad = case["brep"]["error"]
-        mesh = case["mesh"]["error"]
-        role = "Calibration" if panel == "a" else "Held out"
-        rows.append(f"7({panel}) & {case['rpm']:.0f} & {case['input_torque_Nm']:.2f} & "
-                    f"{cad['rms']:.1f} & {mesh['rms']:.1f} & {role} " + r"\\")
-    rows.append("}")
-    return rows
 
 
 def clearance_followup_macros(root):
@@ -384,9 +236,7 @@ def main():
     ]
     for name, value in macro_values(summary).items():
         lines.append(rf"\newcommand{{\{name}}}{{{value}}}")
-    for name, value in external_validation_macros(args.results.parent / "contact_validation").items():
-        lines.append(rf"\newcommand{{\{name}}}{{{value}}}")
-    lines.extend(nasa_selected_macros(project / "results" / "gears" / "experimental"))
+    lines.extend(engine_benchmark_macros(args.results.parent / "engine-comparison", source))
     lines.extend(clearance_followup_macros(project / "benchmarks" / "clearance-followup"))
     lines.extend([r"\newcommand{\PerformanceRows}{%", *table_rows(summary), "}"])
     lines.extend([r"\newcommand{\ProductionRows}{%", *production_rows(summary), "}"])

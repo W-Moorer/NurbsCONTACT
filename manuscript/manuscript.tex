@@ -37,7 +37,7 @@ An eccentric pin can approach a bore rim between two poses that are both safe. A
 
 We use two complementary exclusions. A directional bound encloses the scalar projection of each moving support point under exact fixed-axis motion. A radial and axial bound for supported face types uses the original trim to verify an empty disk and reject times in which the moving part stays in that void. The search keeps surviving time intervals through parameter subdivision. A feasible point pair on the trimmed surfaces supplies an independent upper bound on the first entry time.
 
-Our contributions are an outward-rounded projection bound for the prescribed curved motion, a trim-dependent circular-void bound with a strict separation example against whole-face convex enclosures, and a first-entry certificate with an explicit unresolved outcome. We check these constructions on generated STEP cases with analytic references and on original component pairs from published assemblies. The HHT-$\alpha$ experiments provide a downstream comparison under shared dynamics settings.
+Our contributions are an outward-rounded projection bound for the prescribed curved motion, a trim-dependent circular-void bound with a strict separation example against whole-face convex enclosures, and a first-entry certificate with an explicit unresolved outcome. We check these constructions on generated STEP cases with analytic references and on original component pairs from published assemblies. The downstream rigid-body tests compare STEP and tessellated geometry under shared HHT-$\alpha$ settings. Two analytically solvable contact problems also compare our simulation with native MuJoCo and Drake.
 
 \section{Related work}
 
@@ -114,7 +114,7 @@ Boundary distance is Lipschitz with respect to the sum of the two Hausdorff disp
 
 For a slider we bound travel by the position change, and for a hinge by the angular change times an enclosing distance to the pivot. The analytic endpoint bounds and travel bounds use outward interval arithmetic. We require \(\underline d_{\mathrm{step}}>0.5\) mm for every eligible pair. Both pipelines use this CAD guard as a common acceptance cost. A cache keyed by the exact previous coordinate vector reuses endpoint bounds. Cache hits change only the number of evaluations. The guarantee concerns the linear reconstruction between accepted states on the nominal CAD fixtures.
 
-\section{Dynamics benchmarks and experimental comparisons}
+\section{Rigid multibody numerical benchmarks}
 
 \begin{figure}[t]
 \centering
@@ -204,16 +204,8 @@ Assembly motion & CAD resolved & CAD (ms) & Mesh (ms) & Mesh error (mm)\\
 
 We additionally sample 17 poses per production motion and directly compare the native B-rep search and the mesh BVH. Both use original placements and boundary distances in millimeters. The B-rep search requests a 0.0002 mm interval width with a cap of 30,000 tasks. Each of the mesh deflections 0.20, 0.05, and 0.0125 mm is tessellated independently from the source shape. The numerical reference is OCCT boundary extrema at the same pose. The CAD intervals contain the numerical reference at \ProductionOracleAgreement{} of \ProductionOraclePoses{} poses with a \(10^{-6}\) mm comparison margin. The finest mesh returned a point estimate at every pose and had the smaller median query time for each pair, with the largest observed discrepancy on the lidar support (Table~\ref{tab:production}). Section~\ref{sec:continuous-experiments} reports the separate trajectory-wide results.
 
-\IfFileExists{contact-validation-results.tex}{%
-  \input{contact-validation-results.tex}%
-  \input{contact-validation.tex}%
-  \ifdefined\ExternalSliderPosition
-    \input{external-contact-validation.tex}%
-  \fi
-}{}
-
-\ifdefined\NasaSelectedRows
-  \input{nasa-selected.tex}%
+\ifdefined\EngineBenchmarkRows
+\input{engine-comparison.tex}
 \fi
 
 \section{Scope and conclusion}
@@ -230,12 +222,12 @@ returned at isolated grazing.
 
 The trajectory certificate concerns a specified relative motion and
 nominal closed trim domains. The HHT application uses its own accepted
-configuration reconstruction and endpoint travel bounds. The
-directional-contact experiments compare force responses with distinct
-physical assumptions. Their agreement and discrepancies characterize
-those models independently of the continuous-query certificate.
+configuration reconstruction and endpoint travel bounds. Its numerical
+comparisons quantify trajectory accuracy and computational cost for
+rigid bodies under the stated contact and integration settings.
 
 \paragraph{Reproducibility.}
+The MuJoCo and Drake scripts are in \path{benchmarks/engines/}. The trajectory and timing archive is in \path{results/engine-comparison/}.
 The paired eccentric-rim measurements are in \path{benchmarks/axial-results.csv}. The follow-up protocol and raw results are in \path{benchmarks/clearance-followup/}. The production STEP input hashes and motion definitions are in \path{benchmarks/assemblies/}. The \path{nc_hht} target generates and reads the dynamics STEP fixtures. \path{benchmarks/hht/run.py} runs the dynamics suite, \path{analyze.py} validates trajectories and aggregates results, and \path{render.py} and \path{plots.py} generate videos and figures. \path{results/hht/protocol.json} specifies the run matrix and the results contain the multi-view animation index.
 
 \bibliographystyle{unsrtnat}

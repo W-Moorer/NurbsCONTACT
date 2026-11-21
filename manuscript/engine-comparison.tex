@@ -1,0 +1,83 @@
+\subsection{Open-source rigid-body simulators}
+\label{sec:engine-comparison}
+
+We compare the STEP/HHT simulation with native MuJoCo~\cite{mujoco}
+and Drake~\cite{drake}. The two controlled problems are a sphere
+approaching a plane and a collision of two translating spheres.
+Each mobile body has mass 1 kg. The approaching sphere has initial
+speed 0.45 m/s. Both problems start 18 mm outside a 12 mm contact
+layer and use an undamped normal stiffness of 5000 N/m, with
+gravity and friction set to zero. The analytical reference uses
+the one-contact half sine with reduced mass 1 or 0.5 kg. The
+two-sphere case also conserves center-of-mass velocity.
+
+The layer is represented by offset collision surfaces. The plane
+is raised by the layer thickness in the first problem. In the
+second problem each collision radius grows by half that thickness.
+The three simulators use these offsets in their own contact
+representations. Our directional STEP probes evaluate the offset
+surfaces, and the trajectory-wide clearance tests are reported
+separately in Section~\ref{sec:continuous-experiments}.
+MuJoCo \EngineMuJoCoVersion{} uses its native one-dimensional
+contact and direct reference stiffness scaled by the contact
+inverse mass. Drake \EngineDrakeVersion{} uses native continuous
+point contact with zero Hunt--Crossley dissipation and geometry
+stiffnesses of 10,000 N/m in series.
+The maximum force-law residual on the computed states is
+\EngineForceResidual{} N across the tested steps.
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Native rigid-body contact at a 1 ms nominal step. Position
+errors use all recorded coordinates and the analytic trajectory.
+Force errors use the same sample times and the analytic pulse.}
+\label{tab:engine-error}
+\begin{tabular}{lrrrr}
+\toprule
+ & \multicolumn{2}{c}{Position RMSE (\(\mu\)m)} &
+ \multicolumn{2}{c}{Force RMSE (N)} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Method & Sphere--plane & Two spheres & Sphere--plane & Two spheres \\
+\midrule
+\EngineBenchmarkRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{\EngineFigurePath}
+\caption{Rigid-body comparison with native MuJoCo and Drake.
+All trajectories use the same isolated normal force law.
+Position errors are evaluated against the analytical solution.
+The force panel shows the sphere--plane pulse at 1 ms.}
+\label{fig:engine-comparison}
+\end{figure}
+
+Table~\ref{tab:engine-error} and Figure~\ref{fig:engine-comparison}
+show the effect of the integration method on the same force pulse.
+At 1 ms, MuJoCo RK4 and Drake RK3 have smaller position errors
+than HHT in both examples. The archived runs include all three
+steps, seven integration timings per configuration, and every
+scored state. The wider CAD experiments evaluate different costs,
+including trim classification and interval exclusion.
+
+\ifdefined\EngineTimingRows
+\begin{table}[!htbp]
+\centering\small
+\caption{Median integration time for 160 steps at 1 ms in the
+same Ubuntu WSL environment. Model setup and trajectory export
+are outside the timed region.}
+\label{tab:engine-time}
+\begin{tabular}{lrr}
+\toprule
+Method & Sphere--plane (\(\mu\)s) & Two spheres (\(\mu\)s) \\
+\midrule
+\EngineTimingRows
+\bottomrule
+\end{tabular}
+\end{table}
+\else
+The STEP/HHT timings use Windows, and both engine timings use Ubuntu
+WSL. The integration timings are archived with their environments.
+\fi

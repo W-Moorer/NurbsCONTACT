@@ -27,93 +27,21 @@
 \newcommand{\TrainLongFine}{2.719}
 \newcommand{\ProductionOraclePoses}{68}
 \newcommand{\ProductionOracleAgreement}{68}
-\newcommand{\ExternalSliderPosition}{0.66}
-\newcommand{\ExternalSliderRmse}{10.19}
-\newcommand{\ExternalSliderIdealRmse}{6.61}
-\newcommand{\ExternalSliderHalfRmse}{11.50}
-\newcommand{\ExternalSliderMeasuredPhase}{46.6}
-\newcommand{\ExternalSliderPredictedPhase}{3.6}
-\newcommand{\ExternalSliderHalfPhase}{5.9}
-\newcommand{\ExternalSliderBrepGeometry}{\ensuremath{4.12\times10^{-12}}}
-\newcommand{\ExternalSliderMeshGeometry}{2.48}
-\newcommand{\ExternalSliderSpeedRatio}{0.51}
-\newcommand{\ExternalSliderMedianTimeRatio}{2.40}
-\newcommand{\ExternalSliderTimingCases}{7}
-\newcommand{\ExternalSliderExtendedSteps}{900,000}
-\newcommand{\ExternalSliderExtendedPhase}{3.3}
-\newcommand{\ExternalDampedBefore}{13.05}
-\newcommand{\ExternalDampedAfter}{7.86}
-\newcommand{\ExternalDampedQuietBefore}{11.57}
-\newcommand{\ExternalDampedQuietAfter}{5.99}
-\newcommand{\ExternalDampedPeakBefore}{52.1}
-\newcommand{\ExternalDampedPeakAfter}{37.0}
-\newcommand{\ExternalDampedDepthBefore}{0.77}
-\newcommand{\ExternalDampedDepthAfter}{21.78}
-\newcommand{\ExternalDampedHalfStep}{0.0015}
-\newcommand{\ExternalDampedIndependent}{2.67}
-\newcommand{\FlexQuietControl}{5.99}
-\newcommand{\FlexQuietModel}{6.01}
-\newcommand{\FlexPeakControl}{36.95}
-\newcommand{\FlexPeakModel}{35.69}
-\newcommand{\FlexDepth}{0.58}
-\newcommand{\FlexObserved}{-50.7}
-\newcommand{\FlexPredicted}{-14.9}
-\newcommand{\FlexRefinement}{0.0022}
-\newcommand{\SpatialMeasured}{-50.68}
-\newcommand{\SpatialPredicted}{-14.89}
-\newcommand{\SpatialQuiet}{4.21}
-\newcommand{\SpatialOneMicrosecondDelta}{0.0004}
-\newcommand{\SpatialFigFiveBound}{0.817}
-\newcommand{\SpatialFigSixBound}{0.508}
-\newcommand{\SpatialPlanarBound}{0.254}
-\newcommand{\SpatialPositionBound}{0.803}
-\newcommand{\SpatialMountPhase}{46.53}
-\newcommand{\SpatialMountPeak}{-19.70}
-\newcommand{\SpatialLargeMountPeak}{-40.76}
-\newcommand{\SpatialLargeMountQuiet}{20.47}
-\newcommand{\SpatialTransferLow}{2.14}
-\newcommand{\SpatialTransferBig}{12.64}
-\newcommand{\IncidentLNBounce}{0.715}
-\newcommand{\IncidentRigidPhase}{0.77}
-\newcommand{\IncidentRigidPeak}{-37.09}
-\newcommand{\IncidentRigidQuietCoarse}{19.48}
-\newcommand{\IncidentRigidQuietFine}{6.76}
-\newcommand{\IncidentOriginalPhase}{6.21}
-\newcommand{\IncidentOriginalPeak}{-47.39}
-\newcommand{\IncidentMountPhase}{46.54}
-\newcommand{\IncidentMountPeak}{-19.70}
-\newcommand{\IncidentMountLoad}{11.11}
-\newcommand{\IncidentMeasuredWidth}{8.33}
-\newcommand{\IncidentMountWidth}{6.04}
-\newcommand{\IncidentSpatialQuiet}{4.21}
-\newcommand{\IncidentExactQuiet}{4.20}
-\newcommand{\IncidentTransferLow}{3.07}
-\newcommand{\IncidentTransferLarge}{14.13}
-\newcommand{\BearingFinePhase}{46.53}
-\newcommand{\BearingFinePeak}{-19.78}
-\newcommand{\BearingFineWidth}{6.04}
-\newcommand{\BearingFineLoad}{11.31}
-\newcommand{\BearingFineOpen}{0.00}
-\newcommand{\BearingFineQuiet}{5.43}
-\newcommand{\BearingQuietDelta}{0.00024}
-\newcommand{\BearingRigidBound}{0.268}
-\newcommand{\BearingTransferLow}{3.05}
-\newcommand{\BearingTransferLarge}{14.19}
-\newcommand{\DriveSpeedLower}{199.52}
-\newcommand{\DriveSpeedUpper}{200.46}
-\newcommand{\DriveMaxDeviation}{0.47}
-\newcommand{\DriveBoundFigSix}{1.45}
-\newcommand{\DriveBoundFigFive}{2.99}
-\newcommand{\DrivePhase}{46.46}
-\newcommand{\DrivePeak}{-19.46}
-\newcommand{\DriveLoad}{11.38}
-\newcommand{\DriveQuiet}{5.34}
-\newcommand{\DriveTransferLow}{3.04}
-\newcommand{\DriveTransferLarge}{14.17}
-\newcommand{\NasaSelectedRows}{%
-7(a) & 2000 & 33.73 & 63.1 & 66.7 & Calibration \\
-7(c) & 6000 & 33.73 & 148.8 & 151.7 & Held out \\
-7(d) & 6000 & 67.46 & 90.8 & 96.4 & Held out \\
+\newcommand{\EngineFigurePath}{\detokenize{../results/engine-comparison/engine-comparison.pdf}}
+\newcommand{\EngineMuJoCoVersion}{4.0.1}
+\newcommand{\EngineDrakeVersion}{1.58.0}
+\newcommand{\EngineForceResidual}{\ensuremath{6.42\times10^{-13}}}
+\newcommand{\EngineBenchmarkRows}{%
+  STEP/HHT & 4.742 & 6.392 & 0.011708 & 0.013894 \\
+  MuJoCo implicit & 10.955 & 12.345 & 0.007723 & 0.009202 \\
+  MuJoCo RK4 & 1.388 & 1.478 & 0.000005 & 0.000011 \\
+  Drake RK3 & 1.997 & 2.563 & 0.000300 & 0.000511 \\
+}
+\newcommand{\EngineTimingRows}{%
+  STEP/HHT & 666.2 & 862.0 \\
+  MuJoCo implicit & 331.7 & 677.4 \\
+  MuJoCo RK4 & 1730.2 & 1861.8 \\
+  Drake RK3 & 2531.6 & 5000.4 \\
 }
 \newcommand{\RotationFollowupRows}{%
 Planar tilt & 0.732526 & 139.098 & 16.109 & 0.000122 & \(7.72\times10^{-5}\) \\

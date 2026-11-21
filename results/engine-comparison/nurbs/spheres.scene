@@ -1,0 +1,7 @@
+nc-contact-v1
+gravity 0 0 0 2 2 1
+coordinate 1 0 0 0 0 0 0
+coordinate 1 0 -0.45 0 0 0 0
+body "offset-sphere.step" 0 0 0 0 0 0 1 0 0 0 0 -1 0 0 0 1 0 0 0 1
+body "offset-sphere.step" 0 0 0 0.1 0 0 1 0 0 0 0 -1 0 0 0 1 1 0 0 1
+probe 0 1 world 0 0 0 0 0 0 0 0 1 5000.0 1 0 0 .001 .020

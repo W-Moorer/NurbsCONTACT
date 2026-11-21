@@ -1,0 +1,527 @@
+{
+  "timings_share_platform": true,
+  "engines": {
+    "nurbs": {
+      "engine": "nurbs",
+      "version": "workspace build",
+      "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+      "layer_m": 0.012,
+      "stiffness_N_m": 5000.0,
+      "mass_each_kg": 1.0,
+      "initial_speed_m_s": 0.45,
+      "duration_s": 0.16,
+      "stand_off_m": 0.018,
+      "repetitions": 7,
+      "runs": [
+        {
+          "case": "plane",
+          "step_s": 0.001,
+          "median_integrate_s": 0.000666163,
+          "times_s": [
+            0.000584887,
+            0.000720458,
+            0.000686009,
+            0.000675678,
+            0.000653489,
+            0.000624395,
+            0.000666163
+          ],
+          "position_rms_mm": 0.004741621698319672,
+          "maximum_position_error_mm": 0.010286818410275289,
+          "force_rms_N": 0.011707844028482853,
+          "maximum_force_law_residual_N": 3.552713678800501e-14,
+          "engine": "nurbs",
+          "integrator": "HHT"
+        },
+        {
+          "case": "plane",
+          "step_s": 0.0005,
+          "median_integrate_s": 0.001239469,
+          "times_s": [
+            0.001213893,
+            0.001239469,
+            0.001142149,
+            0.001174632,
+            0.001329551,
+            0.001254507,
+            0.001281045
+          ],
+          "position_rms_mm": 0.0012333951020300099,
+          "maximum_position_error_mm": 0.002602340253867602,
+          "force_rms_N": 0.0029020380059351703,
+          "maximum_force_law_residual_N": 3.552713678800501e-14,
+          "engine": "nurbs",
+          "integrator": "HHT"
+        },
+        {
+          "case": "plane",
+          "step_s": 0.00025,
+          "median_integrate_s": 0.002601145,
+          "times_s": [
+            0.002689544,
+            0.00267748,
+            0.002536036,
+            0.002442159,
+            0.002577784,
+            0.002601145,
+            0.002686972
+          ],
+          "position_rms_mm": 0.0002704395124463533,
+          "maximum_position_error_mm": 0.0006513767991690733,
+          "force_rms_N": 0.0007334652615013208,
+          "maximum_force_law_residual_N": 3.552713678800501e-14,
+          "engine": "nurbs",
+          "integrator": "HHT"
+        },
+        {
+          "case": "spheres",
+          "step_s": 0.001,
+          "median_integrate_s": 0.000862009,
+          "times_s": [
+            0.000875565,
+            0.000845869,
+            0.000858589,
+            0.000902324,
+            0.000862009,
+            0.000893237,
+            0.000815187
+          ],
+          "position_rms_mm": 0.006392450353632102,
+          "maximum_position_error_mm": 0.016610735084986172,
+          "force_rms_N": 0.013894311198800668,
+          "maximum_force_law_residual_N": 6.927791673660977e-14,
+          "engine": "nurbs",
+          "integrator": "HHT"
+        },
+        {
+          "case": "spheres",
+          "step_s": 0.0005,
+          "median_integrate_s": 0.001743877,
+          "times_s": [
+            0.001775691,
+            0.001673493,
+            0.001743877,
+            0.001772725,
+            0.00175119,
+            0.001590118,
+            0.001661097
+          ],
+          "position_rms_mm": 0.0007855491589522529,
+          "maximum_position_error_mm": 0.0018358753888962978,
+          "force_rms_N": 0.0034317659179477775,
+          "maximum_force_law_residual_N": 8.881784197001252e-14,
+          "engine": "nurbs",
+          "integrator": "HHT"
+        },
+        {
+          "case": "spheres",
+          "step_s": 0.00025,
+          "median_integrate_s": 0.003224354,
+          "times_s": [
+            0.003224354,
+            0.003081881,
+            0.003222136,
+            0.003240633,
+            0.003163532,
+            0.003269411,
+            0.003405852
+          ],
+          "position_rms_mm": 0.00034731831811124443,
+          "maximum_position_error_mm": 0.0009015706038499605,
+          "force_rms_N": 0.0008711864878595344,
+          "maximum_force_law_residual_N": 8.526512829121202e-14,
+          "engine": "nurbs",
+          "integrator": "HHT"
+        }
+      ]
+    },
+    "mujoco": {
+      "engine": "mujoco",
+      "version": "4.0.1",
+      "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+      "layer_m": 0.012,
+      "stiffness_N_m": 5000.0,
+      "mass_each_kg": 1.0,
+      "initial_speed_m_s": 0.45,
+      "duration_s": 0.16,
+      "stand_off_m": 0.018,
+      "repetitions": 7,
+      "runs": [
+        {
+          "case": "plane",
+          "step_s": 0.001,
+          "median_integrate_s": 0.0003316560000143909,
+          "times_s": [
+            0.00031272399999693334,
+            0.00031725300001994583,
+            0.0003229010000040944,
+            0.0003316560000143909,
+            0.00033597300000565156,
+            0.00034286300001440395,
+            0.00042363899999031673
+          ],
+          "position_rms_mm": 0.010955320695869785,
+          "maximum_position_error_mm": 0.024878301587680923,
+          "force_rms_N": 0.007723137351900838,
+          "maximum_force_law_residual_N": 3.907985046680551e-14,
+          "engine": "mujoco",
+          "integrator": "implicit"
+        },
+        {
+          "case": "plane",
+          "step_s": 0.0005,
+          "median_integrate_s": 0.0008662759999822356,
+          "times_s": [
+            0.0008222569999816187,
+            0.0008148839999932989,
+            0.0008662759999822356,
+            0.000851195999985066,
+            0.0010878260000026785,
+            0.0013798930000064047,
+            0.0008826160000126038
+          ],
+          "position_rms_mm": 0.0017641716506824835,
+          "maximum_position_error_mm": 0.003710869003990813,
+          "force_rms_N": 0.001921800347224159,
+          "maximum_force_law_residual_N": 4.085620730620576e-14,
+          "engine": "mujoco",
+          "integrator": "implicit"
+        },
+        {
+          "case": "plane",
+          "step_s": 0.00025,
+          "median_integrate_s": 0.0019480299999941053,
+          "times_s": [
+            0.001846507999999858,
+            0.001870120999996061,
+            0.0019232369999997445,
+            0.002069360999996661,
+            0.0019480299999941053,
+            0.00199622200000249,
+            0.002125280999990764
+          ],
+          "position_rms_mm": 0.0006020418499504069,
+          "maximum_position_error_mm": 0.0013482315023606584,
+          "force_rms_N": 0.00048209849720548726,
+          "maximum_force_law_residual_N": 6.418476861114188e-13,
+          "engine": "mujoco",
+          "integrator": "implicit"
+        },
+        {
+          "case": "plane",
+          "step_s": 0.001,
+          "median_integrate_s": 0.0017301599999939299,
+          "times_s": [
+            0.0017301599999939299,
+            0.0016285380000056193,
+            0.0016810080000198013,
+            0.0016779219999989436,
+            0.001762124000009635,
+            0.0017994039999962297,
+            0.0017558300000075633
+          ],
+          "position_rms_mm": 0.0013883756057606572,
+          "maximum_position_error_mm": 0.003478275324923785,
+          "force_rms_N": 4.6927803749584546e-06,
+          "maximum_force_law_residual_N": 3.552713678800501e-14,
+          "engine": "mujoco",
+          "integrator": "RK4"
+        },
+        {
+          "case": "plane",
+          "step_s": 0.0005,
+          "median_integrate_s": 0.003672167999980047,
+          "times_s": [
+            0.003672167999980047,
+            0.003707208000008677,
+            0.003751651000015954,
+            0.003789109999985385,
+            0.0036633020000067518,
+            0.003652114000004758,
+            0.003657692999979645
+          ],
+          "position_rms_mm": 0.00022918033015201304,
+          "maximum_position_error_mm": 0.0005761008405429091,
+          "force_rms_N": 2.931560643772309e-07,
+          "maximum_force_law_residual_N": 3.552713678800501e-14,
+          "engine": "mujoco",
+          "integrator": "RK4"
+        },
+        {
+          "case": "plane",
+          "step_s": 0.00025,
+          "median_integrate_s": 0.007414718999996239,
+          "times_s": [
+            0.006989742000001797,
+            0.007176132000012103,
+            0.007311593000025596,
+            0.007414718999996239,
+            0.0075466609999921275,
+            0.007989401999992651,
+            0.007937445999999682
+          ],
+          "position_rms_mm": 2.910003417884774e-05,
+          "maximum_position_error_mm": 7.33244002286415e-05,
+          "force_rms_N": 1.859396954327416e-08,
+          "maximum_force_law_residual_N": 6.418476861114188e-13,
+          "engine": "mujoco",
+          "integrator": "RK4"
+        },
+        {
+          "case": "spheres",
+          "step_s": 0.001,
+          "median_integrate_s": 0.0006773839999993925,
+          "times_s": [
+            0.0006774039999868364,
+            0.0006521270000234836,
+            0.0006674580000094466,
+            0.0006807219999984682,
+            0.0007025910000209024,
+            0.0006705149999959303,
+            0.0006773839999993925
+          ],
+          "position_rms_mm": 0.012345208441300118,
+          "maximum_position_error_mm": 0.026951422070362052,
+          "force_rms_N": 0.009201705312635951,
+          "maximum_force_law_residual_N": 8.881784197001252e-14,
+          "engine": "mujoco",
+          "integrator": "implicit"
+        },
+        {
+          "case": "spheres",
+          "step_s": 0.0005,
+          "median_integrate_s": 0.0012138280000044688,
+          "times_s": [
+            0.001222723999973141,
+            0.0011851509999871723,
+            0.0011992229999862047,
+            0.0012333249999869622,
+            0.0012587830000256872,
+            0.0012019050000162679,
+            0.0012138280000044688
+          ],
+          "position_rms_mm": 0.002056837265196628,
+          "maximum_position_error_mm": 0.004334603738553877,
+          "force_rms_N": 0.0022830507828920073,
+          "maximum_force_law_residual_N": 8.881784197001252e-14,
+          "engine": "mujoco",
+          "integrator": "implicit"
+        },
+        {
+          "case": "spheres",
+          "step_s": 0.00025,
+          "median_integrate_s": 0.002380037000023094,
+          "times_s": [
+            0.0023459550000097806,
+            0.0023346670000137237,
+            0.0023407609999992474,
+            0.002380037000023094,
+            0.00239455100000896,
+            0.0024911710000026233,
+            0.0025380430000154774
+          ],
+          "position_rms_mm": 0.0007253714548018025,
+          "maximum_position_error_mm": 0.0015815076479415435,
+          "force_rms_N": 0.0005732906477603748,
+          "maximum_force_law_residual_N": 6.418476861114188e-13,
+          "engine": "mujoco",
+          "integrator": "implicit"
+        },
+        {
+          "case": "spheres",
+          "step_s": 0.001,
+          "median_integrate_s": 0.001861759999997048,
+          "times_s": [
+            0.0018515720000209512,
+            0.0018146249999801967,
+            0.001879763999994566,
+            0.0018511669999838887,
+            0.001861759999997048,
+            0.0019113440000069204,
+            0.0019190820000005715
+          ],
+          "position_rms_mm": 0.0014783024058381156,
+          "maximum_position_error_mm": 0.003425446066691873,
+          "force_rms_N": 1.1069218259741564e-05,
+          "maximum_force_law_residual_N": 8.704148513061227e-14,
+          "engine": "mujoco",
+          "integrator": "RK4"
+        },
+        {
+          "case": "spheres",
+          "step_s": 0.0005,
+          "median_integrate_s": 0.0038166469999794117,
+          "times_s": [
+            0.0036005329999966307,
+            0.003732554999999138,
+            0.003744347999997899,
+            0.0038331989999846883,
+            0.003924460000007457,
+            0.0038166469999794117,
+            0.0038799720000213256
+          ],
+          "position_rms_mm": 0.0002964642036600636,
+          "maximum_position_error_mm": 0.0006888865815984913,
+          "force_rms_N": 6.910638330992472e-07,
+          "maximum_force_law_residual_N": 8.881784197001252e-14,
+          "engine": "mujoco",
+          "integrator": "RK4"
+        },
+        {
+          "case": "spheres",
+          "step_s": 0.00025,
+          "median_integrate_s": 0.007550173000026916,
+          "times_s": [
+            0.007233524000014313,
+            0.007550173000026916,
+            0.007700704000001224,
+            0.007660358000009637,
+            0.007570547000000261,
+            0.0074261770000134675,
+            0.007506890000001931
+          ],
+          "position_rms_mm": 2.8732415090862e-06,
+          "maximum_position_error_mm": 6.556683175562572e-06,
+          "force_rms_N": 4.409771759851528e-08,
+          "maximum_force_law_residual_N": 6.418476861114188e-13,
+          "engine": "mujoco",
+          "integrator": "RK4"
+        }
+      ]
+    },
+    "drake": {
+      "engine": "drake",
+      "version": "1.58.0",
+      "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+      "layer_m": 0.012,
+      "stiffness_N_m": 5000.0,
+      "mass_each_kg": 1.0,
+      "initial_speed_m_s": 0.45,
+      "duration_s": 0.16,
+      "stand_off_m": 0.018,
+      "repetitions": 7,
+      "runs": [
+        {
+          "case": "plane",
+          "step_s": 0.001,
+          "median_integrate_s": 0.0025315670000054524,
+          "times_s": [
+            0.0021505229999831954,
+            0.0022947059999864905,
+            0.002497142999999369,
+            0.0025315670000054524,
+            0.0025609649999864814,
+            0.0026766029999976126,
+            0.0028130549999900722
+          ],
+          "position_rms_mm": 0.0019972248528183707,
+          "maximum_position_error_mm": 0.005010191658719881,
+          "force_rms_N": 0.0003000783171949393,
+          "maximum_force_law_residual_N": 1.7763568394002505e-14,
+          "engine": "drake",
+          "integrator": "runge_kutta3"
+        },
+        {
+          "case": "plane",
+          "step_s": 0.0005,
+          "median_integrate_s": 0.006912795999994614,
+          "times_s": [
+            0.006912795999994614,
+            0.007089221000001089,
+            0.0069282659999885254,
+            0.007567651999977443,
+            0.006737403999977687,
+            0.006613431999994646,
+            0.006701587999998537
+          ],
+          "position_rms_mm": 0.0001541225700331922,
+          "maximum_position_error_mm": 0.00038648868566290573,
+          "force_rms_N": 3.698919294846992e-05,
+          "maximum_force_law_residual_N": 1.7763568394002505e-14,
+          "engine": "drake",
+          "integrator": "runge_kutta3"
+        },
+        {
+          "case": "plane",
+          "step_s": 0.00025,
+          "median_integrate_s": 0.017396439999998847,
+          "times_s": [
+            0.015387357000008706,
+            0.01642788899999914,
+            0.017817874999991545,
+            0.017396439999998847,
+            0.01724320499999976,
+            0.01796895699999368,
+            0.01947769500000618
+          ],
+          "position_rms_mm": 1.9514981959056734e-05,
+          "maximum_position_error_mm": 4.911403461357877e-05,
+          "force_rms_N": 4.5910828159015836e-06,
+          "maximum_force_law_residual_N": 1.7763568394002505e-14,
+          "engine": "drake",
+          "integrator": "runge_kutta3"
+        },
+        {
+          "case": "spheres",
+          "step_s": 0.001,
+          "median_integrate_s": 0.005000351999996155,
+          "times_s": [
+            0.0049843250000094486,
+            0.004823030000011386,
+            0.005000351999996155,
+            0.004882484999995995,
+            0.005023604000001569,
+            0.005028021000015315,
+            0.005092753000013772
+          ],
+          "position_rms_mm": 0.002563436484239801,
+          "maximum_position_error_mm": 0.0059510388235942124,
+          "force_rms_N": 0.000511083432939831,
+          "maximum_force_law_residual_N": 5.1514348342607263e-14,
+          "engine": "drake",
+          "integrator": "runge_kutta3"
+        },
+        {
+          "case": "spheres",
+          "step_s": 0.0005,
+          "median_integrate_s": 0.01113296999997715,
+          "times_s": [
+            0.010003995000005261,
+            0.0105973980000158,
+            0.011226650999986987,
+            0.011448240999982318,
+            0.011068526999991946,
+            0.01113296999997715,
+            0.011334615000009762
+          ],
+          "position_rms_mm": 0.00016303614426435383,
+          "maximum_position_error_mm": 0.0003779340609147419,
+          "force_rms_N": 6.260978564288259e-05,
+          "maximum_force_law_residual_N": 5.3290705182007514e-14,
+          "engine": "drake",
+          "integrator": "runge_kutta3"
+        },
+        {
+          "case": "spheres",
+          "step_s": 0.00025,
+          "median_integrate_s": 0.020244797999993125,
+          "times_s": [
+            0.019421595000011393,
+            0.019455985999996983,
+            0.019727913999986413,
+            0.020959658999998965,
+            0.020244797999993125,
+            0.020251768000008497,
+            0.020603096000002097
+          ],
+          "position_rms_mm": 2.0067634541479304e-05,
+          "maximum_position_error_mm": 4.6553602681131956e-05,
+          "force_rms_N": 7.74649409606162e-06,
+          "maximum_force_law_residual_N": 5.3290705182007514e-14,
+          "engine": "drake",
+          "integrator": "runge_kutta3"
+        }
+      ]
+    }
+  }
+}
