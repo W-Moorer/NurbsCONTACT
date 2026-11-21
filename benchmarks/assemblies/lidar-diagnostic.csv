@@ -1,0 +1,3 @@
+scene,variant,repeat,status,safe_prefix,witness_time,bracket_width,query_us,nodes,spatial_splits,time_splits,axial_rejected,axial_clipped,reference_status,reference_lower,reference_upper,reference_calls,reference_agrees
+lidar-nut-entry,axial,0,hit,0.38667519672706224,0.42170078690824897,0.035025590181186728,4679923.2000000002,200000,99067,6239,12,26,hit,0.40008544921875,0.40012359619140625,72,1
+lidar-nut-entry,directional,0,hit,0.38667519672706224,0.42170078690824897,0.035025590181186728,4855914.0999999996,200000,98735,6051,0,0,hit,0.40008544921875,0.40012359619140625,72,1

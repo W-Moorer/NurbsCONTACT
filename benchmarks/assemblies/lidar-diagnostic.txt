@@ -1,0 +1,2 @@
+# Full path to the nominal seat. This case tests the resolution limit.
+lidar-nut-entry 1 2 0 -12 0 0 12 0 0.15

@@ -1,0 +1,43 @@
+\subsection{Experimental validation of the shared contact solver}
+\label{sec:shared-contact-exp}
+
+A shared directional contact solver reads a deck of STEP bodies, generalized coordinates, material properties, and pair probes. A probe casts the same line through both finite bodies, with opposite ray directions to locate the facing boundaries. Let \(\lambda_a\) and \(\lambda_b\) be the signed distances along this line. The gap is \(g=\lambda_b-\lambda_a\). For a ray origin \(\mathbf r\), unit direction \(\mathbf n\), and surface normal \(\mathbf m_i\) at the intersection, differentiation gives
+\[
+ D\lambda_i =
+ \frac{\mathbf m_i\cdot
+   \left(D\mathbf x_i-D\mathbf r-\lambda_i D\mathbf n\right)}
+ {\mathbf m_i\cdot\mathbf n},
+\]
+where \(D\mathbf x_i\) is the derivative of the material point under the body motion. The gap Jacobian maps the normal reaction into generalized coordinates. For compression \(\delta=-g>0\), the normal force is the positive part of \(k\delta^p-c\delta^{(p-1)/2}\dot g\). The tangential force is regularized Coulomb friction. Joint inertia, stiffness, and damping enter through the common HHT equations. The ray backend uses either native faces with their trim loops or independently tessellated triangles indexed by an AABB hierarchy. Linear planar trim loops can be prepared at import and intersected directly. Other faces use the native OCCT intersector.
+
+We evaluate rebound and frictional sliding using the \href{https://arxiv.org/abs/2608.05948}{GAUGE physical experiments}. Ball height is compared at the original 30 Hz camera times. The initial state is reconstructed from five descending frames before first contact. The five calibration recordings set a shared damping coefficient, and the remaining recordings are scored on the recorded time axis. For sliding, the board frame is measured from the early frames of the same recording. The first five recordings per material set the kinetic friction coefficient. The held-out data compare center displacement along the board during full support. The measured board poses and pre-score slider states set the initial conditions.
+
+From \href{https://doi.org/10.1177/1687814016668089}{Qi and Yin's steel-beam experiment}, we digitized the measured first-pulse durations at midspan in Fig.~17. The experiment identified contact and separation by electrical continuity. Its voltage was acquired at 1 MHz. The comparison starts with the published incident velocities, a 70 mm steel sphere, and one beam mode. We use half the reported beam mass and its measured 99.9 Hz mode for the support, and compute the Hertz coefficient from the published elastic moduli and diameter. The \ContactBeamCount{} durations are predictions with no duration measurements used for fitting. The reported observable is the time between the first closing and opening crossings of the gap.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=.90\linewidth]{\ContactValidationPath contact-validation.pdf}
+\caption{Physical observations and the shared-solver predictions. The rebound and slider examples are the first held-out trajectories, and the beam panel shows all measured first-pulse durations. Horizontal marks in the error panel show cohort medians.}
+\label{fig:contact-validation}
+\end{figure}
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Position RMSE in millimeters for the held-out camera trajectories. The mesh deflection is \(25\,\mu\mathrm m\).}
+\label{tab:contact-validation}
+\begin{tabular}{lrrrrr}
+\toprule
+Observation & Trials & B-rep median & B-rep P90 & BVH median & BVH P90\\
+\midrule
+\ContactValidationRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+The first rebound apex falls within one source frame of the observation in \ContactApexWithinFrame{} of \ContactMeasuredDrops{} held-out B-rep trials, with a median height error of \ContactApexHeight{} mm. The electrical duration RMSE is \ContactBeamError{} microseconds. It changes by \ContactBeamHalfStep{} microseconds RMS when halving the integration step, and by \ContactBeamMeshDelta{} microseconds RMS when swapping B-rep for triangles. The ball uses a \ContactBallStep{} microsecond integration step. Halving it changes the representative rebound trajectory by \ContactBallRefine{} mm RMS. Halving the slider step changes its representative trajectory by \ContactSlideRefine{} mm RMS.
+
+Seven alternating timing repetitions give triangle-to-native integration time ratios of \ContactBallSpeed{} for rebound, \ContactPlateSpeed{} for supported sliding, and \ContactBeamSpeed{} for steel-beam impact. Timings exclude import, tessellation and output.
+\ifdefined\ContactPlanarNativeSpeed
+Preparing the planar trims accelerates the supported sliding integration by a factor of \ContactPlanarNativeSpeed{} relative to direct OCCT face intersection with the same deck.
+\fi
+Every comparison uses the same contact equations and initial conditions. The tested observables are vertical rebound, displacement during supported sliding, and first-pulse duration. The configuration names the candidate direction and probe locations. Its sampled compression limit applies to those probes. The earlier interval acceptance results concern the separate certified clearance formulation.

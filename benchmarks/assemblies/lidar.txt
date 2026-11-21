@@ -1,0 +1,2 @@
+# name A B start-x start-y start-z velocity-x velocity-y velocity-z clearance
+lidar-nut-preseat 1 2 0 -12 0 0 4.5 0 0.15

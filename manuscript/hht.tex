@@ -1,0 +1,225 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=22mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\ifdefined\pdfmapfile\pdfmapfile{+lm.map}\fi
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs,graphicx}
+\usepackage[expansion=false]{microtype}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[hidelinks]{hyperref}
+\renewcommand{\bibfont}{\small}
+\setlength{\bibsep}{2pt}
+\setlength{\parindent}{1.1em}
+\setlength{\parskip}{0.13em}
+\newtheorem{proposition}{Proposition}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\q}{\mathbf q}
+\newcommand{\vct}{\mathbf v}
+\newcommand{\acc}{\mathbf a}
+\newcommand{\force}{\mathbf F}
+\input{hht-results.tex}
+\title{\textbf{Native CAD Clearance for Implicit HHT-$\alpha$ Multibody Contact}}
+\author{NurbsCONTACT research manuscript}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Implicit time integration controls temporal error while contact forces still depend on the geometry used to evaluate clearance. We integrate native CAD boundary queries with HHT-$\alpha$ for constrained rigid bodies with fixed-axis hinges and translational joints. An analytic support query certifies when a witness on a trimmed finite face realizes the global clearance. A lower bound along each accepted configuration segment protects the source CAD boundary for both a native backend and an AABB hierarchy over triangles. In the matched-accuracy ball train, the native method reduced the median runtime from \TrainMeshTime{} to \TrainCadTime{} s, a \TrainGain{}-fold speedup. In a 120 s cam array, native geometry reduced the median cost by \CamFineGain{} times relative to the 96-facet mesh and reduced follower trajectory error against finer-step CAD integration. Two 300 s CAD stress runs completed with positive interval clearance. A separate trimmed bore test shows the complementary regime in which tessellated queries are faster. The implementation, STEP models, measurements, and six multi-view animations accompany the study.
+\end{abstract}
+
+\section{Introduction}
+
+Multibody contact forces can change sharply over a short gap. A planar follower riding a circular cam illustrates the interaction between time integration and geometry. The cam's supporting point moves smoothly on the circle. On an inscribed polygon, the support switches among vertices. Refining the integrator resolves that polygonal signal more closely. Refining the surface representation changes the signal itself. A useful comparison between CAD and mesh contact must therefore control the temporal method, the force law, and the accepted clearance condition.
+
+We study prescribed classes of joints and common CAD contact features. Each rigid body moves on a prismatic axis or rotates around a fixed hinge, with forces coupled through contact, springs, and drives. The HHT-$\alpha$ equilibrium iteration uses the same compliance law for both backends. The native backend specializes supported analytic queries when the projection lies on the finite CAD face. A general B-rep query remains available for poses that fall outside the specialization. The mesh backend evaluates distances between triangular faces using dual BVH traversal.
+
+Our first contribution is a finite-face support test that gives an exact native clearance and its force witness on the supported primitive pairs. The second is a shared interval guard for the reconstructed motion between accepted HHT states. Endpoint bounds are reusable without changing the exclusion argument. The third is a reproducible body of evidence that separates geometry error, time integration error, and search work. It includes analytic checks, a mesh refinement study, controlled multibody schedules, and long-time tests.
+
+\section{Related work}
+
+Hilber, Hughes, and Taylor introduced a family of implicit schemes with controllable numerical dissipation for structural dynamics \cite{hilber1977}. In multibody software, HHT-type algorithms solve an implicit force balance with nonlinear iterations and can use adaptive steps \cite{chrono}. We apply its acceleration formulation to reduced rigid-body coordinates and explicitly verify the oscillator convergence rate. The contact law in our experiments is a positive-gap compliance layer. The resulting trajectories follow that law under the evaluated time steps.
+
+B-rep proximity methods retain geometric features that are approximated by faceted collision proxies. Crozet et~al. used smooth CAD boundaries and feature-specific routines to compute local minima for dynamics \cite{crozet2018}. Moving parametric surfaces have also been treated using interval and time-dependent inclusions \cite{chen2024}. Ferguson et~al. developed an intersection-free rigid dynamics method with conservative queries for curved trajectories \cite{ferguson2021}. Our guard uses a Hausdorff-travel bound on the declared reconstruction between successive reduced states. Its role is to control feasible geometry across accepted steps in a conventional implicit integrator.
+
+Hierarchical nearest-distance queries on triangle meshes have a long history \cite{larsen2000}. Our baseline uses a local AABB tree, best-first traversal, and exact feature formulas for triangle pairs evaluated in floating point. We measure both previous-pair seeding and an unseeded traversal on the long ball train. Unlike higher-order formulations that use a collision proxy for curved geometry \cite{ferguson2023}, the native experiments evaluate the original analytic B-rep features for contact. The triangulated cases use the same source geometry and integration settings.
+
+\section{Rigid-body model and contact queries}
+
+\subsection{Reduced coordinates}
+
+The position of a local point \(x\) on body \(i\) is prescribed by its one-degree-of-freedom joint. For a slider it is \(o_i+e_i q_i+x\). For a hinge it is \(o_i+R_z(q_i)x\). The coordinate mass is the body mass or its moment of inertia about the hinge. Fixed bodies have constant placements. These kinematics yield a constant positive diagonal matrix \(M\). Couplings enter the generalized force through linear springs, dampers, drive targets, and contact. In the cam array, six lateral stations have disjoint \(x\) intervals, and each cam interacts with its own follower. The ball train includes all sphere pairs and all sphere-to-stop pairs.
+
+For each eligible pair let \(d\) be the boundary distance and let \(p_A,p_B\) be a closest pair with \(d>0\). With \(n=(p_B-p_A)/\norm{p_B-p_A}\), the gap Jacobian projects each body's point velocity onto \(n\) with the appropriate sign. The velocity derivatives for a slider and hinge are \(e_i\) and \(e_z\times(p_i-o_i)\), respectively. A linear compliance layer of thickness \(s\) generates the force
+\begin{equation}
+    F_c=J^\top\lambda,\qquad
+    J=\frac{\partial d}{\partial \q},\qquad
+    \lambda=k[s-d]_+.
+    \label{eq:compliance}
+\end{equation}
+This choice exposes geometry error through both the activation threshold and the load. The analytic and triangulated backends share \(s\), \(k\), and the same generalized force assembly.
+
+\subsection{Analytic B-rep fast path}
+
+We extract the analytic frames and extents from STEP. The fixture loader checks the finite rectangle and the full round solids against their face structure and source geometry. For two spheres, the nearest points lie on their center line whenever they are positively separated. For a sphere or cylinder facing a bounded planar patch \(Q\), first obtain the smallest signed support distance \(d_\pi\) to the infinite supporting plane \(\pi\). For a cylinder with unit axis \(a\), radius \(r\), half-length \(\ell\), and center \(c\), it is
+\begin{equation}
+d_\pi=n^\top(c-c_Q)-r\norm{n\times a}-\ell|n^\top a|.
+\end{equation}
+The two radial coordinates and axial coordinate identify a minimizing native point \(p_B\). When \(n^\top a=0\) we select its axial midpoint.
+
+\begin{proposition}[Finite-face support]
+If \(d_\pi>0\) and the orthogonal projection of \(p_B\) lies in \(Q\), then the global boundary distance to \(Q\) equals \(d_\pi\). The projected point and \(p_B\) form a feasible witness.
+\end{proposition}
+\begin{proof}
+For every \(q\in Q\) and point \(b\) on the round body, the component of \(b-q\) along \(n\) is at least \(d_\pi\). At \(p_B\) and its valid projection the segment is parallel to \(n\) and has length \(d_\pi\). The lower bound and the witness agree.
+\end{proof}
+
+The membership check uses the finite source rectangle. When the condition fails, a generic trimmed B-rep distance query uses the original p-curves and bounded surface evaluations \cite{chen2024,crozet2018}. Its lower and upper distance bounds can report an unresolved budget. The dynamic evaluation reports that condition as a failure to obtain a witness within tolerance.
+
+\subsection{Triangle AABB baseline}
+
+We triangulate the same STEP spheres and cylinders with uniform azimuthal sampling. A sphere uses half as many latitudinal intervals as azimuthal segments. Each finite rectangle uses two triangles. The general trimmed-query experiment instead uses Open CASCADE tessellation with a requested linear deflection. A median-split local AABB tree encloses the triangles with two primitives per leaf. During a query the moving node bounds are transformed into the fixed body's frame. Best-first traversal uses box separation as a lower bound and a feasible triangle pair as an upper bound. The leaf calculation covers vertex-to-face, edge-to-edge, and segment--triangle intersection cases. A previous triangle pair can seed the upper bound. Both coherence settings use the same traversal and complete the same distance problem for their triangulation.
+
+\section{Implicit HHT integration and acceptance}
+
+The unknown at each step is \(\acc_{k+1}\). At step size \(h\), we apply the Newmark updates
+\begin{align}
+    \q_{k+1}&=\q_k+h\vct_k+h^2\bigl[(1/2-\beta)\acc_k+\beta\acc_{k+1}\bigr],\\
+    \vct_{k+1}&=\vct_k+h\bigl[(1-\gamma)\acc_k+\gamma\acc_{k+1}\bigr],\\
+    \mathbf R&=M\acc_{k+1}-(1+\alpha)\force(\q_{k+1},\vct_{k+1},t_{k+1})
+                    +\alpha\force(\q_k,\vct_k,t_k).
+\end{align}
+We use \(\alpha=-0.1\), \(\beta=(1-\alpha)^2/4\), and \(\gamma=1/2-\alpha\). In the acceleration solve, the symmetric tangent is
+\begin{equation}
+M+(1+\alpha)\bigl[\beta h^2 K+\gamma h C\bigr],
+\end{equation}
+where \(K\) combines spring derivatives and the active contact approximation \(kJ^\top J\), and \(C\) contains the viscous couplings. The full nonlinear force is recomputed in the residual. A backtracking line search accepts a residual decrease. A converged residual satisfies an absolute tolerance of \(10^{-8}\) plus \(10^{-8}\) times the larger force infinity norm at the two endpoints. If the iteration or clearance check fails, the step is retried as two half steps. A failed subdivision sequence rolls back the outer step.
+
+\begin{proposition}[Positive clearance of the reconstructed step]
+For each contact pair, let \(\underline d_0,\underline d_1\) enclose the exact distance from below at the two endpoints. Let \(L_A,L_B\) be upper bounds on point travel under linear interpolation of the reduced coordinates. Then the interval-wide distance is bounded below by
+\begin{equation}
+    \underline d_{\mathrm{step}}
+      =\min(\underline d_0,\underline d_1)-\tfrac12(L_A+L_B).
+    \label{eq:guard}
+\end{equation}
+\end{proposition}
+\begin{proof}
+Boundary distance is Lipschitz with respect to the sum of the two Hausdorff displacements. The path from the nearest endpoint has length at most \((L_A+L_B)/2\) because the slider speed and angular speed bound are constant under the declared interpolation. Apply the endpoint lower bound at that endpoint.
+\end{proof}
+
+For a slider we bound travel by the position change, and for a hinge by the angular change times an enclosing distance to the pivot. The analytic endpoint bounds and travel bounds use outward interval arithmetic. We require \(\underline d_{\mathrm{step}}>0.5\) mm for every eligible pair. Both pipelines use this CAD guard as a common acceptance cost. A cache keyed by the exact previous coordinate vector reuses endpoint bounds. Cache hits change only the number of evaluations. The guarantee concerns the linear reconstruction between accepted states on the nominal CAD fixtures.
+
+\section{Experiments}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{model-scenes.pdf}
+\caption{STEP-derived dynamic fixtures rendered from accepted HHT states. The driven cam array couples six hinges and six compliant sliders. The ball train couples twelve sliders through sphere contacts and the two stops.}
+\label{fig:models}
+\end{figure}
+
+\subsection{Protocol and reference problems}
+
+We run Release builds on a Windows x64 workstation with an AMD Ryzen 9 5900X, MSVC 19.44, and Open CASCADE 7.9.3. The dynamic model uses meters, seconds, and SI masses. The mesh and native variants receive the same source STEP files, HHT parameters, joint graph, force law, and acceptance tolerances. For the long compared simulations, timings are medians of three successive compute-only repetitions per configuration. Model loading, tessellation, and writing trajectories fall outside the timer. Integration, nonlinear forces, geometry queries, and the common clearance guard fall inside. The raw records retain repeat-level spread and the work counts. Ball-train comparisons use the faster full-length mesh coherence setting. A separate ablation uses five repetitions for the guard cache.
+
+The linear oscillator has analytic solution \(q(t)=\cos(10t)\). It checks accuracy independently of the geometry. The single-ball case starts with speed \(0.45\) m/s toward a fixed floor, a \(0.018\) m stand-off beyond the compliance layer, unit mass, and no gravity. After entry, the compression is a half sine at frequency \(\sqrt{k/m}\). The contact force is \(k\) times that compression. We also sample the eccentric cam through a full turn. Its closed-form clearance is \(0.143-0.105-0.024\sin\theta\) m.
+
+The cam array runs for 120 s at a 5 ms nominal step. Adjacent hinge coordinates and adjacent sliders are elastically coupled. The ball train runs for 60 s at the same step under a two-frequency input force on the first ball. Its positive-gap contacts transmit motion through the train. We also integrate both native cases at 2.5 and 1.25 ms to assess temporal sensitivity. The smallest step supplies the numerical trajectory reference. Two 300 s native runs check sustained operation. The contact layer thickness is 12 mm and \(k=5000\) N/m for all trajectories.
+
+\subsection{Calibration and faceting error}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{calibration.pdf}
+\caption{Calibration separates time integration and contact geometry. \textbf{a}, Analytic oscillator error converges at second order. \textbf{b}, The computed contact force follows the half-sine solution. \textbf{c}, The maximum geometric clearance error drops with mesh resolution. The native cam error is below the plotted range.}
+\label{fig:calibration}
+\end{figure}
+
+The observed oscillator orders were \OscillatorOrders{}. The native impact displacement RMS error was \DropError{} mm at 1 ms and \DropFineError{} mm at 0.5 ms. Figure~\ref{fig:calibration} compares the force response with the analytic curve. The paired 1 ms pole-aligned sphere mesh produced the same trajectory to the numerical tolerance because it contains the required supporting vertex.
+
+On the rotating cam, inscribed polygons overestimate the plane clearance by up to \(r[1-\cos(\pi/N)]\), where \(N\) is the number of azimuthal facets. The nearest available vertex can be offset from the support direction by at most \(\pi/N\). The measurements are consistent with the resulting quadratic decay in angular facet size. Meshes from 12 to 96 facets reduce the observed maximum error from \CamCoarseGapError{} to \CamFineGapError{} mm over 360 poses per configuration. The analytic B-rep clearance matches the reference to roundoff. The generic B-rep search reached its 30,000-task cap before closing the requested \(2\,\mu\mathrm m\) interval on all twelve tested cam poses. This motivates the certified finite-face specialization.
+
+\subsection{Multibody cost and accuracy}
+
+\begin{table}[t]
+\centering\small
+\caption{Measured multibody outcomes. Errors are translational RMS differences against finer-step native runs. Time is the median of three repetitions. The guard column is the smallest interval lower bound across those repetitions.}
+\label{tab:performance}
+\begin{tabular}{llrrrr}
+\toprule
+Scene & Backend & Runtime (s) & RMS (mm) & Guard (mm) & Subdivisions \\
+\midrule
+\PerformanceRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{cost-accuracy.pdf}
+\caption{Cost and accuracy under a shared HHT solver. \textbf{a}, Ball-train medians and repeat ranges at matched trajectory accuracy. \textbf{b}, Cam-array time against follower-position RMS error relative to the 1.25 ms native trajectory. Mesh points are annotated by azimuthal facet count.}
+\label{fig:cost}
+\end{figure}
+
+The 60 s ball-train results give a comparison within a \(1\,\mu\mathrm m\) trajectory tolerance. The sphere-to-sphere normals are collinear with the slider axis, which the tested mesh samples directly. The largest difference between the native trajectory and the faster mesh configuration was \TrainMatchError{} mm over all sliders and recorded outer-step times. The measured median ratio was \TrainGain{} times. Both configurations use the same positive clearance check. The two mesh variants produced identical trajectories. The short unseeded traversal performed fewer primitive tests and had a slightly lower median latency. Timing varied across batches, so the main comparison retains the fastest measured full-length baseline.
+
+For the cam array, geometric error propagates to the follower even under identical HHT steps. Table~\ref{tab:performance} and Figure~\ref{fig:cost} show that denser meshes reduce the trajectory discrepancy at higher computational cost. At 96 facets, the follower RMS difference relative to the finer-step native reference was \FineCamMeshError{} mm. The matched nominal-step native trajectory had an RMS difference of \CamCadTimeError{} mm. The native run was \CamFineGain{} times faster than this mesh configuration. The finest mesh had a smaller maximum follower discrepancy despite its larger RMS difference. These are errors relative to the stated numerical reference, with analytic static clearance evidence in Figure~\ref{fig:calibration}.
+
+Halving the native nominal step reduced the cam array RMS error from \CamCadTimeError{} to \CamTemporalFine{} mm. The same refinement reduced the first-five-second ball-train RMS error from \TrainEarlyCoarse{} to \TrainEarlyFine{} mm. Over the full 60 s the corresponding ball-train discrepancies were \TrainLongCoarse{} and \TrainLongFine{} mm against the 1.25 ms trajectory. The long-window error is nonmonotonic under time-step refinement. Backend agreement at a common time step, analytic oscillator convergence, and long-time trajectory accuracy therefore measure different properties.
+
+Reusing endpoint guards leaves every tested cam state unchanged. Over the 18 s ablation it reduces endpoint evaluations from \GuardOff{} to \GuardOn{}, and the median time falls by a factor of \GuardGain{}. The cache is shared by the two geometric pipelines. Its savings are therefore independent of which narrow-phase backend generated the force.
+
+\subsection{Long-time behavior and a mesh-favorable case}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{long-run.pdf}
+\caption{Two 300 s native HHT runs. The line marks the mean of the recorded pose-level metric per one-second bin, and the band spans the minimum and maximum within the bin. The independent interval-wide guard minima are reported in the text.}
+\label{fig:long}
+\end{figure}
+
+Each 300 s native run completed 60,000 nominal advances. Minimum interval-wide clearances were \StressCamGuard{} mm for the cam array and \StressTrainGuard{} mm for the train. Figure~\ref{fig:long} shows contact load and clearance with one-second ranges. These observations establish sustained completion and positive clearance for the evaluated configurations. The runs exercise repeated forcing and contact rather than a linear stability theorem for arbitrary nonlinear systems.
+
+We separately compare static clearance on a STEP pin and trimmed circular bore at 25 poses. The original B-rep retains the radial bore boundary and encloses the analytic distance at each pose. With the tested finest tessellation the triangle BVH achieved a maximum point estimate error of \TrimFinestError{} mm against that reference, and a median time of \TrimFinestMesh{} ms. The general B-rep median was \TrimCadTime{} ms. The dataset demonstrates two regimes. Analytic native support can improve both cost and accuracy on qualified pairs. A tessellated hierarchy can be much faster on a general trimmed shape at the tested accuracy.
+
+\subsection{Production STEP assembly clearance}
+
+The continuous CAD search also supports radial and axial rejection bounds for fixed-orientation translation near circular trims. The original controlled eccentric pin-to-hole-rim sweep provides an analytic entry time. Enabling those bounds lowered its median latency from 693.1 to 1.24 ms in nine paired repetitions. The refined interval still contained the analytic first entry and decreased in width from \(4.992\times10^{-4}\) to \(3.125\times10^{-5}\) in normalized time.
+
+We also replay prescribed assembly motions on original component occurrences from the published OpenAMRobot wheel and lidar supports \cite{openamrobot}. This test measures the geometry stage on production trims and placements. It compares the original CAD search with its radial and axial bounds enabled, leaving the distance and time tolerances unchanged. The three wheel cases cover a washer stack and two screw insertions, each with nine repeated measurements per configuration. All 54 wheel queries meet the time-width target and overlap the independent OCCT cross-check. Median speedups range from 2.80 to 5.97, with the largest gain on the first eccentric screw insertion (905.9 to 151.8 ms). The lidar pre-seat trajectory gains 1.09 times and certifies the full tested interval. The full lidar insertion still reaches the work cap before meeting the time-width target. These prescribed-motion results establish an additional test of the native query kernel. The HHT results in Table~\ref{tab:performance} use the separately defined dynamic fixtures and the triangle baseline.
+
+\begin{table}[t]
+\centering\small
+\caption{Static clearance on original production STEP occurrences. The timings are medians across 17 shared poses per assembly pair. The mesh uses requested deflection 0.0125 mm. Its error column reports maximum pointwise distance discrepancy against OCCT boundary extrema. The native median includes any queries that reached the task budget.}
+\label{tab:production}
+\begin{tabular}{lrrrr}
+\toprule
+Assembly motion & CAD resolved & CAD (ms) & Mesh (ms) & Mesh error (mm)\\
+\midrule
+\ProductionRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+We additionally sample 17 poses per production motion and directly compare the native B-rep search and the mesh BVH. Both use original placements and boundary distances in millimeters. The B-rep search requests a 0.0002 mm interval width with a cap of 30,000 tasks. Each of the mesh deflections 0.20, 0.05, and 0.0125 mm is tessellated independently from the source shape. The numerical reference is OCCT boundary extrema at the same pose. The CAD intervals contain the numerical reference at \ProductionOracleAgreement{} of \ProductionOraclePoses{} poses with a \(10^{-6}\) mm comparison margin. The finest mesh returned a point estimate at every pose and had the smaller median query time for each pair, with the largest observed discrepancy on the lidar support (Table~\ref{tab:production}). The first-entry sweep measurements above provide the trajectory-wide clearance evidence.
+
+\IfFileExists{contact-validation-results.tex}{%
+  \input{contact-validation-results.tex}%
+  \input{contact-validation.tex}%
+}{}
+
+\section{Scope and conclusion}
+
+The certified-clearance benchmarks use frictionless compliance, fixed-axis hinges, and sliders. The reported CAD guard protects each declared pair over the specified interpolation of accepted states. Its hypothesis concerns the nominal imported geometry. The primary speedups in those tests use analytic CAD pairs whose support witnesses satisfy the finite-face condition. The general trimmed distance benchmark records the opposite latency tradeoff. The directional contact experiments extend the evaluated conditions to frictional sliding and reduced beam compliance.
+
+Within these conditions, retaining original CAD support avoids the faceting error that dominates the coarse cam comparisons, and avoids visiting triangle features in the matched ballistic and train queries. The resulting experiments distinguish convergence of the implicit integrator from the effect of geometry representation. They also show that the shared guard and endpoint reuse can be measured independently of the contact backend.
+
+\paragraph{Reproducibility.}
+The \path{nc_hht} target generates and reads the STEP fixtures. \path{benchmarks/hht/run.py} runs the numerical suite, \path{analyze.py} validates trajectories and aggregates results, and \path{render.py} and \path{plots.py} generate the videos and figures from the recorded states. \path{results/hht/protocol.json} specifies the run matrix. The results include per-run solver counters, clearance bounds, raw geometry tests, and the multi-view animation index. The production assembly input hashes, motion definitions, and raw observations are in \path{benchmarks/assemblies/}. The paired eccentric-rim measurements are in \path{benchmarks/axial-results.csv}.
+
+\bibliographystyle{unsrtnat}
+\bibliography{hht}
+\end{document}

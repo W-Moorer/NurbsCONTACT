@@ -1,0 +1,42 @@
+\subsection{Reconstructed gear compliance and the loss-of-contact test}
+
+We rebuilt both STEP flanks from the average shape of the four traces per gear in Fig.~3 of NASA TM-103232. The plotted profiles provide the relative shape. Table~I fixes the tip amplitudes at 23 and \(25\,\mu\mathrm m\). This reconstruction shares the same geometric profile across all teeth of a gear. The native and triangle runs use the same exported STEP surfaces and trimmed line-of-action stations. We converted the customary inertia column to SI using \(1\,\mathrm{lbf\,in\,s^2}=0.112985\,\mathrm{kg\,m^2}\). The \href{https://ntrs.nasa.gov/citations/19930018861}{DANST manual} independently lists the customary magnitudes. The equivalent gearbox stiffness in Table~II includes shaft flexibility. It enters the modal audit separately from the tooth pair compliance.
+
+At each station we compute the compliance of the two gear teeth as tapered beams with bending, shear, and radial compression, and add a line-contact compliance. Let \(g_i\) denote the CAD gap, \(g_0\) the fixed gap offset, \(C_i\) the sum of those compliances, and \(C_b\) a constant series compliance accounting for deformation outside the reduced tooth model. With geometric endpoint weight \(w_i\), rolling normal force satisfies
+\[
+ k_i=(C_i+C_b)^{-1},\qquad
+ F_i=w_i\max\!\left(0,k_i(g_0-g_i)-c_i\,\dot g_i\right)
+ \quad\text{for }g_i<g_0 ,
+\]
+and vanishes for \(g_i\ge g_0\). The damping coefficient uses a ratio of \NasaRevisedDamping{} and the reduced inertia. The gap derivative includes the advance of the nominal gear angle and the generalized velocities. We obtain its signed lever arms from the tangent of each native isocurve or the normal of the intersected triangle. The load tangent for the HHT solve uses the same gap gradient. The query keeps the finite-flank trim and the original \(2\,\mu\mathrm m\) sampled working-flank guard.
+
+The independent beam and line-contact estimate gives \NasaRevisedKBeam{} MN/m at the pitch point. For the series-compliance variant we solve torque balance over 224 mesh phases at each load. We select one stiffness using only the approximate static DANST plateau in Fig.~7(c), near roll angles \(\NasaRevisedStaticTarget\) degrees. The selected pitch stiffness is \NasaRevisedStiffness{} MN/m, with plateau endpoints \(\NasaRevisedStaticSpan\) degrees. The reference plateau is a published calculation. Its overlapping strokes limit the precision of the endpoints. The static torque balance residual stays below \(10^{-6}\,\mathrm{N\,m}\). For the native runs, the fractions of phases with two loaded tooth pairs are \NasaRevisedDualShares{} percent at 11.48, 33.73, and 67.46 N\,m, respectively.
+
+The four dynamic comparisons use the same stiffness and damping for both geometric backends. The gearbox-stiffness linearization with the converted inertias gives \(\NasaRevisedGearboxFrequencies\) Hz. The report lists 6.56, 52.5, and 1220 Hz. The middle entry is inconsistent with our four-inertia reconstruction. The single loaded pair at the calibrated pitch stiffness gives \(\NasaRevisedFrequencies\) Hz. Table~II lists the highest DANST frequency at 5821 Hz. A sensitivity run imposed that value on the frozen single-pair linearization. It produced an early zero-force interval with zero overlap with the measured zero bins.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=.87\linewidth]{\NasaRevisedPath nasa-revised-force.pdf}
+\caption{NASA single-tooth force with converted inertias, digitized profile shapes, and the static-calibrated series compliance. The shaded region in 7(b) marks the measured zero-force interval on the scoring grid.}
+\label{fig:nasa-revised}
+\end{figure}
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Waveform RMSE in newtons for the successive NASA model changes. Peak error refers to the static-calibrated native model.}
+\label{tab:nasa-revised}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrrrr}
+\toprule
+Panel & Original B-rep & Inertias only & Beam B-rep & Calibrated B-rep & Calibrated BVH & B-rep peak err. (\%)\\
+\midrule
+\NasaRevisedRows
+\bottomrule
+\end{tabular}}
+\end{table}
+
+In 7(b) the digitized measured zero range is \(\NasaRevisedObservedSpan\) degrees. The pure beam model predicts an internal zero-force interval at \(\NasaBeamInternalSpan\) degrees. The calibrated B-rep result overlaps \NasaRevisedLowOverlap{} percent of the measured zero bins and reaches a minimum of \NasaRevisedLowMin{} N on them. The observed phase discrepancy persists under step refinement. Halving the step changes the calibrated B-rep waveform by \NasaRevisedStepB{} N RMS in 7(b) and \NasaRevisedStepD{} N RMS in 7(d). The calibrated runs retain a smallest recorded gap of \NasaRevisedSmallestGap{} micrometers. The remaining force errors motivate an independently identified dynamic model of the shafts and supports.
+
+Refining 7(b) again to \(0.25\,\mu\mathrm s\) changes its waveform by \NasaQuarterStepDelta{} N RMS relative to the nominal step. Before phase averaging, \NasaQuarterStepSamples{} saved tooth samples occupy the measured zero-force interval. Their minimum force is \NasaQuarterStepMin{} N. The output cadence in this audit is \(1\,\mu\mathrm s\).
+
+In three alternating, serial timing repeats of 7(b), each simulating 0.16 s, median HHT integration takes \NasaRevisedTimeBrep{} s for the native surfaces and \NasaRevisedTimeBvh{} s for the triangle BVH, a factor of \NasaRevisedSpeed{}. Timings exclude geometry setup and output.

@@ -1,0 +1,7 @@
+/build/
+/ccfa-workfiles/
+/manuscript/*.aux
+/manuscript/*.log
+/manuscript/*.out
+/manuscript/*.pdf
+__pycache__/

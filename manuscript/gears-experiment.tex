@@ -1,0 +1,65 @@
+\section{External gear-rig comparisons}
+
+The simulated gear benchmarks above control numerical resolution and the contact representation. We additionally test the reduced contact dynamics against a single-tooth force measurement and against two-shaft encoder measurements. Stiffness and damping are selected from a fixed grid using one operating condition per rig. The mesh and B-rep runs share the selected parameters. Scoring on held-out conditions uses the same parameters and phase conventions.
+
+\subsection{NASA single-tooth dynamic force}
+
+We use the reconstructed 28/28-tooth CAD fixture described above and constant torque at the values indicated in Fig.~7 of NASA TM-103232. Four torsional coordinates represent the motor, pinion, wheel, and load. The model uses the inertia values printed in SI units in Table II and the reported 341 and 12,700 N\,m/rad input and output torsional stiffnesses. An equivalent normal compliance represents the working contact. The gearbox stiffness entry from the reference is distinct from the effective normal tooth stiffness fitted here. The shaft damping is set to 0.05 of critical for the adjacent-inertia pair. The selected effective tooth stiffness is \NasaK{} MN/m with damping ratio \NasaZeta{}. Both values lie on the prescribed NASA calibration grid boundary.
+
+We digitize the four experimental traces, using only the solid force curves. The points trace the published plot with an ordinate resolution of roughly 6 N per source pixel. Thick and overlapping strokes add local reading uncertainty. The comparison uses the driven tooth roll angle from the actual native or meshed witness. We use the simulated single-pair forces, average complete simulated engagements in the last half of each run, and hold the roll-angle origin fixed. The scored range ends at \(29.5^\circ\), with the lower bound at \(12^\circ\) for (a)--(c) and \(12.625^\circ\) for (d). The restricted endpoint of (d) follows the identifiable trace of the plotted measurement. \href{https://ntrs.nasa.gov/citations/19910013253}{NASA TM-103232}.
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Single-tooth normal force relative to the digitized experiments. Peak refers to the scored roll-angle range. RMSE is computed on the common \(0.125^\circ\) grid.}
+\label{tab:nasa-exp}
+\begin{tabular}{lrrrrrl}
+\toprule
+Panel & rpm & Torque (N\,m) & Measured peak (N) & B-rep RMSE (N) & Mesh RMSE (N) & Role\\
+\midrule
+\NasaExperimentRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=.88\linewidth]{\GearExperimentPath nasa-single-tooth.pdf}
+\caption{NASA single-tooth force. Dots digitize the experimental trace. Solid and dashed lines are the HHT runs using native STEP faces and triangles, respectively.}
+\label{fig:nasa-exp}
+\end{figure}
+
+The low-load 4000 rpm measurement shows loss of tooth contact. Within the central \(19.5^\circ\) to \(21.5^\circ\) interval the native single-tooth force remains above \NasaLowLoadFloor{} N, leaving the loss of contact unpredicted. In the 6000 rpm, 94\% torque case, halving the native time step changes the force profile by \NasaStepDelta{} N RMS. The paired SI and customary inertia entries in NASA Table II imply a tenfold difference when the customary entries are interpreted as force-inch units. A separate sensitivity run multiplies all four inertias by ten with the other settings fixed. At 6000 rpm and 47\% torque it changes the force profile by \NasaInertiaSensitivity{} N RMS, giving an error of \NasaInertiaRMSE{} N against the digitized measurement. The main comparison retains the published SI entries.
+
+\IfFileExists{nasa-revised-results.tex}{%
+  \input{nasa-revised-results.tex}%
+  \input{nasa-revised.tex}%
+}{}
+
+\subsection{UNSW encoder transmission error}
+
+The UNSW test gear pair has 27/44 teeth, a 2 mm module, 5 mm face width, \(20^\circ\) pressure angle, and 10 mm bore radii. We use three healthy records from the original 200 kHz dataset. The input reference phase is set by the tachometer. The 3600-pulse encoder signals on both shafts are converted to continuously interpolated angular measurements using linearly interpolated zero crossings. The base-radius-scaled difference gives the transmission error. We remove the block mean and average complete hunting-tooth periods of 44 input revolutions, preserving the mesh-synchronous waveform. Repeating the extraction with falling edges changes the three mean waveforms by less than \(0.012\,\mu\)m RMS. The reported block range shows variation within each recording.
+
+The reconstructed solver uses two effective shaft inertias and ideal involute STEP geometry. Encoder transfer dynamics and as-manufactured deviations are omitted from this model. The effective stiffness \UnswK{} MN/m, damping ratio \UnswZeta{}, and the phase offset of \UnswShift{} mesh cycles are set using the nominal 5 Hz and 10 N\,m record. The two held-out records use measured speeds and mean input torques. Halving the native step in the faster held-out case changes the mesh-synchronous waveform by \UnswStepDelta{} \(\mu\)m RMS. \href{https://doi.org/10.26190/UNSWORKS/24007}{Test geometry in Chin's thesis}. \href{https://doi.org/10.17632/p72x3m92cv.1}{CC BY 4.0 dataset}.
+
+\begin{table}[!htbp]
+\centering\small
+\caption{UNSW AC transmission error. RMS and RMSE are computed on 128 uniformly spaced points over one mesh cycle.}
+\label{tab:unsw-exp}
+\begin{tabular}{rrrrrl}
+\toprule
+Measured rpm & Input N\,m & Data RMS (\(\mu\)m) & B-rep RMSE (\(\mu\)m) &
+Mesh RMSE (\(\mu\)m) & Role\\
+\midrule
+\UnswExperimentRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=.88\linewidth]{\GearExperimentPath unsw-encoder-dte.pdf}
+\caption{UNSW DTE and mesh harmonics at the calibration setting and two held-out settings. The shaded band is the range across complete hunting-tooth blocks of the encoder record.}
+\label{fig:unsw-exp}
+\end{figure}
+
+At the faster held-out setting the measured second mesh harmonic is \UnswMeasuredSecond{} \(\mu\)m and the native result is \UnswNativeSecond{} \(\mu\)m. The held-out errors characterize the full reduced model. Residual discrepancies can include contact-law approximations, rig dynamics, and manufacturing deviations. Replacing the triangulated faces with native STEP geometry isolates one numerical contribution within those settings.

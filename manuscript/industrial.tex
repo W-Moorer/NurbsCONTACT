@@ -1,0 +1,131 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=22mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\ifdefined\pdfmapfile\pdfmapfile{+lm.map}\fi
+\usepackage{amsmath,booktabs,graphicx}
+\usepackage[expansion=false]{microtype}
+\usepackage[hidelinks]{hyperref}
+\renewcommand{\topfraction}{.88}
+\renewcommand{\textfraction}{.10}
+\renewcommand{\floatpagefraction}{.66}
+\input{industrial-results.tex}
+\title{\textbf{Industrial STEP Benchmarks for Implicit HHT-$\alpha$ Contact}\\
+Gear Drives and a Cylindrical Roller Bearing}
+\author{NurbsCONTACT research supplement}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We compare native CAD and triangle-BVH contact on four loaded transmission models and a cylindrical roller bearing. Each backend uses the same time integrator, load history, body coordinates, and contact law. The test set contains a spur pair, a helical pair, a pair reconstructed from published gear-rig dimensions, a two-stage reducer, and a 14-roller bearing. The gear study measures transmission error and tooth loads through mesh and axial quadrature refinement. The bearing study compares the shaft orbit, load distribution, and a geometry-based radial clearance bound. CAD section extraction preserves the original STEP splines and reduces the cost of repeated contact probes. The delivered artifacts include the STEP solids, accepted trajectories, query counters, figures and multi-view animations.
+\end{abstract}
+
+\section{Transmission fixtures and geometry}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=.86\linewidth]{gear-models.pdf}
+\caption{Four gear fixtures rendered from their STEP solids and accepted HHT states. Orange dots project the strongest sampled contact station of each mesh onto the camera.}
+\label{fig:gear-models}
+\end{figure}
+
+The spur transmission uses 24 and 48 teeth, a 2.5 mm module, a 24 mm face, an 1800 rpm input, and 56 N\,m nominal output braking torque. The helical pair uses 25 and 45 teeth, a \(25^\circ\) helix, a 2.5 mm normal module, a 28 mm face, 1500 rpm, and 72 N\,m. The compound reducer connects a spur and helical stage through a common shaft. It uses 24/48 and 22/44 teeth, a 4:1 ratio, a \(22^\circ\) second-stage helix, an 1800 rpm input, and 148 N\,m at the output.
+
+The fourth fixture uses the dimensions in Table I of the NASA gear-noise-rig study. It has 28 teeth per gear, a 3.175 mm module, a 6.35 mm face, and a \(20^\circ\) pressure angle. We included the reported 23 and 25 \(\mu\)m tip relief beginning at a \(24^\circ\) roll angle. We use 2000 rpm and a nominal torque of 71.77 N\,m. The bench dimensions and relief inform the generated STEP, while the stiffness, shaft inertia, and excitation are specified by this benchmark. The comparison uses numerical references under this model. \href{https://ntrs.nasa.gov/citations/19910013253}{Oswald et al., NASA gear-noise-rig report}.
+
+Each gear is a closed STEP solid with an axial bore, repeated active flanks, tooth tips, roots, and end faces. The working faces are cubic spline interpolants of transverse involutes with axial lead and optional relief. The probe reuses an original working flank through rotational tooth symmetry. A sampled validation compares the round-tripped STEP flank against the analytical generating curve. The per-flank fit stays within 2 \(\mu\)m over that validation grid. The roots use simplified transitions and do not supply bending stresses.
+
+\section{Shared contact and integration}
+
+For each stage let \(s\) be distance along the transverse line of action, \(r_b\) the driver base radius, \(h\) its twist per unit face width, and \(p_b\) the base pitch. At axial station \(z\), tooth pair \(j\) is sampled at the nominal position
+\begin{equation}
+s_j = r_b(\omega t+h z)+j p_b.
+\end{equation}
+The two flanks undergo their actual rigid transforms from the HHT states. At the candidate station we solve two short ray intersections on the trimmed working flanks. The signed gap is \((t_B-t_A)\cos\beta_b\), where \(\beta_b\) is the base helix angle. Both pipelines use the same finite-path and endpoint tapers, contact stations, and linear compliance of \(1.6\times10^8\) N/m per fully weighted tooth. This is a projected normal contact model on the driving flanks. The projected station gaps are evaluated independently on native CAD during postprocessing.
+
+The native queries intersect fixed-axial STEP isocurves. We extract their nonrational cubic segments and evaluate them by Horner's method in a restricted Newton solve. The triangle backend uses fresh OCCT tessellations of the same trimmed faces and two-sided finite ray intersections with a median-split AABB hierarchy. On the helical ablation, extracting the exact section basis gives a \SectionGain-fold speedup relative to repeated OCCT surface evaluation. The largest transmission difference was \SectionDrift{} \(\mu\)m.
+
+The common HHT-\(\alpha\) solver uses \(\alpha=-0.1\), shaft-angle deviations from nominal rotation, and an implicit force residual. Shaft inertias use annular estimates. The load history contains a rise near 0.10 s, a release near 0.24 s, and a superposed periodic component. The driver is coupled to its nominal angle by a torsional spring and damper. Positive load maintains driving-flank engagement. The models resolve effective normal and axial loads. Friction, rolling lubrication, tooth fatigue, and housing flexibility are outside the reduced equations.
+
+\section{Measured results}
+
+\begin{table}[!htbp]
+\small\centering
+\caption{0.60 s gear runs at 20 \(\mu\)s. Medians use three repetitions. The mesh deflection is 1.5625 \(\mu\)m. TE and force columns compare the mesh with matched-step CAD. The last column compares CAD at 20 and 10 \(\mu\)s. The reducer entries use the larger stage error per metric.}
+\label{tab:primary-gears}
+\begin{tabular}{lrrrrrr}
+\toprule
+Fixture & CAD (s) & Mesh (s) & Ratio & TE (\(\mu\)m) & Force (\%) & CAD step TE (\(\mu\)m)\\
+\midrule
+\MainRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=.94\linewidth]{gear-cost-accuracy.pdf}
+\caption{Runtime ratios and transmission RMS differences over the three tessellation settings. All settings use the same contact projection and numerical integration.}
+\end{figure}
+
+The primary matrix uses one axial station for spur gears and seven stations for helical gears. Table~\ref{tab:primary-gears} separates temporal discrepancy from the matched-step effect of changing the flank representation. It measures transmission error in base-circle displacement units. The force metric is the RMS difference divided by the mean CAD force after 20 ms. Mesh fineness changes both the cost per ray and the number of implicit residual evaluations. A small RMS transmission discrepancy can accompany substantially different force peaks.
+
+\begin{table}[!htbp]
+\small\centering
+\caption{0.36 s axial refinement. Runtime ratios compare CAD and the fine mesh at 31 axial stations. Error columns compare the fine mesh with CAD at 31 stations and CAD at 31 stations with CAD at 63, respectively. Spur stages use a single station.}
+\label{tab:axial}
+\begin{tabular}{lrrrrr}
+\toprule
+Fixture & Ratio & Mesh TE (\(\mu\)m) & Axial TE (\(\mu\)m) & Mesh force (\%) & Axial force (\%)\\
+\midrule
+\DenseRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+With helical contact, the axial station count changes the force waveform. We measured additional 31- and 63-station trajectories to quantify the sensitivity independently of surface faceting. The fine mesh and native CAD use the same 31 stations in this comparison. Figure~\ref{fig:axial} plots the corresponding force and transmission histories, and Table~\ref{tab:axial} retains the residual sensitivity to axial quadrature.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=.86\linewidth]{gear-axial-refinement.pdf}
+\caption{Refinement at matched contact stations and at higher native axial sampling. The same projected contact model is used in both refinement directions.}
+\label{fig:axial}
+\end{figure}
+
+The 3 s reducer trajectories complete 150,000 nominal steps, covering 2160 stage-one and 990 stage-two tooth-passing periods. Integration took \DutyCad{} s on CAD and \DutyMesh{} s on the fine mesh, a factor of \DutyGain. The smallest native sampled clearance was \DutyGap{} \(\mu\)m on the CAD trajectory. The largest native axial load on the helical stage was \DutyAxial{} N. The gear clearance evidence applies to the selected working-flank probes and recorded times.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=.88\linewidth]{reducer-duty.pdf}
+\caption{Long reducer runs. Filled bands give the observed range in 20 ms windows. Force traces mark the per-window mean and gap traces mark the per-window minimum.}
+\end{figure}
+
+\section{Cylindrical roller bearing}
+
+The bearing uses the 45 mm bore, 85 mm outer diameter, and 19 mm width of the NU 209 envelope. The roller count, race radii, and stiffness are defined here. Fourteen 8 mm rollers share a prescribed 787.5 rpm cage driven by an 1800 rpm shaft. The HHT state contains the two radial shaft translations. A massless radial series-compliance model balances the opposing roller-to-race loads. A radial force step and rotating imbalance drive the shaft. \href{https://www.emarketplace.in.skf.com/cylindrical-roller-bearing/nu-209-ecp}{SKF catalog dimensions}.
+
+The native method uses analytic radii extracted from the three round STEP surfaces. The triangle method intersects equivalent radial probes through meshes of those faces. For a linearly reconstructed displacement \(q\) of the shaft center, the total directional room remaining after the roller diameter is at least
+\[
+R_o-R_i-2r-\max(\|q_{\rm start}\|,\|q_{\rm end}\|).
+\]
+Both variants use this interval bound, evaluated with outward rounding. The bound describes the directional radial model under prescribed cage kinematics.
+
+In the 0.36 s test the CAD integration median was \BearingCad{} s and the fine-mesh median was \BearingMesh{} s. The speed ratio was \BearingGain. The RMS shaft-orbit difference was \BearingDrift{} \(\mu\)m, with a maximum of \BearingMax{} \(\mu\)m. The RMS difference in maximum roller force was \BearingPeak{} N. The smallest common radial interval bound across both configurations was \BearingGuard{} \(\mu\)m.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=.87\linewidth]{bearing-loads.pdf}
+\caption{STEP bearing assembly and load zone, with matched-step shaft orbit and roller load traces.}
+\end{figure}
+
+\IfFileExists{gears-experiment-results.tex}{%
+  \input{gears-experiment-results.tex}%
+  \input{gears-experiment.tex}%
+}{}
+
+\section{Reproduction}
+The \path{nc_gears} and \path{nc_roller_bearing} targets generate the working geometry and run the contact models. \path{results/gears/README.md} gives the Python analysis and rendering commands. The protocol and timing files record each deflection, step size, repeat and axial sampling setting. Timed integration excludes STEP loading, contact representation setup, and disk output. Setup is recorded separately. The models and runs use the project OCCT 7.9.3 Release build.
+
+\end{document}

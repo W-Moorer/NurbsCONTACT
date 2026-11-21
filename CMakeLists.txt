@@ -1,0 +1,62 @@
+cmake_minimum_required(VERSION 3.23)
+project(NurbsCONTACT VERSION 0.1.0 LANGUAGES CXX)
+
+# Resolve libraries through CMake targets. Machine-wide vcpkg MSBuild
+# integration can otherwise add every installed .lib to the link line.
+if(CMAKE_GENERATOR MATCHES "^Visual Studio")
+    list(APPEND CMAKE_VS_GLOBALS "VcpkgEnabled=false")
+endif()
+
+include(CTest)
+option(NC_WITH_OCCT "Build STEP import and CAD benchmarks with Open CASCADE" ON)
+
+add_library(nurbscontact STATIC src/geometry.cpp src/axial.cpp src/query.cpp src/hht.cpp src/triangle_bvh.cpp
+    src/contact_dynamics.cpp)
+target_compile_features(nurbscontact PUBLIC cxx_std_20)
+target_include_directories(nurbscontact PUBLIC include)
+if(MSVC)
+    target_compile_options(nurbscontact PUBLIC /fp:strict PRIVATE /W4 /permissive-)
+else()
+    target_compile_options(nurbscontact PUBLIC -fno-fast-math -ffp-contract=off PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+if(NC_WITH_OCCT)
+    find_package(OpenCASCADE CONFIG REQUIRED COMPONENTS
+        FoundationClasses ModelingData ModelingAlgorithms Visualization ApplicationFramework DataExchange)
+    add_library(nurbscontact_occt STATIC src/occt.cpp src/occt_contact.cpp)
+    target_include_directories(nurbscontact_occt SYSTEM PUBLIC ${OpenCASCADE_INCLUDE_DIR})
+    target_link_libraries(nurbscontact_occt PUBLIC nurbscontact
+        TKernel TKMath TKG2d TKG3d TKGeomBase TKBRep TKGeomAlgo TKTopAlgo TKPrim TKBO TKBool TKXSBase TKDESTEP TKMesh)
+    add_executable(nc_step apps/step.cpp)
+    target_link_libraries(nc_step PRIVATE nurbscontact_occt)
+    add_executable(nc_contact apps/contact.cpp)
+    target_link_libraries(nc_contact PRIVATE nurbscontact_occt)
+    add_executable(nc_bench benchmarks/run.cpp)
+    target_link_libraries(nc_bench PRIVATE nurbscontact_occt)
+    add_executable(nc_assembly_bench benchmarks/assembly.cpp)
+    target_link_libraries(nc_assembly_bench PRIVATE nurbscontact_occt TKXCAF TKLCAF TKCDF TKMesh)
+    add_executable(nc_hht benchmarks/hht/main.cpp benchmarks/hht/contact.cpp benchmarks/hht/scene.cpp)
+    target_link_libraries(nc_hht PRIVATE nurbscontact_occt TKMesh)
+    add_executable(nc_gears benchmarks/gears/main.cpp benchmarks/gears/flank.cpp)
+    target_link_libraries(nc_gears PRIVATE nurbscontact_occt TKMesh)
+    add_executable(nc_roller_bearing benchmarks/gears/bearing.cpp)
+    target_link_libraries(nc_roller_bearing PRIVATE nurbscontact_occt TKMesh)
+endif()
+
+if(BUILD_TESTING)
+    add_executable(nc_tests tests/queries.cpp)
+    target_link_libraries(nc_tests PRIVATE nurbscontact)
+    add_test(NAME geometry_and_queries COMMAND nc_tests)
+    add_executable(nc_hht_tests tests/hht.cpp)
+    target_link_libraries(nc_hht_tests PRIVATE nurbscontact)
+    add_test(NAME hht_and_triangle_bvh COMMAND nc_hht_tests)
+    if(NC_WITH_OCCT)
+        add_executable(nc_step_tests tests/step.cpp)
+        target_link_libraries(nc_step_tests PRIVATE nurbscontact_occt)
+        add_test(NAME step_round_trip COMMAND nc_step_tests)
+        if(WIN32)
+            set_property(TEST step_round_trip PROPERTY ENVIRONMENT_MODIFICATION
+                "PATH=path_list_prepend:${OpenCASCADE_BINARY_DIR}")
+        endif()
+    endif()
+endif()
