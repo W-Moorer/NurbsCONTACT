@@ -70,6 +70,7 @@ def verify_acceleration(exe, out):
     mesh = trimesh.load_mesh(source/'spur.obj',process=False)
     with np.load(source/'spur-geometry.npz') as geometry:
         probes = probe_set(mesh,geometry,5119)
+        transition = probe_set(mesh,geometry,986,count=384,offset_mm=.2)
     inputs, outputs = out/'probe-5119.txt', out/'truth-5119.csv'
     np.savetxt(inputs,probes,fmt='%.17g')
     subprocess.run([exe,'cad-point-distance','results/gears/models/spur-1a.step',inputs,outputs],check=True)
@@ -99,8 +100,23 @@ def verify_acceleration(exe, out):
     sign_errors = int(sum(np.sign(distances)!=np.sign(cad[:,0])))
     if fresh['within_0p125_um'] != len(probes) or sign_errors or all_delta > 1e-5:
         raise RuntimeError('Compiled projection differs from the reference or misses the CAD tolerance')
+    ranges = {}
+    broad = np.random.default_rng(14).uniform(-42,42,(432,3))
+    for label, samples in [('crease_band',transition),('bounding_box',broad)]:
+        inputs, outputs = out/f'{label}-probes.txt', out/f'{label}-cad.csv'
+        np.savetxt(inputs,samples,fmt='%.17g')
+        subprocess.run([exe,'cad-point-distance','results/gears/models/spur-1a.step',inputs,outputs],check=True)
+        target = np.loadtxt(outputs,delimiter=',',skiprows=1,usecols=0)
+        values = accelerated.predict(samples)
+        ranges[label] = {'n':len(samples), **accuracy(values,target),
+                         'wrong_sign':int(np.count_nonzero(np.sign(values)!=np.sign(target))),
+                         'compiled_vs_numpy_max_um':float(np.max(abs(values-baseline.predict(samples)))*1000)}
+        if (ranges[label]['within_0p125_um'] != len(samples) or ranges[label]['wrong_sign']
+                or ranges[label]['compiled_vs_numpy_max_um'] > 1e-5):
+            raise RuntimeError(f'{label} probes exceed the distance, sign or implementation tolerance')
     return {'seed':5119,'fresh_points':len(probes),'fresh':fresh,'fresh_wrong_sign':sign_errors,
             'archived':archived_accuracy,'compiled_vs_numpy_max_um':float(all_delta),'loads':loads,
+            'distance_ranges':ranges,
             'normal_checks':len(ids),'normal_p95_deg':float(np.percentile(angle,95)),'normal_max_deg':float(max(angle))}
 
 

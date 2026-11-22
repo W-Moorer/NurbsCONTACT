@@ -16,21 +16,21 @@ from cube_field import TangentField
 from nhrep_gear import cad_triangle_parameters
 
 
-def probe_set(mesh, geometry, seed, count=768):
+def probe_set(mesh, geometry, seed, count=768, offset_mm=.05):
     rng = np.random.default_rng(seed)
     vertices = geometry['vertices']
     normals = geometry['normals']
     triangles = rng.choice(len(mesh.faces), count, p=mesh.area_faces / mesh.area_faces.sum())
     bary = rng.dirichlet(np.ones(3), size=count)
     surface = np.einsum('ij,ijk->ik', bary, vertices[mesh.faces[triangles]])
-    face = surface + rng.uniform(-.05, .05, (count, 1))*normals[triangles]
+    face = surface + rng.uniform(-offset_mm, offset_mm, (count, 1))*normals[triangles]
     segments = geometry['feature_segments']
     edges = segments[rng.choice(len(segments), count)]
     t = rng.uniform(.05, .95, (count, 1))
     edge = vertices[edges[:, 0]]*(1-t) + vertices[edges[:, 1]]*t
     w = rng.uniform(.05, .95, (count, 1))
     n = w*normals[edges[:, 2]] + (1-w)*normals[edges[:, 3]]
-    sharp = edge + rng.uniform(-.05, .05, (count, 1))*n/np.linalg.norm(n, axis=1)[:, None]
+    sharp = edge + rng.uniform(-offset_mm, offset_mm, (count, 1))*n/np.linalg.norm(n, axis=1)[:, None]
     return np.vstack((face, sharp))
 
 
@@ -92,24 +92,23 @@ def barycentric(points, tris):
 class FittedFaces:
     """Use mesh proximity to choose candidate CAD faces, then query the fitted geometry."""
 
-    def __init__(self, guide_path, fits_path, *, compiled=True):
+    def __init__(self, guide_path, fits_path, *, compiled=True, crease_band_mm=.1):
+        """Use extra adjacent-face projections within crease_band_mm of the guide."""
+        if not np.isfinite(crease_band_mm) or crease_band_mm < 0:
+            raise ValueError('Expected a finite nonnegative crease band in millimetres')
+        self.crease_band_mm = float(crease_band_mm)
         with np.load(guide_path) as guide:
             self.xyz = guide['vertices']
             self.tri = guide['triangles'].astype(np.int64)
             self.owner, self.uv = guide['owners'], guide['uv']
         mesh = trimesh.Trimesh(self.xyz, self.tri, process=False)
         self.incident = mesh.vertex_faces
-        self.tree = igl.AABB()
-        self.tree.init(self.xyz, self.tri)
         adjacency = mesh.face_adjacency
         normals = mesh.face_normals
         crease = ((self.owner[adjacency[:,0]] != self.owner[adjacency[:,1]])
                   & (np.einsum('ij,ij->i', normals[adjacency[:,0]], normals[adjacency[:,1]]) < .999))
         self.edge_pairs = adjacency[crease]
         self.edges = mesh.face_adjacency_edges[crease].copy()
-        self.edge_tree = igl.AABB()
-        if len(self.edges):
-            self.edge_tree.init(self.xyz, self.edges)
         inside = mesh.triangles_center[self.edge_pairs[:,1]] - self.xyz[self.edges[:,0]]
         self.convex_sign = np.where(np.einsum('ij,ij->i', inside, normals[self.edge_pairs[:,0]]) < 0, 1., -1.)
         with np.load(fits_path) as fits:
@@ -121,20 +120,38 @@ class FittedFaces:
         self.refine = None
         if compiled:
             try:
-                from fitted_projection import pack_faces, refine
+                from fitted_locator import pack_grid, pack_tree, signed_distances
+                from fitted_projection import pack_faces
             except ModuleNotFoundError as exc:
                 if exc.name != 'numba':
                     raise
             else:
-                self.refine = refine
+                self.refine = signed_distances
                 a,b,c = self.xyz[self.tri].transpose(1,0,2)
                 ab, ac = b-a, c-a
                 normal = np.cross(ab,ac)
                 denom = np.einsum('ij,ij->i',normal,normal)
                 self.bary_grad = np.stack((np.cross(ac,normal),np.cross(normal,ab)),axis=1)/denom[:,None,None]
                 self.packed = pack_faces(self.faces)
+                self.tri_tree = pack_tree(self.xyz, self.tri)
+                self.crease_tree = pack_tree(self.xyz, self.edges)
+                resolution = min(128, max(1, round(2*np.cbrt(len(self.tri)))))
+                self.tri_grid = pack_grid(self.xyz, self.tri_tree, resolution)
+                self.edge_grid = pack_grid(self.xyz, self.crease_tree, resolution)
+        self.tree = self.edge_tree = None
+        if self.refine is None:
+            self._init_reference_trees()
+
+    def _init_reference_trees(self):
+        self.tree = igl.AABB()
+        self.tree.init(self.xyz, self.tri)
+        self.edge_tree = igl.AABB()
+        if len(self.edges):
+            self.edge_tree.init(self.xyz, self.edges)
 
     def support(self, points):
+        if self.tree is None:
+            self._init_reference_trees()
         _, nearest, seeds = self.tree.squared_distance(self.xyz, self.tri, points)
         weights = barycentric(seeds, self.xyz[self.tri[nearest]])
         support, queries = [], []
@@ -195,13 +212,9 @@ class FittedFaces:
         if len(points) == 0:
             return np.empty(0)
         if self.refine is not None:
-            _, nearest, seeds = self.tree.squared_distance(self.xyz,self.tri,points)
-            if len(self.edges):
-                sq, edge, edge_seeds = self.edge_tree.squared_distance(self.xyz,self.edges,points)
-            else:
-                sq, edge, edge_seeds = np.empty(0), np.empty(0,np.int64), np.empty((0,3))
-            return self.refine(points,nearest,seeds,sq,edge,edge_seeds,self.xyz,self.tri,self.owner,self.uv,
-                               self.incident,self.edge_pairs,self.convex_sign,self.bary_grad,*self.packed)
+            return self.refine(points,self.xyz,self.tri,self.edges,self.bary_grad,self.tri_tree,
+                               self.crease_tree,self.tri_grid,self.edge_grid,self.owner,self.uv,self.incident,self.edge_pairs,
+                               self.convex_sign,*self.packed,self.crease_band_mm)
         seeds, query, tri = self.support(points)
         foot, normal = self.project(points, seeds, query, tri)
         delta = points-foot
@@ -210,7 +223,12 @@ class FittedFaces:
             return result
         sq, edge, seed_on_edge = self.edge_tree.squared_distance(self.xyz, self.edges, points)
         # Expand the search near creases where tessellation error can change the nearest feature.
-        near = (np.sqrt(sq) <= 2*np.linalg.norm(points-seeds, axis=1)+.005) & (np.bincount(query) <= 2)
+        guide_gap = np.linalg.norm(points-seeds, axis=1)
+        sides = self.owner[self.edge_pairs[edge]]
+        incident = np.zeros(len(points), dtype=bool)
+        np.logical_or.at(incident, query, (sides[query]==self.owner[tri,None]).any(axis=1))
+        near = ((guide_gap <= self.crease_band_mm) & incident &
+                (np.sqrt(sq) <= 2*guide_gap+.005) & (np.bincount(query) <= 2))
         if not np.any(near):
             return result
         x, start, sides = points[near], seed_on_edge[near], self.edge_pairs[edge[near]]

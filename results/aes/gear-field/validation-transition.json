@@ -1,0 +1,43 @@
+{
+  "seed": 5119,
+  "fresh_points": 1536,
+  "fresh": {
+    "within_0p125_um": 1536,
+    "max_error_um": 0.00019186684696278003
+  },
+  "fresh_wrong_sign": 0,
+  "archived": {
+    "within_0p125_um": 452,
+    "max_error_um": 0.00012519401742377978
+  },
+  "compiled_vs_numpy_max_um": 1.421183049715724e-11,
+  "loads": {
+    "142/10": {
+      "compiled_N": 149.3528242894833,
+      "cad_N": 149.35276952524282
+    },
+    "4/4": {
+      "compiled_N": 149.35367615385445,
+      "cad_N": 149.35350427835294
+    }
+  },
+  "distance_ranges": {
+    "crease_band": {
+      "n": 768,
+      "within_0p125_um": 768,
+      "max_error_um": 0.0014207575653249482,
+      "wrong_sign": 0,
+      "compiled_vs_numpy_max_um": 1.2802259252708836e-11
+    },
+    "bounding_box": {
+      "n": 432,
+      "within_0p125_um": 432,
+      "max_error_um": 0.06874985712990167,
+      "wrong_sign": 0,
+      "compiled_vs_numpy_max_um": 3.552713678800501e-11
+    }
+  },
+  "normal_checks": 128,
+  "normal_p95_deg": 5.186263408143605e-05,
+  "normal_max_deg": 0.00191812900007972
+}

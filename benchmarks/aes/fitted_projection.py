@@ -20,9 +20,11 @@ def pack_faces(faces):
 
 @njit(cache=True)
 def weights_at(point, triangle, xyz, tri, bary_grad):
-    delta = point-xyz[tri[triangle,0]]
-    v = delta @ bary_grad[triangle,0]
-    w = delta @ bary_grad[triangle,1]
+    v, w = 0., 0.
+    for k in range(3):
+        delta = point[k]-xyz[tri[triangle,0],k]
+        v += delta*bary_grad[triangle,0,k]
+        w += delta*bary_grad[triangle,1,k]
     return np.array((1-v-w, v, w))
 
 
@@ -46,17 +48,31 @@ def evaluate_into(chart,face,coefficients,offsets,bu,bv,out):
     start,nu,nv = offsets[face]
     fill_basis(chart[0],nu,bu)
     fill_basis(chart[1],nv,bv)
-    out[:,:] = 0.
-    for i in range(nu):
-        for j in range(nv):
-            w = bu[i,0]*bv[j,0]
-            du = bu[i,1]*bv[j,0]
-            dv = bu[i,0]*bv[j,1]
-            for k in range(3):
+    if nv == 2:
+        # Degree one in v: evaluate and differentiate that row directly.
+        v = chart[1]
+        for k in range(3):
+            value, du, dv = 0., 0., 0.
+            for i in range(nu):
+                slope = coefficients[start+2*i+1,k]
+                row = coefficients[start+2*i,k] + v*slope
+                value += bu[i,0]*row
+                du += bu[i,1]*row
+                dv += bu[i,0]*slope
+            out[0,k], out[1,k], out[2,k] = value, du, dv
+        return
+    for k in range(3):
+        value, du, dv = 0., 0., 0.
+        for i in range(nu):
+            row, row_v = 0., 0.
+            for j in range(nv):
                 c = coefficients[start+i*nv+j,k]
-                out[0,k] += w*c
-                out[1,k] += du*c
-                out[2,k] += dv*c
+                row += bv[j,0]*c
+                row_v += bv[j,1]*c
+            value += bu[i,0]*row
+            du += bu[i,1]*row
+            dv += bu[i,0]*row_v
+        out[0,k], out[1,k], out[2,k] = value, du, dv
 
 
 @njit(cache=True)
@@ -91,8 +107,35 @@ def chart_normal(target,chart,face,coefficients,offsets,frames,bu,bv,out,normal)
 
 
 @njit(cache=True)
+def project_one(x, seed, t, xyz, tri, owner, uv, bary_grad, coefficients, offsets, frames, bu,bv,out):
+    face = owner[t]
+    weights = weights_at(seed,t,xyz,tri,bary_grad)
+    chart = np.empty(2)
+    for j in range(2):
+        at_seed = weights[0]*uv[t,0,j]+weights[1]*uv[t,1,j]+weights[2]*uv[t,2,j]
+        chart[j] = (at_seed-frames[face,j])/frames[face,2+j]
+    current = seed.copy()
+    normal = np.empty(3)
+    for _ in range(4):
+        chart_normal(current,chart,face,coefficients,offsets,frames,bu,bv,out,normal)
+        distance = 0.
+        for k in range(3):
+            distance += (x[k]-out[0,k])*normal[k]
+        movement = 0.
+        for k in range(3):
+            value = x[k]-distance*normal[k]
+            movement += (current[k]-value)**2
+            current[k] = value
+        if movement < 1e-26:
+            break
+    return current, normal
+
+
+@njit(cache=True)
 def projected(x, seed, triangles, xyz, tri, owner, uv, bary_grad, coefficients, offsets, frames, bu,bv,out):
     count = len(triangles)
+    if count==1:
+        return project_one(x,seed,triangles[0],xyz,tri,owner,uv,bary_grad,coefficients,offsets,frames,bu,bv,out)
     charts = np.empty((count,2))
     for i, t in enumerate(triangles):
         weights = weights_at(seed,t,xyz,tri,bary_grad)
@@ -110,10 +153,7 @@ def projected(x, seed, triangles, xyz, tri, owner, uv, bary_grad, coefficients, 
             distances[i] = 0.
             for k in range(3):
                 distances[i] += (x[k]-out[0,k])*normals[i,k]
-        if count==1:
-            for k in range(3):
-                correction[k] = normals[0,k]*distances[0]
-        elif count==2:
+        if count==2:
             # Retain the same relative eigenvalue threshold as the reference SVD.
             dot = dot3(normals[0],normals[1])
             r,s = distances
@@ -167,9 +207,17 @@ def supports(weights, nearest, tri, owner, incident):
     return chosen[:count]
 
 
+@njit(cache=True, inline='always')
+def any_incident(triangles, owner, first, second):
+    for t in triangles:
+        if owner[t]==first or owner[t]==second:
+            return True
+    return False
+
+
 @njit(cache=True)
 def refine(points, nearest, seeds, edge_sq, edge, edge_seeds, xyz, tri, owner, uv, incident,
-           edge_pairs, convex_sign, bary_grad, coefficients, offsets, frames):
+           edge_pairs, convex_sign, bary_grad, coefficients, offsets, frames, crease_band_mm):
     bu = np.empty((np.max(offsets[:,1]),2))
     bv = np.empty((np.max(offsets[:,2]),2))
     out = np.empty((3,3))
@@ -177,8 +225,20 @@ def refine(points, nearest, seeds, edge_sq, edge, edge_seeds, xyz, tri, owner, u
     for k in range(len(points)):
         x, t, seed = points[k], nearest[k], seeds[k]
         weights = weights_at(seed,t,xyz,tri,bary_grad)
+        gap_sq = 0.
+        for j in range(3):
+            gap_sq += (x[j]-seed[j])**2
+        near = (len(edge)>0 and gap_sq <= crease_band_mm**2
+                and edge_sq[k] <= (2*np.sqrt(gap_sq)+.005)**2)
+        if not near and min(weights[0],weights[1],weights[2])>1e-9:
+            p,n = project_one(x,seed,t,xyz,tri,owner,uv,bary_grad,coefficients,offsets,frames,bu,bv,out)
+            delta = x-p
+            result[k] = np.copysign(np.sqrt(dot3(delta,delta)),dot3(delta,n))
+            continue
         local = supports(weights,t,tri,owner,incident)
-        near = len(edge) and len(local)<=2 and edge_sq[k] <= (2*np.linalg.norm(x-seed)+.005)**2
+        if near:
+            a,b = edge_pairs[edge[k]]
+            near = len(local)<=2 and any_incident(local, owner, owner[a], owner[b])
         if not near:
             p,n = projected(x,seed,local,xyz,tri,owner,uv,bary_grad,coefficients,offsets,frames,bu,bv,out)
             result[k] = np.copysign(np.linalg.norm(x-p), (x-p)@n)

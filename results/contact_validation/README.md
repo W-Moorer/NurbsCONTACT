@@ -325,6 +325,40 @@ compare both paths against a warm mesh BVH on identical queries. The report
 also checks new STEP distances (seed 5119), the two contact-line loads and
 finite-difference distance gradients.
 
+The current compiled query locates guide triangles in double precision. A
+uniform grid indexes BVH leaves whose padded boxes overlap each cell. A hit
+inside the indexed distance band supplies the nearest primitive. A query
+outside the grid or without a triangle hit inside that band traverses the
+complete BVH. The grid stores candidate leaves and each call recomputes
+the distance at its input coordinates. The grid for this pinion occupies
+13.82 MiB. The extra two-sided crease projection uses a sharp edge incident
+on a supporting CAD face within a configurable near-surface band (default
+`crease_band_mm=0.1`). Farther queries project onto the faces supporting the
+nearest guide feature. Both projection paths use this convention.
+
+The [transition replay](../aes/gear-field/timing-transition.json) uses the
+two recorded spur-gear windows for tooth entry and exit. The
+[36 Gauss points](../aes/gear-field/transition-points.csv) come from complete
+STEP searches at ten distinct poses. Each row includes its independent OCCT
+point-to-solid distance and integration weight. The benchmark times one call
+per pose, alternates backend order, and reports single-threaded warm medians
+and the 95th percentile. It also times shuffled near-face and near-edge
+probes. Line loads use the same weights, stiffness and activation distance
+for every backend. These timings cover point queries with known coordinates.
+The [accuracy checks](../aes/gear-field/validation-transition.json) also
+exercise signed distances on both sides of the crease band and at points
+throughout the bounding volume.
+The [first process](../aes/gear-field/timing-transition-cold.json) compiled
+the projection on its first query. The second process loaded that compiled
+kernel from disk. Both reports separate setup and the first query from the
+warm timing loops.
+
+```powershell
+python benchmarks/aes/gear_field_replay.py prepare build/aes-occt/Release/nc_contact.exe build/aes-region-replay/spur-poses.txt build/aes-gear-field-fast/transition
+python benchmarks/aes/gear_field_replay.py verify build/aes-occt/Release/nc_contact.exe build/aes-gear-field-fast results/aes/gear-field/validation-transition.json
+python benchmarks/aes/gear_field_replay.py time results/aes/gear-field/timing-transition.json --repeats 30
+```
+
 ~~~text
 drives count
 body_id orbit arm_xyz axis_xyz angular_speed

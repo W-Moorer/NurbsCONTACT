@@ -1,0 +1,104 @@
+{
+  "processor": "AMD64 Family 25 Model 33 Stepping 0, AuthenticAMD",
+  "threads": 1,
+  "open3d_version": "0.19.0",
+  "frames": 10,
+  "points_per_frame": [
+    2,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    2
+  ],
+  "grid_MiB": 13.821380615234375,
+  "ablation_extra_libigl_setup_s": 5.095012600009795,
+  "repeats": 30,
+  "methods": {
+    "fitted_faces_ours": {
+      "setup_s": 8.289413999998942,
+      "first_query_s": 0.5593545000301674,
+      "random_probes": {
+        "1407": {
+          "within_0p125_um": 1536,
+          "max_error_um": 0.006017640926694184,
+          "wrong_sign": 0
+        },
+        "5119": {
+          "within_0p125_um": 1536,
+          "max_error_um": 0.00019186684696278003,
+          "wrong_sign": 0
+        }
+      },
+      "moving_distances": {
+        "within_0p125_um": 36,
+        "max_error_um": 5.705874032979619e-05
+      },
+      "moving_line_force_max_error_N": 0.0010505411738108705,
+      "two_points_us": 161.29997675307095,
+      "four_points_us": 161.55000776052475,
+      "all_frames_p95_us": 303.6199865164235,
+      "fixed_four_points_us": 142.38125004339963,
+      "single_us": 78.40001489967108,
+      "mixed_batch_ms": 49.16160000720993
+    },
+    "same_projection_full_libigl_search": {
+      "setup_s": null,
+      "first_query_s": 0.5238058000104502,
+      "random_probes": {
+        "1407": {
+          "within_0p125_um": 1536,
+          "max_error_um": 0.006017640929112389,
+          "wrong_sign": 0
+        },
+        "5119": {
+          "within_0p125_um": 1536,
+          "max_error_um": 0.00019186684696278003,
+          "wrong_sign": 0
+        }
+      },
+      "moving_distances": {
+        "within_0p125_um": 36,
+        "max_error_um": 5.705874032979619e-05
+      },
+      "moving_line_force_max_error_N": 0.0010505411738108705,
+      "two_points_us": 479.15001050569117,
+      "four_points_us": 423.8499968778342,
+      "all_frames_p95_us": 760.6999744893983,
+      "fixed_four_points_us": 512.7187541802414,
+      "single_us": 171.59999697469175,
+      "mixed_batch_ms": 123.51375000434928
+    },
+    "triangle_bvh_open3d": {
+      "setup_s": 0.015550099953543395,
+      "first_query_s": 0.9695154999499209,
+      "random_probes": {
+        "1407": {
+          "within_0p125_um": 838,
+          "max_error_um": 1.795583946569494,
+          "wrong_sign": 1
+        },
+        "5119": {
+          "within_0p125_um": 854,
+          "max_error_um": 1.6206325838718678,
+          "wrong_sign": 2
+        }
+      },
+      "moving_distances": {
+        "within_0p125_um": 14,
+        "max_error_um": 0.9592343796954866
+      },
+      "moving_line_force_max_error_N": 23.021587561749215,
+      "two_points_us": 260.25003171525896,
+      "four_points_us": 178.94996562972665,
+      "all_frames_p95_us": 369.0999554237352,
+      "fixed_four_points_us": 215.218748053303,
+      "single_us": 145.19999967887998,
+      "mixed_batch_ms": 23.269750003237277
+    }
+  }
+}
