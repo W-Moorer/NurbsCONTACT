@@ -149,6 +149,44 @@ report. Point, curved line, area and penetrating contact need corresponding
 load representations. Time integration also needs a policy for updating
 regions and handling unresolved geometry during an HHT step.
 
+### Reusing CAD face exclusions along a trajectory
+
+`CadContactCache` stores directional separation bounds for one pair of
+prepared STEP shapes. A rejected face pair's numerical extrema supply a
+direction. The stored gap comes from bounding the original trimmed faces
+along that direction with OCCT's geometry boxes. At a subsequent pose the
+query adjusts the gap by the projected motion of B's face-box center and
+subtracts a rotation allowance. The allowance is the local box radius
+multiplied by the change in the projection direction expressed in B's frame.
+Only a bound that still exceeds the current cutoff skips an extrema query.
+The face hierarchy runs at every pose. Active faces and potential new faces
+go through the current-pose extrema and line assembly. The cache attempts
+one projection per face pair. An absent or insufficient bound leaves the
+pair to the numerical query. A cache is local to one query stream and
+resets if either prepared shape changes.
+
+```text
+nc_contact regions-replay A.step B.step CUTOFF_M STIFFNESS_N_PER_M2 POSES.txt OUTPUT_PREFIX cold|reuse
+```
+
+The pose file holds `time_s tx ty tz ax ay az angle_rad` on each line.
+Both replay modes prepare the shapes once. The benchmark checks identical
+candidate distances and line loads for both modes on saved poses around
+entry and exit. The gear trace selects the windows. The traces' gear
+loading law and the CAD line assembly use separate contact definitions.
+The optional cam replay also checks the force and moment against its
+analytic cylinder–plane reference.
+
+```powershell
+$cam = 'build/aes-benchmark/industrial-cam2'
+python benchmarks/aes/cad_region_replay.py build/occt/Release/nc_contact.exe results/gears/models build/aes-benchmark/industrial-pilot/spur-native-0nm-5us-31.csv build/aes-region-replay --cam-models "$cam/cam-models" --cam-trace "$cam/cam-native-24-125us.csv"
+```
+
+The [replay report](../aes/cad-region-replay.json) records each method's
+extrema calls and times with preparation and load assembly measured
+separately. The checks cover the sampled poses. Contact within an interval
+between poses and updates during HHT iterations require separate validation.
+
 ~~~text
 drives count
 body_id orbit arm_xyz axis_xyz angular_speed

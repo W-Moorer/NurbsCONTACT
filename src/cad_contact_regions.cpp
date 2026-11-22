@@ -22,6 +22,7 @@
 #include <gp_Dir2d.hxx>
 #include <gp_Vec2d.hxx>
 #include <gp_Ax1.hxx>
+#include <gp_Ax3.hxx>
 #include <gp_Pnt2d.hxx>
 #include <math_FunctionSetRoot.hxx>
 
@@ -39,7 +40,48 @@ constexpr double mm = .001;
 struct Face {
     TopoDS_Face shape;
     Bnd_Box bounds;
+    gp_Pnt center;
+    double radius_mm{};
 };
+
+using FacePair = std::pair<std::size_t, std::size_t>;
+
+struct FaceExclusion {
+    gp_Vec axis;
+    gp_Vec local_axis;
+    gp_Pnt moved_center;
+    double gap_mm;
+};
+
+gp_Vec local_axis(const gp_Vec& axis, const gp_Trsf& inverse) {
+    return axis.Transformed(inverse);
+}
+
+bool stays_separated(const FaceExclusion& record, const Face& b, const gp_Trsf& pose,
+                     const gp_Trsf& inverse, double cutoff_mm) {
+    const gp_Pnt center = b.center.Transformed(pose);
+    const double projected_translation = gp_Vec(record.moved_center, center).Dot(record.axis);
+    const double angular_loss = b.radius_mm * (local_axis(record.axis, inverse) - record.local_axis).Magnitude();
+    return record.gap_mm + projected_translation - angular_loss > cutoff_mm + Precision::Confusion();
+}
+
+std::optional<FaceExclusion> projected_exclusion(const TopoDS_Face& a, const Face& local_b,
+    const TopoDS_Face& moved_b, const gp_Trsf& pose, const gp_Trsf& inverse,
+    const gp_Pnt& pa, const gp_Pnt& pb, double cutoff_mm) {
+    const gp_Dir axis(gp_Vec{pa, pb});
+    gp_Trsf alignment;
+    alignment.SetTransformation(gp_Ax3(gp_Pnt{}, axis));
+    const TopLoc_Location placement(alignment);
+    // Bound the source geometry directly in coordinates with z along the selected axis.
+    Bnd_Box ba, bb;
+    BRepBndLib::AddOptimal(a.Moved(placement), ba, false, true);
+    BRepBndLib::AddOptimal(moved_b.Moved(placement), bb, false, true);
+    if (ba.IsVoid() || ba.IsOpen() || bb.IsVoid() || bb.IsOpen()) return std::nullopt;
+    const double gap = bb.CornerMin().Z() - ba.CornerMax().Z();
+    if (!(gap > cutoff_mm + Precision::Confusion())) return std::nullopt;
+    const gp_Vec direction(axis);
+    return FaceExclusion{direction, local_axis(direction, inverse), local_b.center.Transformed(pose), gap};
+}
 
 class NearBox final : public FaceTree::Selector {
 public:
@@ -254,6 +296,15 @@ struct CadContactIndex::Data {
     FaceTree tree;
 };
 
+struct CadContactCache::Data {
+    std::weak_ptr<const void> a, b;
+    // An empty record remembers an attempted projection that could not separate the faces.
+    std::map<FacePair, std::optional<FaceExclusion>> exclusions;
+};
+
+CadContactCache::CadContactCache() : data_(std::make_unique<Data>()) {}
+CadContactCache::~CadContactCache() = default;
+
 CadContactIndex::CadContactIndex(const TopoDS_Shape& shape) {
     auto data = std::make_shared<Data>();
     TopTools_IndexedMapOfShape faces;
@@ -262,11 +313,14 @@ CadContactIndex::CadContactIndex(const TopoDS_Shape& shape) {
     data->faces.reserve(faces.Extent());
     NCollection_UBTreeFiller<std::size_t, Bnd_Box> entries(data->tree);
     for (int i = 1; i <= faces.Extent(); ++i) {
-        Face face{TopoDS::Face(faces(i)), {}};
+        Face face{TopoDS::Face(faces(i)), {}, {}};
         BRepBndLib::AddOptimal(face.shape, face.bounds, false, true);
         if (face.bounds.IsVoid() || face.bounds.IsOpen()) {
             throw std::invalid_argument("contact index requires bounded faces");
         }
+        const auto low = face.bounds.CornerMin(), high = face.bounds.CornerMax();
+        face.center.SetXYZ((low.XYZ() + high.XYZ()) * .5);
+        face.radius_mm = low.Distance(high) * .5;
         entries.Add(data->faces.size(), face.bounds);
         data->faces.push_back(std::move(face));
     }
@@ -276,9 +330,18 @@ CadContactIndex::CadContactIndex(const TopoDS_Shape& shape) {
 
 std::size_t CadContactIndex::face_count() const { return data_->faces.size(); }
 
-CadContactRegions CadContactIndex::query(const CadContactIndex& b, ContactPose pose, double cutoff_m) const {
+CadContactRegions CadContactIndex::query(const CadContactIndex& b, ContactPose pose, double cutoff_m,
+                                         CadContactCache* cache) const {
     const double cutoff_mm = cutoff_m / mm;
     const auto placement = relative_placement(pose, cutoff_m);
+    const auto transform = placement.Transformation();
+    const auto inverse = transform.Inverted();
+    auto* history = cache ? cache->data_.get() : nullptr;
+    if (history && (history->a.lock() != data_ || history->b.lock() != b.data_)) {
+        history->exclusions.clear();
+        history->a = data_;
+        history->b = b.data_;
+    }
     CadContactRegions result;
     for (std::size_t j = 0; j < b.face_count(); ++j) {
         const auto& local = b.data_->faces[j];
@@ -299,6 +362,14 @@ CadContactRegions CadContactIndex::query(const CadContactIndex& b, ContactPose p
         for (const auto i : selection.faces) {
             const auto& face_a = data_->faces[i];
             if (face_a.bounds.Distance(tight_bounds) > cutoff_mm) continue;
+            if (history) {
+                const auto saved = history->exclusions.find({i, j});
+                if (saved != history->exclusions.end() && saved->second &&
+                    stays_separated(*saved->second, local, transform, inverse, cutoff_mm)) {
+                    ++result.reused_face_exclusions;
+                    continue;
+                }
+            }
             ++result.tested_face_pairs;
             try {
                 extrema.LoadS1(face_a.shape);
@@ -307,7 +378,21 @@ CadContactRegions CadContactIndex::query(const CadContactIndex& b, ContactPose p
                     continue;
                 }
                 const double distance_mm = extrema.Value();
-                if (distance_mm > cutoff_mm) continue;
+                if (distance_mm > cutoff_mm) {
+                    if (history && std::isfinite(distance_mm)) {
+                        const auto [record, inserted] = history->exclusions.try_emplace(FacePair{i, j});
+                        if (inserted) {
+                            ++result.attempted_face_exclusions;
+                            try {
+                                record->second = projected_exclusion(face_a.shape, local, face_b, transform, inverse,
+                                    extrema.PointOnShape1(1), extrema.PointOnShape2(1), cutoff_mm);
+                            } catch (const Standard_Failure&) {
+                                // Keep checking this pair with the numerical distance.
+                            }
+                        }
+                    }
+                    continue;
+                }
                 const std::size_t first = result.candidates.size();
                 for (int k = 1; k <= extrema.NbSolution(); ++k) {
                     const Vec p = point(extrema.PointOnShape1(k)), q = point(extrema.PointOnShape2(k));
@@ -360,7 +445,6 @@ CadContactLines CadContactIndex::straight_lines(const CadContactIndex& b, Contac
                                                  double tolerance_m, const CadContactRegions& regions) const {
     if (!std::isfinite(tolerance_m) || tolerance_m <= 0) throw std::invalid_argument("invalid contact line tolerance");
     const auto placement = relative_placement(pose, cutoff_m);
-    using FacePair = std::pair<std::size_t, std::size_t>;
     std::map<FacePair, std::vector<const CadContactCandidate*>> groups;
     for (const auto& candidate : regions.candidates) {
         if (candidate.facing_interiors) groups.try_emplace({candidate.a.face, candidate.b.face});

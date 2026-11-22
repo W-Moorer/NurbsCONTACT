@@ -533,6 +533,65 @@ void contact_regions(int argc,char** argv,bool line_load) {
     if (!points || !stats) throw std::runtime_error("failed to write CAD contact region query");
 }
 
+void replay_contact_regions(int argc,char** argv) {
+    if (argc!=9) throw std::invalid_argument(
+        "nc_contact regions-replay A.step B.step CUTOFF_M STIFFNESS_N_PER_M2 POSES.txt OUTPUT_PREFIX cold|reuse");
+    const std::string_view mode(argv[8]);
+    if (mode!="cold" && mode!="reuse") throw std::invalid_argument("invalid contact replay mode");
+    const double cutoff=std::stod(argv[4]), stiffness=std::stod(argv[5]);
+    if (!std::isfinite(cutoff) || cutoff<=0 || !std::isfinite(stiffness) || stiffness<0)
+        throw std::invalid_argument("invalid contact replay cutoff or stiffness");
+    std::ifstream poses(argv[6]);
+    if (!poses) throw std::invalid_argument("could not open CAD contact poses");
+    const auto start=Clock::now();
+    const CadContactIndex a{read_step_shape(argv[2])}, b{read_step_shape(argv[3])};
+    const double setup_s=std::chrono::duration<double>(Clock::now()-start).count();
+    CadContactCache cache;
+    const std::string output(argv[7]);
+    auto witnesses=open_output(output+".csv");
+    auto loads=open_output(output+".loads.csv");
+    auto stats=open_output(output+".stats.csv");
+    witnesses<<"time_s,face_a,face_b,distance_m,facing_interiors\n";
+    loads<<"time_s,face_a,face_b,length_m,force_bx_N,force_by_N,force_bz_N,"
+           "moment_bx_Nm,moment_by_Nm,moment_bz_Nm\n";
+    stats<<"time_s,tested_face_pairs,reused_face_exclusions,attempted_face_exclusions,unresolved_face_pairs,"
+           "unresolved_line_pairs,setup_s,query_s,assembly_s\n";
+    while (!(poses>>std::ws).eof()) {
+        double time;
+        ContactPose pose;
+        if (!(poses>>time>>pose.origin[0]>>pose.origin[1]>>pose.origin[2]>>
+                        pose.axis[0]>>pose.axis[1]>>pose.axis[2]>>pose.angle) || !std::isfinite(time)) {
+            throw std::invalid_argument("invalid CAD contact replay pose");
+        }
+        pose.axis=unit(pose.axis);
+        const auto query_start=Clock::now();
+        const auto regions=a.query(b,pose,cutoff,mode=="reuse" ? &cache : nullptr);
+        const auto assembly_start=Clock::now();
+        const auto lines=a.straight_lines(b,pose,cutoff,1e-7,regions);
+        for (const auto& line:lines.lines) {
+            double length=0;
+            for (const auto& sample:line.samples) length+=sample.weight_m;
+            const auto wrenches=line_contact_wrenches(line.samples,cutoff,stiffness,{},pose.origin);
+            loads<<time<<','<<line.face_a<<','<<line.face_b<<','<<length;
+            for (const auto& vector:{wrenches.b.force,wrenches.b.moment}) {
+                for (double component:vector) loads<<','<<component;
+            }
+            loads<<'\n';
+        }
+        const auto end=Clock::now();
+        for (const auto& witness:regions.candidates) {
+            witnesses<<time<<','<<witness.a.face<<','<<witness.b.face<<','<<witness.points.distance<<','
+                     <<witness.facing_interiors<<'\n';
+        }
+        stats<<time<<','<<regions.tested_face_pairs<<','<<regions.reused_face_exclusions<<','
+             <<regions.attempted_face_exclusions<<','
+             <<regions.unresolved_face_pairs<<','<<lines.unresolved_face_pairs-regions.unresolved_face_pairs<<','
+             <<setup_s<<','<<std::chrono::duration<double>(assembly_start-query_start).count()<<','
+             <<std::chrono::duration<double>(end-assembly_start).count()<<'\n';
+    }
+    if (!witnesses || !loads || !stats) throw std::runtime_error("failed to write CAD contact replay");
+}
+
 double sampled_load(const std::vector<LoadSample>& table,double time) {
     if (table.empty()) return 0;
     const auto right=std::upper_bound(table.begin()+1,table.end()-1,time,
@@ -775,6 +834,10 @@ void export_fixture(int argc,char** argv) {
 
 int main(int argc,char** argv) {
     try {
+        if (argc>=2 && std::string_view(argv[1])=="regions-replay") {
+            replay_contact_regions(argc,argv);
+            return 0;
+        }
         if (argc>=2 && (std::string_view(argv[1])=="regions" || std::string_view(argv[1])=="line-load")) {
             contact_regions(argc,argv,std::string_view(argv[1])=="line-load");
             return 0;

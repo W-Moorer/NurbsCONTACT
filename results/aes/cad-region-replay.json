@@ -1,0 +1,536 @@
+{
+  "trace": "spur-native-0nm-5us-31.csv",
+  "cutoff_m": 5.5e-05,
+  "line_stiffness_N_per_m2": 1000000000.0,
+  "poses": 10,
+  "identical_candidate_and_load_rows": true,
+  "cold": {
+    "tested_face_pairs": 1036,
+    "reused_face_exclusions": 0,
+    "attempted_face_exclusions": 0,
+    "unresolved_face_pairs": 0,
+    "unresolved_line_pairs": 0,
+    "query_s": 116.9665455,
+    "assembly_s": 0.0675524,
+    "setup_s": 23.9076028
+  },
+  "reuse": {
+    "tested_face_pairs": 863,
+    "reused_face_exclusions": 173,
+    "attempted_face_exclusions": 119,
+    "unresolved_face_pairs": 0,
+    "unresolved_line_pairs": 0,
+    "query_s": 125.4412798,
+    "assembly_s": 0.0757436,
+    "setup_s": 21.197991
+  },
+  "query_speedup": 0.9324406262953321,
+  "per_pose": [
+    {
+      "time_s": 0.0001600000000000001,
+      "cold_query_s": 12.8418027,
+      "reuse_query_s": 17.1151945,
+      "reused_face_exclusions": 0,
+      "attempted_face_exclusions": 79
+    },
+    {
+      "time_s": 0.00018000000000000015,
+      "cold_query_s": 11.3096059,
+      "reuse_query_s": 9.7116765,
+      "reused_face_exclusions": 27,
+      "attempted_face_exclusions": 2
+    },
+    {
+      "time_s": 0.0002000000000000002,
+      "cold_query_s": 10.3978205,
+      "reuse_query_s": 10.542695,
+      "reused_face_exclusions": 27,
+      "attempted_face_exclusions": 0
+    },
+    {
+      "time_s": 0.00022000000000000025,
+      "cold_query_s": 9.8400584,
+      "reuse_query_s": 11.0002671,
+      "reused_face_exclusions": 19,
+      "attempted_face_exclusions": 0
+    },
+    {
+      "time_s": 0.0002400000000000003,
+      "cold_query_s": 10.181521,
+      "reuse_query_s": 10.3156293,
+      "reused_face_exclusions": 18,
+      "attempted_face_exclusions": 0
+    },
+    {
+      "time_s": 0.0010600000000000023,
+      "cold_query_s": 12.5224549,
+      "reuse_query_s": 17.3520206,
+      "reused_face_exclusions": 0,
+      "attempted_face_exclusions": 33
+    },
+    {
+      "time_s": 0.0010800000000000024,
+      "cold_query_s": 11.9530141,
+      "reuse_query_s": 11.7694281,
+      "reused_face_exclusions": 23,
+      "attempted_face_exclusions": 0
+    },
+    {
+      "time_s": 0.0011000000000000025,
+      "cold_query_s": 12.8374306,
+      "reuse_query_s": 12.0961141,
+      "reused_face_exclusions": 21,
+      "attempted_face_exclusions": 5
+    },
+    {
+      "time_s": 0.0011200000000000025,
+      "cold_query_s": 12.5560724,
+      "reuse_query_s": 12.9652233,
+      "reused_face_exclusions": 19,
+      "attempted_face_exclusions": 0
+    },
+    {
+      "time_s": 0.0011400000000000026,
+      "cold_query_s": 12.526765,
+      "reuse_query_s": 12.5730313,
+      "reused_face_exclusions": 19,
+      "attempted_face_exclusions": 0
+    }
+  ],
+  "windows": {
+    "1_to_2": [
+      {
+        "time_s": 0.0001600000000000001,
+        "gear_trace_loaded_teeth": 1,
+        "cad_facing_face_pairs": [
+          [
+            4,
+            4
+          ]
+        ],
+        "assembled_line_pairs": [
+          [
+            4,
+            4
+          ]
+        ],
+        "new_face_pairs": [],
+        "departing_face_pairs": []
+      },
+      {
+        "time_s": 0.00018000000000000015,
+        "gear_trace_loaded_teeth": 1,
+        "cad_facing_face_pairs": [
+          [
+            4,
+            4
+          ],
+          [
+            142,
+            10
+          ]
+        ],
+        "assembled_line_pairs": [
+          [
+            4,
+            4
+          ],
+          [
+            142,
+            10
+          ]
+        ],
+        "new_face_pairs": [
+          [
+            142,
+            10
+          ]
+        ],
+        "departing_face_pairs": []
+      },
+      {
+        "time_s": 0.0002000000000000002,
+        "gear_trace_loaded_teeth": 2,
+        "cad_facing_face_pairs": [
+          [
+            4,
+            4
+          ],
+          [
+            142,
+            10
+          ]
+        ],
+        "assembled_line_pairs": [
+          [
+            4,
+            4
+          ],
+          [
+            142,
+            10
+          ]
+        ],
+        "new_face_pairs": [],
+        "departing_face_pairs": []
+      },
+      {
+        "time_s": 0.00022000000000000025,
+        "gear_trace_loaded_teeth": 2,
+        "cad_facing_face_pairs": [
+          [
+            4,
+            4
+          ],
+          [
+            142,
+            10
+          ]
+        ],
+        "assembled_line_pairs": [
+          [
+            4,
+            4
+          ],
+          [
+            142,
+            10
+          ]
+        ],
+        "new_face_pairs": [],
+        "departing_face_pairs": []
+      },
+      {
+        "time_s": 0.0002400000000000003,
+        "gear_trace_loaded_teeth": 2,
+        "cad_facing_face_pairs": [
+          [
+            4,
+            4
+          ],
+          [
+            142,
+            10
+          ]
+        ],
+        "assembled_line_pairs": [
+          [
+            4,
+            4
+          ],
+          [
+            142,
+            10
+          ]
+        ],
+        "new_face_pairs": [],
+        "departing_face_pairs": []
+      }
+    ],
+    "2_to_1": [
+      {
+        "time_s": 0.0010600000000000023,
+        "gear_trace_loaded_teeth": 2,
+        "cad_facing_face_pairs": [
+          [
+            4,
+            4
+          ],
+          [
+            142,
+            10
+          ]
+        ],
+        "assembled_line_pairs": [
+          [
+            4,
+            4
+          ],
+          [
+            142,
+            10
+          ]
+        ],
+        "new_face_pairs": [],
+        "departing_face_pairs": []
+      },
+      {
+        "time_s": 0.0010800000000000024,
+        "gear_trace_loaded_teeth": 2,
+        "cad_facing_face_pairs": [
+          [
+            4,
+            4
+          ],
+          [
+            142,
+            10
+          ]
+        ],
+        "assembled_line_pairs": [
+          [
+            4,
+            4
+          ],
+          [
+            142,
+            10
+          ]
+        ],
+        "new_face_pairs": [],
+        "departing_face_pairs": []
+      },
+      {
+        "time_s": 0.0011000000000000025,
+        "gear_trace_loaded_teeth": 1,
+        "cad_facing_face_pairs": [
+          [
+            4,
+            4
+          ],
+          [
+            142,
+            10
+          ]
+        ],
+        "assembled_line_pairs": [
+          [
+            4,
+            4
+          ],
+          [
+            142,
+            10
+          ]
+        ],
+        "new_face_pairs": [],
+        "departing_face_pairs": []
+      },
+      {
+        "time_s": 0.0011200000000000025,
+        "gear_trace_loaded_teeth": 1,
+        "cad_facing_face_pairs": [
+          [
+            4,
+            4
+          ],
+          [
+            142,
+            10
+          ]
+        ],
+        "assembled_line_pairs": [
+          [
+            4,
+            4
+          ],
+          [
+            142,
+            10
+          ]
+        ],
+        "new_face_pairs": [],
+        "departing_face_pairs": []
+      },
+      {
+        "time_s": 0.0011400000000000026,
+        "gear_trace_loaded_teeth": 1,
+        "cad_facing_face_pairs": [
+          [
+            142,
+            10
+          ]
+        ],
+        "assembled_line_pairs": [
+          [
+            142,
+            10
+          ]
+        ],
+        "new_face_pairs": [],
+        "departing_face_pairs": [
+          [
+            4,
+            4
+          ]
+        ]
+      }
+    ]
+  },
+  "cam": {
+    "trace": "cam-native-24-125us.csv",
+    "cutoff_m": 0.012,
+    "line_stiffness_N_per_m2": 83333.33333333334,
+    "poses": 10,
+    "identical_candidate_and_load_rows": true,
+    "cold": {
+      "tested_face_pairs": 15,
+      "reused_face_exclusions": 0,
+      "attempted_face_exclusions": 0,
+      "unresolved_face_pairs": 0,
+      "unresolved_line_pairs": 0,
+      "query_s": 0.014810700000000001,
+      "assembly_s": 0.0010451,
+      "setup_s": 0.0103887
+    },
+    "reuse": {
+      "tested_face_pairs": 15,
+      "reused_face_exclusions": 0,
+      "attempted_face_exclusions": 0,
+      "unresolved_face_pairs": 0,
+      "unresolved_line_pairs": 0,
+      "query_s": 0.014554099999999999,
+      "assembly_s": 0.0010136,
+      "setup_s": 0.0107266
+    },
+    "query_speedup": 1.017630770710659,
+    "windows": {
+      "0_to_1": [
+        {
+          "time_s": 0.050375,
+          "contact": false,
+          "force_N": 0,
+          "force_error_N": 0,
+          "moment_error_Nm": 0.0
+        },
+        {
+          "time_s": 0.0505,
+          "contact": false,
+          "force_N": 0,
+          "force_error_N": 0,
+          "moment_error_Nm": 0.0
+        },
+        {
+          "time_s": 0.050625,
+          "contact": true,
+          "force_N": 0.00286848417858053,
+          "force_error_N": 7.806255641895632e-14,
+          "moment_error_Nm": 1.839918191762213e-15
+        },
+        {
+          "time_s": 0.05075,
+          "contact": true,
+          "force_N": 0.07696607390784115,
+          "force_error_N": 4.336808689942018e-14,
+          "moment_error_Nm": 1.0202342443088597e-15
+        },
+        {
+          "time_s": 0.050875000000000004,
+          "contact": true,
+          "force_N": 0.15164741612629618,
+          "force_error_N": 9.539591339091658e-14,
+          "moment_error_Nm": 2.246466901389965e-15
+        }
+      ],
+      "1_to_0": [
+        {
+          "time_s": 0.019875,
+          "contact": true,
+          "force_N": 0.1120242265128038,
+          "force_error_N": 0.0,
+          "moment_error_Nm": 1.734723475976807e-18
+        },
+        {
+          "time_s": 0.02,
+          "contact": true,
+          "force_N": 0.03772181279437618,
+          "force_error_N": 2.6020852139652106e-14,
+          "moment_error_Nm": 6.2341624917916505e-16
+        },
+        {
+          "time_s": 0.020125,
+          "contact": false,
+          "force_N": 0,
+          "force_error_N": 0,
+          "moment_error_Nm": 0.0
+        },
+        {
+          "time_s": 0.02025,
+          "contact": false,
+          "force_N": 0,
+          "force_error_N": 0,
+          "moment_error_Nm": 0.0
+        },
+        {
+          "time_s": 0.020375,
+          "contact": false,
+          "force_N": 0,
+          "force_error_N": 0,
+          "moment_error_Nm": 0.0
+        }
+      ]
+    },
+    "per_pose": [
+      {
+        "time_s": 0.050375,
+        "cold_query_s": 5.1e-05,
+        "reuse_query_s": 4.94e-05,
+        "reused_face_exclusions": 0,
+        "attempted_face_exclusions": 0
+      },
+      {
+        "time_s": 0.0505,
+        "cold_query_s": 2.35e-05,
+        "reuse_query_s": 2.2e-05,
+        "reused_face_exclusions": 0,
+        "attempted_face_exclusions": 0
+      },
+      {
+        "time_s": 0.050625,
+        "cold_query_s": 0.0033424,
+        "reuse_query_s": 0.0032502,
+        "reused_face_exclusions": 0,
+        "attempted_face_exclusions": 0
+      },
+      {
+        "time_s": 0.05075,
+        "cold_query_s": 0.0029106,
+        "reuse_query_s": 0.0028442,
+        "reused_face_exclusions": 0,
+        "attempted_face_exclusions": 0
+      },
+      {
+        "time_s": 0.050875000000000004,
+        "cold_query_s": 0.0028873,
+        "reuse_query_s": 0.0029176,
+        "reused_face_exclusions": 0,
+        "attempted_face_exclusions": 0
+      },
+      {
+        "time_s": 0.019875,
+        "cold_query_s": 0.0027395,
+        "reuse_query_s": 0.0027053,
+        "reused_face_exclusions": 0,
+        "attempted_face_exclusions": 0
+      },
+      {
+        "time_s": 0.02,
+        "cold_query_s": 0.0027949,
+        "reuse_query_s": 0.0027059,
+        "reused_face_exclusions": 0,
+        "attempted_face_exclusions": 0
+      },
+      {
+        "time_s": 0.020125,
+        "cold_query_s": 2.6e-05,
+        "reuse_query_s": 2.44e-05,
+        "reused_face_exclusions": 0,
+        "attempted_face_exclusions": 0
+      },
+      {
+        "time_s": 0.02025,
+        "cold_query_s": 1.79e-05,
+        "reuse_query_s": 1.77e-05,
+        "reused_face_exclusions": 0,
+        "attempted_face_exclusions": 0
+      },
+      {
+        "time_s": 0.020375,
+        "cold_query_s": 1.76e-05,
+        "reuse_query_s": 1.74e-05,
+        "reused_face_exclusions": 0,
+        "attempted_face_exclusions": 0
+      }
+    ]
+  }
+}

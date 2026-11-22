@@ -21,6 +21,8 @@ struct CadContactRegions {
     std::vector<CadContactCandidate> candidates;
     std::size_t tested_face_pairs{};
     std::size_t unresolved_face_pairs{};
+    std::size_t reused_face_exclusions{};
+    std::size_t attempted_face_exclusions{};
 };
 
 struct CadContactSeed {
@@ -38,6 +40,18 @@ struct CadContactLines {
     std::size_t unresolved_face_pairs{};
 };
 
+// Owns the geometric separation records for one pair of prepared shapes.
+class CadContactCache {
+public:
+    CadContactCache();
+    ~CadContactCache();
+
+private:
+    struct Data;
+    std::unique_ptr<Data> data_;
+    friend class CadContactIndex;
+};
+
 class CadContactIndex {
 public:
     explicit CadContactIndex(const TopoDS_Shape& shape);
@@ -45,7 +59,9 @@ public:
 
     // Enumerates numerical minima of candidate face pairs. Boundary witnesses
     // and ties are retained for later contact-region assembly.
-    CadContactRegions query(const CadContactIndex& b, dynamics::ContactPose b_in_a, double cutoff_m) const;
+    // With a cache, skip only the face pairs whose projected boxes still prove separation.
+    CadContactRegions query(const CadContactIndex& b, dynamics::ContactPose b_in_a, double cutoff_m,
+                            CadContactCache* cache = nullptr) const;
 
     // Updates known face-interior candidates. Each seed is reclassified on
     // its trimmed face. A seed that cannot be recovered is counted unresolved.
