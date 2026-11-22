@@ -1,0 +1,75 @@
+{
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "cupy": "13.6.0",
+  "input_sha256": {
+    "follower.step": "4d76ab4a9688fb38f0b18e64feddd9baddb68652a1e831cb03f7ff4fceade93f",
+    "cam.step": "cc81d829efc7f4bf283b65c344f6027f7e164ebbe587c0006d037ba61003ea90",
+    "cam-poses.txt": "66a925d849d95d1c37e48eca1bdf65be9b2f537eae75e3810b233bd250c41869",
+    "cold.csv": "be2640963ad6a89d210d9a3311ff39df4ca2c5d97f440f02d8d6af4756f3bc17",
+    "cold.stats.csv": "e456110ed8c61ddbf4abba80338e48686d311cc15edd54b361684acb79790876"
+  },
+  "face_counts": [
+    1,
+    3
+  ],
+  "cutoff_mm": 12.0,
+  "repeats": 100,
+  "stage": "face box screening; pose upload, kernel and host synchronization; mask stays on device",
+  "setup_and_first_query_s": 0.4818266499787569,
+  "median_us": 2271.997509524226,
+  "p99_us": 2316.175748128444,
+  "max_us": 2318.018116056919,
+  "resident_graph_median_us_per_known_pose": 1.8432000651955605,
+  "poses": [
+    {
+      "time_s": 0.050375,
+      "candidates": 3,
+      "occt_pairs": 0
+    },
+    {
+      "time_s": 0.0505,
+      "candidates": 3,
+      "occt_pairs": 0
+    },
+    {
+      "time_s": 0.050625,
+      "candidates": 3,
+      "occt_pairs": 3
+    },
+    {
+      "time_s": 0.05075,
+      "candidates": 3,
+      "occt_pairs": 3
+    },
+    {
+      "time_s": 0.050875000000000004,
+      "candidates": 3,
+      "occt_pairs": 3
+    },
+    {
+      "time_s": 0.019875,
+      "candidates": 3,
+      "occt_pairs": 3
+    },
+    {
+      "time_s": 0.02,
+      "candidates": 3,
+      "occt_pairs": 3
+    },
+    {
+      "time_s": 0.020125,
+      "candidates": 3,
+      "occt_pairs": 0
+    },
+    {
+      "time_s": 0.02025,
+      "candidates": 3,
+      "occt_pairs": 0
+    },
+    {
+      "time_s": 0.020375,
+      "candidates": 3,
+      "occt_pairs": 0
+    }
+  ]
+}

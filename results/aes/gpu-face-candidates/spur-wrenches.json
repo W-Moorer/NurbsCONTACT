@@ -1,0 +1,57 @@
+{
+  "gpu": "NVIDIA GeForce RTX 3070",
+  "input_sha256": {
+    "spur-1a.step": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d",
+    "faces.npz": "ecedd7e20cf41ad48727816f820665e3a98387d56e2325a9bbf26749fddb45bf",
+    "transition-points.csv": "9a5f10f783919dd3a8ce3539ed4095fbdef089a704ac30fb1cf536875edde93e",
+    "spur-poses.txt": "9fae2ae7abd1e65a6a3961deaaf2b5356583492aadd2eacf91f6a32e6f7edfda",
+    "cold.loads.csv": "4b4a0e09fc33e528605ccccf3dbc961eaf5034d0bd4f8f6cf28412bef37647fd"
+  },
+  "stage": "known face and quadrature; fitted chart projection plus line force and moment on B",
+  "poses": 10,
+  "lines": 18,
+  "checked_trim_interior_points": 36,
+  "repeats": 100,
+  "previous_pose_seed_available": 28,
+  "max_seed_age_s": 2.5e-05,
+  "cutoff_mm": 0.055,
+  "stiffness_N_per_m2": 1000000000.0,
+  "max_gap_error_um": 5.705873987182919e-05,
+  "max_line_force_vector_error_N": 0.0010534223204692159,
+  "max_line_moment_vector_error_Nm": 6.040545895765417e-05,
+  "paired_resident_us_per_known_pose": [
+    {
+      "repeats": 20,
+      "serial": 178.4720003604889,
+      "parallel": 46.487998962402344,
+      "previous_uv": 40.73600023984909
+    },
+    {
+      "repeats": 20,
+      "parallel": 46.374399960041046,
+      "previous_uv": 40.55039882659912,
+      "serial": 178.17599773406982
+    },
+    {
+      "repeats": 20,
+      "previous_uv": 40.60159921646118,
+      "serial": 178.17599773406982,
+      "parallel": 46.38719856739044
+    },
+    {
+      "repeats": 20,
+      "serial": 162.50879764556885,
+      "parallel": 42.64959990978241,
+      "previous_uv": 37.11199909448624
+    },
+    {
+      "repeats": 20,
+      "parallel": 42.70080029964447,
+      "previous_uv": 37.06879913806915,
+      "serial": 162.34880089759827
+    }
+  ],
+  "serial_resident_us_per_known_pose": 178.17599773406982,
+  "parallel_resident_us_per_known_pose": 46.374399960041046,
+  "previous_uv_resident_us_per_known_pose": 40.55039882659912
+}

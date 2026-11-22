@@ -1,0 +1,9 @@
+# Single-GPU contact replay
+
+The Linux replay used a shared GeForce RTX 3090, driver 595.91.07, CUDA Toolkit 12.8 and CuPy 13.6.0. The STEP reader used cadquery-ocp 7.8.1.1.post1. The GPU already had a competing workload before the replay. The two telemetry files contain timestamp, utilization (%), memory in use (MiB) and SM clock (MHz), sampled with `nvidia-smi` every 500 ms. They cover the runs of the face screen and line wrench separately.
+
+The broad phase uses [the face-screen benchmark](../../../../benchmarks/aes/gpu_face_candidates.py) with the same inputs and arguments as the RTX 3070 replay. Both hosts produced the same per-pose box candidate counts and retained every face pair recorded in the cold OCCT queries. The synchronized host timer includes a fresh pose upload. The resident timer uses known poses in a sequential CUDA graph.
+
+The [local line benchmark](../../../../benchmarks/aes/gpu_line_wrench.py) takes the fitted charts, 36 quadrature points on body B, the independently recorded face pairs and the origins of B from the ten spur poses. Each GPU kernel projects onto the supplied chart of A, evaluates the common linear contact law and sums the force and moment about the origin of B. The CPU reclassifies all projected parameters on the original trimmed STEP faces. Gaps and vector wrenches are compared with the cold CPU references. Rejected projections terminate the replay.
+
+The three timing columns measure one thread per line, a warp per quadrature point, and the warp implementation seeded with the previous pose's UV when available. The last mode discards hints after a break in the pose time grid and on a new face pair. Five blocks of 20 graph replays rotate the measurement order. Reported device time is the median of the five block medians, in microseconds per recorded pose. Contact-line discovery, quadrature construction and HHT advancement remain outside the local line timer.
