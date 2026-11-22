@@ -102,6 +102,16 @@ void check_rollback() {
     require(state.time==.1 && std::abs(state.q[0]-.9)<1e-15 && stats.minimum_clearance>.8,
             "HHT could not continue after rejected step");
     require(state.history==Vector{1}, "only an accepted HHT evaluation may update history");
+
+    Hht event_stepper({1},[](const Vector&,const Vector&,double) {return Forces{{0},{0},{0}};},
+        {},{},{},{},[](const State& a,const State& b) -> std::optional<double> {
+            return b.time-a.time <= .1875 ? std::nullopt : std::optional<double>{.75};
+        });
+    auto split=event_stepper.initialize({0},{1});
+    HhtStats checks;
+    event_stepper.step(split,.25,checks);
+    require(split.q[0]==.25 && checks.accepted_steps==2 && checks.step_checks==3 && checks.rejected_steps==1,
+            "step acceptance callback did not subdivide a converged candidate");
 }
 
 void check_point_resistance() {
@@ -199,6 +209,20 @@ void check_triangle_bvh() {
         require(answer && cold && std::abs(answer->distance-oracle)<1e-12 &&
                 std::abs(cold->distance-oracle)<1e-12,"BVH skipped the brute-force closest triangle pair");
         require(!ma.closest_within(mb,motion,oracle*.9,&hint,counts),"BVH exceeded the requested cutoff");
+        const ContactPose tilted{motion.origin,{0,.6,.8},angle};
+        RigidPlacement rigid;
+        rigid.origin=tilted.origin;
+        for (auto& column : rigid.basis) column=tilted.rotate(column);
+        const auto rotated=ma.closest_rigid_within(mb,rigid,infinity,&hint,counts);
+        double rotated_oracle=infinity;
+        for (const Triangle& ta : a) {
+            for (const Triangle& tb : b) {
+                const Triangle moved{tilted.point(tb[0]),tilted.point(tb[1]),tilted.point(tb[2])};
+                rotated_oracle=std::min(rotated_oracle,closest_triangles(ta,moved).distance);
+            }
+        }
+        require(rotated && std::abs(rotated->distance-rotated_oracle)<1e-12,
+                "3D BVH placement lost the closest pair");
     }
 }
 

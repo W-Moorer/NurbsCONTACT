@@ -67,6 +67,30 @@ void check_directional_contact(const TopoDS_Shape& a, const TopoDS_Shape& b) {
     require(rim && std::abs(rim->distance-.002)<1e-11,"compiled planar trim missed the supported area");
 }
 
+void check_pair_contact(const TopoDS_Shape& a, const TopoDS_Shape& b) {
+    using namespace nc::dynamics;
+    const std::vector<ContactBodyState> bodies{{nullptr,{},{{}}}, {nullptr,{},{{{0,0,1},{}}}}};
+    for (const auto backend : {PairBackend::occt, PairBackend::mesh, PairBackend::brep}) {
+        const auto first=pair_geometry(a,backend,5e-6),second=pair_geometry(b,backend,5e-6);
+        ContactPair pair{0,1,{},{},ContactDirection::world,{},{1000,1,0,0,.001,.001},.0006,
+                         pair_contact_query(first,second)};
+        Forces force{{0},{0},{0}};
+        ContactWork work;
+        std::vector<ContactSample> observations;
+        require(add_contact_forces(&force,bodies,{&pair,1},{0},work,&observations) &&
+                observations[0].resolved && std::abs(force.value[0]-.1)<1e-9,
+                "closest-pair gap or virtual work disagrees with the analytic result");
+        if (backend==PairBackend::brep) {
+            const auto event=fixed_axis_pair_sweep(*first,*second,{},{},{},{{0,0,-.0005}},.0001,1e-4);
+            require(event.status==SweepStatus::hit && event.safe_prefix<=.8 && event.witness_time.value_or(0)>=.8,
+                    "closest-pair timestep CCD misses the reference event");
+            pair.closest=pair_contact_query(first,second,{1e-9,1});
+            require(!add_contact_forces(nullptr,bodies,{&pair,1},{0},work) && work.unresolved_queries==1,
+                    "B-rep budget exhaustion was mistaken for separation");
+        }
+    }
+}
+
 void check_contained_contact() {
     using namespace nc::dynamics;
     const auto blank=BRepPrimAPI_MakeCylinder(gp_Ax2(gp_Pnt(0,0,-1),gp_Dir(0,0,1)),2.,2.).Shape();
@@ -157,6 +181,7 @@ int main(int argc, char** argv) {
         const auto shape_a = read_step_shape(fixtures / "block-a.step");
         const auto shape_b = read_step_shape(fixtures / "block-b.step");
         check_directional_contact(shape_a,shape_b);
+        check_pair_contact(shape_a,shape_b);
         BRepExtrema_DistShapeShape reference{shape_a, shape_b};
         require(reference.IsDone(), "OCCT reference distance failed");
         const PreparedModel a{adapt_occt(shape_a)};

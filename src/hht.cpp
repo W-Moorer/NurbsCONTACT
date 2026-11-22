@@ -71,10 +71,11 @@ struct Trial {
 }  // namespace
 
 Hht::Hht(Vector diagonal_mass, ForceFunction forces, HhtOptions options, ClearanceFunction clearance,
-         HistoryForceFunction historical_forces, BoundedForceFunction bounded_forces)
+         HistoryForceFunction historical_forces, BoundedForceFunction bounded_forces,
+         StepAcceptanceFunction accept_step)
     : mass_(std::move(diagonal_mass)), forces_(std::move(forces)),
       options_(options), clearance_(std::move(clearance)), historical_forces_(std::move(historical_forces)),
-      bounded_forces_(std::move(bounded_forces)) {
+      bounded_forces_(std::move(bounded_forces)), accept_step_(std::move(accept_step)) {
     if ((!forces_ && !historical_forces_ && !bounded_forces_) || mass_.empty() || !finite(mass_) ||
         std::any_of(mass_.begin(), mass_.end(), [](double m) { return m <= 0; }) ||
         !(options.alpha >= -1.0 / 3 && options.alpha <= 0) ||
@@ -236,9 +237,19 @@ bool Hht::solve(const State& start, double dt, State& result, HhtStats& statisti
 
 bool Hht::advance(State& state, double dt, HhtStats& statistics, unsigned depth) const {
     State candidate;
+    double fraction = 0.5;
     if (solve(state, dt, candidate, statistics)) {
         const double lower = clearance_ ? clearance_(state.q, candidate.q) : std::numeric_limits<double>::infinity();
-        if (lower > options_.minimum_clearance) {
+        bool accepted = lower > options_.minimum_clearance;
+        if (accepted && accept_step_) {
+            ++statistics.step_checks;
+            if (const auto split = accept_step_(state, candidate)) {
+                accepted = false;
+                if (std::isfinite(*split)) fraction = std::clamp(*split, .125, .875);
+                ++statistics.rejected_steps;
+            }
+        }
+        if (accepted) {
             state = std::move(candidate);
             statistics.minimum_clearance = std::min(statistics.minimum_clearance, lower);
             ++statistics.accepted_steps;
@@ -247,8 +258,8 @@ bool Hht::advance(State& state, double dt, HhtStats& statistics, unsigned depth)
     }
     if (depth >= options_.max_subdivisions) return false;
     ++statistics.subdivisions;
-    const double half = dt / 2;
-    return advance(state, half, statistics, depth + 1) && advance(state, half, statistics, depth + 1);
+    const double first = dt * fraction;
+    return advance(state, first, statistics, depth + 1) && advance(state, dt - first, statistics, depth + 1);
 }
 
 void Hht::step(State& state, double dt, HhtStats& statistics) const {

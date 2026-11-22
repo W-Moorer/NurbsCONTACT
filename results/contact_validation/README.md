@@ -54,6 +54,37 @@ For a contained probe, place A's anchor in the cavity and B's anchor inside the 
 
 The `nc-contact-v2` header adds a drive block after all probes. It accepts a prescribed translation orbit or a tabulated translation. An orbit translates a body by rotating its arm around the given axis at constant angular velocity. The orbit acceleration supplies the base-inertia force through the body's mass and center-of-mass Jacobian. A tabulated drive linearly interpolates consecutive world-space offsets and requires a prescribed body. A v2 scene with zero dynamic coordinates evaluates the same contact law on prescribed poses at the requested sample times.
 
+### Whole-body nearest-contact pairs
+
+A v2 deck can declare a pair of STEP bodies in place of a probe. The pair searches the full shapes at each trial pose. It applies one compliant point force per declared pair using the direction of the closest points and `gap = distance - activation`.
+
+```text
+closest body_a body_b activation_m K exponent C mu slip_speed max_depth_m
+```
+
+Select `pair-mesh` with a positive deflection in meters, `pair-occt` for numerical STEP extrema, or `pair-brep` for interval B-rep distance. Native B-rep accepts a feasible witness within the activation distance if the distance width meets the configured tolerance. A verified lower bound can also exclude the pair. An undecided trial is rejected and can trigger HHT step subdivision. The prototype models exterior contact across a separation layer. A zero-length witness has no usable point-pair normal and is unresolved. Use directional probes for a prescribed signed-penetration or containment model.
+
+Add `EVENT_TOL_S` after the native tolerance and node cap to check a step independently of its force backend. This check runs a B-rep sweep along the interpolation between the converged endpoint coordinates. It supports affine origin motion, constant orientation of A, and fixed-axis rotation of B with aligned axes or an unrotated A. An undecided sweep triggers subdivision. A new contact can use the witness time to position the split. Continued contact with a witness at the start can proceed. The report separates force queries, unresolved force queries, and the CCD work.
+
+```powershell
+build/occt/Release/nc_contact.exe SCENE DEFLECTION_M DT_S DURATION_S OUTPUT_STRIDE OUTPUT_PREFIX pair-mesh
+build/occt/Release/nc_contact.exe SCENE 0 DT_S DURATION_S OUTPUT_STRIDE OUTPUT_PREFIX pair-brep 2e-6 30000
+```
+
+These modes use the fixed-evaluation HHT force callback. The native distance tolerance controls the scalar distance interval. Residual-driven force accuracy additionally needs bounds on the closest-point normal and moment arms.
+
+[`pair_dynamics.py`](../../benchmarks/aes/pair_dynamics.py) generates a common eccentric-cam deck and two transmission decks from the existing STEP assets. The cam deck keeps the `nc_hht` benchmark's spring, preload and initial conditions. The transmission decks use one nearest point pair per gear mesh, with the original shaft inertias and a tabulated approximation to the driving and braking torques.
+
+```powershell
+$out = 'build/aes-pair-dynamics'
+& build/occt/Release/nc_hht.exe models "$out/cam-models"
+python benchmarks/aes/pair_dynamics.py "$out/cam-models" results/gears/models "$out/decks"
+& build/occt/Release/nc_contact.exe "$out/decks/cam.scene" 2.5e-5 .000125 20 16 "$out/cam-mesh" pair-mesh
+& build/occt/Release/nc_contact.exe "$out/decks/cam.scene" 0 .000125 20 16 "$out/cam-occt" pair-occt
+```
+
+[`pair_cam_accuracy.py`](../../benchmarks/aes/pair_cam_accuracy.py) scores the sampled follower displacement and normal force against the refined `nc_hht` cam trace. It checks the end time and accepted step count before calculating errors.
+
 ~~~text
 drives count
 body_id orbit arm_xyz axis_xyz angular_speed

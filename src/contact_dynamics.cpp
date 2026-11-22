@@ -57,77 +57,15 @@ std::optional<WorldHit> hit(const ContactBodyState& body, Vec ray, Vec direction
     return WorldHit{along,add(ray,scale(direction,along)),body.pose.rotate(result->normal)};
 }
 
-bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState& b,
-              const ContactPair& pair, const Vector& velocity,
-              ContactWork& work, ContactSample& sample, bool observe,
-              const ImpactHistory& previous) {
-    ++work.pairs;
-    const Vec anchor_a = a.pose.point(pair.anchor_a);
-    const Vec anchor_b = b.pose.point(pair.anchor_b);
-    const Vec axis = sub(anchor_b,anchor_a);
-    const double center_distance = length(axis);
-    const bool radial = pair.direction==ContactDirection::contained_radial;
-    const bool contained = pair.direction==ContactDirection::contained || radial;
-    const bool moving_axis = (pair.direction==ContactDirection::anchors || contained)
-                             && center_distance>1e-12;
-    Vec normal = pair.normal;
-    if (moving_axis) {
-        normal = scale(axis, (contained ? -1 : 1)/center_distance);
-    } else if (pair.direction==ContactDirection::anchors) {
-        return false;
-    } else if (pair.direction==ContactDirection::body_a || contained) {
-        normal = a.pose.rotate(normal);
-    }
-    if (!observe && !contained) {
-        const auto lower = dot3(sub(b.pose.origin,a.pose.origin),normal)
-            -maximum_projection(a.surface->bounds(),a.pose.inverse_rotate(normal))
-            -maximum_projection(b.surface->bounds(),b.pose.inverse_rotate(scale(normal,-1)));
-        if (lower>1e-8) {
-            ++work.culled;
-            return true;
-        }
-    }
-    // For containment the two anchors lie on the same ray line. Each ray
-    // starts in its own region, so crossing the bore rim cannot switch walls.
-    const Vec outward = scale(normal,-1);
-    const auto left = hit(a,contained ? anchor_a : anchor_b,outward,work,contained);
-    if (!left) return !contained;
-    const auto right = hit(b,anchor_b,contained ? outward : normal,work,contained);
-    if (!right) return !contained;
-    const double lambda_a = (contained ? center_distance : 0)-left->along;
-    const double lambda_b = contained ? -right->along : right->along;
-    sample.gap = lambda_b-lambda_a;
-    sample.resolved = true;
-    sample.witness_a = left->point;
-    sample.witness_b = right->point;
-    const auto& material = pair.material;
+template<class Differential>
+bool assemble_contact(Forces* forces, const ContactMaterial& material, ContactSample& sample,
+                      const ContactBodyState& a, const ContactBodyState& b, const Vector& velocity,
+                      const ImpactHistory& previous, const Differential& differential) {
     const double depth = -sample.gap;
-    const bool incident_law = material.approach_floor>0;
-    if (depth<=0 && !incident_law) return true;
-    if (depth > material.maximum_depth) return false;
-    const Vec normal_a = radial ? normal : left->normal;
-    const Vec normal_b = radial ? normal : right->normal;
-    const double cos_a = dot3(normal_a,normal), cos_b = dot3(normal_b,normal);
-    if (std::abs(cos_a)<1e-6 || std::abs(cos_b)<1e-6) return depth<=0;
-
+    const bool incident_law = material.approach_floor > 0;
     const std::size_t n = velocity.size();
     Vector jacobian(n);
     std::vector<Vec> tangent(n);
-    const auto differential = [&](const Twist& da, const Twist& db) {
-        const Vec ray_rate = db.at(sub(anchor_b,b.pose.origin));
-        Vec normal_rate{};
-        if (moving_axis) {
-            const Vec offset_rate = sub(ray_rate,da.at(sub(anchor_a,a.pose.origin)));
-            normal_rate = scale(tangential(offset_rate,normal),(contained ? -1 : 1)/center_distance);
-        } else if (pair.direction==ContactDirection::body_a || contained) {
-            normal_rate = cross3(da.angular,normal);
-        }
-        const Vec a_rate = da.at(sub(left->point,a.pose.origin));
-        const Vec b_rate = db.at(sub(right->point,b.pose.origin));
-        const double la = dot3(normal_a,sub(sub(a_rate,ray_rate),scale(normal_rate,lambda_a)))/cos_a;
-        const double lb = dot3(normal_b,sub(sub(b_rate,ray_rate),scale(normal_rate,lambda_b)))/cos_b;
-        return std::pair{lb-la,tangential(sub(b_rate,a_rate),normal)};
-    };
     auto [rate,slip] = differential(a.prescribed,b.prescribed);
     for (std::size_t i=0;i<n;++i) {
         const auto [gradient,relative] = differential(a.derivative[i],b.derivative[i]);
@@ -177,6 +115,116 @@ bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState&
         }
     }
     return true;
+}
+
+bool evaluate_closest(Forces* forces, const ContactBodyState& a, const ContactBodyState& b,
+                      const ContactPair& pair, const Vector& velocity, ContactWork& work,
+                      ContactSample& sample, const ImpactHistory& previous) {
+    ++work.closest_queries;
+    const auto result = pair.closest->closest(a.pose, b.pose, pair.activation, work);
+    if (result.status == PairStatus::separated) {
+        ++work.culled;
+        return true;
+    }
+    if (result.status == PairStatus::unresolved) {
+        ++work.unresolved_queries;
+        work.last_unresolved_distance = result.distance_bound_m;
+        return false;
+    }
+    const auto& points = result.points;
+    const Vec separation = sub(points.b, points.a);
+    const double length_ab = length(separation);
+    if (!(length_ab > 1e-12) || points.distance <= 1e-12) {
+        ++work.unresolved_queries;
+        return false;
+    }
+    sample.gap = points.distance - pair.activation;
+    sample.witness_a = points.a;
+    sample.witness_b = points.b;
+    sample.resolved = true;
+    if (-sample.gap > pair.material.maximum_depth) return false;
+    if (sample.gap >= 0 && pair.material.approach_floor == 0) return true;
+
+    const Vec normal = scale(separation, 1 / length_ab);
+    const Vec arm_a = sub(points.a, a.pose.origin);
+    const Vec arm_b = sub(points.b, b.pose.origin);
+    const auto differential = [&](const Twist& da, const Twist& db) {
+        const Vec relative = sub(db.at(arm_b), da.at(arm_a));
+        return std::pair{dot3(normal, relative), tangential(relative, normal)};
+    };
+    return assemble_contact(forces, pair.material, sample, a, b, velocity, previous, differential);
+}
+
+bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState& b,
+              const ContactPair& pair, const Vector& velocity,
+              ContactWork& work, ContactSample& sample, bool observe,
+              const ImpactHistory& previous) {
+    ++work.pairs;
+    if (pair.closest) return evaluate_closest(forces, a, b, pair, velocity, work, sample, previous);
+    const Vec anchor_a = a.pose.point(pair.anchor_a);
+    const Vec anchor_b = b.pose.point(pair.anchor_b);
+    const Vec axis = sub(anchor_b,anchor_a);
+    const double center_distance = length(axis);
+    const bool radial = pair.direction==ContactDirection::contained_radial;
+    const bool contained = pair.direction==ContactDirection::contained || radial;
+    const bool moving_axis = (pair.direction==ContactDirection::anchors || contained)
+                             && center_distance>1e-12;
+    Vec normal = pair.normal;
+    if (moving_axis) {
+        normal = scale(axis, (contained ? -1 : 1)/center_distance);
+    } else if (pair.direction==ContactDirection::anchors) {
+        return false;
+    } else if (pair.direction==ContactDirection::body_a || contained) {
+        normal = a.pose.rotate(normal);
+    }
+    if (!observe && !contained) {
+        const auto lower = dot3(sub(b.pose.origin,a.pose.origin),normal)
+            -maximum_projection(a.surface->bounds(),a.pose.inverse_rotate(normal))
+            -maximum_projection(b.surface->bounds(),b.pose.inverse_rotate(scale(normal,-1)));
+        if (lower>1e-8) {
+            ++work.culled;
+            return true;
+        }
+    }
+    // For containment the two anchors lie on the same ray line. Each ray
+    // starts in its own region, so crossing the bore rim cannot switch walls.
+    const Vec outward = scale(normal,-1);
+    const auto left = hit(a,contained ? anchor_a : anchor_b,outward,work,contained);
+    if (!left) return !contained;
+    const auto right = hit(b,anchor_b,contained ? outward : normal,work,contained);
+    if (!right) return !contained;
+    const double lambda_a = (contained ? center_distance : 0)-left->along;
+    const double lambda_b = contained ? -right->along : right->along;
+    sample.gap = lambda_b-lambda_a;
+    sample.resolved = true;
+    sample.witness_a = left->point;
+    sample.witness_b = right->point;
+    const auto& material = pair.material;
+    const double depth = -sample.gap;
+    const bool incident_law = material.approach_floor>0;
+    if (depth<=0 && !incident_law) return true;
+    if (depth > material.maximum_depth) return false;
+    const Vec normal_a = radial ? normal : left->normal;
+    const Vec normal_b = radial ? normal : right->normal;
+    const double cos_a = dot3(normal_a,normal), cos_b = dot3(normal_b,normal);
+    if (std::abs(cos_a)<1e-6 || std::abs(cos_b)<1e-6) return depth<=0;
+
+    const auto differential = [&](const Twist& da, const Twist& db) {
+        const Vec ray_rate = db.at(sub(anchor_b,b.pose.origin));
+        Vec normal_rate{};
+        if (moving_axis) {
+            const Vec offset_rate = sub(ray_rate,da.at(sub(anchor_a,a.pose.origin)));
+            normal_rate = scale(tangential(offset_rate,normal),(contained ? -1 : 1)/center_distance);
+        } else if (pair.direction==ContactDirection::body_a || contained) {
+            normal_rate = cross3(da.angular,normal);
+        }
+        const Vec a_rate = da.at(sub(left->point,a.pose.origin));
+        const Vec b_rate = db.at(sub(right->point,b.pose.origin));
+        const double la = dot3(normal_a,sub(sub(a_rate,ray_rate),scale(normal_rate,lambda_a)))/cos_a;
+        const double lb = dot3(normal_b,sub(sub(b_rate,ray_rate),scale(normal_rate,lambda_b)))/cos_b;
+        return std::pair{lb-la,tangential(sub(b_rate,a_rate),normal)};
+    };
+    return assemble_contact(forces, material, sample, a, b, velocity, previous, differential);
 }
 
 } // namespace

@@ -1,5 +1,8 @@
 #include "nurbscontact/occt_contact.hpp"
 
+#include <BRepExtrema_DistShapeShape.hxx>
+#include <gp_Ax1.hxx>
+
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepBndLib.hxx>
 #include <BRepMesh_IncrementalMesh.hxx>
@@ -19,6 +22,14 @@
 #include <stdexcept>
 
 namespace nc {
+
+class PairGeometry {
+public:
+    PairBackend backend;
+    TopoDS_Shape shape;
+    std::optional<dynamics::TriangleBvh> mesh;
+    std::optional<PreparedModel> native;
+};
 namespace {
 
 using namespace dynamics;
@@ -193,11 +204,141 @@ private:
     mutable IntCurvesFace_ShapeIntersector native_;
 };
 
+gp_Trsf placement(ContactPose pose) {
+    gp_Trsf transform;
+    if (pose.angle != 0) {
+        transform.SetRotation(gp_Ax1{gp_Pnt{}, gp_Dir{pose.axis[0], pose.axis[1], pose.axis[2]}}, pose.angle);
+    }
+    transform.SetTranslationPart(gp_Vec{pose.origin[0]/mm, pose.origin[1]/mm, pose.origin[2]/mm});
+    return transform;
+}
+
+Motion static_motion(const gp_Trsf& relative) {
+    Motion motion;
+    const auto& offset = relative.TranslationPart();
+    motion.translation = {offset.X(), offset.Y(), offset.Z()};
+    gp_XYZ axis;
+    if (relative.GetRotation(axis, motion.angle)) motion.axis = {axis.X(), axis.Y(), axis.Z()};
+    else motion.angle = 0;
+    return motion;
+}
+
+class StepPair final : public PairContactQuery {
+public:
+    StepPair(std::shared_ptr<const PairGeometry> a, std::shared_ptr<const PairGeometry> b, PairSearchOptions options)
+        : a_(std::move(a)), b_(std::move(b)), options_(options) {
+        if (a_->backend == PairBackend::occt) {
+            extrema_.emplace();
+            extrema_->SetDeflection(1e-7);
+            extrema_->LoadS1(a_->shape);
+        }
+    }
+
+    PairProximity closest(ContactPose a, ContactPose b, double cutoff, ContactWork& work) const override {
+        if (a_->backend == PairBackend::mesh) {
+            RigidPlacement relative;
+            relative.origin = a.inverse_rotate(sub(b.origin, a.origin));
+            for (auto& basis : relative.basis) basis = a.inverse_rotate(b.rotate(basis));
+            const auto result = a_->mesh->closest_rigid_within(*b_->mesh, relative, cutoff, &hint_, work.mesh);
+            if (!result) return {PairStatus::separated};
+            return {PairStatus::within_cutoff, {a.point(result->a), a.point(result->b), result->distance}};
+        }
+        const gp_Trsf relative = placement(a).Inverted() * placement(b);
+        if (extrema_) {
+            extrema_->LoadS2(b_->shape.Moved(TopLoc_Location{relative}));
+            if (!extrema_->Perform() || extrema_->NbSolution() == 0 || extrema_->InnerSolution()) return {};
+            const double distance_m = extrema_->Value() * mm;
+            if (distance_m > cutoff) return {PairStatus::separated};
+            return {PairStatus::within_cutoff, {a.point(scale(vector(extrema_->PointOnShape1(1)), mm)),
+                                      a.point(scale(vector(extrema_->PointOnShape2(1)), mm)), distance_m}};
+        }
+        Options options;
+        options.distance_tolerance = options_.tolerance_m / mm;
+        options.max_nodes = options_.max_nodes;
+        const auto result = distance(*a_->native, *b_->native, static_motion(relative), 0, options);
+        work.native_nodes += result.statistics.visited;
+        const double lower = (Interval{result.lower} * mm).lo;
+        const double upper = (Interval{result.upper} * mm).hi;
+        const Interval bound{lower, upper};
+        if (lower > cutoff) return {PairStatus::separated, {}, bound};
+        if (!result.witness || upper > cutoff || up(upper - lower) > options_.tolerance_m) {
+            return {PairStatus::unresolved, {}, bound};
+        }
+        const auto& witness = *result.witness;
+        return {PairStatus::within_cutoff, {a.point(scale(midpoint(witness.a.position), mm)),
+                                  a.point(scale(midpoint(witness.b.position), mm)), upper}, bound};
+    }
+
+private:
+    std::shared_ptr<const PairGeometry> a_, b_;
+    PairSearchOptions options_;
+    mutable TriangleHint hint_;
+    mutable std::optional<BRepExtrema_DistShapeShape> extrema_;
+};
+
 } // namespace
 
 std::shared_ptr<const dynamics::ContactSurface> contact_surface(const TopoDS_Shape& shape, double deflection_m) {
     if (!(deflection_m>=0) || !std::isfinite(deflection_m)) throw std::invalid_argument("invalid mesh deflection");
     return std::make_shared<StepSurface>(shape,deflection_m);
+}
+
+std::shared_ptr<const PairGeometry> pair_geometry(const TopoDS_Shape& shape, PairBackend backend,
+                                                  double deflection_m) {
+    auto result = std::make_shared<PairGeometry>();
+    result->backend = backend;
+    if (backend == PairBackend::mesh) {
+        if (!(deflection_m > 0) || !std::isfinite(deflection_m))
+            throw std::invalid_argument("pair-mesh requires a positive deflection in meters");
+        auto triangles = tessellate_occt(shape, deflection_m / mm);
+        for (auto& triangle : triangles) for (auto& point : triangle) point = scale(point, mm);
+        result->mesh.emplace(std::move(triangles));
+    } else if (backend == PairBackend::brep) {
+        result->native.emplace(adapt_occt(shape));
+    } else {
+        result->shape = shape;
+    }
+    return result;
+}
+
+std::shared_ptr<const dynamics::PairContactQuery> pair_contact_query(
+    std::shared_ptr<const PairGeometry> a, std::shared_ptr<const PairGeometry> b, PairSearchOptions options) {
+    if (!a || !b || a->backend != b->backend || !(options.tolerance_m > 0) ||
+        !std::isfinite(options.tolerance_m) || options.max_nodes == 0) {
+        throw std::invalid_argument("invalid pair contact backends or search options");
+    }
+    return std::make_shared<StepPair>(std::move(a), std::move(b), options);
+}
+
+SweepResult fixed_axis_pair_sweep(const PairGeometry& a, const PairGeometry& b,
+                                 ContactPose a0, ContactPose a1, ContactPose b0, ContactPose b1,
+                                 double clearance_m, double time_tolerance, PairSearchOptions settings) {
+    if (!a.native || !b.native || a0.angle != a1.angle || a0.axis != a1.axis || b0.axis != b1.axis) {
+        throw std::invalid_argument("CCD requires native STEP shapes and fixed axes with A's orientation constant");
+    }
+    Motion path = static_motion(placement(a0).Inverted() * placement(b0));
+    path.velocity = scale(a0.inverse_rotate(sub(sub(b1.origin, b0.origin), sub(a1.origin, a0.origin))), 1/mm);
+    if (b1.angle != b0.angle) {
+        if (a0.angle != 0 && a0.axis != b0.axis && a0.axis != scale(b0.axis, -1)) {
+            throw std::invalid_argument("CCD relative rotation requires aligned axes or an unrotated body A");
+        }
+        path.axis = b0.axis;
+        path.angle = b0.angle - (a0.axis == b0.axis ? a0.angle : -a0.angle);
+        path.angular_velocity = b1.angle - b0.angle;
+    }
+    Options options;
+    options.distance_tolerance = settings.tolerance_m / mm;
+    options.time_tolerance = time_tolerance;
+    options.max_nodes = settings.max_nodes;
+    options.axial_time = false;
+    const Interval clearance = Interval{clearance_m}/mm;
+    auto result = sweep(*a.native, *b.native, path, {0, 1}, clearance.hi, options);
+    if (result.witness && norm(result.witness->b.position - result.witness->a.position).hi > clearance.lo) {
+        result.status = SweepStatus::unresolved;
+        result.witness_time.reset();
+        result.witness.reset();
+    }
+    return result;
 }
 
 std::vector<dynamics::Triangle> tessellate_occt(const TopoDS_Shape& shape, double deflection_mm) {

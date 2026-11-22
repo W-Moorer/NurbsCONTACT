@@ -28,6 +28,15 @@ struct Pose {
 
 Pose relative_pose(Pose a, Pose b);
 
+struct RigidPlacement {
+    Vec origin{};
+    std::array<Vec, 3> basis{{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
+    Vec rotate(Vec p) const {
+        return add(add(scale(basis[0], p[0]), scale(basis[1], p[1])), scale(basis[2], p[2]));
+    }
+    Vec point(Vec p) const { return add(origin, rotate(p)); }
+};
+
 using Triangle = std::array<Vec, 3>;
 
 struct TriangleHint {
@@ -57,6 +66,8 @@ public:
     // Output points are expressed in A's frame. The cutoff merely limits search.
     std::optional<PointPair> closest_within(const TriangleBvh& b, Pose b_in_a, double cutoff,
                                             TriangleHint* hint, TriangleStatistics& statistics) const;
+    std::optional<PointPair> closest_rigid_within(const TriangleBvh& b, const RigidPlacement& b_in_a, double cutoff,
+                                                 TriangleHint* hint, TriangleStatistics& statistics) const;
     // Numerical Euclidean proximity test over an affine translation of B.
     bool swept_within(const TriangleBvh& b, Vec start, Vec end, double cutoff,
                       TriangleHint& hint, TriangleStatistics& statistics) const;
@@ -67,6 +78,10 @@ public:
     struct Box { Vec lo; Vec hi; };
 
 private:
+    template<class Placement>
+    std::optional<PointPair> closest_impl(const TriangleBvh& b, const Placement& placement, double cutoff,
+                                          TriangleHint* hint, TriangleStatistics& statistics) const;
+
     struct Node {
         Box box;
         std::size_t begin{};

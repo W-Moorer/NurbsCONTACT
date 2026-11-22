@@ -104,6 +104,17 @@ Box transform_box(Box box, Pose pose) {
     return {sub(center, radius), add(center, radius)};
 }
 
+Box transform_box(Box box, const RigidPlacement& pose) {
+    const Vec center = pose.point(scale(add(box.lo, box.hi), 0.5));
+    const Vec extent = scale(sub(box.hi, box.lo), 0.5);
+    Vec radius{};
+    for (std::size_t axis = 0; axis < radius.size(); ++axis) {
+        for (std::size_t column = 0; column < extent.size(); ++column)
+            radius[axis] += std::abs(pose.basis[column][axis]) * extent[column];
+    }
+    return {sub(center, radius), add(center, radius)};
+}
+
 double separation(Box a, Box b) {
     double bound = 0;
     for (std::size_t i = 0; i < 3; ++i) {
@@ -222,6 +233,18 @@ std::size_t TriangleBvh::build(std::size_t begin, std::size_t end, std::size_t l
 
 std::optional<PointPair> TriangleBvh::closest_within(const TriangleBvh& b, Pose placement, double cutoff,
                                                      TriangleHint* hint, TriangleStatistics& statistics) const {
+    return closest_impl(b, placement, cutoff, hint, statistics);
+}
+
+std::optional<PointPair> TriangleBvh::closest_rigid_within(const TriangleBvh& b, const RigidPlacement& placement,
+                                                           double cutoff, TriangleHint* hint,
+                                                           TriangleStatistics& statistics) const {
+    return closest_impl(b, placement, cutoff, hint, statistics);
+}
+
+template<class Placement>
+std::optional<PointPair> TriangleBvh::closest_impl(const TriangleBvh& b, const Placement& placement, double cutoff,
+                                                   TriangleHint* hint, TriangleStatistics& statistics) const {
     if (!(cutoff >= 0)) throw std::invalid_argument("invalid triangle proximity cutoff");
     struct Pair { std::size_t a; std::size_t b; double bound; };
     const auto smaller = [](Pair a, Pair b2) { return a.bound > b2.bound; };

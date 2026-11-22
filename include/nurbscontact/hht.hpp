@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <functional>
 #include <limits>
+#include <optional>
 #include <vector>
 
 namespace nc::dynamics {
@@ -47,6 +48,9 @@ struct State {
     double force_error{};
 };
 
+// Return no value to accept, or the split fraction for a converged candidate.
+using StepAcceptanceFunction = std::function<std::optional<double>(const State&, const State&)>;
+
 struct HhtStats {
     std::size_t accepted_steps{};
     std::size_t subdivisions{};
@@ -56,12 +60,15 @@ struct HhtStats {
     double maximum_residual{};
     double minimum_clearance{std::numeric_limits<double>::infinity()};
     std::size_t force_refinements{};
+    std::size_t step_checks{};
+    std::size_t rejected_steps{};
 };
 
 class Hht {
 public:
     Hht(Vector diagonal_mass, ForceFunction forces, HhtOptions options = {}, ClearanceFunction clearance = {},
-        HistoryForceFunction historical_forces = {}, BoundedForceFunction bounded_forces = {});
+        HistoryForceFunction historical_forces = {}, BoundedForceFunction bounded_forces = {},
+        StepAcceptanceFunction accept_step = {});
 
     State initialize(Vector q, Vector v, double time = 0) const;
     void step(State& state, double dt, HhtStats& statistics) const;
@@ -76,6 +83,7 @@ private:
     ClearanceFunction clearance_;
     HistoryForceFunction historical_forces_;
     BoundedForceFunction bounded_forces_;
+    StepAcceptanceFunction accept_step_;
 };
 
 }  // namespace nc::dynamics

@@ -35,6 +35,10 @@ struct ContactWork {
     std::size_t rays{};
     std::size_t missing{};
     TriangleStatistics mesh{};
+    std::size_t closest_queries{};
+    std::size_t unresolved_queries{};
+    std::size_t native_nodes{};
+    std::optional<Interval> last_unresolved_distance;
 };
 
 class ContactSurface {
@@ -43,6 +47,20 @@ public:
     virtual TriangleBvh::Box bounds() const = 0;
     virtual std::optional<RayHit> first_hit(Vec origin, Vec direction, double maximum,
                                             ContactWork& work) const = 0;
+};
+
+enum class PairStatus { separated, within_cutoff, unresolved };
+
+struct PairProximity {
+    PairStatus status{PairStatus::unresolved};
+    PointPair points{}; // World-space points and distance in meters.
+    std::optional<Interval> distance_bound_m{};
+};
+
+class PairContactQuery {
+public:
+    virtual ~PairContactQuery() = default;
+    virtual PairProximity closest(ContactPose a, ContactPose b, double cutoff, ContactWork& work) const = 0;
 };
 
 struct ContactBodyState {
@@ -71,6 +89,8 @@ struct ContactPair {
     ContactDirection direction;
     Vec normal;
     ContactMaterial material;
+    double activation{};
+    std::shared_ptr<const PairContactQuery> closest{};
 };
 
 struct ContactSample {
