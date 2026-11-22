@@ -16,7 +16,7 @@ Run the [numerical protocol](../../benchmarks/aes/protocol.md) first. The publis
 python benchmarks/aes/literature_figures.py build/aes-literature docs/AES/figures (Get-Command blender).Source
 ```
 
-The industrial and appendix figure script uses the selected industrial runs named in its `industrial` function and the recorded fine-step sphere traces. These run folders were under `build/aes-benchmark`.
+The industrial and appendix figure script uses the cam query comparison in `build/aes-cam-baselines` and the recorded gear and fine-step sphere traces in `build/aes-benchmark`.
 
 Prepare the model renders by tessellating each gear solid named in `results/gears/models/spur.csv` and `reducer.csv` with `python benchmarks/gears/tessellate.py STEP_FILE STEM.npz`. Put the resulting files in `build/aes-benchmark/paper/step-meshes`. Populate `build/aes-benchmark/paper/frames` with three completed traces named `cam.csv`, `spur.csv`, and `reducer.csv`. The published inputs were `cam-native-24-125us.csv`, `spur-native-0nm-10us-31.csv`, and `reducer-native-0nm-10us-31.csv`.
 

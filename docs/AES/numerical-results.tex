@@ -2,7 +2,7 @@
 \label{sec:evaluation}
 The published reference cases test the timing of repeated contact transitions and the geometry of a cam with prescribed motion. The industrial cases measure integration cost at prescribed tolerances on displacement and force. The solver comparisons measure the cost of force enclosures and track reuse across force evaluations.
 
-The C++ implementations use Release builds and binary64 arithmetic. The Windows STEP runs use MSVC and Open CASCADE 7.9.3 on an AMD Ryzen 9 5900X. We give setup and online integration time separately and exclude trace serialization. Cam setup includes the common model preparation used by the selected backend. The refinement ladders use one to three repeats per setting. A serial timing batch repeats the selected cam and spur configurations three times and the selected reducer configurations twice. We report the median online time for repeated configurations. The Linux engine results were obtained on the same workstation under WSL. The RecurDyn timings report the Windows solver and process interface separately. Software versions, individual timing records and precise settings are in the repository.
+The C++ implementations use Release builds and binary64 arithmetic. The Windows STEP runs use MSVC and Open CASCADE 7.9.3 on an AMD Ryzen 9 5900X. We give setup and online integration time separately and exclude trace serialization. Cam setup includes common model preparation. The fixed-step cam comparison uses three runs for each support query and one for each general search. The selected spur and reducer timings use three and two serial runs, respectively. We report the median online time for repeated configurations. The Linux engine results were obtained on the same workstation under WSL. The RecurDyn timings report the Windows solver and process interface separately. Software versions, individual timing records and precise settings are in the repository.
 
 \input{published-validation}
 
@@ -19,9 +19,10 @@ We compare the entire time histories against refined native solutions on common 
 \begin{tabular}{llrrrrr}\toprule
 Case & Geometry query & Step & Position & Force & Setup & Online \\
  & & (\microsec) & (\micron) & (\%) & (s) & (s) \\\midrule
-Cam & Native CAD & 125 & 0.286 & 0.04 & 0.015 & 1.60 \\
- & Polygon support, 8192 & 125 & 0.261 & 0.04 & 0.037 & 1.78 \\
- & Polygon support, 512 & 250 & 0.794 & 0.10 & 0.016 & 0.71 \\
+Cam & Analytic cylinder--plane & 125 & 0.286 & 0.041 & 0.012 & 1.19 \\
+ & Polygon support, 2048 & 125 & 0.175 & 0.024 & 0.018 & 1.59 \\
+ & Triangle BVH, 2048 sides & 125 & 0.175 & 0.024 & 0.110 & 188.01 \\
+ & OCCT B-rep distance & 125 & 0.286 & 0.041 & 0.009 & 1108.26 \\
 Spur & Native CAD & 5 & 0.037 & 0.89 & 0.017 & 4.03 \\
  & Polyline, 1024 & 5 & 0.037 & 0.89 & 0.018 & 3.94 \\
  & Triangle BVH, 391 nm & 5 & 0.256 & 3.35 & 3.832 & 47.81 \\
@@ -33,11 +34,13 @@ Reducer & Native CAD, 31 sections & 10 & 0.243 & 4.52 & 0.023 & 41.04 \\
 \end{table}
 
 \paragraph{Flat-follower cam.}
-The rotating cylinder has a 105 mm radius and an eccentricity of 24 mm. The rendered model and key histories are in Fig.~\ref{fig:cam}. The general mesh query searches a BVH on the same regular faceted cam used by the fast polygon support query. The latter selects the nearest support vertex in the correct direction and checks the plane projection against the finite follower. At 125~\microsec{}, the native solution takes a median of 1.60 s. The selected polygonal configuration meeting 0.5~\micron{} and 2\% takes 1.78 s. At 1~\micron{} and 5\%, the 512-sided polygon at 250~\microsec{} has 0.794~\micron{} displacement error and finishes in 0.71 s. This setting benefits from partial cancellation between faceting and time-discretization error. Its advantage at that tolerance demonstrates the need to search configurations of each representation independently.
+The rotating cylinder has a 105 mm radius and an eccentricity of 24 mm. The cam variants use the same HHT integrator, contact law and step guard. The analytic query computes the cylinder support point and checks its projection on the finite follower. The Open CASCADE variant calls \texttt{BRepExtrema\_DistShapeShape} on the original STEP shapes at each trial. It retains the reference shape's decomposition and uses a deflection setting of $10^{-7}$ mm. The two faceted variants use the same 2048-sided geometry. Polygon support selects the extremal side vertex and checks its projection on the follower, while the triangle BVH searches for a closest pair of points. All four variants complete the 20 s run at 125~\microsec{} and meet the joint tolerance of 0.5~\micron{} and 2\%. The two faceted queries give the same RMS errors at the reported precision and differ substantially in online cost. Figure~\ref{fig:cam} compares the analytic and triangle BVH responses.
+
+At the relaxed tolerance of 1~\micron{} and 5\%, a 512-sided polygon at 250~\microsec{} has 0.794~\micron{} displacement error and runs in 0.71 s in a separate batch. Partial cancellation between faceting and time-discretization error helps that setting meet the target. The refinement ladder measures this interaction across time steps and mesh resolutions.
 
 The Drake comparison uses a cylinder with the 12 mm layer incorporated into its radius and a prismatic half-space. This preserves the maximum radial support height, force, eccentric torque, prescribed inertia and spring-damper loads of the model. At 125~\microsec{}, the Linux HHT and Drake RK2 runs meet the 0.5~\micron{} target with displacement errors of 0.286 and 0.402~\micron{}. Their median online times over five runs are 1.96 and 12.06 s, respectively. The point-level force law agrees within $1.5\times10^{-13}$ N along the Drake trajectories.
 
-\resultfigure{cam}{Eccentric cam and flat follower. The full 20 s response compares the follower displacement and normal force of native CAD and the efficient polygon support baseline at the same time step.}{fig:cam}
+\resultfigure{cam}{Eccentric cam and flat follower. The full 20 s response compares follower displacement and normal force from the analytic cylinder--plane calculation and the general triangle BVH at the same time step.}{fig:cam}
 
 \paragraph{Single-stage spur pair.}
 For the spur mesh we compare native flank sections against both a general triangle BVH and a faster piecewise-linear section representation. The section baseline preserves the same tooth-pair selection, sampled axial geometry, stiffness and line-of-action projection as the native method. At 5~\microsec{}, the native and 1024-segment polyline solutions meet the finest joint tolerance with nearly identical errors. The serial median times are 4.03 and 3.94 s and their repeat ranges overlap. The best observed triangle-BVH force error at this step is 3.35\% for the 391 nm mesh setting, which requires 47.81 s in the refinement batch. Figure~\ref{fig:spur} compares the native and tuned section solutions over the load-rise window. The force-waveform error at 10~\microsec{} already exceeds 5\% for the native method, so refining geometry alone does not achieve the tighter target.

@@ -56,13 +56,25 @@ Use `--aes-fixtures` with the [engine runner](../engines/README.md#reproduce-on-
 
 ## Industrial baselines
 
-The cam includes a regular-polygon support query in addition to the general triangle BVH. Both use the same polygon geometry. The support query selects the extremal side vertex and uses a general mesh search if the projection misses the finite follower. The gear comparisons include a stage-specific polygonal alternative. It discretizes each of the same CAD sections into a piecewise-linear curve and intersects a line-of-action ray by bracketing its transverse zero, without the overhead of traversing a 3D BVH. Its segment count is the number of intervals per axial section. `--series tight-mesh` refines the discrete geometry of both baselines, `--series section-mesh` runs the gear polygonal alternative, and `--series time-check` adds a 2.5 µs native run. `--series bounded` runs the nonlinear force-decision ablation. The case selector can limit a study to any mechanism. `industrial_accuracy.py` merges the resulting folders and audits all completed traces against the converged native references.
+The eccentric cam compares the analytic cylinder–plane support calculation, OCCT shape-distance extrema, a general triangle BVH, and a structure-aware polygon support query under the same HHT integrator, normal force law, and step guard. Both discrete queries use the same 2048-sided geometry in the fixed-step comparison. Polygon support selects the extremal side vertex and uses a general mesh search if the projection misses the finite follower. OCCT `BRepExtrema_DistShapeShape` caches the reference shape, moves the original STEP geometry, and uses a deflection setting of 10⁻⁷ mm. The query supplies a numerical distance and a closest-point pair. The [cam comparison records](../../results/aes/cam-baselines.json) include one complete timing for each general search and three repeats for each support calculation.
+
+Run the common 20 s, 125 µs cam comparison with the refined reference from the initial industrial run. To regenerate that reference, use the first two commands below:
+
+```powershell
+$hht = 'build/occt/Release/nc_hht.exe'
+$reference = 'build/aes-benchmark/industrial-cam2'
+& $hht models "$reference/cam-models"
+& $hht run cam brep 24 0.0000625 20 "$reference/cam-models" "$reference/cam-native-24-62us" 1
+python benchmarks/aes/cam_baselines.py $hht "$reference/cam-native-24-62us.csv" build/aes-cam-baselines
+```
+
+The gear comparisons include a stage-specific polygonal alternative. It discretizes each of the same CAD sections into a piecewise-linear curve and intersects a line-of-action ray by bracketing its transverse zero, without the overhead of traversing a 3D BVH. Its segment count is the number of intervals per axial section. `--series tight-mesh` refines the discrete geometry of both baselines, `--series section-mesh` runs the gear polygonal alternative, and `--series time-check` adds a 2.5 µs native run. `--series bounded` runs the nonlinear force-decision ablation. The case selector can limit a study to any mechanism. `industrial_accuracy.py` merges the resulting folders and audits all completed traces against the converged native references.
 
 The [Drake cam adapter](../engines/drake_cam.py) uses a revolute cylinder and a prismatic half-space, with 12 mm added to the cylinder's contact radius. It preserves the mass, rotational inertia, driven spring-damper relation, follower preload and frictionless force law. It verifies the recorded contact force against the cylinder/plane law along each of Drake's computed trajectories. `engine_cam_accuracy.py` compares this output with the equivalent native cam runs from the same Linux environment.
 
 ## Manuscript timing batch
 
-[Paper measurements](../../results/aes/paper-measurements.json) contain the individual times and accuracy audit of the serial batch. [The full industrial ladder](../../results/aes/industrial-windows.csv) retains the original configuration sweeps and their timings. The serial batch controls for other benchmark processes on the workstation. Its medians supply the selected cam, spur, and reducer costs in the manuscript.
+[Paper measurements](../../results/aes/paper-measurements.json) contain the individual times and accuracy audit of the serial batch. [The full industrial ladder](../../results/aes/industrial-windows.csv) retains the original configuration sweeps and their timings. The serial batch controls for other benchmark processes on the workstation. Its medians supply the relaxed cam comparison and the selected spur and reducer costs in the manuscript.
 
 ```powershell
 $work = 'build/aes-benchmark'

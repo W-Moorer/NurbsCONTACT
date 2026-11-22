@@ -55,22 +55,22 @@ def spheres(work, output):
         save(fig,output,case+"-response")
 
 
-def industrial(work, output):
+def industrial(work, output, cam_baselines):
     configs = {
-        "cam": (("industrial-cam2/cam-native-24-125us", "CAD, 125 µs"),
-                ("industrial-cam-tight/cam-mesh-support-8192-125us","Polygon, 8192 sides"),
+        "cam": ((cam_baselines/"cam-cylinder-plane", "Analytic cylinder–plane"),
+                (cam_baselines/"cam-triangle-bvh", "Triangle BVH, 2048 sides"),
                 ("q1","solver_peak_force"), ("Follower travel (mm)", "Normal force (N)"),1000.,(0.,20.)),
-        "spur": (("industrial-pilot/spur-native-0nm-5us-31","CAD, 5 µs"),
-                 ("spur-section-confirm/spur-section-mesh-1024segments-5us-31","Polyline, 1024 segments"),
+        "spur": ((work/"industrial-pilot/spur-native-0nm-5us-31","CAD, 5 µs"),
+                 (work/"spur-section-confirm/spur-section-mesh-1024segments-5us-31","Polyline, 1024 segments"),
                  ("te0_um","normal0_N"),("Transmission error (µm)","Mesh force (N)"),1.,(.109,.124)),
-        "reducer": (("industrial-pilot/reducer-native-0nm-5us-31","CAD, 31 slices"),
-                    ("industrial-pilot/reducer-native-axial-check-0nm-5us-63","CAD, 63 slices"),
+        "reducer": ((work/"industrial-pilot/reducer-native-0nm-5us-31","CAD, 31 slices"),
+                    (work/"industrial-pilot/reducer-native-axial-check-0nm-5us-63","CAD, 63 slices"),
                     ("te1_um","normal1_N"),("Stage 2 transmission error (µm)","Stage 2 mesh force (N)"),1.,(.076,.186)),
     }
     for case,(native,baseline,fields,labels,scale,window) in configs.items():
         fig,axes = plt.subplots(2,1,figsize=(7.12,3.61),sharex=True,layout="constrained")
         for (location,label),color,linestyle in ((native,BLUE,"-"),(baseline,AMBER,"--")):
-            t,q,f = series(work/(location+".csv"),("time",*fields))
+            t,q,f = series(location.with_suffix(".csv"),("time",*fields))
             take = (t>=window[0]) & (t<=window[1])
             for ax,y,ylabel in zip(axes,(q*scale,f),labels,strict=True):
                 ax.plot(t[take],y[take],label=label,color=color,ls=linestyle,lw=1.30)
@@ -107,11 +107,12 @@ def main():
     parser.add_argument("output",type=Path)
     parser.add_argument("--plots-only",action="store_true")
     parser.add_argument("--models-only",action="store_true")
+    parser.add_argument("--cam-baselines",type=Path)
     args=parser.parse_args()
     args.output.mkdir(parents=True,exist_ok=True)
     if not args.models_only:
         spheres(args.work,args.output)
-        industrial(args.work,args.output)
+        industrial(args.work,args.output,args.cam_baselines or args.work.parent/"aes-cam-baselines")
     if not args.plots_only:
         model_panels(args.work,args.output)
 

@@ -1,0 +1,106 @@
+{
+  "cylinder-plane": {
+    "backend": "brep",
+    "polygon_sides": null,
+    "steps": 160000,
+    "step_s": 0.000125,
+    "duration_s": 20.0,
+    "setup_s": 0.0121207,
+    "online_s": [
+      1.1936206999999999,
+      1.1716067,
+      1.2000202
+    ],
+    "median_online_s": 1.1936206999999999,
+    "force_refinements": 0,
+    "rechecked_certificates": 0,
+    "responses": [
+      {
+        "response": "follower",
+        "position_rms_um": 0.2861576140974399,
+        "position_max_um": 1.4332502306056705,
+        "force_rms_N": 0.00143731984792986,
+        "force_rms_pct": 0.0406543597104779,
+        "force_peak_error_pct": 0.0007152747109703557
+      }
+    ],
+    "meets_target": true
+  },
+  "occt-extrema": {
+    "backend": "occt-distance",
+    "polygon_sides": null,
+    "steps": 160000,
+    "step_s": 0.000125,
+    "duration_s": 20.0,
+    "setup_s": 0.0094912,
+    "online_s": [
+      1108.2639769
+    ],
+    "median_online_s": 1108.2639769,
+    "force_refinements": 0,
+    "rechecked_certificates": 0,
+    "responses": [
+      {
+        "response": "follower",
+        "position_rms_um": 0.28615761414540064,
+        "position_max_um": 1.433250230050559,
+        "force_rms_N": 0.001437319848224758,
+        "force_rms_pct": 0.04065435971881904,
+        "force_peak_error_pct": 0.0007152747115582181
+      }
+    ],
+    "meets_target": true
+  },
+  "triangle-bvh": {
+    "backend": "mesh",
+    "polygon_sides": 2048,
+    "steps": 160000,
+    "step_s": 0.000125,
+    "duration_s": 20.0,
+    "setup_s": 0.1099466,
+    "online_s": [
+      188.0130141
+    ],
+    "median_online_s": 188.0130141,
+    "force_refinements": 0,
+    "rechecked_certificates": 0,
+    "responses": [
+      {
+        "response": "follower",
+        "position_rms_um": 0.175476166580869,
+        "position_max_um": 0.7926567838715398,
+        "force_rms_N": 0.0008582332604255005,
+        "force_rms_pct": 0.024274989130002745,
+        "force_peak_error_pct": 0.0010863947947671302
+      }
+    ],
+    "meets_target": true
+  },
+  "polygon-support": {
+    "backend": "mesh-support",
+    "polygon_sides": 2048,
+    "steps": 160000,
+    "step_s": 0.000125,
+    "duration_s": 20.0,
+    "setup_s": 0.0179664,
+    "online_s": [
+      1.5891666,
+      1.6205661999999998,
+      1.4990118
+    ],
+    "median_online_s": 1.5891666,
+    "force_refinements": 0,
+    "rechecked_certificates": 0,
+    "responses": [
+      {
+        "response": "follower",
+        "position_rms_um": 0.175476166627947,
+        "position_max_um": 0.792656783927051,
+        "force_rms_N": 0.0008582332606705241,
+        "force_rms_pct": 0.024274989136933198,
+        "force_peak_error_pct": 0.0010863947947671302
+      }
+    ],
+    "meets_target": true
+  }
+}

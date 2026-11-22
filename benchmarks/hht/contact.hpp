@@ -3,6 +3,7 @@
 #include "nurbscontact/query.hpp"
 #include "nurbscontact/triangle_bvh.hpp"
 
+#include <BRepExtrema_DistShapeShape.hxx>
 #include <filesystem>
 #include <memory>
 #include <string_view>
@@ -15,13 +16,15 @@ using dynamics::TriangleBvh;
 using dynamics::TriangleHint;
 
 enum class Shape { plate, sphere, cylinder };
-enum class Backend { cad, general_cad, mesh, mesh_support };
+enum class Backend { cad, general_cad, occt_distance, mesh, mesh_support };
 
 struct Statistics {
     std::size_t queries{};
     std::size_t analytic{};
     std::size_t cad_fallback{};
     dynamics::TriangleStatistics mesh;
+    TopoDS_Shape extrema_reference;
+    std::optional<BRepExtrema_DistShapeShape> extrema;
 };
 
 struct Geometry {
@@ -38,6 +41,7 @@ struct Geometry {
     unsigned facets{};
     std::unique_ptr<PreparedModel> native;
     std::unique_ptr<TriangleBvh> mesh;
+    TopoDS_Shape step_shape;
 };
 
 struct BoundedPose {

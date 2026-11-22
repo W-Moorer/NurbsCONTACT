@@ -34,6 +34,7 @@ Backend parse_backend(std::string_view value) {
     if (value == "brep") return Backend::cad;
     if (value == "mesh") return Backend::mesh;
     if (value == "mesh-support") return Backend::mesh_support;
+    if (value == "occt-distance") return Backend::occt_distance;
     if (value == "general-brep") return Backend::general_cad;
     throw std::invalid_argument("unknown geometry backend");
 }

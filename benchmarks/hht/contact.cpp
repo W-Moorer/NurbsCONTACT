@@ -245,6 +245,7 @@ Geometry load_geometry(const std::filesystem::path& path, unsigned facets) {
         }
     }
     g.motion_radius = (norm(exact(g.center)) + g.radius + g.half + g.half_u + g.half_v).hi;
+    g.step_shape = original;
     g.native = std::make_unique<PreparedModel>(adapt_occt(model));
     if (g.kind == Shape::sphere && facets > 256) throw std::invalid_argument("sphere facet count exceeds 256");
     g.mesh = std::make_unique<TriangleBvh>(triangulate(g, facets), 2);
@@ -328,6 +329,27 @@ std::optional<PointPair> closest(
         }
     }
     const Pose placement = relative_pose(pa, pb);
+    if (backend == Backend::occt_distance) {
+        // Work in STEP's mm coordinates. Keep the reference shape's decomposition
+        // across repeated closest-point calls.
+        if (!statistics.extrema || !statistics.extrema_reference.IsSame(a.step_shape)) {
+            auto& query = statistics.extrema.emplace();
+            query.SetDeflection(1e-7);
+            query.LoadS1(a.step_shape);
+            statistics.extrema_reference = a.step_shape;
+        }
+        gp_Trsf transform;
+        transform.SetRotation(gp_Ax1{gp_Pnt{}, gp_Dir{0,0,1}}, std::atan2(placement.sine, placement.cosine));
+        const auto offset = scale(placement.origin, 1000.);
+        transform.SetTranslationPart(gp_Vec{offset[0], offset[1], offset[2]});
+        auto& query = *statistics.extrema;
+        query.LoadS2(b.step_shape.Moved(TopLoc_Location{transform}));
+        if (!query.Perform() || query.NbSolution() == 0) throw std::runtime_error("OCCT closest-point query failed");
+        const double separation = query.Value() * .001;
+        if (separation > skin) return std::nullopt;
+        return PointPair{pa.point(scale(vector(query.PointOnShape1(1)), .001)),
+                         pa.point(scale(vector(query.PointOnShape2(1)), .001)), separation};
+    }
     if (backend == Backend::mesh || backend == Backend::mesh_support) {
         auto result = a.mesh->closest_within(*b.mesh, placement, skin, hint, statistics.mesh);
         if (result) {
@@ -356,6 +378,7 @@ std::string_view name(Backend backend) {
     if (backend == Backend::cad) return "brep";
     if (backend == Backend::mesh) return "mesh";
     if (backend == Backend::mesh_support) return "mesh-support";
+    if (backend == Backend::occt_distance) return "occt-distance";
     return "general-brep";
 }
 
