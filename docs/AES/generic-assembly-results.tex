@@ -1,0 +1,18 @@
+\paragraph{Production STEP assembly motions.}
+We also run eight translation paths on the published OpenAMRobot MMP wheel and lidar assemblies and the Voron Trident Front Idler B assembly. All methods use the same original occurrences and path definitions. The requested bracket width is $5\times10^{-4}$ of the prescribed path duration, and B-rep search uses a 200,000-task cap. We compare the outputs with an adaptive numerical OCCT reference. This reference shares its distance kernel with the OCCT advancement baseline.
+
+\begin{table}[pos=!htbp]
+\small\centering
+\caption{Production STEP translations. Completed results meet the requested width or exclude contact over the entire path and agree with the numerical reference. The reference remains unresolved on one of the eight paths. Online time is the median over all paths of three-run medians, excluding preparation.}
+\label{tab:production-contact}
+\begin{tabular}{lrr}\toprule
+Method & Completed and compatible & Query (ms) \\\midrule
+Direct B-rep interval search (ours) & 6 of 8 & 1034.05 \\
+Bounded B-rep distance + advancement & 3 of 8 & 4609.70 \\
+OCCT distance + advancement & 7 of 8 & 614.48 \\
+Triangle BVH + swept-triangle CCD & 7 of 8 & 12.73 \\
+Triangle CCD + bounded CAD advancement & 3 of 8 & 4814.83 \\
+\bottomrule\end{tabular}
+\end{table}
+
+The mesh rows use the 3.125~\micron{} nominal deflection. The direct search completes the three wheel paths, the lidar pre-seat path and two idler paths. It retains a wider interval for full lidar insertion. The Voron spacer reference is unresolved, so that path contributes to the timing but has no success credit. The finest mesh and numerical OCCT methods agree with the reference on all seven resolved reference paths.

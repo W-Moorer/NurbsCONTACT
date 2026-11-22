@@ -34,6 +34,27 @@ The script records the full trajectories, STEP files, and `summary.json`. The [m
 
 Score the industrial trajectories over the full run on a common output grid of 20 µs for the gears and 1 ms for the cam. Use RMS follower displacement or stage transmission error and the RMS force difference divided by the RMS reference force. Report the sampled peak-force difference separately. Measure three joint tolerance levels (0.5 µm and 2%, 1 µm and 5%, 2 µm and 10%). Both reducer stages must satisfy the specified level. The cam and spur references use the finest native time step, and the reducer reference also uses the largest axial quadrature. Count a setting with a missing or incomplete run as ineligible for the accuracy comparison.
 
+## Continuous contact comparison
+
+The [measured queries](../../results/aes/general-contact/) retain the complete source STEP geometry for each pair. `native-sweep` is the proposed backend with `--generic`, which disables the optional axial-envelope shortcut. The shared patch-and-trim search uses its default witness sampling. The mesh method uses swept triangle prisms for translations and a rotating triangle BVH with distance advancement for rotational paths. The two CAD advancement baselines use either bounded static B-rep distance or numerical OCCT extrema. The numerical methods apply a 0.000001 mm distance margin to estimate the separation interval. The margin and the mesher deflection setting do not certify a bound against the original STEP boundary. A pair's mesh preparation is measured once and reused across its paths.
+
+The cam inputs are the 22 contact-start steps and their 22 immediately preceding steps from the completed 125 µs simulation. Each query uses the recorded initial angle and translation and the increment over that step. The independently evaluated cylinder–plane relation is the timing reference. The width target is 0.0005 of a step, and native CAD methods each receive 20,000 tasks. Run from the root with `mpmath`, Release binaries, and the OCCT runtime on `PATH`:
+
+```powershell
+$bench = 'build/occt/Release/nc_assembly_bench.exe'
+$out = 'build/aes-general-contact'
+$cam = 'build/aes-benchmark/industrial-cam2'
+python benchmarks/aes/cam_contact_paths.py "$cam/cam-native-24-125us.csv" $out
+& $bench compare-pair "$cam/cam-models/follower.step" "$cam/cam-models/cam.step" "$out/cam-paths.txt" "$out/cam-generic.csv" 2 --generic --max-nodes 20000 --refine-mesh --external-reference
+python benchmarks/aes/cam_contact_paths.py "$cam/cam-native-24-125us.csv" $out --audit "$out/cam-generic.csv"
+```
+
+For the production translations, follow the [assembly protocol](../assemblies/README.md#reproduce-the-continuous-comparison) for the wheel, lidar pre-seat, lidar full-insertion, and Voron scenarios. Use `--generic --max-nodes 200000` and three repetitions. These paths use the independent adaptive OCCT reference already in the assembly runner. The numerical OCCT advancement baseline shares that reference's distance kernel. Record cases with unresolved reference separately from agreements and conflicts.
+
+`gear_contact_paths.py results/gears/models build/aes-benchmark/industrial-pilot build/aes-general-contact` exports the first recorded load-rise segment at or after 0.10 s from the spur pair and both reducer stages. Use the two STEP paths in `gear-paths.json` and each exported `.txt` with `compare-pair` and `1 --generic --max-nodes 5000 --external-reference`. The driver-frame center translation uses the chord between recorded poses. The three segments start in active contact and exercise imported gear geometry.
+
+The [TDIB-CCD comparison](../chen/README.md) invokes the official OBB code on its shipped `singleTest` control nets and velocities. Run `nc_chen_common --published-single` with the documented pinned dependency. The comparison retains the official candidate, its point-pair residual, and the native solver's verified inactive interval. This common case has untrimmed bicubic patches and linear motions.
+
 ## Manuscript assets after verification
 
 Allocate the three principle figures to residual-driven precision, lower and upper event-time bounds, and the validity region of reused exclusions. Add one workflow diagram and one algorithm listing. Render the STEP-derived model overviews and contact insets with Blender through Python, and use Python for the response plots and figure checks. Choose the fewest response curves that establish each case's result.

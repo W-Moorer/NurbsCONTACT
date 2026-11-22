@@ -1,0 +1,26 @@
+{
+  "spur-stage-1": {
+    "step_a": "spur-1a.step",
+    "step_b": "spur-1b.step",
+    "trace": "spur-native-0nm-5us-31.csv",
+    "start_s": 0.10000000000002962,
+    "end_s": 0.10002000000002964,
+    "translation_chord_deviation_mm": 0.00016138365589907786
+  },
+  "reducer-stage-1": {
+    "step_a": "reducer-1a.step",
+    "step_b": "reducer-1b.step",
+    "trace": "reducer-native-0nm-10us-31.csv",
+    "start_s": 0.10001999999999392,
+    "end_s": 0.10003999999999391,
+    "translation_chord_deviation_mm": 0.000162138834802591
+  },
+  "reducer-stage-2": {
+    "step_a": "reducer-2a.step",
+    "step_b": "reducer-2b.step",
+    "trace": "reducer-native-0nm-10us-31.csv",
+    "start_s": 0.10001999999999392,
+    "end_s": 0.10003999999999391,
+    "translation_chord_deviation_mm": 4.6861240459583876e-05
+  }
+}

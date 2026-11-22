@@ -55,7 +55,7 @@
 \shortauthors{Manuscript for review}
 % Add the confirmed author list, affiliations and correspondence before submission.
 \begin{abstract}
-We couple geometric accuracy to the nonlinear residual in implicit simulation of rigid mechanisms. The solver requests tighter CAD contact-force estimates when their uncertainty prevents a convergence or line-search decision. Bounds on relative point travel let it reuse earlier separation checks across trial configurations. We verify repeated contact and release against a published unilateral spring solution and check the computed motion of a reconstructed six-arc cam against published follower kinematics. Across 50 oscillator periods, the largest onset or release timing error decreases nearly fourfold when the step is halved. In three industrial mechanisms, we compare integration cost at matched tolerances on position and force. On the eccentric cam, analytic cylinder--plane support and polygon support both require less time than general CAD distance and triangle BVH searches. The native spur and reducer runs have comparable cost to tuned polyline queries at their matched tolerances. Bounded force evaluation supplies the residual guarantee and adds cost to direct force computation in the tested mechanisms.
+We evaluate direct continuous contact detection on trimmed CAD boundaries and use force enclosures to control accuracy in implicit simulation of rigid mechanisms. The nonlinear solver requests tighter contact-force estimates when their uncertainty prevents a convergence or line-search decision. We verify repeated contact and release against a published unilateral spring solution and check the reconstructed motion of a six-arc cam against published follower kinematics. We compare the general B-rep query with static-distance advancement and triangle BVH methods on recorded rotating-cam motion and production assembly paths. At the requested time width on the rotating cam, the B-rep search exhausts its task budget, while numerical distance and mesh methods retain brackets consistent with the independent analytic reference. Force-integration experiments measure the cost of residual decisions with dedicated force kernels for the tested mechanisms.
 \end{abstract}
 \begin{keywords}
 Rigid multibody dynamics \sep Boundary representation \sep Implicit time integration \sep Contact geometry \sep Contact onset
@@ -75,7 +75,7 @@ The contributions are as follows.
 \item We use force enclosures to control geometric evaluation in HHT integration. Bounds on the nonlinear residual determine whether a Newton trial is acceptable, whether the line search has made progress, or whether the force evaluation needs more accuracy.
 \item We revalidate earlier pair exclusions with a bound on relative point travel and use previously computed gear points to propose bounded ray intersections. These checks let the solver reuse contact information within the current force budget. Matched simulations measure the cost of the bounded solver and of the geometry representation.
 \end{itemize}
-The C++ library also locates contact onset on a prescribed motion. It uses the earliest surviving region of the continuous search to propose a pair of points on the CAD boundary. The numerical study uses two published reference cases, two single-stage industrial mechanisms, and a two-stage reducer.
+The C++ library also locates contact onset on a prescribed motion. Its general search uses patch and trim bounds on full STEP shapes. The numerical study compares this query on the rotating cam, production assemblies, and complete gear stages. Two published analytical examples check the dynamics and kinematics separately.
 
 \section{Related work}
 \paragraph{Contact on CAD boundaries.}
@@ -91,18 +91,19 @@ HHT introduces controllable numerical dissipation into time integration \citep{h
 \input{numerical-results}
 
 \section{Discussion}
-On the eccentric cam, evaluating a support point directly from the geometry avoids a general closest-point search. This accounts for the low cost of both the analytic cylinder--plane and polygon support queries. The two faceted queries give almost identical responses on the same polygon, so their timing difference measures the cost of the search strategy on this model. A bounded residual decision adds interval work to each contact evaluation. On these mechanisms the unbounded fixed CAD path is faster than the bounded variants.
+The cam replays expose a high cost for resolving a narrow band near contact with general B-rep cell bounds. The numerical methods cover more paths at the tested budgets. The finest mesh carries the largest preparation cost and meets the time-width target on only a fraction of the positive paths. The separate force experiments show how much specialized support and flank queries can reduce the cost of a trial evaluation.
 
-The residual test applies to force oracles that can enclose their own error. The bounded force implementations cover the primitive contact pairs and projected sections of the tested nonrational cubic gear flanks. Gear trials use a sampled projected gap. The prescribed-motion search accepts trimmed patches and fixed-axis relative trajectories. Its guided point-pair proposals currently cover planar faces. At grazing it can verify an initial inactive interval while leaving contact onset unresolved. Force-residual bounds control the discrete equations. The oscillator results show how the step size affects contact timing even with a directly evaluated force law. The constant-breadth cam evaluates the geometry under prescribed kinematics, with the follower kept in contact by the opposing flat faces.
+The residual test applies to force oracles that can enclose their own error. The bounded force implementations cover the primitive contact pairs and projected sections of the tested nonrational cubic gear flanks. Gear trials use a sampled projected gap. The prescribed-motion search accepts trimmed patches and fixed-axis relative trajectories. At grazing it can verify an initial inactive interval while leaving contact onset unresolved. Force-residual bounds control the discrete equations. The oscillator results show how step size affects contact timing even with a directly evaluated force law. The constant-breadth cam evaluates geometry under prescribed kinematics, with the opposing flat faces keeping the follower in contact.
 
 \section{Conclusion}
-The nonlinear HHT residual provides a contact-force accuracy criterion for the CAD queries. Revalidating previous exclusions and gear intersections preserves that criterion across trial configurations. The published oscillator and cam cases check repeated contact timing and follower motion, respectively. The eccentric cam isolates the effect of a specialized geometric query at a common response tolerance. The tuned gear polylines give costs comparable to the native flank queries. Force enclosures provide a numerical guarantee on the residual decisions and add substantial cost to direct force evaluation in these runs.
+The general contact search uses the original STEP boundary and returns verified inactive intervals and feasible point-pair witnesses. The rotating-cam and published patch comparisons identify the remaining cost of obtaining narrow onset intervals and zero-distance witnesses. The nonlinear HHT residual provides a contact-force accuracy criterion for the supported force callbacks. The force experiments quantify that guarantee and its cost on the tested mechanisms.
 
 \section*{Software and data availability}
 The implementation, benchmark configurations, STEP model generators, measured summaries, and figure scripts are available in the accompanying \href{https://github.com/W-Moorer/NurbsCONTACT}{NurbsCONTACT repository}. The study protocol in the repository specifies the execution and reference settings. The RecurDyn runs require a licensed RecurDyn 2023 installation and its ProcessNet interface.
 
 \appendix
 \input{primitive-checks}
+\input{force-kernel-results}
 
 \bibliographystyle{model3-num-names}
 \bibliography{references}

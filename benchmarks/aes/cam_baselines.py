@@ -38,8 +38,9 @@ def main():
             subprocess.run([str(args.executable.resolve()), "run", "cam", backend, str(facets), str(STEP),
                             str(DURATION), str(models), str(prefix), str(repeats)], check=True)
         with prefix.with_suffix(".stats.csv").open(newline="", encoding="utf-8") as stream:
+            records = list(csv.DictReader(stream))
             if any(row["scene"] != "cam" or row["backend"] != backend or int(row["facets"]) != facets
-                   or row["force_strategy"] != "fixed" for row in csv.DictReader(stream)):
+                   or row["force_strategy"] != "fixed" for row in records):
                 raise ValueError(f"Unexpected backend or geometry in {method}")
         run = measurement(prefix, "cam", DURATION, repeats, ref)
         if run["step_s"] != STEP or run["steps"] != round(DURATION / STEP):
@@ -47,6 +48,7 @@ def main():
         errors, = run["responses"]
         run["meets_target"] = bool(errors["position_rms_um"] <= .5 and errors["force_rms_pct"] <= 2.)
         results[method] = {"backend": backend, "polygon_sides": facets if backend.startswith("mesh") else None,
+                           "geometry_queries": [int(row["queries"]) for row in records],
                            **run}
     (args.output / "summary.json").write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
 

@@ -24,7 +24,12 @@
         "force_peak_error_pct": 0.0007152747109703557
       }
     ],
-    "meets_target": true
+    "meets_target": true,
+    "geometry_queries": [
+      320001,
+      320001,
+      320001
+    ]
   },
   "occt-extrema": {
     "backend": "occt-distance",
@@ -49,7 +54,10 @@
         "force_peak_error_pct": 0.0007152747115582181
       }
     ],
-    "meets_target": true
+    "meets_target": true,
+    "geometry_queries": [
+      320001
+    ]
   },
   "triangle-bvh": {
     "backend": "mesh",
@@ -74,7 +82,10 @@
         "force_peak_error_pct": 0.0010863947947671302
       }
     ],
-    "meets_target": true
+    "meets_target": true,
+    "geometry_queries": [
+      320001
+    ]
   },
   "polygon-support": {
     "backend": "mesh-support",
@@ -101,6 +112,11 @@
         "force_peak_error_pct": 0.0010863947947671302
       }
     ],
-    "meets_target": true
+    "meets_target": true,
+    "geometry_queries": [
+      320001,
+      320001,
+      320001
+    ]
   }
 }

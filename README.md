@@ -70,7 +70,7 @@ The industrial suite adds four gear drives with involute or relieved spline flan
 
 The trajectory is the position of B relative to stationary A. It consists of a fixed-axis rotation about B's local origin and an affine translation in A's frame. Compose longer piecewise paths by querying each segment with its own time interval and coefficients. The query measures unsigned boundary separation. It supports initially separated parts and positive clearance thresholds, with a conservative unresolved outcome for ambiguous grazing or zero-gap events.
 
-For fixed relative orientation, the sweep also uses radial and axial enclosures of cylinders and planes with circular or elliptical trim arcs. The filter preserves a certified hole radius, intersects a cached face-pair time interval with the search interval, and evaluates witnesses on the original CAD geometry. Run with `--no-axial` to reproduce the directional search before this optimization. Angular-motion queries use the existing directional bounds.
+Run `nc_step sweep A.step B.step --generic` to use the shape-independent patch and trim search evaluated in the AES contact comparison. This mode disables optional axial-envelope pruning and planar witness proposals. The trajectory still uses the supported fixed-axis rotation and affine translation. The default sweep retains radial and axial enclosures for compatible surfaces under fixed relative orientation. `--no-axial` disables that filter separately.
 
 ## Sources and evidence
 

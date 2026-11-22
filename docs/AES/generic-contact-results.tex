@@ -1,0 +1,30 @@
+\subsection{Continuous contact on complete CAD boundaries}
+\label{sec:general-contact}
+Our backend prepares each STEP boundary as trimmed patches and searches over the specified rigid motion. The tests use the same patch and trim operations for every shape. The axial-envelope shortcut and planar witness proposals are disabled. The mesh baselines use swept triangle prisms for translations and a triangle BVH distance query with a point-speed bound for rotation. We also test advancement with either bounded static B-rep distances or the independent numerical Open CASCADE distance kernel. For numerical distances the advancement uses a $10^{-6}$ mm margin. The numerical margin and mesh deflection do not give an outward enclosure of the nominal CAD surface.
+
+\paragraph{Rotating cam with recorded contact transitions.}
+We replay 22 accepted steps at contact onset from the eccentric-cam start-up and the immediately preceding step for each. Each replay keeps the recorded end poses and interpolates the angle and follower displacement within the step. The backends receive the two full STEP shapes and the rigid motion. The analytic cylinder--plane gap is evaluated separately at high precision to score the outcomes. The requested time width is $5\times10^{-4}$ of the 125~\microsec{} input step. The direct search and bounded static advancement each use a 20,000-task cap.
+
+\begin{table}[pos=!htbp]
+\small\centering
+\caption{Rotating cam. An onset completes if its interval includes the reference time and meets the requested width. A preceding interval completes if it is reported inactive throughout. Query time is the median across all 44 paths after taking the median of two runs per path. It includes unresolved queries and excludes preparation.}
+\label{tab:cam-onset}
+\begin{tabular}{lrrr}\toprule
+Method & Onsets (of 22) & Inactive (of 22) & Query (ms) \\\midrule
+Direct B-rep interval search (ours) & 0 & 0 & 524.12 \\
+Bounded B-rep distance + advancement & 0 & 0 & 300.76 \\
+OCCT distance + advancement & 3 & 22 & 132.32 \\
+Triangle BVH + advancement & 4 & 22 & 64.10 \\
+\bottomrule\end{tabular}
+\end{table}
+
+Our search witnesses contact in three paths with brackets wider than the target and returns unresolved outcomes in the others. OCCT and the finest mesh report contact in all 22 onset paths. Most intervals are wider than the target. The mesh row uses a nominal deflection of 6.10 nm and requires 23.97 s of one-time mesh preparation. At 3.125~\micron{} deflection, 21 of the 22 onset paths disagree with the analytic reference. The data retain all six tessellation settings and the result of the mesh-guided CAD verification.
+
+\input{generic-assembly-results}
+
+\paragraph{Loaded spur and reducer stages.}
+We replay one 20~\microsec{} segment during the load rise for the spur pair and each reducer stage. Relative translation is interpolated between the recorded end poses in the driver frame. The deviations of these chords from the rotating center paths are bounded by 0.163~\micron{} under linear angular interpolation. The STEP boundaries are complete gear solids. Our search, OCCT advancement, and the finest tested triangle BVH report contact at the initial pose on all three segments. These checks exercise the same pipeline on involute and helical tooth surfaces under load. Each segment starts inside the contact layer, so this experiment has no onset time to localize within the step.
+
+\paragraph{Chen et al.'s published patch example.}
+We also run the official TDIB-CCD OBB solver \citep{chen2024} on its distributed \texttt{singleTest} case. Two orthogonal bicubic patches translate at the prescribed speeds. Their analytic intersection time is $10/17$ in the example's time units. The official implementation gives a candidate time of $0.5882353$ and a distance of $8.97\times10^{-4}$ between the returned parameter-cell centers. The median query time over five runs is 285.72 ms. The direct B-rep search proves the inactive interval up to $0.5882353$ and leaves the zero-distance witness unresolved at 25,000 tasks, with a median of 2,612.94 ms. This shared problem uses untrimmed patches and linear control-point motion. Matching the solver to the full STEP cases also requires trim-domain handling and an agreed model of rotating motion and contact activation.
+\FloatBarrier

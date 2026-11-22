@@ -18,6 +18,9 @@ cmake -S benchmarks/chen -B build/chen-common -DTDIB_SOURCE_DIR="$PWD/build/tdib
 cmake --build build/chen-common --config Release
 build/chen-common/Release/nc_chen_common.exe
 build/chen-common/Release/nc_chen_common.exe --positive-only
+build/chen-common/Release/nc_chen_common.exe --published-single
 ~~~
+
+The last command replays the two orthogonal bicubic patches from the official `singleTest` example. The exact first intersection time is `10/17`. The official solver sees its original two velocities and the native solver sees the equivalent relative translation. [Measured published case](../../results/aes/general-contact/chen-published-single.csv)
 
 Substitute the location of the local Eigen headers when needed. The [rotation follow-up](../clearance-followup/README.md) adds a chord-error bound, outward verification of proposed exclusions and an original-trajectory witness check around the official OBB search.

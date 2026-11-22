@@ -68,7 +68,7 @@ def event(output):
         ax.plot([3.24,4.88],[y,y],color=color,lw=3.1,solid_capstyle="round")
     ax.annotate("Relative motion",xy=(3.44,1.36),xytext=(1.51,2.08),
                 arrowprops={"arrowstyle":"->","color":INK},ha="center")
-    ax.annotate("Projected CAD witness",xy=(4.88,1.23),xytext=(5.21,2.18),
+    ax.annotate("Verified CAD witness",xy=(4.88,1.23),xytext=(5.21,2.18),
                 arrowprops={"arrowstyle":"->","color":GREEN},color=GREEN)
     ax.plot([4.88,5.30],[1.23,.93],"o--",color=GREEN,ms=4,lw=1.2)
     ax.text(5.48,1.30,r"$d^+\leq s$",ha="left",color=GREEN)

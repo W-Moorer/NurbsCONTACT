@@ -26,6 +26,7 @@
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <queue>
 #include <span>
 #include <sstream>
@@ -137,15 +138,27 @@ TopoDS_Shape boundary(const TopoDS_Shape& shape) {
     return result;
 }
 
+gp_Trsf placement(const Motion& motion, double time) {
+    const Vec origin = dynamics::add(motion.translation, dynamics::scale(motion.velocity, time));
+    gp_Trsf transform;
+    transform.SetRotation(gp_Ax1{gp_Pnt{}, gp_Dir{0, 0, 1}}, motion.angle + time * motion.angular_velocity);
+    transform.SetTranslationPart(gp_Vec{origin[0], origin[1], origin[2]});
+    return transform;
+}
+
+double travel_speed(const Motion& motion, double radius) {
+    return (norm(exact(motion.velocity)) + std::abs(motion.angular_velocity) * Interval{radius}).hi;
+}
+
+double rotation_radius(const IVec& box) {
+    return sqrt(square(magnitude(box[0])) + square(magnitude(box[1]))).hi;
+}
+
 double occt_distance(const TopoDS_Shape& a, const TopoDS_Shape& b, const Motion& motion, double time) {
-    const Vec t = motion.translation;
-    const Vec v = motion.velocity;
-    gp_Trsf shift;
-    shift.SetTranslation(gp_Vec{t[0] + v[0] * time, t[1] + v[1] * time, t[2] + v[2] * time});
     BRepExtrema_DistShapeShape query;
     query.SetDeflection(1e-9);
     query.LoadS1(a);
-    query.LoadS2(b.Moved(TopLoc_Location{shift}));
+    query.LoadS2(b.Moved(TopLoc_Location{placement(motion, time)}));
     if (!query.Perform() || !query.IsDone()) throw std::runtime_error("OCCT distance query failed");
     return query.Value();
 }
@@ -157,13 +170,13 @@ struct Reference {
     int calls{};
 };
 
-Reference reference_check(const Component& a, const Component& b, const Motion& motion, double clearance) {
+Reference reference_check(const Component& a, const Component& b, const Motion& motion, double clearance,
+                          double speed) {
     constexpr double numerical_margin = 1e-6;
     constexpr double resolution = 2e-5;
     constexpr int max_calls = 1024;
     const TopoDS_Shape boundary_a = boundary(a.shape);
     const TopoDS_Shape boundary_b = boundary(b.shape);
-    const double speed = norm(exact(motion.velocity)).hi;
 
     auto later = [](Interval i, Interval j) { return i.lo > j.lo; };
     std::priority_queue<Interval, std::vector<Interval>, decltype(later)> work(later);
@@ -215,7 +228,7 @@ struct Scenario {
     double clearance{};
 };
 
-std::vector<Scenario> read_cases(const char* filename, std::size_t parts) {
+std::vector<Scenario> read_cases(const char* filename, std::size_t parts, bool rotation = false) {
     std::ifstream input(filename);
     if (!input) throw std::runtime_error("cannot read assembly scenarios");
     std::string line;
@@ -230,6 +243,14 @@ std::vector<Scenario> read_cases(const char* filename, std::size_t parts) {
             scene.a == 0 || scene.b == 0 || scene.a > parts || scene.b > parts || scene.a == scene.b) {
             throw std::runtime_error("invalid assembly scenario: " + line);
         }
+        if ((row >> std::ws).peek() != std::char_traits<char>::eof()) {
+            if (!rotation) throw std::runtime_error("use compare or compare-pair for angular motion: " + line);
+            if (!(row >> scene.motion.angle >> scene.motion.angular_velocity) ||
+                !std::isfinite(scene.motion.angle) || !std::isfinite(scene.motion.angular_velocity) ||
+                (row >> std::ws).peek() != std::char_traits<char>::eof()) {
+                throw std::runtime_error("invalid initial angle or angular displacement: " + line);
+            }
+        }
         cases.push_back(std::move(scene));
     }
     if (cases.empty()) throw std::runtime_error("no assembly scenarios specified");
@@ -243,13 +264,14 @@ const char* status(SweepStatus value) {
 }
 
 void compare(const std::vector<Component>& components, const char* config, const char* filename, int repeats,
-             bool refine_mesh = false, bool use_numerical_reference = true) {
+             bool refine_mesh, bool use_numerical_reference, bool generic, std::size_t max_nodes) {
     using Clock = std::chrono::steady_clock;
     using nc::bench::ClearanceTiming;
     using nc::bench::distance_advancement;
     using nc::bench::mesh_ccd;
     using nc::dynamics::TriangleBvh;
-    constexpr Options settings{2e-4, 5e-4, 200'000};
+    Options settings{2e-4, 5e-4, max_nodes};
+    settings.axial_time = !generic;
     constexpr std::array standard_deflections{.05, .0125, .003125};
     constexpr std::array edge_deflections{.05, .0125, .003125, .000390625, .000048828125, .000006103515625};
     const std::span<const double> deflections = refine_mesh ? std::span<const double>(edge_deflections)
@@ -260,7 +282,13 @@ void compare(const std::vector<Component>& components, const char* config, const
     const auto elapsed = [](Clock::time_point start) {
         return std::chrono::duration<double, std::micro>(Clock::now() - start).count();
     };
-    const auto cases = read_cases(config, components.size());
+    struct MeshPair { TriangleBvh a; TriangleBvh b; double radius; double preparation; };
+    const auto make_mesh = [](const TopoDS_Shape& shape, double h) {
+        BRepBuilderAPI_Copy copy(shape, true, false);
+        return TriangleBvh{nc::bench::step_triangles(copy.Shape(), h), 2};
+    };
+    std::map<std::pair<std::size_t, std::size_t>, std::vector<MeshPair>> mesh_cache;
+    const auto cases = read_cases(config, components.size(), true);
     std::ofstream out(filename);
     out.exceptions(std::ios::badbit | std::ios::failbit);
     out << std::setprecision(17) << "scene,method,deflection_mm,repeat,clearance_mm,time_tolerance,status,"
@@ -269,14 +297,20 @@ void compare(const std::vector<Component>& components, const char* config, const
     for (const Scenario& scene : cases) {
         const Component& ca = components[scene.a - 1];
         const Component& cb = components[scene.b - 1];
-        std::optional<Reference> reference;
-        if (use_numerical_reference) reference = reference_check(ca, cb, scene.motion, scene.clearance);
-        const double speed = norm(exact(scene.motion.velocity)).hi;
-
         auto start = Clock::now();
         const PreparedModel a{adapt_occt(ca.shape)};
-        const PreparedModel b{adapt_occt(cb.shape)};
+        Model moving = adapt_occt(cb.shape);
+        double radius = 0;
+        if (scene.motion.angular_velocity != 0) {
+            for (const auto& patch : moving.patches) {
+                radius = std::max(radius, rotation_radius(bounding_box(support(patch.surface, patch.domain))));
+            }
+        }
+        const double speed = travel_speed(scene.motion, radius);
+        const PreparedModel b{std::move(moving)};
         const double native_prep = elapsed(start);
+        std::optional<Reference> reference;
+        if (use_numerical_reference) reference = reference_check(ca, cb, scene.motion, scene.clearance, speed);
 
         start = Clock::now();
         const TopoDS_Shape fa = boundary(ca.shape);
@@ -309,10 +343,7 @@ void compare(const std::vector<Component>& components, const char* config, const
         }});
         methods.push_back({"occt-ca", 0, occt_prep, 0, [&] {
             const auto sample = [&](double t, double) {
-                const Vec x = nc::dynamics::add(scene.motion.translation, nc::dynamics::scale(scene.motion.velocity, t));
-                gp_Trsf shift;
-                shift.SetTranslation(gp_Vec{x[0], x[1], x[2]});
-                extrema.LoadS2(fb.Moved(TopLoc_Location{shift}));
+                extrema.LoadS2(fb.Moved(TopLoc_Location{placement(scene.motion, t)}));
                 if (!extrema.Perform() || !extrema.IsDone()) return DistanceResult{};
                 const double d = extrema.Value();
                 DistanceResult result;
@@ -323,25 +354,48 @@ void compare(const std::vector<Component>& components, const char* config, const
             return distance_advancement(sample, speed, scene.clearance, settings.time_tolerance, max_calls);
         }});
 
-        struct MeshPair { TriangleBvh a; TriangleBvh b; };
-        std::vector<MeshPair> meshes;
-        meshes.reserve(deflections.size());
-        const auto make_mesh = [](const TopoDS_Shape& shape, double h) {
-            BRepBuilderAPI_Copy copy(shape, true, false);
-            return TriangleBvh{nc::bench::step_triangles(copy.Shape(), h), 2};
-        };
-        for (const double h : deflections) {
-            start = Clock::now();
-            meshes.push_back({make_mesh(ca.shape, h), make_mesh(cb.shape, h)});
-            const double mesh_prep = elapsed(start);
-            const auto count = meshes.back().a.triangles().size() + meshes.back().b.triangles().size();
-            const auto mesh_query = [&, index = meshes.size() - 1] {
-                const auto& mesh = meshes[index];
-                return mesh_ccd(mesh.a, mesh.b, scene.motion, scene.clearance, settings.time_tolerance);
+        auto& meshes = mesh_cache[{scene.a, scene.b}];
+        if (meshes.empty()) {
+            meshes.reserve(deflections.size());
+            for (double h : deflections) {
+                start = Clock::now();
+                auto ma = make_mesh(ca.shape, h);
+                auto mb = make_mesh(cb.shape, h);
+                double mesh_radius = 0;
+                for (const auto& triangle : mb.triangles()) {
+                    for (const auto& point : triangle) mesh_radius = std::max(mesh_radius, rotation_radius(exact(point)));
+                }
+                meshes.push_back({std::move(ma), std::move(mb), mesh_radius, elapsed(start)});
+            }
+        }
+        const bool rotates = scene.motion.angle != 0 || scene.motion.angular_velocity != 0;
+        for (std::size_t i=0; i<meshes.size(); ++i) {
+            const auto h = deflections[i];
+            const auto& mesh = meshes[i];
+            const double mesh_speed = travel_speed(scene.motion, mesh.radius);
+            const auto count = mesh.a.triangles().size() + mesh.b.triangles().size();
+            const auto mesh_query = [&, i, mesh_speed] {
+                const auto& mesh = meshes[i];
+                if (!rotates) return mesh_ccd(mesh.a, mesh.b, scene.motion, scene.clearance, settings.time_tolerance);
+                dynamics::TriangleHint hint;
+                dynamics::TriangleStatistics counts;
+                const auto sample = [&](double t, double) {
+                    const auto& motion = scene.motion;
+                    const double angle = motion.angle + t * motion.angular_velocity;
+                    const dynamics::Pose pose{dynamics::add(motion.translation, dynamics::scale(motion.velocity, t)),
+                                              std::cos(angle), std::sin(angle)};
+                    const auto pair = mesh.a.closest_within(mesh.b, pose, infinity, &hint, counts);
+                    return pair ? DistanceResult{down(pair->distance - numerical_margin), up(pair->distance + numerical_margin)}
+                                : DistanceResult{};
+                };
+                auto result = distance_advancement(sample, mesh_speed, scene.clearance, settings.time_tolerance, max_calls);
+                result.nodes = counts.nodes;
+                result.primitives = counts.triangles;
+                return result;
             };
-            methods.push_back({"mesh-bvh-ccd", h, mesh_prep, count, mesh_query});
+            methods.push_back({rotates ? "mesh-bvh-ca" : "mesh-bvh-ccd", h, mesh.preparation, count, mesh_query});
             if (h == standard_deflections.back()) {
-                methods.push_back({"mesh-ccd-cad-bounds", h, mesh_prep + native_prep, count, [&, mesh_query] {
+                methods.push_back({"mesh-ccd-cad-bounds", h, mesh.preparation + native_prep, count, [&, mesh_query] {
                     const auto prediction = mesh_query();
                     auto answer = cad_advance(prediction.upper);
                     answer.calls += prediction.calls;
@@ -461,7 +515,7 @@ void measure(const std::vector<Component>& components, const char* config, const
         const Component& cb = components[scene.b - 1];
         const PreparedModel a{adapt_occt(ca.shape)};
         const PreparedModel b{adapt_occt(cb.shape)};
-        const auto reference = reference_check(ca, cb, scene.motion, scene.clearance);
+        const auto reference = reference_check(ca, cb, scene.motion, scene.clearance, travel_speed(scene.motion, 0));
         constexpr Options base{2e-4, 5e-4, 200'000};
         std::array variants{base, base, base};
         variants[1].axial_time = variants[2].axial_time = false;
@@ -517,28 +571,38 @@ int main(int argc, char** argv) {
                     std::string_view{argv[1]} == "measure-all");
         } else if (argc == 5 && std::string_view{argv[1]} == "clearance") {
             measure_clearance(read_components(argv[2]), argv[3], argv[4]);
-        } else if (argc == 6 && std::string_view{argv[1]} == "compare") {
-            compare(read_components(argv[2]), argv[3], argv[4], std::stoi(argv[5]));
-        } else if (argc >= 7 && argc <= 9 && std::string_view{argv[1]} == "compare-pair") {
+        } else if ((argc >= 6 && std::string_view{argv[1]} == "compare") ||
+                   (argc >= 7 && std::string_view{argv[1]} == "compare-pair")) {
+            const bool pair = std::string_view{argv[1]} == "compare-pair";
+            const int offset = pair ? 1 : 0;
             bool refine_mesh = false;
             bool use_numerical_reference = true;
-            for (int i = 7; i < argc; ++i) {
+            bool generic = false;
+            std::size_t max_nodes = 200'000;
+            for (int i = 6 + offset; i < argc; ++i) {
                 const std::string_view option{argv[i]};
                 if (option == "--refine-mesh") refine_mesh = true;
                 else if (option == "--external-reference") use_numerical_reference = false;
-                else throw std::invalid_argument("unknown compare-pair option");
+                else if (option == "--generic") generic = true;
+                else if (option == "--max-nodes" && i+1<argc) {
+                    max_nodes = std::stoull(argv[++i]);
+                    if (max_nodes == 0 || max_nodes > 100'000'000) throw std::invalid_argument("invalid node count");
+                } else throw std::invalid_argument("unknown compare option");
             }
-            const std::vector<Component> parts{{read_step_shape(argv[2]), {}, {}},
-                                               {read_step_shape(argv[3]), {}, {}}};
-            compare(parts, argv[4], argv[5], std::stoi(argv[6]), refine_mesh, use_numerical_reference);
+            const auto parts = pair ? std::vector<Component>{{read_step_shape(argv[2]), {}, {}},
+                                                              {read_step_shape(argv[3]), {}, {}}}
+                                    : read_components(argv[2]);
+            compare(parts, argv[3+offset], argv[4+offset], std::stoi(argv[5+offset]), refine_mesh,
+                    use_numerical_reference, generic, max_nodes);
         } else {
             std::cerr << "Usage: nc_assembly_bench catalog ASSEMBLY.step OUTPUT.csv\n"
                          "       nc_assembly_bench measure ASSEMBLY.step CASES.txt OUTPUT.csv REPEATS\n"
                          "       nc_assembly_bench measure-all ASSEMBLY.step CASES.txt OUTPUT.csv REPEATS\n"
                          "       nc_assembly_bench clearance ASSEMBLY.step CASES.txt OUTPUT.csv\n"
-                         "       nc_assembly_bench compare ASSEMBLY.step CASES.txt OUTPUT.csv REPEATS\n"
+                         "       nc_assembly_bench compare ASSEMBLY.step CASES.txt OUTPUT.csv REPEATS [options]\n"
                          "       nc_assembly_bench compare-pair A.step B.step CASES.txt OUTPUT.csv REPEATS"
-                         " [--refine-mesh] [--external-reference]\n";
+                         " [options]\n"
+                         "       options: --generic --max-nodes N --refine-mesh --external-reference\n";
             return 2;
         }
     } catch (const Standard_Failure& e) {

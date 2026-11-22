@@ -83,7 +83,7 @@ void usage() {
               << "  --angle radians  --omega radians-per-time  --time t0 t1\n"
               << "  --clearance length  --distance-tol length  --time-tol time\n"
               << "  --max-nodes count  --swept-box-only  --chord-box  --no-inheritance  --late-trim  --no-axial\n"
-              << "  --guided-witness  --query-time\n";
+              << "  --generic  --guided-witness  --query-time\n";
 }
 
 }  // namespace
@@ -102,6 +102,7 @@ int main(int argc, char** argv) {
         double clearance = 0;
         Options options;
         bool query_time = false;
+        bool generic = false;
         for (int i = 4; i < argc; ++i) {
             const std::string_view option{argv[i]};
             const auto scalar = [&]() {
@@ -139,9 +140,14 @@ int main(int argc, char** argv) {
             else if (option == "--no-inheritance") options.inherit_time = false;
             else if (option == "--late-trim") options.eager_trim = false;
             else if (option == "--no-axial") options.axial_time = false;
+            else if (option == "--generic") generic = true;
             else if (option == "--guided-witness") options.guided_witness = true;
             else if (option == "--query-time") query_time = true;
             else throw std::invalid_argument("unknown option " + std::string(option));
+        }
+        if (generic) {
+            options.axial_time = false;
+            options.guided_witness = false;
         }
         const PreparedModel a{read_step(argv[2])};
         const PreparedModel b{read_step(argv[3])};
