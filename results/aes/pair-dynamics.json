@@ -1,0 +1,86 @@
+{
+  "reference": "cam-native-24-62us.csv",
+  "duration_s": 20,
+  "step_s": 0.000125,
+  "runs": {
+    "cam-pair-mesh": {
+      "position_rms_um": 6.343317845528866,
+      "force_rms_pct": 0.863199718476285,
+      "meets_target": false,
+      "samples": 10001,
+      "online_s": 52.5889003,
+      "setup_s": 0.0199075,
+      "nominal_steps": 160000,
+      "accepted_steps": 160000,
+      "closest_queries": 321302,
+      "unresolved_queries": 0,
+      "nominal_deflection_um": 25
+    },
+    "cam-pair-mesh-1um": {
+      "position_rms_um": 0.23484250162403045,
+      "force_rms_pct": 0.03083258136350531,
+      "meets_target": true,
+      "samples": 10001,
+      "online_s": 276.5690909,
+      "setup_s": 0.186591,
+      "nominal_steps": 160000,
+      "accepted_steps": 160000,
+      "closest_queries": 320001,
+      "unresolved_queries": 0,
+      "nominal_deflection_um": 1
+    },
+    "cam-pair-occt": {
+      "position_rms_um": 0.28615016113798836,
+      "force_rms_pct": 0.040643087897584244,
+      "meets_target": true,
+      "samples": 10001,
+      "online_s": 1117.7924488,
+      "setup_s": 0.0098614,
+      "nominal_steps": 160000,
+      "accepted_steps": 160000,
+      "closest_queries": 320001,
+      "unresolved_queries": 0
+    }
+  },
+  "platform": "Windows x64 Release, OCCT 7.9.3",
+  "timing_note": "Single runs. Cam baselines overlapped other validation work on the same workstation.",
+  "native_distance_tolerance_m": 2e-06,
+  "native_task_limit": 30000,
+  "native_attempts": {
+    "cam": "HHT residual or clearance guard did not converge within the subdivision budget at t=0.000000 (9 unresolved closest-pair force evaluations, 0 unresolved step sweeps), last distance interval [0.00999991389, 0.0100019179] m",
+    "spur": "nonfinite initial force (1 unresolved closest-pair force evaluations, 0 unresolved step sweeps), last distance interval [0, 4.91062288e-05] m",
+    "reducer": "nonfinite initial force (1 unresolved closest-pair force evaluations, 0 unresolved step sweeps), last distance interval [0, 4.69248089e-05] m"
+  },
+  "gear_startup_mesh": {
+    "spur": {
+      "steps": 5,
+      "accepted": 5,
+      "unresolved_queries": 0,
+      "triangle_tests": 35682335
+    },
+    "reducer": {
+      "steps": 5,
+      "accepted": 5,
+      "unresolved_queries": 0,
+      "triangle_tests": 48763510
+    }
+  },
+  "gear_startup_mesh_step_s": 5e-06,
+  "step_ccd": {
+    "translating_step_fixture": {
+      "steps": 10,
+      "accepted": 13,
+      "ccd_checks": 16,
+      "ccd_rejected": 3,
+      "ccd_unresolved": 0
+    },
+    "rotating_cam_startup": {
+      "steps": 16,
+      "accepted": 16,
+      "ccd_checks": 16,
+      "ccd_rejected": 0,
+      "ccd_unresolved": 0
+    },
+    "rotating_cam_onset_attempt": "HHT residual or clearance guard did not converge within the subdivision budget at t=0.020125 (0 unresolved closest-pair force evaluations, 9 unresolved step sweeps)"
+  }
+}

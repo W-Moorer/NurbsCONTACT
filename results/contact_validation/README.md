@@ -83,7 +83,7 @@ python benchmarks/aes/pair_dynamics.py "$out/cam-models" results/gears/models "$
 & build/occt/Release/nc_contact.exe "$out/decks/cam.scene" 0 .000125 20 16 "$out/cam-occt" pair-occt
 ```
 
-[`pair_cam_accuracy.py`](../../benchmarks/aes/pair_cam_accuracy.py) scores the sampled follower displacement and normal force against the refined `nc_hht` cam trace. It checks the end time and accepted step count before calculating errors.
+[`pair_cam_accuracy.py`](../../benchmarks/aes/pair_cam_accuracy.py) scores the sampled follower displacement and normal force against the refined `nc_hht` cam trace. It checks the end time and accepted step count before calculating errors. The [measured report](../aes/pair-dynamics.json) records the two mesh resolutions, OCCT, the gear startup checks, and the native and step-CCD budget failures.
 
 ~~~text
 drives count
