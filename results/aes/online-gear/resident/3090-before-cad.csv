@@ -1,0 +1,2 @@
+timestamp, name, utilization.gpu [%], memory.used [MiB]
+2026/11/23 01:03:27.787, NVIDIA GeForce RTX 3090, 0 %, 9 MiB

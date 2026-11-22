@@ -1,0 +1,48 @@
+{
+  "gpu": "NVIDIA GeForce RTX 3070",
+  "setup_s": 23.64528190001147,
+  "step_s": 4.9999999999999996e-06,
+  "case": "spur",
+  "backend": "grid",
+  "predictor": true,
+  "guard_mm": 0.075,
+  "samples": 39552,
+  "original_samples": 48390,
+  "triangles": [
+    70960,
+    37700
+  ],
+  "pitch_mm": 0.12,
+  "blocks": 46,
+  "runs": [
+    {
+      "steps": 4000,
+      "trials": 7602,
+      "newton_failure": 0,
+      "max_newton": 2,
+      "subdivisions": 0,
+      "finest_divisor": 1,
+      "accepted_substeps": 4000,
+      "rebuilds": 4001,
+      "peak_candidate_samples": 500,
+      "wall_s": 0.25832560000708327,
+      "initialization_s": 0.4194389999611303,
+      "physical_s": 0.019999999999999997,
+      "us_per_step": 64.58140000177082,
+      "step_p95_us": 78.848,
+      "step_p99_us": 88.06400000000001,
+      "step_max_us": 315.392,
+      "steps_over_budget": 4000,
+      "realtime": false,
+      "peak_N": 6078.789522087016,
+      "first_load_s": 0.00021999999999999998
+    }
+  ],
+  "cad_source": {
+    "source_step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d",
+    "face_probes": 37700,
+    "edge_probes": 10690,
+    "maximum_source_shift_um": 1.5753511129241151,
+    "offline_projection_s": 38.06818050000584
+  }
+}

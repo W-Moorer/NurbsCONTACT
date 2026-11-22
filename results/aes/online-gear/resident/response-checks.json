@@ -1,0 +1,210 @@
+{
+  "mesh_grid_vs_bvh": {
+    "100": {
+      "states": 20001,
+      "max_shaft_angle_rad": 0.0,
+      "max_shaft_speed_rad_s": 0.0,
+      "max_abs_normal_force_N": 0.0,
+      "rms_normal_force_N": 0.0,
+      "rms_transmission_error_um": 0.0,
+      "differing_face_pair_count_steps": 0
+    },
+    "125": {
+      "states": 16001,
+      "max_shaft_angle_rad": 0.0,
+      "max_shaft_speed_rad_s": 0.0,
+      "max_abs_normal_force_N": 0.0,
+      "rms_normal_force_N": 0.0,
+      "rms_transmission_error_um": 0.0,
+      "differing_face_pair_count_steps": 0
+    }
+  },
+  "cad_probes_grid_vs_bvh": {
+    "125": {
+      "states": 16001,
+      "max_shaft_angle_rad": 0.0,
+      "max_shaft_speed_rad_s": 0.0,
+      "max_abs_normal_force_N": 0.0,
+      "rms_normal_force_N": 0.0,
+      "rms_transmission_error_um": 0.0,
+      "differing_face_pair_count_steps": 0
+    }
+  },
+  "cad_probes_vs_mesh_probes": {
+    "125": {
+      "states": 16001,
+      "max_shaft_angle_rad": 0.001379874249018225,
+      "max_shaft_speed_rad_s": 14.208796607205802,
+      "max_abs_normal_force_N": 5198.00416420576,
+      "rms_normal_force_N": 144.50500696780296,
+      "rms_transmission_error_um": 2.9743877221737556,
+      "differing_face_pair_count_steps": 121
+    }
+  },
+  "first_20ms": {
+    "5": {
+      "first_loaded_s": 0.00021999999999999998,
+      "peak_N": 6090.004953605096,
+      "normal_impulse_Ns": 20.68863735178287,
+      "peak_abs_transmission_error_um": 109.1801154712918,
+      "vs_5us_common_outputs": {
+        "states": 4001,
+        "max_shaft_angle_rad": 0.0,
+        "max_shaft_speed_rad_s": 0.0,
+        "max_abs_normal_force_N": 0.0,
+        "rms_normal_force_N": 0.0,
+        "rms_transmission_error_um": 0.0,
+        "differing_face_pair_count_steps": 0
+      }
+    },
+    "10": {
+      "first_loaded_s": 0.00021999999999999998,
+      "peak_N": 6049.370494904604,
+      "normal_impulse_Ns": 20.672233530617884,
+      "peak_abs_transmission_error_um": 109.05314863553473,
+      "vs_5us_common_outputs": {
+        "states": 2001,
+        "max_shaft_angle_rad": 9.048800108302061e-05,
+        "max_shaft_speed_rad_s": 1.332883803004961,
+        "max_abs_normal_force_N": 745.7175274749011,
+        "rms_normal_force_N": 174.46351855595174,
+        "rms_transmission_error_um": 0.6230764755956159,
+        "differing_face_pair_count_steps": 40
+      }
+    },
+    "20": {
+      "first_loaded_s": 0.00021999999999999998,
+      "peak_N": 5958.027979808398,
+      "normal_impulse_Ns": 20.69061834598714,
+      "peak_abs_transmission_error_um": 108.76773459784513,
+      "vs_5us_common_outputs": {
+        "states": 1001,
+        "max_shaft_angle_rad": 0.0001925496326219247,
+        "max_shaft_speed_rad_s": 4.236558999117848,
+        "max_abs_normal_force_N": 2055.818629377197,
+        "rms_normal_force_N": 399.89001675015896,
+        "rms_transmission_error_um": 1.6058122234707914,
+        "differing_face_pair_count_steps": 55
+      }
+    },
+    "50": {
+      "first_loaded_s": 0.00025,
+      "peak_N": 5159.950522956676,
+      "normal_impulse_Ns": 20.682521031103434,
+      "peak_abs_transmission_error_um": 106.62680275936631,
+      "vs_5us_common_outputs": {
+        "states": 401,
+        "max_shaft_angle_rad": 0.00039709938190190305,
+        "max_shaft_speed_rad_s": 7.3199257682952865,
+        "max_abs_normal_force_N": 2761.8057346695573,
+        "rms_normal_force_N": 537.7576437015314,
+        "rms_transmission_error_um": 2.783579044930802,
+        "differing_face_pair_count_steps": 35
+      }
+    },
+    "100": {
+      "first_loaded_s": 0.0003,
+      "peak_N": 4679.3922135463245,
+      "normal_impulse_Ns": 20.693043359586774,
+      "peak_abs_transmission_error_um": 108.27795861411437,
+      "vs_5us_common_outputs": {
+        "states": 201,
+        "max_shaft_angle_rad": 0.0005693767528185322,
+        "max_shaft_speed_rad_s": 9.34935204273992,
+        "max_abs_normal_force_N": 5442.543413927058,
+        "rms_normal_force_N": 816.0935006401847,
+        "rms_transmission_error_um": 4.662737286754023,
+        "differing_face_pair_count_steps": 22
+      }
+    },
+    "125": {
+      "first_loaded_s": 0.00025,
+      "peak_N": 4726.883442332532,
+      "normal_impulse_Ns": 20.71158422937866,
+      "peak_abs_transmission_error_um": 104.93591469830005,
+      "vs_5us_common_outputs": {
+        "states": 161,
+        "max_shaft_angle_rad": 0.0014151277590113455,
+        "max_shaft_speed_rad_s": 15.572856128114603,
+        "max_abs_normal_force_N": 5089.888725518006,
+        "rms_normal_force_N": 977.6438948460842,
+        "rms_transmission_error_um": 8.398073145842483,
+        "differing_face_pair_count_steps": 17
+      }
+    }
+  },
+  "impact_grid_vs_bvh": {
+    "states": 16001,
+    "max_shaft_angle_rad": 0.0,
+    "max_shaft_speed_rad_s": 0.0,
+    "max_abs_normal_force_N": 0.0,
+    "rms_normal_force_N": 0.0,
+    "rms_transmission_error_um": 0.0,
+    "differing_face_pair_count_steps": 0
+  },
+  "impact_common_outputs_first_20ms": {
+    "states": 161,
+    "max_shaft_angle_rad": 0.0003719935049915867,
+    "max_shaft_speed_rad_s": 6.8929850646419535,
+    "max_abs_normal_force_N": 3394.3512217029206,
+    "rms_normal_force_N": 666.3794524978305,
+    "rms_transmission_error_um": 3.245020459893192,
+    "differing_face_pair_count_steps": 24
+  },
+  "cad-impact_grid_vs_bvh": {
+    "states": 16001,
+    "max_shaft_angle_rad": 0.0,
+    "max_shaft_speed_rad_s": 0.0,
+    "max_abs_normal_force_N": 0.0,
+    "rms_normal_force_N": 0.0,
+    "rms_transmission_error_um": 0.0,
+    "differing_face_pair_count_steps": 0
+  },
+  "cad-impact_common_outputs_first_20ms": {
+    "states": 161,
+    "max_shaft_angle_rad": 0.0004701390449837534,
+    "max_shaft_speed_rad_s": 7.236266092017978,
+    "max_abs_normal_force_N": 3207.428400606256,
+    "rms_normal_force_N": 690.2549207487037,
+    "rms_transmission_error_um": 3.4264481474326196,
+    "differing_face_pair_count_steps": 20
+  },
+  "cad_5us_first_20ms": {
+    "first_loaded_s": 0.00022,
+    "peak_N": 6078.789522087016,
+    "normal_impulse_Ns": 20.69056713781268,
+    "peak_abs_transmission_error_um": 109.03096351393792
+  },
+  "cad_fixed_125us_vs_5us_first_20ms": {
+    "states": 161,
+    "max_shaft_angle_rad": 0.0015963342455241405,
+    "max_shaft_speed_rad_s": 17.80535965604521,
+    "max_abs_normal_force_N": 5194.119905997578,
+    "rms_normal_force_N": 1631.9745108332081,
+    "rms_transmission_error_um": 30.82380153431017,
+    "differing_face_pair_count_steps": 75
+  },
+  "specialized_cad_separate_force_model": {
+    "first_loaded_s": 0.00030000000000000003,
+    "peak_N": 4536.50715932767,
+    "normal_impulse_Ns": 1882.7870688574696,
+    "peak_abs_transmission_error_um": 107.39481092296731,
+    "difference_from_mesh_grid": {
+      "states": 20001,
+      "max_shaft_angle_rad": 0.0004420854051509471,
+      "max_shaft_speed_rad_s": 6.78790285692358,
+      "max_abs_normal_force_N": 3323.9156639851703,
+      "rms_normal_force_N": 464.5809981347981,
+      "rms_transmission_error_um": 1.7827204601110163,
+      "differing_face_pair_count_steps": 2965
+    }
+  },
+  "two_spheres": {
+    "analytic_entry_s": 0.06666666666666667,
+    "analytic_release_s": 0.0980825932025646,
+    "analytic_peak_N": 22.5,
+    "first_loaded_s": 0.0668,
+    "first_released_sample_s": 0.09820000000000001,
+    "measured_peak_N": 22.499731820762584
+  }
+}

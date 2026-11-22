@@ -1,0 +1,209 @@
+{
+  "rotated_boxes": {
+    "poses": 33,
+    "cumulative_face_pairs": 73,
+    "max_abs_depth_mm": 4.440892098500626e-16
+  },
+  "gear": {
+    "startup": {
+      "poses": 211,
+      "matching_sampled_pairs": 153,
+      "bvh_face_set_symmetric_difference": 0,
+      "bvh_max_depth_diff_mm": 0.0,
+      "bvh_max_unit_normal_diff": 0.0,
+      "cpu_witnesses": 17,
+      "cpu_max_signed_depth_diff_mm": 4.51131102960356e-15,
+      "intersection_opposed_pairs": 148,
+      "opposed_pair_frame_misses": 1,
+      "opposed_pair_frame_extras": 0,
+      "opposed_presence_missed_frames": 1,
+      "opposed_presence_extra_frames": 0,
+      "examples": [
+        {
+          "frame": 146,
+          "time_s": 0.0029200000000000064,
+          "missed": [
+            [
+              136,
+              16
+            ]
+          ],
+          "extra": []
+        }
+      ]
+    },
+    "revolution": {
+      "poses": 335,
+      "matching_sampled_pairs": 618,
+      "bvh_face_set_symmetric_difference": 0,
+      "bvh_max_depth_diff_mm": 0.0,
+      "bvh_max_unit_normal_diff": 0.0,
+      "cpu_witnesses": 47,
+      "cpu_max_signed_depth_diff_mm": 2.566523382707686e-15,
+      "intersection_opposed_pairs": 607,
+      "opposed_pair_frame_misses": 1,
+      "opposed_pair_frame_extras": 0,
+      "opposed_presence_missed_frames": 0,
+      "opposed_presence_extra_frames": 0,
+      "examples": [
+        {
+          "frame": 207,
+          "time_s": 0.12070000000000243,
+          "missed": [
+            [
+              64,
+              232
+            ]
+          ],
+          "extra": []
+        }
+      ]
+    },
+    "release": {
+      "poses": 807,
+      "matching_sampled_pairs": 1393,
+      "bvh_face_set_symmetric_difference": 0,
+      "bvh_max_depth_diff_mm": 0.0,
+      "bvh_max_unit_normal_diff": 0.0,
+      "cpu_witnesses": 42,
+      "cpu_max_signed_depth_diff_mm": 5.861230674016581e-07,
+      "intersection_opposed_pairs": 1391,
+      "opposed_pair_frame_misses": 14,
+      "opposed_pair_frame_extras": 0,
+      "opposed_presence_missed_frames": 4,
+      "opposed_presence_extra_frames": 0,
+      "examples": [
+        {
+          "frame": 57,
+          "time_s": 0.24239999999998962,
+          "missed": [
+            [
+              106,
+              190
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 137,
+          "time_s": 0.24569999999998926,
+          "missed": [
+            [
+              100,
+              196
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 187,
+          "time_s": 0.24769999999998904,
+          "missed": [
+            [
+              82,
+              214
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 356,
+          "time_s": 0.25489999999998825,
+          "missed": [
+            [
+              52,
+              244
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 369,
+          "time_s": 0.2553999999999882,
+          "missed": [
+            [
+              58,
+              238
+            ]
+          ],
+          "extra": []
+        }
+      ]
+    },
+    "hht": {
+      "poses": 806,
+      "matching_sampled_pairs": 1401,
+      "bvh_face_set_symmetric_difference": 0,
+      "bvh_max_depth_diff_mm": 0.0,
+      "bvh_max_unit_normal_diff": 0.0,
+      "cpu_witnesses": 44,
+      "cpu_max_signed_depth_diff_mm": 3.871035436642245e-15,
+      "intersection_opposed_pairs": 1388,
+      "opposed_pair_frame_misses": 12,
+      "opposed_pair_frame_extras": 0,
+      "opposed_presence_missed_frames": 1,
+      "opposed_presence_extra_frames": 0,
+      "examples": [
+        {
+          "frame": 117,
+          "time_s": 0.10490000000000198,
+          "missed": [
+            [
+              124,
+              172
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 163,
+          "time_s": 0.10680000000000203,
+          "missed": [
+            [
+              124,
+              172
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 197,
+          "time_s": 0.10820000000000207,
+          "missed": [
+            [
+              118,
+              178
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 231,
+          "time_s": 0.10960000000000211,
+          "missed": [
+            [
+              112,
+              184
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 247,
+          "time_s": 0.11020000000000213,
+          "missed": [
+            [
+              100,
+              196
+            ],
+            [
+              106,
+              190
+            ]
+          ],
+          "extra": []
+        }
+      ]
+    }
+  }
+}

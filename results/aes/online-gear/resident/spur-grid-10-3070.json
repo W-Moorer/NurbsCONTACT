@@ -1,0 +1,41 @@
+{
+  "gpu": "NVIDIA GeForce RTX 3070",
+  "setup_s": 41.32457420002902,
+  "step_s": 9.999999999999999e-06,
+  "case": "spur",
+  "backend": "grid",
+  "predictor": true,
+  "guard_mm": 0.075,
+  "samples": 39744,
+  "original_samples": 48390,
+  "triangles": [
+    70960,
+    37700
+  ],
+  "pitch_mm": 0.12,
+  "blocks": 46,
+  "runs": [
+    {
+      "steps": 2000,
+      "trials": 3858,
+      "newton_failure": 0,
+      "max_newton": 2,
+      "subdivisions": 0,
+      "finest_divisor": 1,
+      "accepted_substeps": 2000,
+      "rebuilds": 2001,
+      "peak_candidate_samples": 499,
+      "wall_s": 0.13204029999906197,
+      "initialization_s": 0.3731728999991901,
+      "physical_s": 0.019999999999999997,
+      "us_per_step": 66.02014999953099,
+      "step_p95_us": 82.944,
+      "step_p99_us": 97.28,
+      "step_max_us": 332.8,
+      "steps_over_budget": 2000,
+      "realtime": false,
+      "peak_N": 6049.370494904604,
+      "first_load_s": 0.00021999999999999998
+    }
+  ]
+}

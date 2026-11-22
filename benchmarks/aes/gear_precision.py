@@ -12,7 +12,7 @@ MODEL = Path('results/aes/gear-field')
 STEP = Path('results/gears/models/spur-1a.step')
 
 
-def mesh_step(deflection_um, interior, parallel=False, step=STEP, face_ids=None):
+def mesh_step(deflection_um, interior, parallel=False, step=STEP, face_ids=None, visit_face=None):
     from OCP.BRep import BRep_Tool
     from OCP.BRepMesh import BRepMesh_IncrementalMesh
     from OCP.IMeshTools import IMeshTools_Parameters
@@ -50,6 +50,8 @@ def mesh_step(deflection_um, interior, parallel=False, step=STEP, face_ids=None)
         faces.append(f+offset)
         if face_ids is not None:
             face_ids.append(np.full(len(f), indexed.FindIndex(face), dtype=np.int32))
+        if visit_face is not None:
+            visit_face(face, location, mesh, v, f)
         offset += len(v)
         it.Next()
     v, f = np.concatenate(vertices), np.concatenate(faces)

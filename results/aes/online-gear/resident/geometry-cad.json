@@ -1,0 +1,204 @@
+{
+  "rotated_boxes": {
+    "poses": 33,
+    "cumulative_face_pairs": 73,
+    "max_abs_depth_mm": 4.440892098500626e-16
+  },
+  "gear": {
+    "startup": {
+      "poses": 211,
+      "matching_sampled_pairs": 154,
+      "bvh_face_set_symmetric_difference": 0,
+      "bvh_max_depth_diff_mm": 0.0,
+      "bvh_max_unit_normal_diff": 0.0,
+      "cpu_witnesses": 17,
+      "cpu_max_signed_depth_diff_mm": 1.4276774207289122e-15,
+      "intersection_opposed_pairs": 148,
+      "opposed_pair_frame_misses": 0,
+      "opposed_pair_frame_extras": 0,
+      "opposed_presence_missed_frames": 0,
+      "opposed_presence_extra_frames": 0,
+      "examples": []
+    },
+    "revolution": {
+      "poses": 335,
+      "matching_sampled_pairs": 620,
+      "bvh_face_set_symmetric_difference": 0,
+      "bvh_max_depth_diff_mm": 0.0,
+      "bvh_max_unit_normal_diff": 0.0,
+      "cpu_witnesses": 47,
+      "cpu_max_signed_depth_diff_mm": 2.929947950924827e-15,
+      "intersection_opposed_pairs": 607,
+      "opposed_pair_frame_misses": 2,
+      "opposed_pair_frame_extras": 0,
+      "opposed_presence_missed_frames": 0,
+      "opposed_presence_extra_frames": 0,
+      "examples": [
+        {
+          "frame": 207,
+          "time_s": 0.12070000000000243,
+          "missed": [
+            [
+              64,
+              232
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 318,
+          "time_s": 0.1318000000000018,
+          "missed": [
+            [
+              16,
+              280
+            ]
+          ],
+          "extra": []
+        }
+      ]
+    },
+    "release": {
+      "poses": 807,
+      "matching_sampled_pairs": 1402,
+      "bvh_face_set_symmetric_difference": 0,
+      "bvh_max_depth_diff_mm": 0.0,
+      "bvh_max_unit_normal_diff": 0.0,
+      "cpu_witnesses": 42,
+      "cpu_max_signed_depth_diff_mm": 3.434752482434078e-15,
+      "intersection_opposed_pairs": 1391,
+      "opposed_pair_frame_misses": 5,
+      "opposed_pair_frame_extras": 0,
+      "opposed_presence_missed_frames": 0,
+      "opposed_presence_extra_frames": 0,
+      "examples": [
+        {
+          "frame": 103,
+          "time_s": 0.24429999999998941,
+          "missed": [
+            [
+              106,
+              190
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 137,
+          "time_s": 0.24569999999998926,
+          "missed": [
+            [
+              100,
+              196
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 369,
+          "time_s": 0.2553999999999882,
+          "missed": [
+            [
+              58,
+              238
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 605,
+          "time_s": 0.2650999999999871,
+          "missed": [
+            [
+              16,
+              280
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 661,
+          "time_s": 0.26749999999998686,
+          "missed": [
+            [
+              142,
+              10
+            ]
+          ],
+          "extra": []
+        }
+      ]
+    },
+    "hht": {
+      "poses": 806,
+      "matching_sampled_pairs": 1409,
+      "bvh_face_set_symmetric_difference": 0,
+      "bvh_max_depth_diff_mm": 0.0,
+      "bvh_max_unit_normal_diff": 0.0,
+      "cpu_witnesses": 44,
+      "cpu_max_signed_depth_diff_mm": 2.0273909090776088e-07,
+      "intersection_opposed_pairs": 1388,
+      "opposed_pair_frame_misses": 9,
+      "opposed_pair_frame_extras": 2,
+      "opposed_presence_missed_frames": 0,
+      "opposed_presence_extra_frames": 1,
+      "examples": [
+        {
+          "frame": 163,
+          "time_s": 0.10680000000000203,
+          "missed": [
+            [
+              124,
+              172
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 197,
+          "time_s": 0.10820000000000207,
+          "missed": [
+            [
+              118,
+              178
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 231,
+          "time_s": 0.10960000000000211,
+          "missed": [
+            [
+              112,
+              184
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 499,
+          "time_s": 0.12070000000000243,
+          "missed": [
+            [
+              64,
+              232
+            ]
+          ],
+          "extra": []
+        },
+        {
+          "frame": 500,
+          "time_s": 0.12070000000000243,
+          "missed": [
+            [
+              64,
+              232
+            ]
+          ],
+          "extra": []
+        }
+      ]
+    }
+  }
+}

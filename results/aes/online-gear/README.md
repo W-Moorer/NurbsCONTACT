@@ -1,5 +1,7 @@
 # Live gear contact and real-time test
 
+The [device-resident sampled-contact experiment](resident/README.md) advances the full gear pair from its initial state, with GPU contact discovery and HHT. Its two-second timings include Newton retries and step subdivision. The experiment below uses a different force model with live STEP line construction.
+
 The test asks whether one simulation of two seconds of physical motion can finish in two seconds of wall time. Both 24/48-tooth spur gears start at the poses and speeds from the existing 1,800 rpm scene. Each trial state in the nonlinear solve supplies the next rigid transform. No measured trajectory, tooth index, line of action, face ID or quadrature position is supplied to the contact search.
 
 The earlier CPU comparison in `nc_gears` derives the contact normal from the pressure angle, selects tooth indices from base pitch and rotation, and casts rays at selected flank stations. Both its CAD and triangle variants share those choices. Its HHT integrator and the underlying surface and triangle intersection routines can be used by other models. [Gear force evaluation](../../../benchmarks/gears/main.cpp) · [HHT](../../../src/hht.cpp)
