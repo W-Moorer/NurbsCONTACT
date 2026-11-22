@@ -172,11 +172,13 @@ def read_full_mesh(full_mesh):
         return triangles
 
 
-def device_bvhs(faces):
+def device_bvhs(faces, *, orders=None):
     ordered, bounds, nodes, roots = [], [], [], {}
     total = 0
     for face_id, tri in faces.items():
         tree = cKDTree(tri.mean(axis=1),leafsize=32)
+        if orders is not None:
+            orders[face_id] = tree.indices.copy()
         block = tri[tree.indices]
         ordered.append(block)
 

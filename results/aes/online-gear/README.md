@@ -73,6 +73,8 @@ At 20 µs both histories first report load at 220 µs. At 100 µs the first load
 
 At six frames of the 20 µs CAD trajectory, the original closed STEP solids were intersected directly to measure common volume. Independently, a GPU kernel counted intersecting triangles on the two complete meshes used in the previous section. The zero/nonzero decisions agreed with the load state in all six frames. At 200 µs the two parts were separated. At 220 µs the CAD common volume was 0.0156 mm³, with 252 intersecting triangle pairs. At 380 µs both geometric checks indicated release. These are sampled times. On the RTX 3090, full-mesh overlap detection took a median 4.27 ms across those six poses (20 repetitions each). The six previously recorded separated poses took a median 1.73 ms when rerun on the same card in the same session. The GPU clock covers collision queries and device reduction at resident poses. [Whole-solid audit](zero-gap-whole-body.json) · [RTX 3090 loading and release](zero-gap-rtx3090.json) · [Separated-pose control](zero-gap-separated-control.json)
 
+The [cross-step CAD face tracking experiment](tracking/README.md) uses the same two complete meshes and zero-gap dynamics. It compares full search, spatial patches, CAD face patches and motion-based candidate reuse on startup, a pinion revolution and the HHT trial poses.
+
 ## Reproduce
 
 From the repository root build the persistent OCCT worker and run the following commands with CUDA, CuPy, SciPy and the OCCT runtime available. Shown for the 100 µs step on Linux.

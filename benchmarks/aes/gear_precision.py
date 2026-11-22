@@ -12,12 +12,13 @@ MODEL = Path('results/aes/gear-field')
 STEP = Path('results/gears/models/spur-1a.step')
 
 
-def mesh_step(deflection_um, interior, parallel=False, step=STEP):
+def mesh_step(deflection_um, interior, parallel=False, step=STEP, face_ids=None):
     from OCP.BRep import BRep_Tool
     from OCP.BRepMesh import BRepMesh_IncrementalMesh
     from OCP.IMeshTools import IMeshTools_Parameters
     from OCP.TopAbs import TopAbs_FACE, TopAbs_REVERSED
-    from OCP.TopExp import TopExp_Explorer
+    from OCP.TopExp import TopExp, TopExp_Explorer
+    from OCP.TopTools import TopTools_IndexedMapOfShape
     from OCP.TopLoc import TopLoc_Location
     from OCP.TopoDS import TopoDS
     from nhrep_gear import read_occt_solid
@@ -33,6 +34,9 @@ def mesh_step(deflection_um, interior, parallel=False, step=STEP):
     if not mesher.IsDone():
         raise RuntimeError('STEP tessellation failed')
     vertices, faces, offset = [], [], 0
+    if face_ids is not None:
+        indexed = TopTools_IndexedMapOfShape()
+        TopExp.MapShapes_s(solid,TopAbs_FACE,indexed)
     it = TopExp_Explorer(solid,TopAbs_FACE)
     while it.More():
         face, location = TopoDS.Face_s(it.Current()), TopLoc_Location()
@@ -44,6 +48,8 @@ def mesh_step(deflection_um, interior, parallel=False, step=STEP):
             f = f[:,[0,2,1]]
         vertices.append(v)
         faces.append(f+offset)
+        if face_ids is not None:
+            face_ids.append(np.full(len(f), indexed.FindIndex(face), dtype=np.int32))
         offset += len(v)
         it.Next()
     v, f = np.concatenate(vertices), np.concatenate(faces)

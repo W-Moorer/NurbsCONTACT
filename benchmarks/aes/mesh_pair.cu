@@ -80,7 +80,8 @@ __device__ double boxes_sq(const double* box, const double* lo, const double* hi
 extern "C" __global__ void near_pairs(const int4* nodes, const double* boxes,
     const double* tri_boxes, const double3* a, const double3* local_b,
     int start, int stop, const double* pose, double cutoff_sq, double box_limit_sq,
-    double touch_sq, int overlaps_only, double* nearest_sq, int* near_count, int* touch_count) {
+    double touch_sq, int overlaps_only, double* nearest_sq, int* near_count, int* touch_count,
+    int2* ids, int* id_count, int capacity) {
     int id = start + blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= stop) return;
     double3 b[3];
@@ -106,7 +107,13 @@ extern "C" __global__ void near_pairs(const int4* nodes, const double* boxes,
         for (int j=node.y; j>=0 && j<node.z; ++j) {
             if (boxes_sq(tri_boxes+6*j, lo, hi)>box_limit_sq) continue;
             if (overlaps_only) {
-                touches += triangles_overlap(a+3*j, b, touch_sq);
+                if (triangles_overlap(a+3*j, b, touch_sq)) {
+                    ++touches;
+                    if (ids) {
+                        int slot=atomicAdd(id_count,1);
+                        if (slot<capacity) ids[slot]=make_int2(j,id);
+                    }
+                }
                 continue;
             }
             double sq = triangle_pair_sq(a+3*j, b);

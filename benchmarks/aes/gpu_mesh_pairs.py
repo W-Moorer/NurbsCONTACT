@@ -12,8 +12,8 @@ from gpu_mesh_line import TRIANGLE_CUDA, device_bvhs, read_full_mesh
 
 
 class MeshPair:
-    def __init__(self, a, b):
-        _, (self.nodes, self.boxes, self.a) = device_bvhs({0: a})
+    def __init__(self, a, b, *, orders=None):
+        _, (self.nodes, self.boxes, self.a) = device_bvhs({0: a}, orders=orders)
         self.tri_boxes = cp.concatenate((self.a.min(axis=1), self.a.max(axis=1)), axis=1)
         self.b = cp.asarray(b)
         self.scale = max(1., np.abs(a).max(), np.abs(b).max())
@@ -23,8 +23,11 @@ class MeshPair:
         source = Path(__file__).with_name('mesh_pair.cu').read_text()
         self.kernel = cp.RawKernel(TRIANGLE_CUDA + source, 'near_pairs')
 
-    def query(self, pose, cutoff_mm, tolerance_mm, translation_scale, overlaps_only=False):
+    def query(self, pose, cutoff_mm, tolerance_mm, translation_scale, overlaps_only=False,
+              hit_ids=None, hit_count=None):
         # Pad only the broad phase. Triangle-pair distances decide membership.
+        if (hit_ids is None) != (hit_count is None) or (hit_ids is not None and not overlaps_only):
+            raise ValueError('Provide both ID buffers for an overlap query.')
         padding = 128 * np.finfo(float).eps * (self.scale + translation_scale)
         box_radius = tolerance_mm if overlaps_only else cutoff_mm
         for start in range(0, len(self.b), 8192):
@@ -33,7 +36,10 @@ class MeshPair:
                         (self.nodes, self.boxes, self.tri_boxes, self.a, self.b,
                          np.int32(start), np.int32(stop), pose, np.float64(cutoff_mm**2),
                          np.float64((box_radius+padding)**2), np.float64(tolerance_mm**2),
-                         np.int32(overlaps_only), self.distances, self.near, self.touch))
+                         np.int32(overlaps_only), self.distances, self.near, self.touch,
+                         hit_ids if hit_ids is not None else np.uint64(0),
+                         hit_count if hit_count is not None else np.uint64(0),
+                         np.int32(len(hit_ids) if hit_ids is not None else 0)))
         if overlaps_only:
             return self.touch.sum()
         return cp.stack((cp.sqrt(self.distances.min()), self.near.sum(), self.touch.sum()))

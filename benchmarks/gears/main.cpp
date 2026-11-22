@@ -510,7 +510,7 @@ struct Frame { double time; Vector q,v; std::vector<Measurements> mesh; };
 
 void integrate(const Case& scene,const Path& geometry,double deflection,double dt,double duration,
                const Path& prefix,unsigned repeats,unsigned stations,unsigned trace_stride,
-               std::string_view force_strategy, double activation_mm) {
+               std::string_view force_strategy, double activation_mm,const Path& trial_path) {
     if (!(dt>0 && duration>0 && repeats && stations && trace_stride)) {
         throw std::invalid_argument("invalid run protocol");
     }
@@ -530,16 +530,33 @@ void integrate(const Case& scene,const Path& geometry,double deflection,double d
     opts.absolute_tolerance=1e-7;
     opts.relative_tolerance=1e-7;
     opts.max_subdivisions=6;
+    std::optional<std::ofstream> trials;
+    unsigned repetition=0;
+    if (!trial_path.empty()) {
+        trials.emplace(output(trial_path));
+        *trials << "repeat,time";
+        for (std::size_t i=0; i<system.mass.size(); ++i) *trials << ",q" << i;
+        *trials << '\n';
+    }
+    const auto record_trial=[&](double time,const Vector& q) {
+        if (!trials) return;
+        *trials << repetition << ',' << time;
+        for (const double value:q) *trials << ',' << value;
+        *trials << '\n';
+    };
     BoundedForceFunction bounded;
     if (force_strategy != "fixed") {
         bounded = [&](const Vector& q, const Vector& v, double t, const Vector&, double target) {
+            record_trial(t,q);
             return system.evaluate(q, v, t, BoundedContactRequest{
                 force_strategy == "bounded-exact" ? 0 : target, force_strategy == "bounded-cache"});
         };
     }
-    const Hht integrator(system.mass,[&](const Vector& q,const Vector& v,double t){ return system.evaluate(q,v,t);},
+    const Hht integrator(system.mass,[&](const Vector& q,const Vector& v,double t){
+                             record_trial(t,q);
+                             return system.evaluate(q,v,t);},
                          opts, {}, {}, std::move(bounded));
-    for (unsigned repetition=0; repetition<repeats; ++repetition) {
+    for (repetition=0; repetition<repeats; ++repetition) {
         for (auto& pair:system.pairs) {
             pair.work={};
             if (force_strategy == "bounded-cache") {
@@ -801,18 +818,19 @@ int main(int argc,char** argv) {
     try {
         if (argc==4 && std::string_view(argv[1])=="models") {
             make_models(configuration(argv[2],argv[3]),argv[3]);
-        } else if (argc>=10 && argc<=13 && std::string_view(argv[1])=="run") {
+        } else if (argc>=10 && argc<=14 && std::string_view(argv[1])=="run") {
             const int trace_stride = argc>=11 ? std::stoi(argv[10]) : 1;
             if (trace_stride<=0) throw std::invalid_argument("trace stride must be positive");
             const std::string_view force_strategy = argc>=12 ? argv[11] : "fixed";
-            const std::string_view activation = argc==13 ? argv[12] : "skin";
+            const std::string_view activation = argc>=13 ? argv[12] : "skin";
             if (activation!="skin" && activation!="zero-gap") throw std::invalid_argument("unknown contact activation");
             if (force_strategy!="fixed" && force_strategy!="bounded-exact" && force_strategy!="bounded-cache") {
                 throw std::invalid_argument("unknown gear force strategy");
             }
             integrate(configuration(argv[2]),argv[3],std::stod(argv[4]),std::stod(argv[5]),std::stod(argv[6]),
                       argv[7],static_cast<unsigned>(std::stoi(argv[8])),static_cast<unsigned>(std::stoi(argv[9])),
-                      static_cast<unsigned>(trace_stride),force_strategy,activation=="skin" ? skin : 0.);
+                      static_cast<unsigned>(trace_stride),force_strategy,activation=="skin" ? skin : 0.,
+                      argc==14 ? Path(argv[13]) : Path{});
         } else if ((argc==12 || argc==13) && std::string_view(argv[1])=="experiment") {
             experiment(configuration(argv[2],argv[3]),argv[3],std::stod(argv[4]),std::stod(argv[5]),std::stod(argv[6]),
                        std::stod(argv[7]),std::stod(argv[8]),std::stod(argv[9]),std::stod(argv[10]),argv[11],
@@ -823,7 +841,7 @@ int main(int argc,char** argv) {
         } else {
             std::cerr << "nc_gears models {spur|helical|reducer|rig28|rig28-flex|unsw} MODEL_DIR\n"
                          "nc_gears run CASE MODEL_DIR DEFLECTION_MM DT_S DURATION_S PREFIX REPEATS AXIAL_STATIONS "
-                         "[TRACE_STRIDE [fixed|bounded-exact|bounded-cache [skin|zero-gap]]]\n"
+                         "[TRACE_STRIDE [fixed|bounded-exact|bounded-cache [skin|zero-gap [TRIAL_STATES.csv]]]]\n"
                          "nc_gears experiment CASE MODEL_DIR DEFLECTION_MM RPM INPUT_NM DT_S DURATION_S K_N_M ZETA PREFIX [INERTIA_SCALE]\n"
                          "nc_gears statics rig28-flex MODEL_DIR DEFLECTION_MM INPUT_NM K_N_M FILE\n";
             return 2;
