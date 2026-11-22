@@ -1,0 +1,138 @@
+{
+  "eccentric_cam": {
+    "cutoff_m": 0.012,
+    "line_stiffness_N_per_m2": 83333.33333333334,
+    "reference_gap_m": 0.01,
+    "reference_force_b_N": [
+      0.0,
+      -10.0,
+      0.0
+    ],
+    "reference_moment_b_Nm": [
+      0.0,
+      0.0,
+      -0.24
+    ],
+    "load": {
+      "length_m": 0.06,
+      "samples": 2,
+      "force_b_N": [
+        0.0,
+        -10.0,
+        0.0
+      ],
+      "moment_b_Nm": [
+        0.0,
+        0.0,
+        -0.24000000000000007
+      ]
+    },
+    "statistics": {
+      "lines": 1,
+      "unresolved_face_pairs": 0,
+      "unresolved_seeds": 0,
+      "replaced_witnesses": 0,
+      "max_witness_shift_m": 0.0,
+      "cold_query_s": 0.0035975,
+      "tracking_s": 0.0,
+      "assembly_s": 0.0003625
+    }
+  },
+  "spur_double_tooth": {
+    "trace": "spur-native-0nm-5us-31.csv",
+    "seed_time_s": 0.0002000000000000002,
+    "time_s": 0.00022000000000000025,
+    "cutoff_m": 5.5e-05,
+    "line_stiffness_N_per_m2": 1000000000.0,
+    "loads": [
+      {
+        "face_pair": [
+          4,
+          4
+        ],
+        "length_m": 0.023999999999999806,
+        "samples": 2,
+        "force_b_N": [
+          47.70201174174676,
+          141.53087054113425,
+          -1.195125913404792e-11
+        ],
+        "moment_b_Nm": [
+          -1.1003531419362389e-11,
+          -1.3351264538385976e-12,
+          -8.420783102938877
+        ],
+        "reference_force_b_N": [
+          47.70201174167703,
+          141.53087054349055,
+          -2.4699268877840357e-10
+        ],
+        "reference_moment_b_Nm": [
+          8.083176169683916e-14,
+          -1.4722778782418195e-11,
+          -8.420783103079344
+        ],
+        "midpoint_force_error_N": 2.3690218225375428e-09,
+        "midpoint_moment_error_Nm": 1.4153842154263206e-10,
+        "tracked_force_change_N": 0.0,
+        "tracked_moment_change_Nm": 0.0,
+        "single_point_moment_change_Nm_at_same_force": 2.639878209124565
+      },
+      {
+        "face_pair": [
+          142,
+          10
+        ],
+        "length_m": 0.024000000000000035,
+        "samples": 2,
+        "force_b_N": [
+          47.70175662057484,
+          141.53017542534508,
+          -2.8575298436288088e-08
+        ],
+        "moment_b_Nm": [
+          -1.031627416825387e-08,
+          -1.3344655380720383e-09,
+          -8.420741991930853
+        ],
+        "reference_force_b_N": [
+          47.70175708782985,
+          141.53018100008782,
+          6.2411784818894505e-09
+        ],
+        "reference_moment_b_Nm": [
+          -4.598270176120081e-11,
+          3.8683488666080795e-10,
+          -8.420742334016238
+        ],
+        "midpoint_force_error_N": 5.594398635090814e-06,
+        "midpoint_moment_error_Nm": 3.4224384833311816e-07,
+        "tracked_force_change_N": 0.0,
+        "tracked_moment_change_Nm": 0.0,
+        "single_point_moment_change_Nm_at_same_force": 2.8856961345842906
+      }
+    ],
+    "statistics": {
+      "cold": {
+        "lines": 2,
+        "unresolved_face_pairs": 0,
+        "unresolved_seeds": 0,
+        "replaced_witnesses": 0,
+        "max_witness_shift_m": 0.0,
+        "cold_query_s": 14.9951406,
+        "tracking_s": 0.0,
+        "assembly_s": 0.0094214
+      },
+      "tracked": {
+        "lines": 2,
+        "unresolved_face_pairs": 0,
+        "unresolved_seeds": 0,
+        "replaced_witnesses": 2,
+        "max_witness_shift_m": 0.01932134396517697,
+        "cold_query_s": 14.9951406,
+        "tracking_s": 0.000193,
+        "assembly_s": 0.0091612
+      }
+    }
+  }
+}

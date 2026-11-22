@@ -237,6 +237,28 @@ Vec ContactPose::inverse_rotate(Vec world) const {
     return angle==0 ? world : rotated(world,axis,-angle);
 }
 
+ContactPairWrenches line_contact_wrenches(std::span<const ContactLineSample> samples, double activation_m,
+                                         double stiffness_per_m, Vec center_a, Vec center_b) {
+    if (!std::isfinite(activation_m) || activation_m < 0 || !std::isfinite(stiffness_per_m) || stiffness_per_m < 0) {
+        throw std::invalid_argument("invalid line contact material");
+    }
+    ContactPairWrenches result;
+    for (const auto& sample : samples) {
+        const Vec delta = sub(sample.points.b, sample.points.a);
+        const double distance = length(delta);
+        if (!std::isfinite(distance) || distance <= 0 || !std::isfinite(sample.weight_m) || sample.weight_m <= 0) {
+            throw std::invalid_argument("invalid line contact sample");
+        }
+        const double load = stiffness_per_m * sample.weight_m * std::max(0., activation_m - distance);
+        const Vec force = scale(delta, load / distance);
+        result.a.force = sub(result.a.force, force);
+        result.b.force = add(result.b.force, force);
+        result.a.moment = sub(result.a.moment, cross3(sub(sample.points.a, center_a), force));
+        result.b.moment = add(result.b.moment, cross3(sub(sample.points.b, center_b), force));
+    }
+    return result;
+}
+
 void add_point_resistances(Forces& forces, std::span<const ContactBodyState> bodies,
                            std::span<const PointResistance> resistances, const Vector& velocity) {
     const auto n = velocity.size();

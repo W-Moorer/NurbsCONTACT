@@ -28,6 +28,16 @@ struct CadContactSeed {
     std::array<double, 2> uv_a{}, uv_b{};
 };
 
+struct CadContactLine {
+    std::size_t face_a{}, face_b{};
+    std::vector<dynamics::ContactLineSample> samples;
+};
+
+struct CadContactLines {
+    std::vector<CadContactLine> lines;
+    std::size_t unresolved_face_pairs{};
+};
+
 class CadContactIndex {
 public:
     explicit CadContactIndex(const TopoDS_Shape& shape);
@@ -41,6 +51,11 @@ public:
     // its trimmed face. A seed that cannot be recovered is counted unresolved.
     CadContactRegions track_interiors(const CadContactIndex& b, dynamics::ContactPose b_in_a, double cutoff_m,
                                      std::span<const CadContactSeed> seeds) const;
+
+    // Reconstructs sampled straight contact lines from facing interior and
+    // end witnesses. The tolerance applies to the numeric CAD evaluation.
+    CadContactLines straight_lines(const CadContactIndex& b, dynamics::ContactPose b_in_a, double cutoff_m,
+                                   double tolerance_m, const CadContactRegions& regions) const;
 
 private:
     struct Data;

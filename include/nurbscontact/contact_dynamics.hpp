@@ -41,6 +41,23 @@ struct ContactWork {
     std::optional<Interval> last_unresolved_distance;
 };
 
+struct ContactLineSample {
+    PointPair points; // Coordinates in a shared frame, in meters.
+    double weight_m{};
+};
+
+struct ContactWrench {
+    Vec force{}, moment{};
+};
+
+struct ContactPairWrenches {
+    ContactWrench a, b;
+};
+
+// Linear, frictionless normal stiffness per meter of contact line, in N/m².
+ContactPairWrenches line_contact_wrenches(std::span<const ContactLineSample> samples, double activation_m,
+                                         double stiffness_per_m, Vec center_a, Vec center_b);
+
 class ContactSurface {
 public:
     virtual ~ContactSurface() = default;

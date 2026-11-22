@@ -4,20 +4,29 @@
 #include <BRepBndLib.hxx>
 #include <BRepClass_FaceClassifier.hxx>
 #include <BRepExtrema_DistShapeShape.hxx>
+#include <BRep_Tool.hxx>
 #include <Bnd_Box.hxx>
 #include <Extrema_FuncExtSS.hxx>
+#include <Geom2dAPI_InterCurveCurve.hxx>
+#include <Geom2d_Line.hxx>
+#include <Geom2d_TrimmedCurve.hxx>
+#include <GeomAPI_ProjectPointOnSurf.hxx>
 #include <NCollection_UBTreeFiller.hxx>
 #include <Precision.hxx>
 #include <Standard_Failure.hxx>
 #include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopLoc_Location.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopoDS.hxx>
+#include <gp_Dir2d.hxx>
+#include <gp_Vec2d.hxx>
 #include <gp_Ax1.hxx>
 #include <gp_Pnt2d.hxx>
 #include <math_FunctionSetRoot.hxx>
 
 #include <algorithm>
+#include <map>
 #include <stdexcept>
 
 namespace nc {
@@ -128,6 +137,116 @@ std::optional<CadContactCandidate> track_point(const TopoDS_Face& fa, const Topo
     return CadContactCandidate{wa, wb, {p, q, distance}, true};
 }
 
+struct FaceSegment {
+    gp_Pnt2d start;
+    gp_Vec2d vector;
+    gp_Pnt2d at(double t) const { return start.Translated(vector.Multiplied(t)); }
+};
+
+std::optional<FaceSegment> parameter_segment(const TopoDS_Face& face, Vec first, Vec last, double tol_m) {
+    const auto surface = BRep_Tool::Surface(face);
+    const BRepAdaptor_Surface bounds(face);
+    const auto project = [&](Vec p) -> std::optional<gp_Pnt2d> {
+        GeomAPI_ProjectPointOnSurf result(gp_Pnt{p[0]/mm, p[1]/mm, p[2]/mm}, surface,
+            bounds.FirstUParameter(), bounds.LastUParameter(), bounds.FirstVParameter(), bounds.LastVParameter(),
+            Precision::PConfusion());
+        if (!result.NbPoints() || result.LowerDistance()*mm > tol_m) return std::nullopt;
+        double u, v;
+        result.LowerDistanceParameters(u, v);
+        return gp_Pnt2d{u, v};
+    };
+    const auto a = project(first), b = project(last);
+    if (!a || !b || a->Distance(*b) <= Precision::PConfusion()) return std::nullopt;
+    return FaceSegment{*a, gp_Vec2d{*a, *b}};
+}
+
+bool trim_breaks(const TopoDS_Face& face, const FaceSegment& segment, std::vector<double>& cuts) {
+    const double span = segment.vector.Magnitude();
+    const Handle(Geom2d_Line) axis = new Geom2d_Line(segment.start, gp_Dir2d{segment.vector});
+    const Handle(Geom2d_Curve) trace = new Geom2d_TrimmedCurve(axis, 0, span);
+    for (TopExp_Explorer edge(face.Oriented(TopAbs_FORWARD), TopAbs_EDGE); edge.More(); edge.Next()) {
+        double first, last;
+        const auto curve = BRep_Tool::CurveOnSurface(TopoDS::Edge(edge.Current()), face, first, last);
+        if (curve.IsNull() || !std::isfinite(first) || !std::isfinite(last)) return false;
+        if (last <= first) continue;
+        const Handle(Geom2d_Curve) trim = new Geom2d_TrimmedCurve(curve, first, last);
+        const Geom2dAPI_InterCurveCurve intersections(trace, trim, Precision::PConfusion());
+        if (!intersections.Intersector().IsDone() || intersections.NbSegments()) return false;
+        for (int i = 1; i <= intersections.NbPoints(); ++i) {
+            const gp_Vec2d delta(segment.start, intersections.Point(i));
+            cuts.push_back(std::clamp(delta.Dot(segment.vector)/(span*span), 0., 1.));
+        }
+    }
+    return true;
+}
+
+std::optional<CadContactLine> straight_line(const TopoDS_Face& fa, const TopoDS_Face& fb,
+    const std::vector<const CadContactCandidate*>& witnesses, double cutoff, double tolerance) {
+    const CadContactCandidate* first = nullptr;
+    const CadContactCandidate* last = nullptr;
+    double longest = tolerance*tolerance;
+    for (const auto* a : witnesses) {
+        if (a->a.uv && a->b.uv) continue;
+        for (const auto* b : witnesses) {
+            if (b->a.uv && b->b.uv) continue;
+            const double length_sq = squared(sub(b->points.a, a->points.a));
+            if (length_sq > longest) {
+                longest = length_sq;
+                first = a;
+                last = b;
+            }
+        }
+    }
+    if (!first || !last) return std::nullopt;
+    const Vec start_a = first->points.a, end_a = last->points.a;
+    const Vec start_b = first->points.b, end_b = last->points.b;
+    const Vec direction = sub(end_a, start_a);
+    const Vec direction_b = sub(end_b, start_b);
+    if (length(sub(direction, direction_b)) > tolerance) return std::nullopt;
+    for (const auto* witness : witnesses) {
+        const double t = std::clamp(dot3(sub(witness->points.a, start_a), direction)/longest, 0., 1.);
+        if (length(sub(witness->points.a, add(start_a, scale(direction, t)))) > tolerance ||
+            length(sub(witness->points.b, add(start_b, scale(direction_b, t)))) > tolerance) return std::nullopt;
+    }
+    const auto a = parameter_segment(fa, start_a, end_a, tolerance);
+    const auto b = parameter_segment(fb, start_b, end_b, tolerance);
+    if (!a || !b) return std::nullopt;
+    std::vector<double> cuts{0, 1};
+    if (!trim_breaks(fa, *a, cuts) || !trim_breaks(fb, *b, cuts)) return std::nullopt;
+    std::sort(cuts.begin(), cuts.end());
+    CadContactLine line{first->a.face, first->b.face, {}};
+    const BRepAdaptor_Surface sa(fa), sb(fb);
+    const double full_length = std::sqrt(longest);
+    for (std::size_t i = 1; i < cuts.size(); ++i) {
+        const double lo = cuts[i-1], hi = cuts[i];
+        const double interval_m = (hi-lo)*full_length;
+        if (interval_m <= tolerance) continue;
+        const double mid = std::midpoint(lo, hi);
+        const auto state_a = BRepClass_FaceClassifier(fa, a->at(mid), Precision::PConfusion()).State();
+        const auto state_b = BRepClass_FaceClassifier(fb, b->at(mid), Precision::PConfusion()).State();
+        if (state_a == TopAbs_OUT || state_b == TopAbs_OUT) continue;
+        if (state_a != TopAbs_IN || state_b != TopAbs_IN) return std::nullopt;
+        for (double node : {-.57735026918962576451, .57735026918962576451}) {
+            const double t = mid + (hi-lo)*.5*node;
+            const gp_Pnt2d uv_a = a->at(t), uv_b = b->at(t);
+            const Vec p = point(sa.Value(uv_a.X(), uv_a.Y())), q = point(sb.Value(uv_b.X(), uv_b.Y()));
+            if (length(sub(p, add(start_a, scale(direction, t)))) > tolerance ||
+                length(sub(q, add(start_b, scale(direction_b, t)))) > tolerance) return std::nullopt;
+            const Vec delta = sub(q, p);
+            const double distance = length(delta);
+            if (!(distance > 1e-12 && distance <= cutoff)) return std::nullopt;
+            const Vec axis = scale(delta, 1/distance);
+            if (!faces_direction(fa, {line.face_a, FeatureKind::face, std::array{uv_a.X(), uv_a.Y()}}, axis) ||
+                !faces_direction(fb, {line.face_b, FeatureKind::face, std::array{uv_b.X(), uv_b.Y()}}, scale(axis, -1))) {
+                return std::nullopt;
+            }
+            line.samples.push_back({{p, q, distance}, interval_m*.5});
+        }
+    }
+    if (line.samples.empty()) return std::nullopt;
+    return line;
+}
+
 } // namespace
 
 struct CadContactIndex::Data {
@@ -231,6 +350,41 @@ CadContactRegions CadContactIndex::track_interiors(const CadContactIndex& b, Con
             }
         } catch (const Standard_Failure&) {
             // A failed local solve leaves this seed for the face search.
+        }
+        ++result.unresolved_face_pairs;
+    }
+    return result;
+}
+
+CadContactLines CadContactIndex::straight_lines(const CadContactIndex& b, ContactPose pose, double cutoff_m,
+                                                 double tolerance_m, const CadContactRegions& regions) const {
+    if (!std::isfinite(tolerance_m) || tolerance_m <= 0) throw std::invalid_argument("invalid contact line tolerance");
+    const auto placement = relative_placement(pose, cutoff_m);
+    using FacePair = std::pair<std::size_t, std::size_t>;
+    std::map<FacePair, std::vector<const CadContactCandidate*>> groups;
+    for (const auto& candidate : regions.candidates) {
+        if (candidate.facing_interiors) groups.try_emplace({candidate.a.face, candidate.b.face});
+    }
+    for (const auto& candidate : regions.candidates) {
+        const auto found = groups.find({candidate.a.face, candidate.b.face});
+        if (found != groups.end()) found->second.push_back(&candidate);
+    }
+    CadContactLines result;
+    result.unresolved_face_pairs = regions.unresolved_face_pairs;
+    for (const auto& [pair, candidates] : groups) {
+        const auto [i, j] = pair;
+        if (i == 0 || i > face_count() || j == 0 || j > b.face_count()) {
+            throw std::invalid_argument("contact line witness face index is out of range");
+        }
+        try {
+            const auto& a = data_->faces[i-1].shape;
+            const auto moved = TopoDS::Face(b.data_->faces[j-1].shape.Moved(placement));
+            if (auto line = straight_line(a, moved, candidates, cutoff_m, tolerance_m)) {
+                result.lines.push_back(std::move(*line));
+                continue;
+            }
+        } catch (const Standard_Failure&) {
+            // A failed projection or trim intersection leaves the line unresolved.
         }
         ++result.unresolved_face_pairs;
     }

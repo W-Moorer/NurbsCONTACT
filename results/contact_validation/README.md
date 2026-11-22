@@ -105,6 +105,50 @@ python benchmarks/aes/cad_contact_regions.py build/occt/Release/nc_contact.exe r
 
 The [measured report](../aes/cad-contact-regions.json) records the two saved spur frames and the initial eccentric-cam pose. The cold timings cover face-pair discovery. The tracked timing covers only the two supplied face pairs and excludes the separately reported STEP import and index preparation.
 
+### Straight CAD contact line loads
+
+`nc_contact line-load` reconstructs straight contact lines from the facing
+interior witnesses and paired end witnesses of a CAD face pair. It intersects
+the corresponding traces with the original face trims and evaluates the valid
+subsegments on the STEP surfaces. Each two-point quadrature uses weights in
+meters. For a sample at gap `d`, the linear frictionless law gives a force of
+magnitude `k_line * weight * max(0, cutoff - d)`. The line stiffness
+`k_line` is in N/m². Forces and moments are expressed in A's axes and the
+moment on each body is reported about that body's own origin.
+
+```text
+nc_contact line-load A.step B.step CUTOFF_M STIFFNESS_N_PER_M2 TX TY TZ AX AY AZ ANGLE_RAD OUTPUT_PREFIX [SEEDS.txt]
+```
+
+Each row in the load CSV represents one face pair. The statistics report the
+time for the full face search and the subsequent assembly separately. With
+seeds, the command also reports loads after replacing the interior witnesses
+with tracked ones while holding the boundary witnesses and the pose fixed.
+Failed line reconstructions and seed updates are counted separately.
+
+For a fresh build, generate the cam STEP files with `nc_hht models` and
+the 5 µs spur trace with `nc_gears run spur` using the settings in the
+[industrial timing protocol](../../benchmarks/aes/protocol.md#manuscript-timing-batch).
+Pass the resulting trace path in the fourth argument below.
+
+```powershell
+python benchmarks/aes/cad_line_loads.py build/occt/Release/nc_contact.exe build/aes-benchmark/industrial-cam2/cam-models results/gears/models build/aes-benchmark/industrial-pilot/spur-native-0nm-5us-31.csv build/aes-pair-dynamics/cad-line-loads
+```
+
+The [force and moment verification](../aes/cad-line-loads.json) uses the
+analytic initial cam pose and the two loaded face pairs on a saved spur pose.
+The spur check prescribes the same line stiffness for both face pairs and
+compares against a midpoint calculation from the CAD boundary witnesses.
+It also reports the moment change from applying the same resultant at each
+alternative interior witness. The spur trajectory supplies the poses. Its
+recorded forces use the existing gear loading law.
+
+This diagnostic covers separated surfaces with a valid straight line in the
+contact band. Face pairs with only boundary witnesses stay in the candidate
+report. Point, curved line, area and penetrating contact need corresponding
+load representations. Time integration also needs a policy for updating
+regions and handling unresolved geometry during an HHT step.
+
 ~~~text
 drives count
 body_id orbit arm_xyz axis_xyz angular_speed

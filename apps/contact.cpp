@@ -401,9 +401,71 @@ std::ofstream open_output(const Path& path) {
     return out;
 }
 
-void contact_regions(int argc,char** argv) {
-    if (argc!=13 && argc!=14) {
-        throw std::invalid_argument("nc_contact regions A.step B.step CUTOFF_M TX TY TZ AX AY AZ ANGLE_RAD OUTPUT_PREFIX [SEEDS.txt]");
+void report_line_loads(const CadContactIndex& a,const CadContactIndex& b,ContactPose pose,double cutoff,
+                       double stiffness,const std::string& prefix,std::span<const CadContactSeed> seeds) {
+    const auto query_start=Clock::now();
+    auto regions=a.query(b,pose,cutoff);
+    const double query_s=std::chrono::duration<double>(Clock::now()-query_start).count();
+    auto loads=open_output(prefix+".csv");
+    loads<<"mode,face_a,face_b,length_m,samples,force_ax_N,force_ay_N,force_az_N,"
+           "moment_ax_Nm,moment_ay_Nm,moment_az_Nm,force_bx_N,force_by_N,force_bz_N,"
+           "moment_bx_Nm,moment_by_Nm,moment_bz_Nm\n";
+    auto stats=open_output(prefix+".stats.csv");
+    stats<<"mode,lines,unresolved_face_pairs,unresolved_seeds,replaced_witnesses,"
+           "max_witness_shift_m,cold_query_s,tracking_s,assembly_s\n";
+    const auto write_loads=[&](std::string_view mode,std::size_t unresolved_seeds,std::size_t replaced,
+                               double shift,double tracking_s) {
+        const auto start=Clock::now();
+        const auto lines=a.straight_lines(b,pose,cutoff,1e-7,regions);
+        for (const auto& line:lines.lines) {
+            double length=0;
+            for (const auto& sample:line.samples) length+=sample.weight_m;
+            const auto wrenches=line_contact_wrenches(line.samples,cutoff,stiffness,{},pose.origin);
+            loads<<mode<<','<<line.face_a<<','<<line.face_b<<','<<length<<','<<line.samples.size();
+            for (const auto* wrench:{&wrenches.a,&wrenches.b}) {
+                for (double component:wrench->force) loads<<','<<component;
+                for (double component:wrench->moment) loads<<','<<component;
+            }
+            loads<<'\n';
+        }
+        stats<<mode<<','<<lines.lines.size()<<','<<lines.unresolved_face_pairs<<','<<unresolved_seeds<<','
+             <<replaced<<','<<shift<<','<<query_s<<','<<tracking_s<<','
+             <<std::chrono::duration<double>(Clock::now()-start).count()<<'\n';
+    };
+    write_loads("cold",0,0,0,0);
+    if (!seeds.empty()) {
+        const auto start=Clock::now();
+        const auto tracked=a.track_interiors(b,pose,cutoff,seeds);
+        const double tracking_s=std::chrono::duration<double>(Clock::now()-start).count();
+        std::size_t replaced=0,unresolved=tracked.unresolved_face_pairs;
+        double shift=0;
+        for (const auto& witness:tracked.candidates) {
+            const auto matches=[&](const auto& candidate) {
+                return candidate.facing_interiors && candidate.a.face==witness.a.face
+                                                   && candidate.b.face==witness.b.face;
+            };
+            const auto cold=std::find_if(regions.candidates.begin(),regions.candidates.end(),matches);
+            if (cold==regions.candidates.end()) {
+                ++unresolved;
+                continue;
+            }
+            const Vec difference=sub(witness.points.a,cold->points.a);
+            shift=std::max(shift,length(difference));
+            std::erase_if(regions.candidates,matches);
+            regions.candidates.push_back(witness);
+            ++replaced;
+        }
+        write_loads("tracked",unresolved,replaced,shift,tracking_s);
+    }
+    if (!loads || !stats) throw std::runtime_error("failed to write CAD line loads");
+}
+
+void contact_regions(int argc,char** argv,bool line_load) {
+    const int shift=line_load ? 1 : 0;
+    if (argc!=13+shift && argc!=14+shift) {
+        throw std::invalid_argument(line_load ?
+            "nc_contact line-load A.step B.step CUTOFF_M STIFFNESS_N_PER_M2 TX TY TZ AX AY AZ ANGLE_RAD OUTPUT_PREFIX [SEEDS.txt]" :
+            "nc_contact regions A.step B.step CUTOFF_M TX TY TZ AX AY AZ ANGLE_RAD OUTPUT_PREFIX [SEEDS.txt]");
     }
     const auto scalar=[&](int i) {
         std::size_t end=0;
@@ -413,10 +475,11 @@ void contact_regions(int argc,char** argv) {
         return x;
     };
     const double cutoff=scalar(4);
-    const ContactPose pose{{scalar(5),scalar(6),scalar(7)},unit({scalar(8),scalar(9),scalar(10)}),scalar(11)};
+    const ContactPose pose{{scalar(5+shift),scalar(6+shift),scalar(7+shift)},
+                           unit({scalar(8+shift),scalar(9+shift),scalar(10+shift)}),scalar(11+shift)};
     std::vector<CadContactSeed> seeds;
-    if (argc==14) {
-        std::ifstream input(argv[13]);
+    if (argc==14+shift) {
+        std::ifstream input(argv[13+shift]);
         if (!input) throw std::invalid_argument("could not open CAD contact seed file");
         while (!(input>>std::ws).eof()) {
             CadContactSeed seed;
@@ -429,6 +492,11 @@ void contact_regions(int argc,char** argv) {
     }
     const auto setup_start=Clock::now();
     const CadContactIndex a{read_step_shape(argv[2])},b{read_step_shape(argv[3])};
+    if (line_load) {
+        const double stiffness=scalar(5);
+        if (stiffness<0) throw std::invalid_argument("invalid line stiffness");
+        return report_line_loads(a,b,pose,cutoff,stiffness,argv[13],seeds);
+    }
     const auto start=Clock::now();
     const auto report=seeds.empty() ? a.query(b,pose,cutoff) : a.track_interiors(b,pose,cutoff,seeds);
     const auto end=Clock::now();
@@ -707,8 +775,8 @@ void export_fixture(int argc,char** argv) {
 
 int main(int argc,char** argv) {
     try {
-        if (argc>=2 && std::string_view(argv[1])=="regions") {
-            contact_regions(argc,argv);
+        if (argc>=2 && (std::string_view(argv[1])=="regions" || std::string_view(argv[1])=="line-load")) {
+            contact_regions(argc,argv,std::string_view(argv[1])=="line-load");
             return 0;
         }
         if (argc>=3 && std::string_view(argv[1])=="make") {
