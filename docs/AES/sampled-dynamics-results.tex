@@ -1,0 +1,41 @@
+\subsection{GPU contact dynamics from sampled STEP surfaces}
+\label{sec:sampled-dynamics}
+We test how much the choice of contact samples affects the motion of the eccentric cam and the two-stage reducer. Both implementations start from the same face-tagged tessellation. The STEP variant places the source samples on the corresponding trimmed faces and shared edges during preprocessing. The mesh variant uses flat triangles, straight edges or mesh vertices. Each trial queries both bodies. We retain the deepest sample for each pair of contact regions, apply one linear normal spring to that pair and assemble its force and moment in the HHT equations on the GPU. The target query uses either a triangle index with double-precision distance evaluation or a trilinear signed distance field (SDF) sampled from the target mesh. This experiment evaluates the resulting motion against independent references. The sampled forces carry no enclosure of the nominal CAD force.
+
+\paragraph{Cam accuracy and resolution.}
+The eccentric cam rotates against a spring-loaded flat follower for 20~s (Fig.~\ref{fig:sampled-cam}). An independent CPU integration with DOP853 uses the analytic cam support to compute follower displacement and contact transitions. All tested GPU configurations for the original cam recover the 36 engagements and 35 releases in order. At a 125~\microsec{} step, the same triangle index and 4,068 cam triangles give RMS displacement errors of 0.164~\micron{} for STEP samples and 0.784~\micron{} for flat face and edge samples. Their median online times on an RTX~3070 are 9.08 and 8.82~s over three runs. Time integration contributes appreciably at this resolution. With analytic geometry and the same HHT step, the error is 0.596~\micron{}. It falls to 0.074~\micron{} when the step is halved. The coarse STEP result therefore includes cancellation between geometric and integration errors.
+
+\begin{figure}[pos=!htbp]\centering
+\includegraphics[width=.78\linewidth]{cam-model.png}\par\smallskip
+\includegraphics[width=.96\linewidth]{resident-cam-accuracy-cost.pdf}
+\caption{Eccentric cam and follower, with the working face enlarged. The left plot varies the source tessellation at fixed step. The right plot gives displacement error and online time for bidirectional contact. Dashed segments join two time steps at fixed SDF and source resolution. Dotted lines trace changes in mesh density at a fixed step. Setup is excluded.}
+\label{fig:sampled-cam}\end{figure}
+
+At a common step of 62.5~\microsec{}, STEP samples with 4,068 cam triangles and an 8~mm target SDF give 0.130~\micron{} RMS error in 13.77~s. With the same SDF, mesh vertices at 4,068, 5,756, 8,140, 11,516 and 16,284 cam triangles give 0.414, 0.388, 0.251, 0.124 and 0.088~\micron{}, respectively. The 11,516-triangle mesh takes 13.01~s. Its maximum switch-time difference of 37.92~\microsec{} matches the STEP value to the reported precision, using the midpoint of each output interval containing a transition. The STEP and mesh GPU allocator reservations are 31.91 and 39.19~MiB. With comparable displacement and event accuracy, STEP uses fewer triangles while mesh vertices complete the run slightly sooner. The planar follower is favourable to trilinear interpolation.
+
+\paragraph{Dependence on the CAD face partition.}
+Splitting the follower's planar working face into two trimmed faces leaves its shape unchanged. With one spring per face pair and one-sided sampling, the detected switch count rises from 71 to 101. At 309 identical poses the split changes the force vector by up to 18.90~N and the cam-axis moment by up to 0.432~N\,m. Merging connected coplanar regions restores the original one-sided response. With bidirectional sampling, changing body order alters the follower position by at most $9.3\times10^{-9}$~\micron{}. Unifying same-domain faces and edges before tessellation also removes the change of reverse sample positions caused by the split. Both STEP representations then give identical follower displacement and normal force at all 160,001 outputs. In four spur-gear windows the coplanar grouping preserves every distinct active face pair at 1,598 poses with simultaneous contact.
+
+\paragraph{Two stages coupled through the middle shaft.}
+The reducer contains four complete STEP gear solids with 339,868 triangles. Two revolute coordinates describe the input and output shafts. A third coordinate receives the contact torques of both stages on the middle shaft. The GPU solver uses the same search and force assembly for each specified pair of bodies. We import the four solids into RecurDyn 2023 and match the shaft inertias, initial speeds, supports, applied load laws and normal stiffness. RecurDyn uses its native solid-contact discretization and integrator. We compare shaft velocities and the relative twist $\Delta\theta_{\rm pinion}-2\Delta\theta_{\rm wheel}$, with angles measured about each positive joint axis from the initial pose. We read the cumulative joint angles directly and compare all trajectories at 24,001 common physical times.
+
+\begin{figure}[pos=!htbp]\centering
+\includegraphics[width=.78\linewidth]{reducer-model.png}\par\smallskip
+\includegraphics[width=.83\linewidth]{resident-reducer-shaft-response.pdf}
+\caption{Two-stage reducer with a shared middle shaft. The enlarged view shows the helical mesh. Both GPU trajectories use a 62.5~\microsec{} main step. The short speed excursions distinguish the three responses over the 3~s load history.}
+\label{fig:sampled-reducer}\end{figure}
+
+\begin{table}[pos=!htbp]\small\centering
+\caption{Shared-shaft reducer over 3~s. RMS differences use the RecurDyn trajectory with a 125~\microsec{} output interval. GPU times include contact discovery, force assembly, adaptive integration and synchronization. Each row is one complete run.}
+\label{tab:sampled-reducer}
+\begin{tabular}{lrrrr}\toprule
+Method & Step & Online & Middle speed & Stage 2 twist\\
+ & (\microsec{}) & (s) & (rad/s) & (mrad)\\\midrule
+STEP samples (ours) & 62.5 & 236.48 & 1.66 & 1.43\\
+Mesh samples & 62.5 & 233.19 & 2.32 & 1.59\\
+STEP samples (ours) & 125 & 236.27 & 1.69 & 1.44\\
+RecurDyn & 125 & 594.44 & --- & ---\\
+\bottomrule\end{tabular}\end{table}
+
+At 62.5~\microsec{} the STEP run gives a smaller RMS difference from RecurDyn on all three shaft speeds and both relative twists at a similar online cost to the mesh run (Table~\ref{tab:sampled-reducer}). Both GPU methods exceed the real-time deadline on every main step. The STEP run requires 1.35 million contact and dynamics trials for 48,000 steps. Its largest middle-shaft discrepancy occurs at 1.25275~s, when it gives 65.06~rad/s and RecurDyn gives 93.47~rad/s (Fig.~\ref{fig:sampled-reducer}). The mesh run at 125~\microsec{} stops at 0.754~s on a Newton convergence failure. Each simulation had a 30~min wall-time limit.
+\FloatBarrier

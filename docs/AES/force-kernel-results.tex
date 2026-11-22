@@ -35,7 +35,9 @@ At the relaxed tolerance of 1~\micron{} and 5\%, a 512-sided polygon at 250~\mic
 
 The Drake comparison uses a cylinder with the 12 mm layer incorporated into its radius and a prismatic half-space. This preserves the maximum radial support height, force, eccentric torque, prescribed inertia and spring-damper loads of the model. At 125~\microsec{}, the Linux HHT and Drake RK2 runs meet the 0.5~\micron{} target with displacement errors of 0.286 and 0.402~\micron{}. Their median online times over five runs are 1.96 and 12.06 s, respectively. The point-level force law agrees within $1.5\times10^{-13}$ N along the Drake trajectories.
 
-\resultfigure{cam}{Eccentric cam and flat follower. The full 20 s response compares follower displacement and normal force from the analytic cylinder--plane calculation and the general triangle BVH at the same time step.}{fig:cam}
+\begin{figure}[pos=!htbp]\centering
+\includegraphics[width=.91\linewidth]{cam-response.pdf}
+\caption{Eccentric-cam follower displacement and normal force from the analytic cylinder--plane calculation and the general triangle BVH at the same time step. The model is shown in Fig.~\ref{fig:sampled-cam}.}\label{fig:cam}\end{figure}
 
 \paragraph{Single-stage spur pair.}
 For the spur mesh we compare native flank sections against both a general triangle BVH and a faster piecewise-linear section representation. The section baseline preserves the same tooth-pair selection, sampled axial geometry, stiffness and line-of-action projection as the native method. At 5~\microsec{}, the native and 1024-segment polyline solutions meet the finest joint tolerance with nearly identical errors. The serial median times are 4.03 and 3.94 s and their repeat ranges overlap. The best observed triangle-BVH force error at this step is 3.35\% for the 391 nm mesh setting, which requires 47.81 s in the refinement batch. Figure~\ref{fig:spur} compares the native and tuned section solutions over the load-rise window. The force-waveform error at 10~\microsec{} already exceeds 5\% for the native method, so refining geometry alone does not achieve the tighter target.
@@ -45,7 +47,9 @@ For the spur mesh we compare native flank sections against both a general triang
 \paragraph{Two-stage reducer.}
 The complex model places a spur stage upstream of a 22-degree helical stage. The native 31-section, 10~\microsec{} setting completes the full 3 s with worst-stage errors of 0.243~\micron{} and 4.52\%. The 256-segment section baseline at the same step gives 0.244~\micron{} and 4.55\%. In the serial batch, both methods take approximately 41 s and their repeat ranges overlap. The tested triangle settings resolve the helical stage more closely than the spur stage. At 5~\microsec{}, increasing the native axial quadrature from 31 to 63 sections changes the worst stage by 0.007~\micron{} and 0.11\%. The second stage is shown in Fig.~\ref{fig:reducer}. Direct engine-to-engine comparisons use the eccentric cam and the primitive contacts in Appendix~\ref{sec:analytic}, where a common native contact law can be checked from independent traces. The gearing comparisons hold the projected contact law fixed within the same HHT implementation.
 
-\resultfigure{reducer}{Two-stage reducer rendered from its STEP solids. The contact enlargement and the response curves focus on the helical stage. The window covers the applied load increase. The displayed 31- and 63-section runs use the same 5~\microsec{} time step.}{fig:reducer}
+\begin{figure}[pos=!htbp]\centering
+\includegraphics[width=.91\linewidth]{reducer-response.pdf}
+\caption{Second-stage responses of the two-stage reducer shown in Fig.~\ref{fig:sampled-reducer}. The window covers the applied load increase. The 31- and 63-section runs use the same 5~\microsec{} time step.}\label{fig:reducer}\end{figure}
 
 \subsection{Effect of force enclosures and reuse}
 \label{sec:ablation}

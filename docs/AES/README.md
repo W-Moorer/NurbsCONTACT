@@ -8,6 +8,8 @@ The source follows the Elsevier CAS single-column layout of the ICRL `CoFlexSim-
 
 From the repository root, run `python benchmarks/hht/paper.py results/hht` with XeLaTeX, BibTeX, and `latexmk` on `PATH`. The build uses the figures here and publishes the same PDF in this directory and at `docs/manuscript.pdf`. The template uses Times New Roman, Arial, and Consolas and the TeX Live STIX Two Math font.
 
+The sampled-contact section uses the [cam accuracy and representation experiments](../../results/aes/resident-cam/accuracy-study.md) and the [shared-shaft reducer comparison](../../results/aes/resident-reducer/README.md). Both reports include the Python commands used to reproduce the response figures.
+
 ## Reproduce the figures
 
 Run the [numerical protocol](../../benchmarks/aes/protocol.md) first. The published-case figure script uses the traces in `build/aes-literature` and a Blender 5.1 executable on `PATH`.

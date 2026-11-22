@@ -1,0 +1,673 @@
+{
+  "parts": {
+    "deflection_um": 1.0,
+    "parts": [
+      {
+        "step": "reducer-1a.step",
+        "archive": "reducer-1a.npz",
+        "triangles": 14672,
+        "probes": 18792,
+        "prep_s": 29.973363899975084
+      },
+      {
+        "step": "reducer-1b.step",
+        "archive": "reducer-1b.npz",
+        "triangles": 23632,
+        "probes": 30648,
+        "prep_s": 46.11212110001361
+      },
+      {
+        "step": "reducer-2a.step",
+        "archive": "reducer-2a.npz",
+        "triangles": 163088,
+        "probes": 172032,
+        "prep_s": 56.705188899999484
+      },
+      {
+        "step": "reducer-2b.step",
+        "archive": "reducer-2b.npz",
+        "triangles": 138476,
+        "probes": 151922,
+        "prep_s": 78.87681520002661
+      }
+    ]
+  },
+  "trials": {
+    "cad": {
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "method": "cad",
+      "physical_s": 0.441375,
+      "requested_s": 3.0,
+      "step_s": 0.000125,
+      "terminated": "newton",
+      "coordinates": 3,
+      "pairs": 2,
+      "directional_probes": [
+        [
+          25152,
+          15456
+        ],
+        [
+          133496,
+          159016
+        ]
+      ],
+      "steps": 3531,
+      "trials": 39580,
+      "accepted_increments": 10873,
+      "setup_s": 10.256332300137728,
+      "online_s": 9.174764150986448,
+      "p99_us": 26230.88639999997,
+      "over_budget": 3531,
+      "device_pool_MiB": 497.05810546875,
+      "peak_normal_N": [
+        366950.50999476656,
+        865601.9678113032
+      ],
+      "max_active_regions": [
+        7.0,
+        16.0
+      ]
+    },
+    "mesh": {
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "method": "mesh",
+      "physical_s": 0.0585,
+      "requested_s": 3.0,
+      "step_s": 0.000125,
+      "terminated": "newton",
+      "coordinates": 3,
+      "pairs": 2,
+      "directional_probes": [
+        [
+          25344,
+          15552
+        ],
+        [
+          133496,
+          159016
+        ]
+      ],
+      "steps": 468,
+      "trials": 6908,
+      "accepted_increments": 2629,
+      "setup_s": 5.205658169928938,
+      "online_s": 1.2383873751387,
+      "p99_us": 20693.288959999987,
+      "over_budget": 468,
+      "device_pool_MiB": 497.09326171875,
+      "peak_normal_N": [
+        68783.76221737664,
+        74736.79636730973
+      ],
+      "max_active_regions": [
+        7.0,
+        7.0
+      ]
+    },
+    "cad-active8": {
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "method": "cad",
+      "physical_s": 0.1,
+      "requested_s": 3.0,
+      "step_s": 0.000125,
+      "terminated": "newton",
+      "coordinates": 3,
+      "pairs": 2,
+      "contact_samples": 8,
+      "directional_probes": [
+        [
+          25152,
+          15456
+        ],
+        [
+          133496,
+          159016
+        ]
+      ],
+      "steps": 800,
+      "trials": 25761,
+      "accepted_increments": 11674,
+      "setup_s": 6.969532612012699,
+      "online_s": 4.788896040990949,
+      "p99_us": 8053.063679999999,
+      "over_budget": 800,
+      "device_pool_MiB": 497.05810546875,
+      "peak_normal_N": [
+        7115.5613760691,
+        19204.069984066
+      ],
+      "max_active_regions": [
+        3.0,
+        6.0
+      ]
+    },
+    "mesh-active8": {
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "method": "mesh",
+      "physical_s": 0.706375,
+      "requested_s": 3.0,
+      "step_s": 0.000125,
+      "terminated": "newton",
+      "coordinates": 3,
+      "pairs": 2,
+      "contact_samples": 8,
+      "directional_probes": [
+        [
+          25344,
+          15552
+        ],
+        [
+          133496,
+          159016
+        ]
+      ],
+      "steps": 5651,
+      "trials": 180361,
+      "accepted_increments": 82032,
+      "setup_s": 5.183785624103621,
+      "online_s": 33.52362964185886,
+      "p99_us": 8821.76,
+      "over_budget": 5651,
+      "device_pool_MiB": 497.09326171875,
+      "peak_normal_N": [
+        44655.0042456082,
+        108380.26179968362
+      ],
+      "max_active_regions": [
+        6.0,
+        9.0
+      ]
+    },
+    "cad-refined": {
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "method": "cad",
+      "physical_s": 3.0,
+      "requested_s": 3.0,
+      "step_s": 0.000125,
+      "terminated": "complete",
+      "coordinates": 3,
+      "pairs": 2,
+      "contact_samples": 16,
+      "minimum_step_s": 3.0517578125e-08,
+      "directional_probes": [
+        [
+          25152,
+          15456
+        ],
+        [
+          133496,
+          159016
+        ]
+      ],
+      "steps": 24000,
+      "trials": 1349703,
+      "accepted_increments": 664292,
+      "setup_s": 6.989037747029215,
+      "online_s": 236.26536921295337,
+      "p99_us": 12308.490239999997,
+      "over_budget": 24000,
+      "device_pool_MiB": 497.05810546875,
+      "peak_normal_N": [
+        66206.50181625807,
+        105501.18829882286
+      ],
+      "max_active_regions": [
+        6.0,
+        9.0
+      ],
+      "twist_quadrature_rms_rad": [
+        0.030778921382980304,
+        0.0071230055336988715
+      ]
+    },
+    "mesh-refined": {
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "method": "mesh",
+      "physical_s": 0.754,
+      "requested_s": 3.0,
+      "step_s": 0.000125,
+      "terminated": "newton",
+      "coordinates": 3,
+      "pairs": 2,
+      "contact_samples": 16,
+      "minimum_step_s": 3.0517578125e-08,
+      "directional_probes": [
+        [
+          25344,
+          15552
+        ],
+        [
+          133496,
+          159016
+        ]
+      ],
+      "steps": 6032,
+      "trials": 337023,
+      "accepted_increments": 165169,
+      "setup_s": 5.216826769988984,
+      "online_s": 59.164437173167244,
+      "p99_us": 12833.126399999994,
+      "over_budget": 6032,
+      "device_pool_MiB": 497.09326171875,
+      "peak_normal_N": [
+        73963.51323415787,
+        135541.2888451399
+      ],
+      "max_active_regions": [
+        7.0,
+        9.0
+      ]
+    },
+    "cad-deep": {
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "method": "cad",
+      "physical_s": 3.0,
+      "requested_s": 3.0,
+      "step_s": 0.000125,
+      "terminated": "complete",
+      "coordinates": 3,
+      "pairs": 2,
+      "contact_samples": 16,
+      "minimum_step_s": 1.9073486328125e-09,
+      "directional_probes": [
+        [
+          25152,
+          15456
+        ],
+        [
+          133496,
+          159016
+        ]
+      ],
+      "steps": 24000,
+      "trials": 1349703,
+      "accepted_increments": 664292,
+      "setup_s": 5.218237112043425,
+      "online_s": 235.59820327791385,
+      "p99_us": 12268.554239999998,
+      "over_budget": 24000,
+      "device_pool_MiB": 497.05810546875,
+      "peak_normal_N": [
+        66206.50181625807,
+        105501.18829882286
+      ],
+      "max_active_regions": [
+        6.0,
+        9.0
+      ],
+      "twist_quadrature_rms_rad": [
+        0.030778921382980304,
+        0.0071230055336988715
+      ]
+    },
+    "mesh-deep": {
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "method": "mesh",
+      "physical_s": 0.754,
+      "requested_s": 3.0,
+      "step_s": 0.000125,
+      "terminated": "newton",
+      "coordinates": 3,
+      "pairs": 2,
+      "contact_samples": 16,
+      "minimum_step_s": 1.9073486328125e-09,
+      "directional_probes": [
+        [
+          25344,
+          15552
+        ],
+        [
+          133496,
+          159016
+        ]
+      ],
+      "steps": 6032,
+      "trials": 338048,
+      "accepted_increments": 165733,
+      "setup_s": 7.056088030105457,
+      "online_s": 59.19297875184566,
+      "p99_us": 12883.793919999996,
+      "over_budget": 6032,
+      "device_pool_MiB": 497.09326171875,
+      "peak_normal_N": [
+        73963.51323415787,
+        135541.2888451399
+      ],
+      "max_active_regions": [
+        7.0,
+        9.0
+      ]
+    },
+    "cad-crossing": {
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "method": "cad",
+      "physical_s": 3.0,
+      "requested_s": 3.0,
+      "step_s": 0.000125,
+      "terminated": "complete",
+      "coordinates": 3,
+      "pairs": 2,
+      "contact_samples": 16,
+      "minimum_step_s": 3.0517578125e-08,
+      "explicit_crossing_enabled": true,
+      "explicit_crossings": 0,
+      "directional_probes": [
+        [
+          25152,
+          15456
+        ],
+        [
+          133496,
+          159016
+        ]
+      ],
+      "steps": 24000,
+      "trials": 1349703,
+      "accepted_increments": 664292,
+      "setup_s": 5.21976807503961,
+      "online_s": 235.8999094988685,
+      "p99_us": 12278.784,
+      "over_budget": 24000,
+      "device_pool_MiB": 497.05810546875,
+      "peak_normal_N": [
+        66206.50181625807,
+        105501.18829882286
+      ],
+      "max_active_regions": [
+        6.0,
+        9.0
+      ],
+      "twist_quadrature_rms_rad": [
+        0.030778921382980304,
+        0.0071230055336988715
+      ]
+    },
+    "mesh-crossing": {
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "method": "mesh",
+      "physical_s": 0.754,
+      "requested_s": 3.0,
+      "step_s": 0.000125,
+      "terminated": "newton",
+      "coordinates": 3,
+      "pairs": 2,
+      "contact_samples": 16,
+      "minimum_step_s": 3.0517578125e-08,
+      "explicit_crossing_enabled": true,
+      "explicit_crossings": 0,
+      "directional_probes": [
+        [
+          25344,
+          15552
+        ],
+        [
+          133496,
+          159016
+        ]
+      ],
+      "steps": 6032,
+      "trials": 337023,
+      "accepted_increments": 165169,
+      "setup_s": 7.011661633150652,
+      "online_s": 59.133439756929874,
+      "p99_us": 12904.591359999999,
+      "over_budget": 6032,
+      "device_pool_MiB": 497.09326171875,
+      "peak_normal_N": [
+        73963.51323415787,
+        135541.2888451399
+      ],
+      "max_active_regions": [
+        7.0,
+        9.0
+      ]
+    },
+    "mesh-h62": {
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "method": "mesh",
+      "physical_s": 3.0,
+      "requested_s": 3.0,
+      "step_s": 6.25e-05,
+      "terminated": "complete",
+      "coordinates": 3,
+      "pairs": 2,
+      "contact_samples": 16,
+      "minimum_step_s": 1.52587890625e-08,
+      "explicit_crossing_enabled": true,
+      "explicit_crossings": 0,
+      "directional_probes": [
+        [
+          25344,
+          15552
+        ],
+        [
+          133496,
+          159016
+        ]
+      ],
+      "steps": 48000,
+      "trials": 1333269,
+      "accepted_increments": 655624,
+      "setup_s": 6.939394138054922,
+      "online_s": 233.18623444391415,
+      "p99_us": 6462.464,
+      "over_budget": 48000,
+      "device_pool_MiB": 502.220703125,
+      "peak_normal_N": [
+        87946.06638691279,
+        183756.91336425877
+      ],
+      "max_active_regions": [
+        6.0,
+        10.0
+      ],
+      "twist_quadrature_rms_rad": [
+        0.00970022291049438,
+        0.02001996460902286
+      ]
+    },
+    "cad-h62": {
+      "gpu": "NVIDIA GeForce RTX 3090",
+      "method": "cad",
+      "physical_s": 3.0,
+      "requested_s": 3.0,
+      "step_s": 6.25e-05,
+      "terminated": "complete",
+      "coordinates": 3,
+      "pairs": 2,
+      "contact_samples": 16,
+      "minimum_step_s": 1.52587890625e-08,
+      "explicit_crossing_enabled": true,
+      "explicit_crossings": 0,
+      "directional_probes": [
+        [
+          25152,
+          15456
+        ],
+        [
+          133496,
+          159016
+        ]
+      ],
+      "steps": 48000,
+      "trials": 1352302,
+      "accepted_increments": 665822,
+      "setup_s": 5.248560603009537,
+      "online_s": 236.48311261297204,
+      "p99_us": 6237.184,
+      "over_budget": 48000,
+      "device_pool_MiB": 502.185546875,
+      "peak_normal_N": [
+        58795.159633020194,
+        126254.42948372653
+      ],
+      "max_active_regions": [
+        6.0,
+        9.0
+      ],
+      "twist_quadrature_rms_rad": [
+        0.009221183525451907,
+        0.004648993833514889
+      ]
+    }
+  },
+  "comparison": {
+    "cad-refined": {
+      "speed_rms_rad_s": [
+        5.981641151026121,
+        1.6949722948874442,
+        1.6859642060057365
+      ],
+      "twist_rms_mrad": [
+        1.3268023403124136,
+        1.4385907430974558
+      ],
+      "speed_max_rad_s": [
+        127.07703335794633,
+        27.716556394509865,
+        31.726368167367553
+      ],
+      "largest_middle_shaft_difference": {
+        "time_s": 0.85275,
+        "gpu_rad_s": 67.14495542768692,
+        "recurdyn_rad_s": 94.86151182219679,
+        "summed_region_normal_N": [
+          25104.445075244366,
+          0.0
+        ]
+      }
+    },
+    "cad-deep": {
+      "speed_rms_rad_s": [
+        5.981641151026121,
+        1.6949722948874442,
+        1.6859642060057365
+      ],
+      "twist_rms_mrad": [
+        1.3268023403124136,
+        1.4385907430974558
+      ],
+      "speed_max_rad_s": [
+        127.07703335794633,
+        27.716556394509865,
+        31.726368167367553
+      ],
+      "largest_middle_shaft_difference": {
+        "time_s": 0.85275,
+        "gpu_rad_s": 67.14495542768692,
+        "recurdyn_rad_s": 94.86151182219679,
+        "summed_region_normal_N": [
+          25104.445075244366,
+          0.0
+        ]
+      }
+    },
+    "cad-crossing": {
+      "speed_rms_rad_s": [
+        5.981641151026121,
+        1.6949722948874442,
+        1.6859642060057365
+      ],
+      "twist_rms_mrad": [
+        1.3268023403124136,
+        1.4385907430974558
+      ],
+      "speed_max_rad_s": [
+        127.07703335794633,
+        27.716556394509865,
+        31.726368167367553
+      ],
+      "largest_middle_shaft_difference": {
+        "time_s": 0.85275,
+        "gpu_rad_s": 67.14495542768692,
+        "recurdyn_rad_s": 94.86151182219679,
+        "summed_region_normal_N": [
+          25104.445075244366,
+          0.0
+        ]
+      }
+    },
+    "mesh-h62": {
+      "speed_rms_rad_s": [
+        7.9273569820517,
+        2.316320352457464,
+        2.3004689393292552
+      ],
+      "twist_rms_mrad": [
+        1.5218082107154967,
+        1.5859009429040754
+      ],
+      "speed_max_rad_s": [
+        111.7922446281529,
+        34.803814943930306,
+        33.699474046436166
+      ],
+      "largest_middle_shaft_difference": {
+        "time_s": 0.167375,
+        "gpu_rad_s": 59.78701612534306,
+        "recurdyn_rad_s": 94.59083106927336,
+        "summed_region_normal_N": [
+          0.0,
+          37659.53230738825
+        ]
+      }
+    },
+    "cad-h62": {
+      "speed_rms_rad_s": [
+        5.793237115793377,
+        1.656844422410826,
+        1.6304189160483842
+      ],
+      "twist_rms_mrad": [
+        1.312238763761674,
+        1.4300214536828073
+      ],
+      "speed_max_rad_s": [
+        131.16801169257724,
+        28.40335395704757,
+        29.934544000877658
+      ],
+      "largest_middle_shaft_difference": {
+        "time_s": 1.25275,
+        "gpu_rad_s": 65.06194432018144,
+        "recurdyn_rad_s": 93.46529827722901,
+        "summed_region_normal_N": [
+          17886.038622411674,
+          0.0
+        ]
+      }
+    }
+  },
+  "cam_driver_check": {
+    "duration_s": 0.25,
+    "max_position_change_um": 8.926949457421784e-06,
+    "max_angle_change_rad": 1.0320265475538548e-10,
+    "max_force_change_N": 3.9321434996963944e-08
+  },
+  "recurdyn": {
+    "version": "10.1.40231.2023 x64",
+    "steps": 24000,
+    "h": 0.000125,
+    "physical_s": 3.0,
+    "setup_s": 175.84844969998812,
+    "online_s": 594.441121800046,
+    "speed_initial": [
+      188.495559215388,
+      -94.2477796076938,
+      47.1238898038469
+    ],
+    "peak_force": [
+      4581.861346960204,
+      11890.551447868156
+    ],
+    "peak_point1_friction_N": [
+      0.0,
+      0.0
+    ],
+    "peak_resultant_N": [
+      4277.474000846085,
+      7622.6481244379065
+    ]
+  }
+}

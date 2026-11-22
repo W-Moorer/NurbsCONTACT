@@ -73,11 +73,17 @@ class ResidentMeshContact:
         backend="grid",
         source_points=None,
         impact_samples=0,
+        vertex_probes=False,
+        merge_planar=False,
+        reverse=None,
     ):
         from resident_index import compile_mesh
 
-        if backend not in ("grid", "bvh") or lanes not in (1, 2, 4, 8, 16, 32):
+        if backend not in ("grid", "bvh", "sdf") or lanes not in (1, 2, 4, 8, 16, 32):
             raise ValueError("Unknown backend or unsupported warp group size")
+        if reverse is not None and (reverse.backend != backend or reverse.reverse is not None):
+            raise ValueError("Reverse queries require a single-direction model with the same backend")
+        self.backend = backend
         a, b = np.ascontiguousarray(a, dtype=np.float64), np.ascontiguousarray(b, dtype=np.float64)
         for mesh, labels in ((a, fa), (b, fb)):
             if (
@@ -90,13 +96,36 @@ class ResidentMeshContact:
             areas = np.linalg.norm(np.cross(mesh[:, 1] - mesh[:, 0], mesh[:, 2] - mesh[:, 0]), axis=1)
             if not np.isfinite(mesh).all() or not np.all(np.isfinite(areas) & (areas > 0)):
                 raise ValueError("Triangle coordinates must be finite and triangles nondegenerate")
+        if merge_planar:
+            from resident_index import planar_regions
+
+            fa = planar_regions(a, fa)[np.unique(fa, return_inverse=True)[1]]
         geom, self.tags_a = compile_mesh(a, fa, pitch)
         p, normals, ids, other, alt, self.tags_b = surface_samples(b, fb, samples, crease_samples)
+        if vertex_probes:
+            if source_points is not None:
+                raise ValueError("Vertex probes use the supplied triangle vertices")
+            p, vertices = np.unique(b.reshape(-1, 3), axis=0, return_inverse=True)
+            keys, group = np.unique(
+                np.column_stack((vertices.ravel(), np.repeat(ids[: len(b)], 3))), axis=0, return_inverse=True
+            )
+            # One normal per vertex and incident original face. Preserve sharp edges.
+            vertex_normals = np.zeros((len(keys), 3))
+            np.add.at(vertex_normals, group, np.repeat(normals[: len(b)], 3, axis=0))
+            length = np.linalg.norm(vertex_normals, axis=1)
+            if np.any(length <= 1e-14):
+                raise ValueError("Ambiguous vertex normal")
+            p = p[keys[:, 0]]
+            normals = other = vertex_normals / length[:, None]
+            ids = alt = keys[:, 1].astype(np.int32)
         if source_points is not None:
             source_points = np.ascontiguousarray(source_points, dtype=np.float64)
             if source_points.shape != p.shape or not np.isfinite(source_points).all():
                 raise ValueError("Expected a finite CAD point for each source probe")
             p = source_points
+        if merge_planar:
+            self.tags_b, regions = np.unique(planar_regions(b, fb), return_inverse=True)
+            ids, alt = regions[ids].astype(np.int32), regions[alt].astype(np.int32)
         self.geometry = tuple(cp.asarray(v) for v in geom)
         self.samples = tuple(cp.asarray(v) for v in (p, normals, ids, other, alt))
         self.n = len(p)
@@ -105,17 +134,21 @@ class ResidentMeshContact:
         self.impact_samples = int(impact_samples)
         self.radius = float(np.linalg.norm(p, axis=1).max())
         # At most one entry per sample, even when many lie on the same face.
-        self.capacity = 1 << (2 * self.n - 1).bit_length()
+        self.reverse = reverse
+        total = self.n + (reverse.n if reverse is not None else 0)
+        self.capacity = 1 << (2 * total - 1).bit_length()
         self.keys = cp.full(self.capacity, np.uint64(0xFFFFFFFFFFFFFFFF), dtype=cp.uint64)
         self.best = cp.zeros(self.capacity, cp.uint64)
-        self.active = cp.empty(self.n, cp.int32)
+        self.active = cp.empty(total, cp.int32)
         self.count = cp.zeros(1, cp.int32)
-        self.witness = cp.empty((self.n, 8), cp.float64)
+        self.witness = cp.empty((total, 8), cp.float64)
         src = Path(__file__).with_name("resident_contact.cu").read_text()
         self.module = cp.RawModule(
             code=src,
-            options=("--std=c++17", f"-DQUERY_LANES={lanes}")
+            options=("--std=c++17", f"-DQUERY_LANES={1 if backend == 'sdf' else lanes}")
             + (("-DNC_BVH_CONTROL",) if backend == "bvh" else ())
+            + (("-DNC_SDF",) if backend == "sdf" else ())
+            + (("-DNC_TWO_SIDED",) if reverse is not None else ())
             + ((f"-DNC_IMPACT_SAMPLES={self.impact_samples}",) if self.impact_samples else ()),
             enable_cooperative_groups=True,
         )
@@ -166,6 +199,11 @@ class ResidentMeshContact:
             axis=1,
         )
         self.geometry += (cp.asarray(chart2.astype(np.float32)),)
+        self.field = ()
+        if backend == "sdf":
+            from resident_index import sampled_distance_field
+
+            self.field = tuple(cp.asarray(v) for v in sampled_distance_field(a, fa, geom[5], pitch))
 
         self.outside = cp.zeros((self.n, 4))
         self.nearby = cp.zeros((self.n, 4))
@@ -173,6 +211,19 @@ class ResidentMeshContact:
         self.fp_pad = 64 * np.finfo(np.float32).eps * max(1.0, np.max(np.abs(a)))
         self.probe = self.module.get_function("probe")
         self.reset = self.module.get_function("clear_active")
+        self.reverse_args = ()
+        if reverse is not None:
+            from hashlib import sha256
+
+            if not np.array_equal(reverse.tags_a, self.tags_b) or not np.array_equal(
+                reverse.tags_b, self.tags_a
+            ):
+                raise ValueError("Forward and reverse region maps differ")
+            # A stable geometry order resolves equal depths in the two queries.
+            self.prefer_reverse = sha256(a.tobytes()).digest() < sha256(b.tobytes()).digest()
+            view = cp.empty(320, cp.uint8)
+            reverse.module.get_function("bind_mesh")((1,), (1,), (*reverse.args(), view))
+            self.reverse_args = (view, np.int32(self.prefer_reverse))
 
     def args(self):
         return (
@@ -189,6 +240,7 @@ class ResidentMeshContact:
             self.active,
             self.count,
             self.witness,
+            *self.field,
         )
 
     def reset_history(self):
@@ -197,6 +249,8 @@ class ResidentMeshContact:
         self.count.fill(0)
         self.outside.fill(0)
         self.nearby.fill(0)
+        if self.reverse is not None:
+            self.reverse.reset_history()
 
     def evaluate(self, matrix):
         matrix = np.ascontiguousarray(matrix, dtype=np.float64)
@@ -219,7 +273,21 @@ class ResidentMeshContact:
         slots = self.active[:count]
         keys = self.keys[slots].get()
         wins = self.best[slots].astype(cp.uint32).astype(cp.int64)
-        return {
+        hits = {
             (int(self.tags_a[int(k) >> 32]), int(self.tags_b[int(k) & 0xFFFFFFFF])): w
             for k, w in zip(keys, self.witness[wins].get(), strict=True)
         }
+        if self.reverse is not None:
+            rotation, offset = matrix[:, :3], matrix[:, 3]
+            inverse = np.column_stack((rotation.T, -rotation.T @ offset))
+            for (b, a), raw in self.reverse.evaluate(inverse).items():
+                key = (a, b)
+                if key in hits:
+                    delta = raw[0] - hits[key][0]
+                    if delta < -1e-12 or (abs(delta) <= 1e-12 and not self.prefer_reverse):
+                        continue
+                w = raw.copy()
+                w[1:4] = rotation @ raw[1:4] + offset
+                w[4:7] = -rotation @ raw[4:7]
+                hits[key] = w
+        return hits

@@ -1,0 +1,26 @@
+[
+  {
+    "window": "startup",
+    "poses": 211,
+    "multiple_pair_poses": 63,
+    "poses_with_collapsed_pairs": 0
+  },
+  {
+    "window": "revolution",
+    "poses": 335,
+    "multiple_pair_poses": 272,
+    "poses_with_collapsed_pairs": 0
+  },
+  {
+    "window": "release-small",
+    "poses": 807,
+    "multiple_pair_poses": 631,
+    "poses_with_collapsed_pairs": 0
+  },
+  {
+    "window": "hht-small",
+    "poses": 806,
+    "multiple_pair_poses": 632,
+    "poses_with_collapsed_pairs": 0
+  }
+]

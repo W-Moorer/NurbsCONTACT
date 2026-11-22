@@ -5,6 +5,71 @@ from numba import njit
 from scipy.ndimage import binary_fill_holes
 
 
+def sampled_distance_field(tri, faces, cells, pitch):
+    import igl
+
+    vertices, inverse = np.unique(tri.reshape(-1, 3), axis=0, return_inverse=True)
+    triangles = inverse.reshape(-1, 3).astype(np.int64)
+    _, tags = np.unique(faces, return_inverse=True)
+    nx, ny, nz = map(int, cells + 1)
+    low = vertices.min(axis=0)
+    distance = np.empty((nz, ny, nx), np.float32)
+    owner = np.empty((nz, ny, nx), np.int32)
+    y, x = np.indices((ny, nx))
+    points = np.column_stack((low[0] + x.ravel() * pitch, low[1] + y.ravel() * pitch, np.zeros(x.size)))
+    for z in range(nz):
+        points[:, 2] = low[2] + z * pitch
+        d, idx, _, _ = igl.signed_distance(points, vertices, triangles, igl.SIGNED_DISTANCE_TYPE_PSEUDONORMAL)
+        if not np.isfinite(d).all() or idx.min() < 0:
+            raise ValueError("Failed to sample the closed mesh signed distance")
+        distance[z] = d.reshape(ny, nx)
+        owner[z] = tags[idx].reshape(ny, nx)
+    return distance, owner
+
+
+def planar_regions(tri, faces):
+    """Join connected coplanar CAD faces; preserve separate or curved faces."""
+    labels, f = np.unique(faces, return_inverse=True)
+    normals = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0])
+    normals /= np.linalg.norm(normals, axis=1)[:, None]
+    first = np.unique(f, return_index=True)[1]
+    axes = normals[first]
+    deviation = np.zeros(len(labels))
+    np.maximum.at(deviation, f, np.linalg.norm(normals - axes[f], axis=1))
+    plane = np.einsum("ij,ij->i", axes, tri[first, 0] - tri[0, 0])
+    height = np.einsum("ijk,ik->ij", tri - tri[0, 0], axes[f]) - plane[f, None]
+    flatness = np.zeros(len(labels))
+    np.maximum.at(flatness, f, abs(height).max(axis=1))
+    tol = max(1.0, float(np.ptp(tri.reshape(-1, 3), axis=0).max())) * 1e-11
+    planar = (deviation < 1e-9) & (flatness <= tol)
+    _, idx = np.unique(tri.reshape(-1, 3), axis=0, return_inverse=True)
+    idx = idx.reshape(-1, 3)
+    edges = np.sort(np.stack((idx, np.roll(idx, -1, axis=1)), axis=-1), axis=-1).reshape(-1, 2)
+    _, group, count = np.unique(edges, axis=0, return_inverse=True, return_counts=True)
+    if np.any(count != 2):
+        raise ValueError("Planar regions require a closed manifold mesh")
+    adjacent = f[np.argsort(group, kind="stable").reshape(-1, 2) // 3]
+    pairs = np.unique(np.sort(adjacent[adjacent[:, 0] != adjacent[:, 1]], axis=1), axis=0)
+    parent = np.arange(len(labels))
+
+    def root(i):
+        while i != parent[i]:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    for a, b in pairs:
+        if (
+            planar[a]
+            and planar[b]
+            and np.linalg.norm(axes[a] - axes[b]) < 1e-9
+            and abs(plane[a] - plane[b]) <= tol
+        ):
+            i, j = sorted((root(a), root(b)))
+            parent[j] = i
+    return labels[[root(i) for i in range(len(labels))]]
+
+
 @njit(cache=True)
 def voxel_lists(tri, norm, low, sizes, pitch, radius):
     cells = int(sizes[0]) * sizes[1] * sizes[2]

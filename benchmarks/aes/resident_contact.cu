@@ -17,17 +17,63 @@ __device__ P move(const double *r, P x) {
 }
 __device__ double dot(P a, P b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
 
+#ifdef NC_SDF
+#define FIELD_ARGS , const float *sdf, const int *sdfFace
+#define FIELD_PASS , sdf, sdfFace
+#define VIEW_FIELD(v) , (v).sdf, (v).sdfFace
+#else
+#define FIELD_ARGS
+#define FIELD_PASS
+#define VIEW_FIELD(v)
+#endif
 #define GEOM                                                                                                 \
     const P *tri, const P *features, const int *fa, const int *offsets, const int *ids, const int *grid,     \
         const double *bounds, const int4 *nodes, const double *boxes, const unsigned char *occupied,         \
         const float4 *planes, const int *ends, const int *seeds, const float4 *axes, const P *points,        \
         const P *normals, const int *fb, const P *other, const int *alt, int n, double4 *outside,            \
         double4 *nearby, int *neighbors, double fpPad, U64 *keys, U64 *peaks, unsigned mask, int *slots,     \
-        int *count, double *witness
+        int *count, double *witness FIELD_ARGS
 #define PASS                                                                                                 \
     tri, features, fa, offsets, ids, grid, bounds, nodes, boxes, occupied, planes, ends, seeds, axes,        \
         points, normals, fb, other, alt, n, outside, nearby, neighbors, fpPad, keys, peaks, mask, slots,     \
-        count, witness
+        count, witness FIELD_PASS
+
+struct MeshView {
+    const P *tri, *features;
+    const int *fa, *offsets, *ids, *grid;
+    const double *bounds;
+    const int4 *nodes;
+    const double *boxes;
+    const unsigned char *occupied;
+    const float4 *planes;
+    const int *ends, *seeds;
+    const float4 *axes;
+    const P *points, *normals;
+    const int *fb;
+    const P *other;
+    const int *alt;
+    int n;
+    double4 *outside, *nearby;
+    int *neighbors;
+    double fpPad;
+    U64 *keys, *peaks;
+    unsigned mask;
+    int *slots, *count;
+    double *witness;
+#ifdef NC_SDF
+    const float *sdf;
+    const int *sdfFace;
+#endif
+};
+#define VIEW(v)                                                                                              \
+    (v).tri, (v).features, (v).fa, (v).offsets, (v).ids, (v).grid, (v).bounds, (v).nodes, (v).boxes,         \
+        (v).occupied, (v).planes, (v).ends, (v).seeds, (v).axes, (v).points, (v).normals, (v).fb, (v).other, \
+        (v).alt, (v).n, (v).outside, (v).nearby, (v).neighbors, (v).fpPad, (v).keys, (v).peaks, (v).mask,    \
+        (v).slots, (v).count, (v).witness VIEW_FIELD(v)
+extern "C" __global__ void bind_mesh(GEOM, MeshView *v) {
+    static_assert(sizeof(MeshView) <= 320, "Increase host mesh-view storage");
+    *v = MeshView{PASS};
+}
 
 __device__ P sub(P a, P b) { return {a.x - b.x, a.y - b.y, a.z - b.z}; }
 __device__ P along(P a, double t, P v) { return {a.x + t * v.x, a.y + t * v.y, a.z + t * v.z}; }
@@ -163,6 +209,37 @@ template <int W> __device__ void sample_contact(int i, const double *pose, GEOM)
     int cell = (iz * grid[1] + iy) * grid[0] + ix;
     if (!occupied[cell])
         return;
+#ifdef NC_SDF
+    // Analytic derivative of the trilinear interpolant. Face tags come from the
+    // closest grid node and are categorical, so they are never interpolated.
+    int nx = grid[0] + 1, ny = grid[1] + 1;
+    int base = (iz * ny + iy) * nx + ix;
+    double x = (p.x - bounds[0]) * bounds[6] - ix, y = (p.y - bounds[1]) * bounds[6] - iy;
+    double z = (p.z - bounds[2]) * bounds[6] - iz;
+    double value = 0.;
+    P g = {};
+    for (int k = 0; k < 2; ++k)
+        for (int j = 0; j < 2; ++j)
+            for (int l = 0; l < 2; ++l) {
+                double v = sdf[base + (k * ny + j) * nx + l];
+                double wx = l ? x : 1 - x, wy = j ? y : 1 - y, wz = k ? z : 1 - z;
+                value += wx * wy * wz * v;
+                g.x += (l ? 1 : -1) * wy * wz * v;
+                g.y += wx * (j ? 1 : -1) * wz * v;
+                g.z += wx * wy * (k ? 1 : -1) * v;
+            }
+    double length = sqrt(dot(g, g));
+    if (value >= -1e-10 || length <= 1e-14)
+        return;
+    P nrm = {g.x / length, g.y / length, g.z / length};
+    double f = dot(nrm, rotate(pose, normals[i])), o = dot(nrm, rotate(pose, other[i]));
+    if (fmin(f, o) < -1e-10) {
+        int tag = sdfFace[base + ((int)(z > .5) * ny + (int)(y > .5)) * nx + (int)(x > .5)];
+        contact_hit(i, tag, o < f ? alt[i] : fb[i], -value, p, nrm, fmin(f, o), keys, peaks, mask, slots,
+                    count, witness);
+    }
+    return;
+#endif
     int lane = threadIdx.x % W;
     Best best = {1.e300, 0x7fffffff};
 #ifdef NC_BVH_CONTROL
@@ -306,6 +383,9 @@ struct State {
     int tick, span, splits, deepest, total_substeps;
     unsigned long long begin;
     double last_error;
+#ifdef NC_TWO_SIDED
+    double inverse[12];
+#endif
     int firstProbe, probeCount;
 #ifdef NC_IMPACT_SAMPLES
     double refine_until, peak_fn, peak_t, first_fn;
@@ -341,6 +421,16 @@ __device__ void set_pose(State &s, const Joint *joints, double t) {
             s.pose[4 * i + j] = v;
         }
     }
+#ifdef NC_TWO_SIDED
+    for (int i = 0; i < 3; ++i) {
+        double shift = 0.;
+        for (int j = 0; j < 3; ++j) {
+            s.inverse[4 * i + j] = s.pose[4 * j + i];
+            shift -= s.pose[4 * j + i] * s.pose[4 * j + 3];
+        }
+        s.inverse[4 * i + 3] = shift;
+    }
+#endif
 }
 __device__ P from_a(const State &s, P a) {
     return {s.rot[0] * a.x + s.rot[1] * a.y + s.rot[2] * a.z,
@@ -433,11 +523,57 @@ __device__ void source_interval(State &s, const double *box, const double *direc
     s.firstProbe = first;
     s.probeCount = best;
 }
+#ifdef NC_TWO_SIDED
+// Express reverse witnesses in the forward target frame and keep one spring
+// for each unordered pair of contact regions. Called by the solver's single
+// assembly thread after both directions have completed their parallel query.
+__device__ void merge_reverse(const MeshView &back, const double *pose, int n, bool preferBack, U64 *keys,
+                              U64 *peaks, unsigned mask, int *slots, int *count, double *witness) {
+    for (int k = 0; k < *back.count; ++k) {
+        int old = back.slots[k];
+        U64 id = back.keys[old], key = (id << 32) | (id >> 32);
+        int src = (unsigned)back.peaks[old];
+        back.keys[old] = vacant;
+        back.peaks[old] = 0;
+        const double *rw = back.witness + 8 * src;
+        unsigned slot = (unsigned)((key ^ (key >> 32)) * 11400714819323198485ULL >> 32) & mask;
+        while (keys[slot] != vacant && keys[slot] != key)
+            slot = (slot + 1) & mask;
+        if (keys[slot] == vacant) {
+            keys[slot] = key;
+            slots[(*count)++] = slot;
+        } else {
+            double depth = witness[8 * (unsigned)peaks[slot]];
+            if (rw[0] < depth - 1e-12 || (fabs(rw[0] - depth) <= 1e-12 && !preferBack))
+                continue;
+        }
+        P p = move(pose, {rw[1], rw[2], rw[3]});
+        P normal = rotate(pose, {rw[4], rw[5], rw[6]});
+        int dest = n + src;
+        double *w = witness + 8 * dest;
+        w[0] = rw[0];
+        w[1] = p.x;
+        w[2] = p.y;
+        w[3] = p.z;
+        w[4] = -normal.x;
+        w[5] = -normal.y;
+        w[6] = -normal.z;
+        w[7] = rw[7];
+        peaks[slot] = (unsigned)dest;
+    }
+    *back.count = 0;
+}
+#endif
 extern "C" __global__ void advance(GEOM, const Joint *joints, State *state, const double *loads, double h,
                                    double stiffness, int stop, int ntime, int predict, double *trace,
                                    const unsigned char *halo, int *candidates, double guard, double radius,
                                    unsigned long long *elapsed, const double *dirs, const int *bins,
-                                   const int *order, double targetRadius) {
+                                   const int *order, double targetRadius
+#ifdef NC_TWO_SIDED
+                                   ,
+                                   const MeshView *reverse, int preferReverse
+#endif
+) {
     auto all = cg::this_grid();
     int worker = blockIdx.x * blockDim.x + threadIdx.x;
     State &s = *state;
@@ -474,8 +610,15 @@ extern "C" __global__ void advance(GEOM, const Joint *joints, State *state, cons
         }
         for (int i = worker / QUERY_LANES; i < s.nc; i += blockDim.x * gridDim.x / QUERY_LANES)
             sample_contact<QUERY_LANES>(candidates[i], s.pose, PASS);
+#ifdef NC_TWO_SIDED
+        for (int i = worker; i < reverse->n; i += blockDim.x * gridDim.x)
+            sample_contact<1>(i, s.inverse, VIEW(*reverse));
+#endif
         all.sync();
         if (worker == 0) {
+#ifdef NC_TWO_SIDED
+            merge_reverse(*reverse, s.pose, n, preferReverse, keys, peaks, mask, slots, count, witness);
+#endif
             double force[2], k00 = 0, k01 = 0, k11 = 0, total = 0, nextForce[2] = {}, nextK[3] = {};
             for (int j = 0; j < 2; ++j) {
                 double load = loads[2 * s.step + j];

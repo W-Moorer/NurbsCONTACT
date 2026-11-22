@@ -1,0 +1,106 @@
+{
+  "dynamics": [
+    {
+      "name": "unified-original",
+      "status": "complete",
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "step_us": 125.0,
+      "triangles": [
+        12,
+        4068
+      ],
+      "samples": 6104,
+      "setup_s": 26.807166099955793,
+      "online_s": 9.316072400019038,
+      "reserved_MiB": 21.822265625,
+      "rms_um": 0.1639279145010953,
+      "max_um": 0.9270800787018751,
+      "events": 71,
+      "ordered": true,
+      "max_event_us": 62.808629668342775,
+      "runs": [
+        {
+          "steps": 160000,
+          "trials": 307485,
+          "newton_failure": 0,
+          "max_newton": 2,
+          "subdivisions": 4,
+          "finest_divisor": 4,
+          "accepted_substeps": 160004,
+          "rebuilds": 160001,
+          "peak_candidate_samples": 539,
+          "wall_s": 9.316072400019038,
+          "initialization_s": 0.24734719999833032,
+          "impact_samples_per_half_cycle": 32,
+          "impact_restarts": 0,
+          "substep_peak_N": 19.647095132027417,
+          "substep_peak_s": 0.07162500000000001,
+          "substep_first_loaded_s": 0.055125,
+          "physical_s": 20.0,
+          "us_per_step": 58.22545250011899,
+          "step_p95_us": 59.392,
+          "step_p99_us": 92.16,
+          "step_max_us": 4151.296,
+          "steps_over_budget": 1151,
+          "realtime": true,
+          "peak_N": 19.647095132027417,
+          "first_load_s": 0.055125,
+          "cupy_pool_reserved_bytes": 22882304
+        }
+      ],
+      "max_displacement_change_um": 0.0,
+      "max_normal_force_change_N": 0.0
+    },
+    {
+      "name": "unified-split",
+      "status": "complete",
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "step_us": 125.0,
+      "triangles": [
+        12,
+        4068
+      ],
+      "samples": 6104,
+      "setup_s": 34.75282870000228,
+      "online_s": 9.26000930002192,
+      "reserved_MiB": 21.822265625,
+      "rms_um": 0.1639279145010953,
+      "max_um": 0.9270800787018751,
+      "events": 71,
+      "ordered": true,
+      "max_event_us": 62.808629668342775,
+      "runs": [
+        {
+          "steps": 160000,
+          "trials": 307485,
+          "newton_failure": 0,
+          "max_newton": 2,
+          "subdivisions": 4,
+          "finest_divisor": 4,
+          "accepted_substeps": 160004,
+          "rebuilds": 160001,
+          "peak_candidate_samples": 539,
+          "wall_s": 9.26000930002192,
+          "initialization_s": 0.21944419998908415,
+          "impact_samples_per_half_cycle": 32,
+          "impact_restarts": 0,
+          "substep_peak_N": 19.647095132027417,
+          "substep_peak_s": 0.07162500000000001,
+          "substep_first_loaded_s": 0.055125,
+          "physical_s": 20.0,
+          "us_per_step": 57.875058125137,
+          "step_p95_us": 58.368,
+          "step_p99_us": 91.136,
+          "step_max_us": 4976.608,
+          "steps_over_budget": 1126,
+          "realtime": true,
+          "peak_N": 19.647095132027417,
+          "first_load_s": 0.055125,
+          "cupy_pool_reserved_bytes": 22882304
+        }
+      ],
+      "max_displacement_change_um": 0.0,
+      "max_normal_force_change_N": 0.0
+    }
+  ]
+}

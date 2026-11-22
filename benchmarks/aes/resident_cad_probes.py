@@ -12,6 +12,31 @@ from gpu_mesh_line import read_full_mesh
 from resident_contact import surface_samples
 
 
+def unify_step(source, output):
+    """Remove artificial subdivisions of common supporting faces and edges before meshing."""
+    from OCP.BRepCheck import BRepCheck_Analyzer
+    from OCP.BRepGProp import BRepGProp
+    from OCP.GProp import GProp_GProps
+    from OCP.ShapeUpgrade import ShapeUpgrade_UnifySameDomain
+    from literature_validation import write_step
+    from nhrep_gear import read_occt_solid
+
+    solid = read_occt_solid(source)
+    simplify = ShapeUpgrade_UnifySameDomain(solid, True, True, False)
+    simplify.Build()
+    merged = simplify.Shape()
+    if not BRepCheck_Analyzer(merged).IsValid():
+        raise ValueError("Invalid shape after same-domain unification")
+    volumes = []
+    for shape in (solid, merged):
+        props = GProp_GProps()
+        BRepGProp.VolumeProperties_s(shape, props)
+        volumes.append(props.Mass())
+    if not np.isclose(*volumes, rtol=1e-11, atol=1e-12):
+        raise ValueError("Same-domain unification changed the solid volume")
+    write_step(merged, output)
+
+
 def geometry_hash(triangles, faces):
     h = sha256()
     for values, dtype in ((triangles, "<f8"), (faces, "<i8")):

@@ -1,0 +1,29 @@
+[
+  {
+    "step_us": 125.0,
+    "scoring_grid_us": 125.0,
+    "rms_um": 0.5959362470575331,
+    "max_um": 2.719225396179137,
+    "events": 71,
+    "ordered": true,
+    "max_event_us": 107.41897140498224
+  },
+  {
+    "step_us": 62.5,
+    "scoring_grid_us": 125.0,
+    "rms_um": 0.07373636842630939,
+    "max_um": 0.3626839517809066,
+    "events": 71,
+    "ordered": true,
+    "max_event_us": 67.49981383924464
+  },
+  {
+    "step_us": 31.25,
+    "scoring_grid_us": 125.0,
+    "rms_um": 0.011392642419833177,
+    "max_um": 0.09677909060951118,
+    "events": 71,
+    "ordered": true,
+    "max_event_us": 62.2052450620636
+  }
+]

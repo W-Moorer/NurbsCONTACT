@@ -1,9 +1,11 @@
 \section{Numerical study}
 \label{sec:evaluation}
-The published reference cases test the timing of repeated contact transitions and the geometry of a cam with prescribed motion. The continuous detection study compares general geometry queries on complete STEP boundaries. Appendix~\ref{sec:industrial} reports the mechanism-specific force integration experiments.
+The published reference cases test the timing of repeated contact transitions and the geometry of a cam with prescribed motion. The continuous detection study compares general geometry queries on complete STEP boundaries. The GPU study compares sampled STEP contact with mesh contact on a cam and a coupled reducer. Appendix~\ref{sec:industrial} reports the mechanism-specific force integration experiments.
 
 The C++ implementations use Release builds and binary64 arithmetic. The Windows STEP runs use MSVC and Open CASCADE 7.9.3 on an AMD Ryzen 9 5900X. We give setup and online integration time separately and exclude trace serialization. Cam setup includes common model preparation. The fixed-step cam comparison uses three runs for each support query and one for each general search. The selected spur and reducer timings use three and two serial runs, respectively. We report the median online time for repeated configurations. The Linux engine results were obtained on the same workstation under WSL. The RecurDyn timings report the Windows solver and process interface separately. Software versions, individual timing records and precise settings are in the repository.
 
 \input{published-validation}
 
 \input{generic-contact-results}
+
+\input{sampled-dynamics-results}

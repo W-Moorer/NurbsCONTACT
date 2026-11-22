@@ -104,6 +104,31 @@ def swept_samples(tri, points, joints):
     return keep
 
 
+def projection_order(model):
+    from itertools import product
+
+    points = model.samples[0].get()
+    directions, bins, order = [], [], []
+    for v in product((-1, 0, 1), repeat=3):
+        if not any(v) or next(x for x in v if x) != 1:
+            continue
+        axis = np.array(v) / np.linalg.norm(v)
+        projections = points @ axis
+        lower = projections.min() - 1e-8
+        upper = projections.max() + 1e-8
+        scale = 256 / (upper - lower)
+        ranked = np.argsort(projections, kind="stable")
+        cuts = np.searchsorted(projections[ranked], lower + np.arange(257) / scale)
+        cuts[0], cuts[-1] = 0, len(points)
+        directions.append([*axis, lower, scale])
+        order.append(ranked)
+        bins.append(cuts)
+    tri = model.geometry[0].get().reshape(-1, 3)
+    center = (tri.min(axis=0) + tri.max(axis=0)) * 0.5
+    radius = np.float64(np.linalg.norm(tri - center, axis=1).max())
+    return cp.asarray(directions), cp.asarray(bins, dtype=cp.int32), cp.asarray(order, dtype=cp.int32), radius
+
+
 def solve(model, rows, loads, stiffness, h, chunk, blocks, guard=0.15, predict=True):
     initialization_start = perf_counter()
     if not cp.cuda.Device().attributes["CooperativeLaunch"]:
@@ -119,32 +144,7 @@ def solve(model, rows, loads, stiffness, h, chunk, blocks, guard=0.15, predict=T
     ip = int(np.ceil(guard * float(model.geometry[6][6].get())))
     halo = maximum_filter(model.geometry[9], size=2 * ip + 1, mode="constant") if guard else model.geometry[9]
     joint, applied = cp.asarray(rows, dtype=cp.float64), cp.asarray(loads, dtype=cp.float64)
-    from itertools import product
-
-    points = model.samples[0].get()
-    directions = []
-    bins = []
-    order = []
-    for v in product((-1, 0, 1), repeat=3):
-        if not any(v) or next(x for x in v if x) != 1:
-            continue
-        axis = np.array(v) / np.linalg.norm(v)
-        projections = points @ axis
-        lower = projections.min() - 1e-8
-        upper = projections.max() + 1e-8
-        scale = 256 / (upper - lower)
-        ranked = np.argsort(projections, kind="stable")
-        cuts = np.searchsorted(projections[ranked], lower + np.arange(257) / scale)
-        cuts[0], cuts[-1] = 0, len(points)
-        directions.append([*axis, lower, scale])
-        order.append(ranked)
-        bins.append(cuts)
-    dirs = cp.asarray(directions)
-    slices = cp.asarray(bins, dtype=cp.int32)
-    order = cp.asarray(order, dtype=cp.int32)
-    tri = model.geometry[0].get().reshape(-1, 3)
-    center = (tri.min(axis=0) + tri.max(axis=0)) * 0.5
-    target_radius = np.float64(np.linalg.norm(tri - center, axis=1).max())
+    dirs, slices, order, target_radius = projection_order(model)
     elapsed = cp.empty(len(loads), cp.uint64)
     model.reset_history()
 
@@ -172,6 +172,7 @@ def solve(model, rows, loads, stiffness, h, chunk, blocks, guard=0.15, predict=T
                 slices,
                 order,
                 target_radius,
+                *model.reverse_args,
             ),
         )
 
@@ -265,6 +266,26 @@ def main(args):
         from resident_cad_probes import load_probes
 
         points, source_report = load_probes(args.cad_probes, b, fb, args.samples)
+    reverse = None
+    if args.two_sided:
+        target_points = None
+        if args.target_cad_probes:
+            from resident_cad_probes import load_probes
+
+            target_points, _ = load_probes(args.target_cad_probes, a, fa, args.samples)
+        reverse = ResidentMeshContact(
+            b,
+            a,
+            fb,
+            fa,
+            args.pitch,
+            args.samples,
+            lanes=args.lanes,
+            backend=args.backend,
+            source_points=target_points,
+            merge_planar=args.merge_planar,
+            vertex_probes=args.vertex_probes,
+        )
     model = ResidentMeshContact(
         a,
         b,
@@ -276,6 +297,9 @@ def main(args):
         backend=args.backend,
         source_points=points,
         impact_samples=args.impact_samples,
+        vertex_probes=args.vertex_probes,
+        merge_planar=args.merge_planar,
+        reverse=reverse,
     )
     original_samples = model.n
     keep = swept_samples(a, model.samples[0].get(), rows)
@@ -290,6 +314,9 @@ def main(args):
         step_s=args.h,
         case=case,
         backend=args.backend,
+        vertex_probes=args.vertex_probes,
+        merge_planar=args.merge_planar,
+        two_sided=args.two_sided,
         predictor=not args.no_predict,
         guard_mm=args.guard,
         samples=model.n,
@@ -308,6 +335,8 @@ def main(args):
             first_load_s=next((i * args.h for i in np.flatnonzero(data[:, 4] > 0)), None),
         )
         report["runs"].append(info)
+        # Reserved device allocations of the CuPy pool, including cached blocks.
+        info["cupy_pool_reserved_bytes"] = cp.get_default_memory_pool().total_bytes()
         if info["newton_failure"]:
             break
     if args.trace:
@@ -327,13 +356,21 @@ if __name__ == "__main__":
     p.add_argument("--lanes", type=int, choices=(1, 2, 4, 8, 16, 32), default=16)
     p.add_argument("--pitch", type=float, default=0.12)
     p.add_argument("--samples", type=int, default=1)
+    p.add_argument("--vertex-probes", action="store_true", help="Use oriented mesh vertices as source probes")
+    p.add_argument("--merge-planar", action="store_true", help="Aggregate connected coplanar face labels")
+    p.add_argument(
+        "--two-sided",
+        action="store_true",
+        help="Query both surfaces and reduce both witnesses into one force per region pair",
+    )
+    p.add_argument("--target-cad-probes", type=Path, help="Target-side STEP probe cache for a two-sided run")
     p.add_argument(
         "--deck", type=Path, help="Portable input containing the two meshes, joints and load histories"
     )
     p.add_argument("--case", choices=("spur", "spheres"), default="spur")
     p.add_argument("--cad-probes", type=Path, help="Original trimmed STEP face and edge probe cache")
     p.add_argument("--sphere-um", type=float, default=40)
-    p.add_argument("--backend", choices=("grid", "bvh"), default="grid")
+    p.add_argument("--backend", choices=("grid", "bvh", "sdf"), default="grid")
     p.add_argument("--no-predict", action="store_true")
     p.add_argument(
         "--impact-samples",
@@ -344,6 +381,8 @@ if __name__ == "__main__":
     p.add_argument("--guard", type=float, default=0.075)
     p.add_argument("--trace", type=Path)
     args = p.parse_args()
+    if args.target_cad_probes and not args.two_sided:
+        p.error("--target-cad-probes requires --two-sided")
     args.h = args.step_us * 1e-6
     if (
         min(args.h, args.duration, args.repeats, args.chunk, args.samples, args.pitch) <= 0

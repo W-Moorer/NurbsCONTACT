@@ -1,5 +1,7 @@
 # Cam–follower validation on the resident GPU contact backend
 
+The [subsequent equal-accuracy study](accuracy-study.md) tests refined meshes, GPU distance fields, STEP face splits and bidirectional contact.
+
 The eccentric cam runs the same contact queries, face-pair force assembly and HHT kernel as the [gear experiment](../online-gear/resident/README.md). Its inputs are a revolute joint, a slider, rigid-body geometry and loads. An independent CPU calculation uses the support function of the eccentric circle. A second check uses the published kinematic solution for a noncircular cam.
 
 ## Closed-loop eccentric cam
