@@ -25,13 +25,34 @@ On the Core i7-14700K / RTX 3090 server the very first accepted 100 µs CAD step
 | CPU face tree, 1.4 ms of motion | Steps | Force evaluations after initialization | Wall time (s) | In CPU face-pair query |
 |---|---:|---:|---:|---:|
 | Fitted CAD (ours), 100 µs | 14 | 28 | 92.16 | 99.64% |
-| Whole-A mesh, 100 µs | 14 | 44 | 143.30 | 99.89% |
+| OCCT line search + mesh BVH projection, 100 µs | 14 | 44 | 143.30 | 99.89% |
 | Fitted CAD (ours), 50 µs | 28 | 56 | 183.01 | 99.90% |
-| Whole-A mesh, 50 µs | 28 | 82 | 266.02 | 99.90% |
+| OCCT line search + mesh BVH projection, 50 µs | 28 | 82 | 266.02 | 99.90% |
 
 With GPU box screening at 100 µs, fitted CAD took 112.90 s for the same 14 steps. Mesh took 143.64 s. Across the live queries, the GPU supplied between 94 and 204 face pairs from 42,777 possible combinations. Both broad phases produced identical accepted states and active face pairs at this step size. They triggered the same number of OCCT face distance evaluations after initialization, 2,471 for fitted CAD and 3,851 for mesh. The CPU query took 99.90% of online wall time on both GPU-screened runs. The timings come from separate runs, so the matched query counts are the direct measure of work eliminated by broad-phase substitution.
 
 At 100 µs the largest absolute first-step angle difference across the two shafts against the independent CPU root solve was 6.12 × 10⁻¹³ rad for fitted CAD and 3.27 × 10⁻⁸ rad for the mesh. The CPU solve reached a residual of 1.79 × 10⁻¹² Nm. These are checks at the first accepted state.
+
+### Where the 143.64 s went
+
+The mesh projection variant took 143.638 s with GPU screening. Subtracting the initialization call and summing the 44 online records gives 143.488 s inside the CPU face-pair search, 0.086 s constructing contact lines, and 0.064 s for everything else combined. The CPU search timer includes tight box construction, cached exclusion checks and 3,851 OCCT face-distance evaluations. The GPU face screening and GPU triangle traversal have no individual timers in this closed-loop run. [Raw online measurements](screen-mesh-100.json) · [CPU timing boundaries](../../../benchmarks/aes/live_lines.cpp)
+
+The GPU checks the 42,777 face-box combinations in parallel. The tight box and cache tests reduce 6,571 surviving combinations across 44 trial states to 3,851 distance evaluations (79–102 per trial). These trials eventually return one or two active contact lines each. The triangle BVH in this hybrid pipeline starts from the resulting line samples. [Face screening](../../../benchmarks/aes/gpu_face_candidates.py) · [CPU refinement](../../../src/cad_contact_regions.cpp)
+
+Separate RTX 3090 replays measure the component costs. Screening 147 × 291 face boxes took a median 5.53 µs per resident pose, or 2.28 ms when uploading each pose and synchronizing the host, with the mask left on the GPU. Given integration points on B, searching all 70,960 triangles of A and accumulating line forces and moments took a median 110.42 µs per resident pose in the 100 µs replay. These timings use different inputs and timing boundaries from the online measurement. [Box benchmark](../gpu-face-candidates/rtx3090-shared/spur.json) · [Triangle benchmark](../mesh-comparison/README.md)
+
+### Direct whole-mesh detection on the GPU
+
+At six archived poses around tooth entry and exit, the pinion has 70,960 triangles (requested deflection 0.04 µm) and the wheel 37,700 (0.4 µm). The resident GPU input contains the two meshes and a rigid transform. Each wheel triangle traverses the pinion AABB tree. The intersection mode applies triangle separating-axis tests at surviving leaves, including coplanar axes. The proximity mode evaluates triangle-pair distances and counts all pairs within 55 µm. Both modes include on-device reductions. CPU OCCT is used offline to tessellate the STEP solids and supply separate reference gaps.
+
+| Median per pose, 6 poses × 10 timed repeats | All intersecting pairs | All pairs within 55 µm and minimum gap |
+|---|---:|---:|
+| RTX 3090 (shared) | 1.76 ms | 20.47 ms |
+| RTX 3070 | 1.91 ms | 19.53 ms |
+
+Both cards found zero intersections at all six poses (numerical touch tolerance 10⁻¹⁰ mm), and 829–1,604 triangle pairs within 55 µm per pose. The mesh minimum gaps ranged from 47.828 to 49.653 µm. Their largest difference from original STEP was 0.104 µm, and from an independent FCL query on the identical meshes less than 10⁻⁶ µm. These measurements cover discrete detection on preloaded poses and exclude mesh generation, force assembly and time integration. Counts are pairs of triangles. Constructing one or more independent load-bearing contact regions from these pairs is a separate operation. [RTX 3090](rtx3090-mesh-pairs.json) · [RTX 3070](rtx3070-mesh-pairs.json) · [Independent FCL distances](cpu-fcl-mesh-pairs.json)
+
+On a Ryzen 9 5900X the FCL OBBRSS trees took a median 42.36 ms per pose to return one globally closest pair on those two meshes. A separate finer-wheel check (119,108 triangles) reduced the maximum difference from STEP to 0.018 µm. Another tessellation was running during part of the finer CPU test, so the published fine-case trace records a contended timing. [Finer mesh check](cpu-fcl-pair-distance.json)
 
 ## Reproduce
 
@@ -51,3 +72,19 @@ timeout 1800 python benchmarks/aes/gpu_online_spur.py "$worker" "$models" "$fits
 ```
 
 For a single-step budget probe omit `--observe-ms`. Use `--step-us 50` for the smaller step and change the output filenames accordingly. On Windows the executable is usually `build/occt/Release/nc_live_lines.exe`. The server used OCCT 7.5.1 and an RTX 3090, the Windows cross-check used OCCT 7.9.3 and an RTX 3070.
+
+For the CPU mesh-pair distance measurement use `python-fcl==0.7.0.11` and the Python OCCT bindings used by the mesh exporter.
+
+```sh
+python benchmarks/aes/mesh_pair_distance.py results/aes/mesh-comparison/meshes/mesh-0.04.npz results/gears/models/spur-1b.step results/aes/mesh-comparison/100us/poses.txt results/aes/mesh-comparison/100us/cold.csv results/aes/online-gear/cpu-fcl-pair-distance.json
+```
+
+To repeat the comparison on the identical archived meshes, use the following commands with CuPy on a CUDA device. The FCL result is used only to check the GPU output after the timed calls. The two GPU modes alternate their timing order across repeats.
+
+```sh
+M=results/aes/mesh-comparison/meshes
+D=results/aes/mesh-comparison/100us
+O=results/aes/online-gear
+python benchmarks/aes/mesh_pair_distance.py "$M/mesh-0.04.npz" "$M/wheel-0.4.npz" "$D/poses.txt" "$D/cold.csv" "$O/cpu-fcl-mesh-pairs.json"
+python benchmarks/aes/gpu_mesh_pairs.py "$M/mesh-0.04.npz" "$M/wheel-0.4.npz" "$D/poses.txt" "$O/cpu-fcl-mesh-pairs.json" "$O/device-mesh-pairs.json"
+```

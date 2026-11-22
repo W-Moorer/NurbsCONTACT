@@ -12,7 +12,7 @@ MODEL = Path('results/aes/gear-field')
 STEP = Path('results/gears/models/spur-1a.step')
 
 
-def mesh_step(deflection_um, interior, parallel=False):
+def mesh_step(deflection_um, interior, parallel=False, step=STEP):
     from OCP.BRep import BRep_Tool
     from OCP.BRepMesh import BRepMesh_IncrementalMesh
     from OCP.IMeshTools import IMeshTools_Parameters
@@ -22,7 +22,7 @@ def mesh_step(deflection_um, interior, parallel=False):
     from OCP.TopoDS import TopoDS
     from nhrep_gear import read_occt_solid
 
-    solid = read_occt_solid(STEP)
+    solid = read_occt_solid(step)
     params = IMeshTools_Parameters()
     params.Relative = False
     params.Deflection = deflection_um/1000
@@ -327,6 +327,7 @@ if __name__=='__main__':
     mesh = commands.add_parser('mesh')
     mesh.add_argument('output',type=Path)
     mesh.add_argument('--deflection-um',type=float,required=True)
+    mesh.add_argument('--step',type=Path,default=STEP)
     mesh.add_argument('--interior',action='store_true')
     mesh.add_argument('--parallel-mesh',action='store_true')
     split = commands.add_parser('split')
@@ -362,7 +363,7 @@ if __name__=='__main__':
             if args.command=='mesh':
                 if args.deflection_um<=0:
                     parser.error('--deflection-um must be positive')
-                v,f = mesh_step(args.deflection_um,args.interior,args.parallel_mesh)
+                v,f = mesh_step(args.deflection_um,args.interior,args.parallel_mesh,args.step)
             else:
                 with np.load(args.mesh) as archive:
                     v,f = shorten_edges(archive['v'],archive['f'],args.max_edge_mm)

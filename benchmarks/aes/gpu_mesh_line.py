@@ -9,7 +9,7 @@ from scipy.spatial import cKDTree
 from nhrep_gear import read_occt_solid
 
 
-CUDA = r'''
+TRIANGLE_CUDA = r'''
 // Closest point on a triangle by its vertex, edge and face Voronoi regions.
 __device__ double3 sub3(double3 a,double3 b) {return make_double3(a.x-b.x,a.y-b.y,a.z-b.z);}
 __device__ double prod(double3 a,double3 b) {return a.x*b.x+a.y*b.y+a.z*b.z;}
@@ -46,6 +46,9 @@ __device__ double box_distance(const double* boxes,int node,const double* p) {
     }
     return sum;
 }
+'''
+
+CUDA = TRIANGLE_CUDA + r'''
 extern "C" __global__ void mesh_line(const int* range,const int* offsets,const int* roots,
     const int4* nodes,const double* boxes,const double3* tri,
     const double* samples,const double* centers,const int* prior,double cutoff,double stiffness,
