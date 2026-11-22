@@ -272,6 +272,34 @@ signed distance in millimetres per point (negative inside).
 python benchmarks/aes/cube_field.py build/deps/nh-rep build/aes-occt/Release/nc_contact.exe build/aes-cube-field
 ```
 
+The [spur pinion field trial](../aes/gear-field/field-report.json) compares the global
+tangent field, the triangle mesh and a local distance query using fitted CAD faces.
+The local model fits tensor-product Chebyshev polynomials to parameterized CAD surface
+samples. A triangle BVH supplies initial features. Near a crease the query checks
+projections onto both faces and their common edge. The saved guide and coefficients
+are sufficient for inference. The benchmark uses the 452 archived queries, a crease
+diagnostic (seed 903), and a separate 1,536-point final check (seed 1407).
+To rebuild from the gear training data above, install the Python libigl bindings and run
+the following command with the OCCT runtime available.
+
+```powershell
+python benchmarks/aes/gear_field.py build/aes-gear-field --prepare build/aes-occt/Release/nc_contact.exe
+```
+
+From the repository root, load the saved query using coordinates in millimetres.
+It returns one signed distance per point, with negative values inside.
+
+```python
+from pathlib import Path
+from sys import path
+path.insert(0, 'benchmarks/aes')
+from gear_field import FittedFaces
+
+model = Path('results/aes/gear-field')
+field = FittedFaces(model/'guide.npz', model/'faces.npz')
+distance_mm = field.predict([[30.365967780378336, 1.8307461969484468, 0.0]])
+```
+
 ~~~text
 drives count
 body_id orbit arm_xyz axis_xyz angular_speed

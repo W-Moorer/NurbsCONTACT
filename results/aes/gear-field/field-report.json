@@ -1,0 +1,277 @@
+{
+  "surface_training_count": 50000,
+  "off_surface_tangent_training_count": 1536,
+  "fitted_faces": 147,
+  "max_face_fit_selection_error_um": 0.0005104679670656411,
+  "diagnostic_seed": 903,
+  "final_test_seed": 1407,
+  "new_test_offset_um": 50,
+  "models": {
+    "global_tangent": {
+      "distances": {
+        "contact": {
+          "n": 4,
+          "p95_um": 39972.32783322079,
+          "max_um": 39972.3278332208,
+          "within_0p125_um": 0,
+          "wrong_sign": 0,
+          "sign_checks": 4
+        },
+        "diagnostic_edge": {
+          "n": 768,
+          "p95_um": 42099.15146469158,
+          "max_um": 42099.99999575433,
+          "within_0p125_um": 0,
+          "wrong_sign": 370,
+          "sign_checks": 768
+        },
+        "diagnostic_face": {
+          "n": 768,
+          "p95_um": 42099.982331050276,
+          "max_um": 42099.999999911284,
+          "within_0p125_um": 0,
+          "wrong_sign": 371,
+          "sign_checks": 768
+        },
+        "face": {
+          "n": 224,
+          "p95_um": 41176.64528197322,
+          "max_um": 41386.61610843675,
+          "within_0p125_um": 0,
+          "wrong_sign": 96,
+          "sign_checks": 192
+        },
+        "fresh_edge": {
+          "n": 768,
+          "p95_um": 42099.520718112835,
+          "max_um": 42099.99990186769,
+          "within_0p125_um": 0,
+          "wrong_sign": 411,
+          "sign_checks": 768
+        },
+        "fresh_face": {
+          "n": 768,
+          "p95_um": 42099.9419514531,
+          "max_um": 42099.999998770414,
+          "within_0p125_um": 0,
+          "wrong_sign": 375,
+          "sign_checks": 768
+        },
+        "sharp": {
+          "n": 224,
+          "p95_um": 42099.044267525474,
+          "max_um": 42099.99999354556,
+          "within_0p125_um": 0,
+          "wrong_sign": 90,
+          "sign_checks": 186
+        }
+      },
+      "line_load_N": {
+        "142/10": 0.0,
+        "4/4": 0.0
+      }
+    },
+    "triangle_mesh": {
+      "distances": {
+        "contact": {
+          "n": 4,
+          "p95_um": 0.3759657770563952,
+          "max_um": 0.3759657770573341,
+          "within_0p125_um": 2,
+          "wrong_sign": 0,
+          "sign_checks": 4
+        },
+        "diagnostic_edge": {
+          "n": 768,
+          "p95_um": 0.375913022766558,
+          "max_um": 1.6200778386345147,
+          "within_0p125_um": 453,
+          "wrong_sign": 2,
+          "sign_checks": 768
+        },
+        "diagnostic_face": {
+          "n": 768,
+          "p95_um": 1.2380504620820039,
+          "max_um": 1.6190180333351227,
+          "within_0p125_um": 398,
+          "wrong_sign": 2,
+          "sign_checks": 768
+        },
+        "face": {
+          "n": 224,
+          "p95_um": 0.009378686440179513,
+          "max_um": 0.014668806821681313,
+          "within_0p125_um": 224,
+          "wrong_sign": 0,
+          "sign_checks": 192
+        },
+        "fresh_edge": {
+          "n": 768,
+          "p95_um": 0.37624976425244844,
+          "max_um": 1.62003631611329,
+          "within_0p125_um": 460,
+          "wrong_sign": 1,
+          "sign_checks": 768
+        },
+        "fresh_face": {
+          "n": 768,
+          "p95_um": 1.3245239283470795,
+          "max_um": 1.7951188355587555,
+          "within_0p125_um": 379,
+          "wrong_sign": 0,
+          "sign_checks": 768
+        },
+        "sharp": {
+          "n": 224,
+          "p95_um": 0.05404227383105154,
+          "max_um": 0.3416742635732051,
+          "within_0p125_um": 216,
+          "wrong_sign": 0,
+          "sign_checks": 186
+        }
+      },
+      "line_load_N": {
+        "142/10": 146.42512371330946,
+        "4/4": 140.33032562905203
+      }
+    },
+    "fitted_faces": {
+      "distances": {
+        "contact": {
+          "n": 4,
+          "p95_um": 7.753577707658721e-06,
+          "max_um": 8.007334469095628e-06,
+          "within_0p125_um": 4,
+          "wrong_sign": 0,
+          "sign_checks": 4
+        },
+        "diagnostic_edge": {
+          "n": 768,
+          "p95_um": 9.823800904739173e-06,
+          "max_um": 0.003453001948303114,
+          "within_0p125_um": 768,
+          "wrong_sign": 0,
+          "sign_checks": 768
+        },
+        "diagnostic_face": {
+          "n": 768,
+          "p95_um": 8.609238261007842e-06,
+          "max_um": 3.466175157312845e-05,
+          "within_0p125_um": 768,
+          "wrong_sign": 0,
+          "sign_checks": 768
+        },
+        "face": {
+          "n": 224,
+          "p95_um": 1.1327708219181642e-05,
+          "max_um": 1.1594947994797433e-05,
+          "within_0p125_um": 224,
+          "wrong_sign": 0,
+          "sign_checks": 192
+        },
+        "fresh_edge": {
+          "n": 768,
+          "p95_um": 8.88919628653063e-06,
+          "max_um": 0.0014184789240458129,
+          "within_0p125_um": 768,
+          "wrong_sign": 0,
+          "sign_checks": 768
+        },
+        "fresh_face": {
+          "n": 768,
+          "p95_um": 7.774946628527624e-06,
+          "max_um": 0.006017640921673895,
+          "within_0p125_um": 768,
+          "wrong_sign": 0,
+          "sign_checks": 768
+        },
+        "sharp": {
+          "n": 224,
+          "p95_um": 2.100092712389364e-05,
+          "max_um": 0.0001251940153629283,
+          "within_0p125_um": 224,
+          "wrong_sign": 0,
+          "sign_checks": 186
+        }
+      },
+      "line_load_N": {
+        "142/10": 149.35282428949694,
+        "4/4": 149.35367615383927
+      }
+    },
+    "cad_reference": {
+      "distances": {
+        "contact": {
+          "n": 4,
+          "p95_um": 0.0,
+          "max_um": 0.0,
+          "within_0p125_um": 4,
+          "wrong_sign": 0,
+          "sign_checks": 4
+        },
+        "diagnostic_edge": {
+          "n": 768,
+          "p95_um": 0.0,
+          "max_um": 0.0,
+          "within_0p125_um": 768,
+          "wrong_sign": 0,
+          "sign_checks": 768
+        },
+        "diagnostic_face": {
+          "n": 768,
+          "p95_um": 0.0,
+          "max_um": 0.0,
+          "within_0p125_um": 768,
+          "wrong_sign": 0,
+          "sign_checks": 768
+        },
+        "face": {
+          "n": 224,
+          "p95_um": 0.0,
+          "max_um": 0.0,
+          "within_0p125_um": 224,
+          "wrong_sign": 0,
+          "sign_checks": 192
+        },
+        "fresh_edge": {
+          "n": 768,
+          "p95_um": 0.0,
+          "max_um": 0.0,
+          "within_0p125_um": 768,
+          "wrong_sign": 0,
+          "sign_checks": 768
+        },
+        "fresh_face": {
+          "n": 768,
+          "p95_um": 0.0,
+          "max_um": 0.0,
+          "within_0p125_um": 768,
+          "wrong_sign": 0,
+          "sign_checks": 768
+        },
+        "sharp": {
+          "n": 224,
+          "p95_um": 0.0,
+          "max_um": 0.0,
+          "within_0p125_um": 224,
+          "wrong_sign": 0,
+          "sign_checks": 186
+        }
+      },
+      "line_load_N": {
+        "142/10": 149.35276952524282,
+        "4/4": 149.35350427835294
+      }
+    }
+  },
+  "fitted_batch": {
+    "points": 3524,
+    "seconds_excluding_setup": 2.712292200012598
+  },
+  "fresh_normals": {
+    "checks": 128,
+    "fd_step_mm": 1e-05,
+    "p95_deg": 1.753463451180853e-05,
+    "max_deg": 0.0002981100792464358
+  }
+}
