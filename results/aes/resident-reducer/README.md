@@ -1,8 +1,10 @@
 # Shared-shaft dynamics of the two-stage STEP reducer
 
+The [corrected three-shaft comparison](physical/README.md) supersedes the numerical results below. It includes the corrected GPU contact search, a native RecurDyn contact-mesh refinement, the original STEP witness, eleven physical response channels and a closed-form impact control. The remainder of this page preserves the pre-correction measurements and commands for reproducing the spurious impulse at 1.25275 s.
+
 The four original gear solids have 339,868 triangles at a requested 1 µm tessellation deflection. The two gears on the middle shaft share a single angular displacement and velocity. At every trial the solver sums both contact torques in that shaft's HHT equation. The model specifies the two mating body pairs. Contact discovery searches the full parts with a spatial triangle index in each direction. The same GPU code handles the eccentric cam, without a tooth index or an analytic gear contact formula. The driver currently supports up to eight independent ground-referenced hinge or slider coordinates. [Model and loads](../../../benchmarks/aes/resident_reducer.py) · [GPU assembly](../../../benchmarks/aes/resident_assembly.cuh)
 
-## Three seconds of loaded rotation
+## Archived three-second run before the closest-point correction
 
 Both GPU methods use the same mesh, broad phase, region aggregation, linear normal spring, support torques and time integrator. The STEP version samples source points on the original CAD faces and edges before simulation. The mesh control places them on flat triangles and straight edges. Both query the target triangles online. The 62.5 µs runs used identical contact refinement and reached the end with zero explicit fallback steps. Geometry preparation including STEP probes took 211.7 s once for all four parts.
 
@@ -16,7 +18,7 @@ Both GPU methods use the same mesh, broad phase, region aggregation, linear norm
 
 Each GPU row is one measured simulation. The reserved CuPy pool was 502.19 and 502.22 MiB for the STEP and mesh rows at 62.5 µs. The timestep deadline is the simulated time advance per main step. The two completed 62.5 µs runs took 1,352,302 and 1,333,269 contact/dynamics trials, including 665,822 and 655,624 accepted time increments, respectively. The RecurDyn online clock covers its Analysis call. Its solver log records 555.15 s of CPU time. The commercial solver uses its native integration and solid-contact discretization, with the same physical parts, shaft inertias, nominal motion, load laws and linear stiffness. The GPU load histories use linear interpolation of a 0.5 ms deck while RecurDyn evaluates the analytic load functions. The archived run history includes coarser refinement attempts that stopped early. [Timing and termination records](comparison.json)
 
-## Independent shaft response
+## Archived shaft response before the correction
 
 Velocities are measured about each joint's own positive axis. For each stage we compare the change in pinion angle minus twice the change in wheel angle, in the respective positive directions. RecurDyn's cumulative `Pos1_Relative` joint channels supply the angles directly. Unit conversion is checked against the prescribed reference rotors. All three trajectories are scored on the same 24,001 physical times. RMS differences below are relative to the native RecurDyn simulation.
 

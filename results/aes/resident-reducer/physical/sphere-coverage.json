@@ -1,0 +1,178 @@
+[
+  {
+    "orientation": "original",
+    "xyz_euler_degrees": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    "vertices": false,
+    "step_us": 125,
+    "displacement_RMS_um": 3.5091851630382904,
+    "force_RMS_N": 0.007131569699406898,
+    "peak_force_N": 22.499685740982347,
+    "max_COM_drift_um": 0.0,
+    "online_s": 32.66048939997563
+  },
+  {
+    "orientation": "original",
+    "xyz_euler_degrees": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    "vertices": false,
+    "step_us": 62.5,
+    "displacement_RMS_um": 3.534636911743563,
+    "force_RMS_N": 0.006994599058627946,
+    "peak_force_N": 22.49982159242864,
+    "max_COM_drift_um": 0.0,
+    "online_s": 64.04032060003374
+  },
+  {
+    "orientation": "original",
+    "xyz_euler_degrees": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    "vertices": true,
+    "step_us": 125,
+    "displacement_RMS_um": 0.09836275988654077,
+    "force_RMS_N": 0.0004430101639330309,
+    "peak_force_N": 22.499730637910197,
+    "max_COM_drift_um": 0.0,
+    "online_s": 50.67192779999459
+  },
+  {
+    "orientation": "original",
+    "xyz_euler_degrees": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    "vertices": true,
+    "step_us": 62.5,
+    "displacement_RMS_um": 0.08390783296877534,
+    "force_RMS_N": 0.0002781856139496386,
+    "peak_force_N": 22.49993264371674,
+    "max_COM_drift_um": 0.0,
+    "online_s": 100.68217240000376
+  },
+  {
+    "orientation": "rotated",
+    "xyz_euler_degrees": [
+      [
+        19,
+        31,
+        7
+      ],
+      [
+        -23,
+        17,
+        43
+      ]
+    ],
+    "vertices": false,
+    "step_us": 125,
+    "displacement_RMS_um": 0.7907791948394164,
+    "force_RMS_N": 0.0017987730305563088,
+    "peak_force_N": 22.499718683470302,
+    "max_COM_drift_um": 0.0,
+    "online_s": 2.227331400034018
+  },
+  {
+    "orientation": "rotated",
+    "xyz_euler_degrees": [
+      [
+        19,
+        31,
+        7
+      ],
+      [
+        -23,
+        17,
+        43
+      ]
+    ],
+    "vertices": false,
+    "step_us": 62.5,
+    "displacement_RMS_um": 0.8123173270220343,
+    "force_RMS_N": 0.0016570102656990075,
+    "peak_force_N": 22.49990772217246,
+    "max_COM_drift_um": 0.0,
+    "online_s": 4.072600400017109
+  },
+  {
+    "orientation": "rotated",
+    "xyz_euler_degrees": [
+      [
+        19,
+        31,
+        7
+      ],
+      [
+        -23,
+        17,
+        43
+      ]
+    ],
+    "vertices": true,
+    "step_us": 125,
+    "displacement_RMS_um": 0.7907791948394164,
+    "force_RMS_N": 0.0017987730305563088,
+    "peak_force_N": 22.499718683470302,
+    "max_COM_drift_um": 0.0,
+    "online_s": 3.0224380000145175
+  },
+  {
+    "orientation": "rotated",
+    "xyz_euler_degrees": [
+      [
+        19,
+        31,
+        7
+      ],
+      [
+        -23,
+        17,
+        43
+      ]
+    ],
+    "vertices": true,
+    "step_us": 62.5,
+    "displacement_RMS_um": 0.8123173270220343,
+    "force_RMS_N": 0.0016570102656990075,
+    "peak_force_N": 22.49990772217246,
+    "max_COM_drift_um": 0.0,
+    "online_s": 5.594482199987397
+  }
+]

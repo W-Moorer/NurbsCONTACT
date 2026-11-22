@@ -1,0 +1,42 @@
+[
+  {
+    "part": 0,
+    "patches": 9552,
+    "reference_triangles": 14672,
+    "node_median_um": 0.04590933624858422,
+    "node_p99_um": 0.48276759403165975,
+    "facet_center_median_um": 5.1036508352808596e-08,
+    "facet_center_p95_um": 0.8233241207872917,
+    "facet_center_max_um": 1.2848538555175522
+  },
+  {
+    "part": 1,
+    "patches": 13464,
+    "reference_triangles": 23632,
+    "node_median_um": 5.968914336482357e-09,
+    "node_p99_um": 0.4122481762959349,
+    "facet_center_median_um": 1.3377832175367874e-07,
+    "facet_center_p95_um": 1.2788637324127698,
+    "facet_center_max_um": 2.0573111574784773
+  },
+  {
+    "part": 2,
+    "patches": 164344,
+    "reference_triangles": 163088,
+    "node_median_um": 0.29230679369467893,
+    "node_p99_um": 2.9494784229101914,
+    "facet_center_median_um": 0.16389692623078977,
+    "facet_center_p95_um": 1.170418758652925,
+    "facet_center_max_um": 4.212352650204739
+  },
+  {
+    "part": 3,
+    "patches": 120032,
+    "reference_triangles": 138476,
+    "node_median_um": 0.3247734847349439,
+    "node_p99_um": 2.3623661882206375,
+    "facet_center_median_um": 0.19785926187004788,
+    "facet_center_p95_um": 1.066391205862768,
+    "facet_center_max_um": 3.6370467124320593
+  }
+]

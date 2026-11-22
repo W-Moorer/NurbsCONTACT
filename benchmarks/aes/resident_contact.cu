@@ -147,6 +147,23 @@ __device__ double point_box(P p, const double *box) {
     }
     return sq;
 }
+// A cooperative search returns a distance and an owning triangle. If they
+// disagree at the query point, repeat the search without lane reductions.
+__device__ int nearest_scalar(P p, const P *tri, const int4 *nodes, const double *boxes) {
+    Best best = {1.e300, 0x7fffffff};
+    for (int j = 0; j < nodes[0].x;) {
+        int4 node = nodes[j];
+        if (point_box(p, boxes + 6 * j) > best.sq) {
+            j = node.x;
+            continue;
+        }
+        ++j;
+        if (node.y >= 0)
+            for (int k = node.y; k < node.z; ++k)
+                test_tri(p, tri, k, best);
+    }
+    return best.id;
+}
 __device__ void contact_hit(int i, int target, int source, double depth, P p, P normal, double alignment,
                             U64 *keys, U64 *peaks, unsigned mask, int *slots, int *count, double *witness) {
     U64 key = ((U64)target << 32) | (unsigned)source;
@@ -337,16 +354,32 @@ template <int W> __device__ void sample_contact(int i, const double *pose, GEOM)
             best = nearest_group<W>(best);
         }
     }
-    if (lane || best.sq <= 1.e-20)
+    if (lane)
         return;
     int id = best.id, region;
-    P delta = sub(closest(p, tri + 3 * id, region), p);
+    P delta;
+    double sq;
+    bool repeat = id == 0x7fffffff;
+    if (!repeat) {
+        delta = sub(closest(p, tri + 3 * id, region), p);
+        sq = dot(delta, delta);
+        repeat = !(fabs(sq - best.sq) <= 1.e-20 + 1.e-10 * fmax(sq, best.sq));
+    }
+    if (repeat) {
+        id = nearest_scalar(p, tri, nodes, boxes);
+        delta = sub(closest(p, tri + 3 * id, region), p);
+        sq = dot(delta, delta);
+        if constexpr (W > 1)
+            nearby[i].w = 0.;
+    }
+    if (sq <= 1.e-20)
+        return;
     if (dot(delta, features[7 * id + region]) <= 0) {
         if constexpr (W > 1)
-            outside[i] = make_double4(p.x, p.y, p.z, fmax(0., sqrt(best.sq) - 1e-9));
+            outside[i] = make_double4(p.x, p.y, p.z, fmax(0., sqrt(sq) - 1e-9));
         return;
     }
-    double depth = sqrt(best.sq);
+    double depth = sqrt(sq);
     // On a face use the geometric normal directly; subtracting nearly coincident
     // points can turn parallel sliding into a small spurious compressive component.
     P normal = region == 0 ? features[7 * id] : P{delta.x / depth, delta.y / depth, delta.z / depth};

@@ -1,0 +1,232 @@
+{
+  "step": 20044,
+  "step_end_s": 1.25275,
+  "window_first_end_s": 1.251,
+  "window_last_end_s": 1.254,
+  "native_middle_speed_rad_s": 93.46529827722901,
+  "matched_prefix_samples": 20016,
+  "witness": {
+    "time_s": 1.2527080078125001,
+    "stage": 2,
+    "face_a": 34,
+    "face_b": 112,
+    "gpu_depth_um": 47.040221299306964,
+    "target_point_mm": [
+      -57.26986125185728,
+      -42.74190978047549,
+      -6.888888888890875
+    ],
+    "normal_norm": 459.115620232971,
+    "signed_distance_cpu_um": 17.747370581875952,
+    "original_STEP_outside_gap_um": 17.63836292340781,
+    "nearest_target_face": 106,
+    "middle_torque_Nm": -6852.373601591131,
+    "probe_on": "pinion",
+    "accepted_substeps_with_nonunit_normal": 43,
+    "first_corrupt_accepted_trial": 828,
+    "cold_face_torques": [
+      [
+        "cad",
+        28,
+        112,
+        -32.094410717692774
+      ],
+      [
+        "cad",
+        34,
+        106,
+        -32.47796692735337
+      ],
+      [
+        "cad",
+        40,
+        100,
+        -13.337235671143976
+      ],
+      [
+        "mesh",
+        28,
+        112,
+        -30.224832879335125
+      ],
+      [
+        "mesh",
+        34,
+        106,
+        -31.11856100035953
+      ],
+      [
+        "mesh",
+        40,
+        100,
+        -12.1168071361038
+      ]
+    ]
+  },
+  "runs": {
+    "switch-cad-16": {
+      "evaluations": 171,
+      "accepted": 57,
+      "newton_updates": 110,
+      "stiffness_subdivisions": 4,
+      "convergence_subdivisions": 0,
+      "line_searches": 0,
+      "explicit_retries": 0,
+      "middle_delta_rad_s": -28.944043236831057,
+      "minimum_accepted_stage2_middle_torque_Nm": -6930.283214907299,
+      "window_evaluations": 1614,
+      "window_accepted": 701,
+      "speed_rad_s": 65.06194432018144,
+      "setup_s": 7.069935515988618,
+      "online_s": 99.28950635995716,
+      "steps": 20064,
+      "over_budget": 20064,
+      "total_evaluations": 566613,
+      "total_increments": 278626,
+      "explicit_updates": 0,
+      "pool_MiB": 520.7099609375
+    },
+    "switch-mesh-16": {
+      "evaluations": 16,
+      "accepted": 8,
+      "newton_updates": 8,
+      "stiffness_subdivisions": 0,
+      "convergence_subdivisions": 0,
+      "line_searches": 0,
+      "explicit_retries": 0,
+      "middle_delta_rad_s": 0.6142169867479597,
+      "minimum_accepted_stage2_middle_torque_Nm": -80.44024881693959,
+      "window_evaluations": 1422,
+      "window_accepted": 706,
+      "speed_rad_s": 94.86727226163752,
+      "setup_s": 5.1926172520034015,
+      "online_s": 97.898706167005,
+      "steps": 20064,
+      "over_budget": 20064,
+      "total_evaluations": 556395,
+      "total_increments": 273046,
+      "explicit_updates": 0,
+      "pool_MiB": 520.7451171875
+    },
+    "switch-cad-32": {
+      "evaluations": 32,
+      "accepted": 16,
+      "newton_updates": 16,
+      "stiffness_subdivisions": 0,
+      "convergence_subdivisions": 0,
+      "line_searches": 0,
+      "explicit_retries": 0,
+      "middle_delta_rad_s": 0.5901794427710114,
+      "minimum_accepted_stage2_middle_torque_Nm": -85.06851745385603,
+      "window_evaluations": 2819,
+      "window_accepted": 1407,
+      "speed_rad_s": 94.60874268439504,
+      "setup_s": 5.229639708995819,
+      "online_s": 99.82802518596873,
+      "steps": 20064,
+      "over_budget": 20064,
+      "total_evaluations": 567818,
+      "total_increments": 279332,
+      "explicit_updates": 0,
+      "pool_MiB": 520.7099609375
+    },
+    "same-start": {
+      "evaluations": 16,
+      "accepted": 8,
+      "newton_updates": 8,
+      "stiffness_subdivisions": 0,
+      "convergence_subdivisions": 0,
+      "line_searches": 0,
+      "explicit_retries": 0,
+      "middle_delta_rad_s": 0.5979194705017121,
+      "minimum_accepted_stage2_middle_torque_Nm": -78.99740519488664,
+      "window_evaluations": 1424,
+      "window_accepted": 704,
+      "speed_rad_s": 94.60390702751421,
+      "setup_s": 9.771711944136769,
+      "online_s": 99.49248032388277,
+      "steps": 20064,
+      "over_budget": 20064,
+      "total_evaluations": 566423,
+      "total_increments": 278629,
+      "explicit_updates": 0,
+      "pool_MiB": 523.9150390625,
+      "max_unit_normal_deviation": 3.3306690738754696e-16
+    },
+    "full-cad": {
+      "evaluations": 16,
+      "accepted": 8,
+      "newton_updates": 8,
+      "stiffness_subdivisions": 0,
+      "convergence_subdivisions": 0,
+      "line_searches": 0,
+      "explicit_retries": 0,
+      "middle_delta_rad_s": 0.5978947812773099,
+      "minimum_accepted_stage2_middle_torque_Nm": -79.00121052887553,
+      "window_evaluations": 1424,
+      "window_accepted": 704,
+      "speed_rad_s": 94.60314036402829,
+      "setup_s": 5.229185028001666,
+      "online_s": 270.7671568021178,
+      "steps": 48000,
+      "over_budget": 48000,
+      "total_evaluations": 1384143,
+      "total_increments": 685726,
+      "explicit_updates": 0,
+      "pool_MiB": 529.04248046875,
+      "max_unit_normal_deviation": 2.220446049250313e-16,
+      "speed_RMS_rad_s": [
+        3.333201592582679,
+        0.9239320890792619,
+        0.907173151871507
+      ],
+      "speed_max_difference_rad_s": [
+        18.776667040490082,
+        8.710301335389886,
+        8.616462761236257
+      ],
+      "twist_RMS_mrad": [
+        1.0356397398222088,
+        1.2209247457263037
+      ]
+    },
+    "full-mesh": {
+      "evaluations": 16,
+      "accepted": 8,
+      "newton_updates": 8,
+      "stiffness_subdivisions": 0,
+      "convergence_subdivisions": 0,
+      "line_searches": 0,
+      "explicit_retries": 0,
+      "middle_delta_rad_s": 0.654303187915912,
+      "minimum_accepted_stage2_middle_torque_Nm": -80.51111224853406,
+      "window_evaluations": 1425,
+      "window_accepted": 707,
+      "speed_rad_s": 94.69443160715805,
+      "setup_s": 5.239419040037319,
+      "online_s": 306.0992972208187,
+      "steps": 48000,
+      "over_budget": 48000,
+      "total_evaluations": 1384707,
+      "total_increments": 686801,
+      "explicit_updates": 0,
+      "pool_MiB": 529.07763671875,
+      "max_unit_normal_deviation": 4.440892098500626e-16,
+      "speed_RMS_rad_s": [
+        3.341158950953288,
+        0.9251233942087825,
+        0.9086430902949071
+      ],
+      "speed_max_difference_rad_s": [
+        19.045292431112188,
+        8.676103569952673,
+        8.643819921537116
+      ],
+      "twist_RMS_mrad": [
+        1.0226109219392843,
+        1.2121135666223986
+      ]
+    }
+  },
+  "native_refined_middle_speed_rad_s": 94.57935081421999
+}

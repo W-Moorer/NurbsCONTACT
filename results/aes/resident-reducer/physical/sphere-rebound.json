@@ -1,0 +1,26 @@
+{
+  "exact": {
+    "restitution": 1.0,
+    "final_to_initial_kinetic_energy": 1.0
+  },
+  "original_v0": {
+    "restitution": 1.0000133008271845,
+    "final_to_initial_kinetic_energy": 1.0000266018312811
+  },
+  "original_v1": {
+    "restitution": 1.0000173574162197,
+    "final_to_initial_kinetic_energy": 1.0000347151337194
+  },
+  "rotated_v0": {
+    "restitution": 1.0000163683279537,
+    "final_to_initial_kinetic_energy": 1.0000327369238295
+  },
+  "rotated_v1": {
+    "restitution": 1.0000163683279537,
+    "final_to_initial_kinetic_energy": 1.0000327369238295
+  },
+  "native": {
+    "restitution": 1.0000146283617941,
+    "final_to_initial_kinetic_energy": 1.000029256937577
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "benchmark": "two spheres",
+  "rows": 1281,
+  "step_s": 0.000125,
+  "equal_all_trace_columns": true,
+  "regions": [
+    1.0
+  ],
+  "scope": "pair"
+}

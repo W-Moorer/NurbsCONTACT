@@ -52,12 +52,17 @@ extern "C" __global__ void assembly_start(AssemblyState *s, const double *coord,
     for (int i = 0; i < n; ++i)
         s->x[i] = s->q[i] = coord[4 * i + 3];
 }
-extern "C" __global__ void assembly_advance(AssemblyState *state, unsigned char *views, State *frames,
-                                            const SearchOrder *orders, const Joint *joints, const int *map,
-                                            const int *prefer, const double *coord, const double *stiff,
-                                            const double *loads, int n, int pairs, double h, int stop,
-                                            int contactSamples, int allowExplicit, double *trace,
-                                            unsigned long long *elapsed) {
+extern "C" __global__ void
+assembly_advance(AssemblyState *state, unsigned char *views, State *frames, const SearchOrder *orders,
+                 const Joint *joints, const int *map, const int *prefer, const double *coord,
+                 const double *stiff, const double *loads, int n, int pairs, double h, int stop,
+                 int contactSamples, int allowExplicit, double *trace, unsigned long long *elapsed
+#ifdef NC_ASSEMBLY_AUDIT
+                 ,
+                 int auditFirst, int auditLast, double *audit, int *auditCount, int auditCapacity,
+                 int regionStep, double *regionAudit, int *regionCount, int regionCapacity
+#endif
+) {
     auto all = cg::this_grid();
     int worker = blockIdx.x * blockDim.x + threadIdx.x;
     AssemblyState &s = *state;
@@ -100,7 +105,6 @@ extern "C" __global__ void assembly_advance(AssemblyState *state, unsigned char 
                 merge_reverse(back, f.pose, m.n, prefer[p], m.keys, m.peaks, m.mask, m.slots, m.count,
                               m.witness);
                 int a = map[4 * p], b = map[4 * p + 1], count = *m.count;
-                active += count;
                 for (int i = 1; i < count; ++i) {
                     int slot = m.slots[i], j = i;
                     while (j && m.keys[m.slots[j - 1]] > m.keys[slot]) {
@@ -109,8 +113,32 @@ extern "C" __global__ void assembly_advance(AssemblyState *state, unsigned char 
                     }
                     m.slots[j] = slot;
                 }
+                int bearing = count;
+#ifdef NC_PAIR_STIFFNESS
+                // One spring for the pair: U = k/2 * max_i(depth_i)^2.
+                // The sorted region key breaks exact ties at a change of active witness.
+                if (count) {
+                    int deepest = m.slots[0];
+                    for (int i = 1; i < count; ++i) {
+                        int slot = m.slots[i];
+                        if (m.witness[8 * (unsigned)m.peaks[slot]] >
+                            m.witness[8 * (unsigned)m.peaks[deepest]])
+                            deepest = slot;
+                    }
+                    for (int i = 0; i < count; ++i) {
+                        int slot = m.slots[i];
+                        if (slot != deepest) {
+                            m.keys[slot] = vacant;
+                            m.peaks[slot] = 0;
+                        }
+                    }
+                    m.slots[0] = deepest;
+                    bearing = 1;
+                }
+#endif
+                active += bearing;
                 double total = 0, ta = 0, tb = 0;
-                for (int i = 0; i < count; ++i) {
+                for (int i = 0; i < bearing; ++i) {
                     int slot = m.slots[i];
                     const double *w = m.witness + 8 * (unsigned)m.peaks[slot];
                     P normal = from_a(f, {w[4], w[5], w[6]}), ra = from_a(f, {w[1], w[2], w[3]});
@@ -118,6 +146,23 @@ extern "C" __global__ void assembly_advance(AssemblyState *state, unsigned char 
                             ra.z + f.origin[2] - f.origin[5]};
                     double ja = -arm(joints[4 * p], normal, ra), jb = arm(joints[4 * p + 1], normal, rb);
                     double force = .001 * stiff[p] * w[0];
+#ifdef NC_ASSEMBLY_AUDIT
+                    if (s.step == regionStep) {
+                        int row = (*regionCount)++;
+                        if (row < regionCapacity) {
+                            double *r = regionAudit + row * 14;
+                            r[0] = *auditCount;
+                            r[1] = p;
+                            r[2] = m.keys[slot] >> 32;
+                            r[3] = (unsigned)m.keys[slot];
+                            r[4] = (unsigned)m.peaks[slot];
+                            for (int k = 0; k < 7; ++k)
+                                r[5 + k] = w[k];
+                            r[12] = ja * force;
+                            r[13] = jb * force;
+                        }
+                    }
+#endif
                     total += force;
                     ta += ja * force;
                     tb += jb * force;
@@ -134,7 +179,7 @@ extern "C" __global__ void assembly_advance(AssemblyState *state, unsigned char 
                 out[2 * n + 4 * p] = total;
                 out[2 * n + 4 * p + 1] = ta;
                 out[2 * n + 4 * p + 2] = tb;
-                out[2 * n + 4 * p + 3] = count;
+                out[2 * n + 4 * p + 3] = bearing;
             }
             double residual[maxCoordinates];
             for (int i = 0; i < n; ++i) {
@@ -156,6 +201,32 @@ extern "C" __global__ void assembly_advance(AssemblyState *state, unsigned char 
                     s.impactSpan = want;
                 }
             }
+#ifdef NC_ASSEMBLY_AUDIT
+            double *record = nullptr;
+            int oldStep = s.step, oldTick = s.tick, oldSpan = s.span, oldAccepted = s.accepted;
+            if (s.step >= auditFirst && s.step <= auditLast) {
+                int index = (*auditCount)++;
+                if (index < auditCapacity) {
+                    record = audit + index * (8 + 5 * n + 4 * pairs);
+                    record[0] = s.step;
+                    record[1] = s.tick;
+                    record[2] = s.span;
+                    record[3] = s.iter;
+                    record[4] = s.halves;
+                    record[5] = err;
+                    record[6] = scale;
+                    for (int i = 0; i < n; ++i) {
+                        record[8 + i] = s.x[i];
+                        record[8 + n + i] = s.speed[i];
+                        record[8 + 2 * n + i] = s.a[i];
+                        record[8 + 3 * n + i] = s.trial[i];
+                        record[8 + 4 * n + i] = applied[i];
+                    }
+                    for (int i = 0; i < 4 * pairs; ++i)
+                        record[8 + 5 * n + i] = out[2 * n + i];
+                }
+            }
+#endif
             if (s.explicitStep &&
                 (!isfinite(err) || !isfinite(frequency2) || (h / ticksPerStep) * sqrt(frequency2) >= .01)) {
                 s.failed = 2;
@@ -250,6 +321,19 @@ extern "C" __global__ void assembly_advance(AssemblyState *state, unsigned char 
                 ++s.iter;
                 s.halves = 0;
             }
+#ifdef NC_ASSEMBLY_AUDIT
+            if (record) {
+                // 0 accepted, 1 stiffness refinement, 2 convergence subdivision,
+                // 3 line search, 4 Newton update, 5 terminal failure, 6 explicit retry.
+                record[7] = s.accepted != oldAccepted ? 0
+                            : s.failed                ? 5
+                            : s.span < oldSpan && oldStep == s.step && oldTick == s.tick
+                                ? (want < oldSpan ? 1 : 2)
+                            : s.explicitStep ? 6
+                            : s.halves       ? 3
+                                             : 4;
+            }
+#endif
         }
         all.sync();
     }

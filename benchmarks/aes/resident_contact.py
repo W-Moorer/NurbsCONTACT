@@ -76,6 +76,7 @@ class ResidentMeshContact:
         vertex_probes=False,
         merge_planar=False,
         reverse=None,
+        include_vertices=False,
     ):
         from resident_index import compile_mesh
 
@@ -102,10 +103,15 @@ class ResidentMeshContact:
             fa = planar_regions(a, fa)[np.unique(fa, return_inverse=True)[1]]
         geom, self.tags_a = compile_mesh(a, fa, pitch)
         p, normals, ids, other, alt, self.tags_b = surface_samples(b, fb, samples, crease_samples)
-        if vertex_probes:
-            if source_points is not None:
+        if source_points is not None:
+            source_points = np.ascontiguousarray(source_points, dtype=np.float64)
+            if source_points.shape != p.shape or not np.isfinite(source_points).all():
+                raise ValueError("Expected a finite CAD point for each source probe")
+            p = source_points
+        if vertex_probes or include_vertices:
+            if vertex_probes and (source_points is not None or include_vertices):
                 raise ValueError("Vertex probes use the supplied triangle vertices")
-            p, vertices = np.unique(b.reshape(-1, 3), axis=0, return_inverse=True)
+            xyz, vertices = np.unique(b.reshape(-1, 3), axis=0, return_inverse=True)
             keys, group = np.unique(
                 np.column_stack((vertices.ravel(), np.repeat(ids[: len(b)], 3))), axis=0, return_inverse=True
             )
@@ -115,14 +121,16 @@ class ResidentMeshContact:
             length = np.linalg.norm(vertex_normals, axis=1)
             if np.any(length <= 1e-14):
                 raise ValueError("Ambiguous vertex normal")
-            p = p[keys[:, 0]]
-            normals = other = vertex_normals / length[:, None]
-            ids = alt = keys[:, 1].astype(np.int32)
-        if source_points is not None:
-            source_points = np.ascontiguousarray(source_points, dtype=np.float64)
-            if source_points.shape != p.shape or not np.isfinite(source_points).all():
-                raise ValueError("Expected a finite CAD point for each source probe")
-            p = source_points
+            vertex_normals /= length[:, None]
+            vertex_ids = keys[:, 1].astype(np.int32)
+            samples_at_vertices = (xyz[keys[:, 0]], vertex_normals, vertex_ids, vertex_normals, vertex_ids)
+            if include_vertices:
+                p, normals, ids, other, alt = (
+                    np.concatenate((base, extra))
+                    for base, extra in zip((p, normals, ids, other, alt), samples_at_vertices, strict=True)
+                )
+            else:
+                p, normals, ids, other, alt = samples_at_vertices
         if merge_planar:
             self.tags_b, regions = np.unique(planar_regions(b, fb), return_inverse=True)
             ids, alt = regions[ids].astype(np.int32), regions[alt].astype(np.int32)

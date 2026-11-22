@@ -25,6 +25,11 @@ def extract_plot(app, rd, plot_file, output):
 
         angles = columns(f"Joints/Axis{i}/Pos1_Relative" for i in range(3))
         references = columns(f"Joints/ReferenceAxis{i}/Pos1_Relative" for i in range(3))
+        velocity = columns(f"Bodies/Shaft{i}/Vel_RZ" for i in range(3))
+        acceleration = columns(f"Bodies/Shaft{i}/Acc_RZ" for i in range(3))
+        axial_torque = columns(f"Contact/Solid Contact/Mesh{i}/TZ_SolidContact" for i in range(2))
+        support = columns(f"Force/Rotational Spring Damper/Bearing{i}/TZ_RSDA" for i in range(3))
+        applied = columns(f"Force/Rotational Single(Axial) Force/Load{i}/TZ_Rotat_Axial" for i in (0, 2))
         resultant = columns(f"Contact/Solid Contact/Mesh{i}/FM_SolidContact" for i in range(2))
         friction = columns(
             f"Contact/Solid Contact/Mesh{i}/ContactPoints/ContactPoint1/FrictionForce1" for i in range(2)
@@ -33,6 +38,11 @@ def extract_plot(app, rd, plot_file, output):
             output,
             angle_rad=np.deg2rad(angles),
             reference_rad=np.deg2rad(references),
+            global_speed_rad_s=velocity,
+            global_accel_rad_s2=acceleration,
+            contact_raw_TZ_Nm=axial_torque * 1e-3,
+            support_raw_TZ_Nm=support * 1e-3,
+            load_raw_TZ_Nm=applied * 1e-3,
             resultant_N=resultant,
             point1_friction_N=friction,
         )
@@ -86,13 +96,14 @@ def connect():
     return rd.IApplication(wrapper.RecurDynApplication), rd
 
 
-def simulate(work, duration, h, output):
+def simulate(work, duration, h, output, patch_scale=None):
     app, rd = connect()
     setup_start = perf_counter()
     with np.load(work / "assembly.npz") as d:
         rows, coords, mapping, pairs = (d[k] for k in ("bodies", "coord", "mapping", "pairs"))
     parts = json.loads((work / "models.json").read_text())["parts"]
-    path = (work / f"rd-reducer-{duration:g}s-{h*1e6:g}us.rdyn").resolve()
+    suffix = "" if patch_scale is None else f"-patch{patch_scale:g}"
+    path = (work / f"rd-reducer-{duration:g}s-{h*1e6:g}us{suffix}.rdyn").resolve()
     doc = rd.IModelDocument(app.NewModelDocumentWithUnitSystem("ReducerContact", rd.UnitSystem.MMKS))
     try:
         model = rd.ISubSystem(doc.Model)
@@ -170,6 +181,13 @@ def simulate(work, duration, h, output):
             prop.UseStiffnessExponent = True
             prop.StiffnessExponent.Value = 1
             prop.DampingCoefficient.Value = 0
+            if patch_scale is not None:
+                for patch in (contact.BasePatchOption, contact.ActionPatchOption):
+                    factor = patch.PlaneToleranceFactor.Value
+                    if factor <= 0:
+                        raise ValueError("Missing native plane tolerance factor")
+                    patch.UsePlaneToleranceFactor = True
+                    patch.PlaneToleranceFactor.Value = factor * patch_scale
             contacts.append(contact)
         dyn = doc.ModelProperty.DynamicAnalysisProperty
         dyn.SimulationTime.Value = duration
@@ -207,6 +225,7 @@ def simulate(work, duration, h, output):
                     online_s=wall,
                     speed_initial=speeds[0].tolist(),
                     peak_force=abs(force).max(axis=0).tolist(),
+                    patch_plane_tolerance_scale=patch_scale,
                 ),
                 indent=2,
             )
@@ -223,10 +242,17 @@ if __name__ == "__main__":
     p.add_argument("--duration", type=float, default=3.0)
     p.add_argument("--step-us", type=float, default=125.0)
     p.add_argument(
+        "--patch-scale",
+        type=float,
+        help="Multiply the native contact patch plane tolerance factor on all four surfaces",
+    )
+    p.add_argument(
         "--plot", type=Path, help="Extract direct joint angle and contact channels from a completed .rplt"
     )
     args = p.parse_args()
     if args.plot:
         extract_plot(*connect(), args.plot, args.output)
     else:
-        simulate(args.work, args.duration, args.step_us * 1e-6, args.output)
+        if args.patch_scale is not None and not (0 < args.patch_scale <= 1):
+            p.error("Patch scale must be in (0, 1]")
+        simulate(args.work, args.duration, args.step_us * 1e-6, args.output, args.patch_scale)

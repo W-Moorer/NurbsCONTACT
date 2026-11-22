@@ -1,0 +1,403 @@
+{
+  "production-cad": {
+    "gpu": "NVIDIA GeForce RTX 3090",
+    "method": "cad",
+    "physical_s": 3.0,
+    "requested_s": 3.0,
+    "step_s": 6.25e-05,
+    "terminated": "complete",
+    "coordinates": 3,
+    "pairs": 2,
+    "contact_samples": 16,
+    "minimum_step_s": 1.52587890625e-08,
+    "explicit_crossing_enabled": true,
+    "explicit_crossings": 0,
+    "directional_probes": [
+      [
+        25152,
+        15456
+      ],
+      [
+        133496,
+        159016
+      ]
+    ],
+    "steps": 48000,
+    "trials": 1384143,
+    "accepted_increments": 685726,
+    "setup_s": 5.325357951922342,
+    "online_s": 271.0885746499989,
+    "p99_us": 19109.939200000008,
+    "over_budget": 48000,
+    "device_pool_MiB": 502.185546875,
+    "peak_normal_N": [
+      7572.081307698079,
+      19258.172354627666
+    ],
+    "max_active_regions": [
+      3.0,
+      6.0
+    ],
+    "identical_to_instrumented": true
+  },
+  "release-cad": {
+    "gpu": "NVIDIA GeForce RTX 3090",
+    "method": "cad",
+    "physical_s": 3.0,
+    "requested_s": 3.0,
+    "step_s": 6.25e-05,
+    "terminated": "complete",
+    "coordinates": 3,
+    "pairs": 2,
+    "contact_samples": 16,
+    "minimum_step_s": 1.52587890625e-08,
+    "explicit_crossing_enabled": true,
+    "explicit_crossings": 0,
+    "directional_probes": [
+      [
+        25152,
+        15456
+      ],
+      [
+        133496,
+        159016
+      ]
+    ],
+    "steps": 48000,
+    "trials": 1384143,
+    "accepted_increments": 685726,
+    "setup_s": 9.563897321000695,
+    "online_s": 271.7163024239708,
+    "p99_us": 19094.538240000005,
+    "over_budget": 48000,
+    "device_pool_MiB": 502.185546875,
+    "peak_normal_N": [
+      7572.081307698079,
+      19258.172354627666
+    ],
+    "max_active_regions": [
+      3.0,
+      6.0
+    ],
+    "identical_to_instrumented": true
+  },
+  "production-mesh": {
+    "gpu": "NVIDIA GeForce RTX 3090",
+    "method": "mesh",
+    "physical_s": 3.0,
+    "requested_s": 3.0,
+    "step_s": 6.25e-05,
+    "terminated": "complete",
+    "coordinates": 3,
+    "pairs": 2,
+    "contact_samples": 16,
+    "minimum_step_s": 1.52587890625e-08,
+    "explicit_crossing_enabled": true,
+    "explicit_crossings": 0,
+    "directional_probes": [
+      [
+        25344,
+        15552
+      ],
+      [
+        133496,
+        159016
+      ]
+    ],
+    "steps": 48000,
+    "trials": 1384707,
+    "accepted_increments": 686801,
+    "setup_s": 5.200397078180686,
+    "online_s": 308.3318285138812,
+    "p99_us": 55295.07840000002,
+    "over_budget": 48000,
+    "device_pool_MiB": 502.220703125,
+    "peak_normal_N": [
+      7413.080667535334,
+      19839.94438859445
+    ],
+    "max_active_regions": [
+      3.0,
+      6.0
+    ],
+    "identical_to_instrumented": true
+  },
+  "release-mesh": {
+    "gpu": "NVIDIA GeForce RTX 3090",
+    "method": "mesh",
+    "include_vertices": false,
+    "physical_s": 3.0,
+    "requested_s": 3.0,
+    "step_s": 6.25e-05,
+    "terminated": "complete",
+    "coordinates": 3,
+    "pairs": 2,
+    "contact_samples": 16,
+    "minimum_step_s": 1.52587890625e-08,
+    "explicit_crossing_enabled": true,
+    "explicit_crossings": 0,
+    "directional_probes": [
+      [
+        25344,
+        15552
+      ],
+      [
+        133496,
+        159016
+      ]
+    ],
+    "steps": 48000,
+    "trials": 1384707,
+    "accepted_increments": 686801,
+    "setup_s": 5.222050077980384,
+    "online_s": 306.7272612238303,
+    "p99_us": 54905.3132800001,
+    "over_budget": 48000,
+    "device_pool_MiB": 502.220703125,
+    "peak_normal_N": [
+      7413.080667535334,
+      19839.94438859445
+    ],
+    "max_active_regions": [
+      3.0,
+      6.0
+    ],
+    "identical_to_instrumented": true
+  },
+  "rd-full": {
+    "version": "10.1.40231.2023 x64",
+    "steps": 24000,
+    "h": 0.000125,
+    "physical_s": 3.0,
+    "setup_s": 175.84844969998812,
+    "online_s": 594.441121800046,
+    "speed_initial": [
+      188.495559215388,
+      -94.2477796076938,
+      47.1238898038469
+    ],
+    "peak_force": [
+      4581.861346960204,
+      11890.551447868156
+    ]
+  },
+  "rd-refined": {
+    "version": "10.1.40231.2023 x64",
+    "steps": 10240,
+    "h": 3.125e-05,
+    "physical_s": 0.32,
+    "setup_s": 122.07467249996262,
+    "online_s": 152.9370527000283,
+    "speed_initial": [
+      188.495559215388,
+      -94.2477796076938,
+      47.1238898038469
+    ],
+    "peak_force": [
+      10806.007832288682,
+      19984.882771969176
+    ]
+  },
+  "rd-geometric": {
+    "version": "10.1.40231.2023 x64",
+    "steps": 2560,
+    "h": 0.000125,
+    "physical_s": 0.32,
+    "setup_s": 79.9554234999814,
+    "online_s": 305.76636090001557,
+    "speed_initial": [
+      188.495559215388,
+      -94.2477796076938,
+      47.1238898038469
+    ],
+    "peak_force": [
+      4859.065413475078,
+      8875.257968902877
+    ],
+    "patch_plane_tolerance_scale": 0.0625
+  },
+  "rd-switch-geometric": {
+    "version": "10.1.40231.2023 x64",
+    "steps": 10080,
+    "h": 0.000125,
+    "physical_s": 1.26,
+    "setup_s": 100.91548230004264,
+    "online_s": 1330.823365899967,
+    "speed_initial": [
+      188.495559215388,
+      -94.2477796076938,
+      47.1238898038469
+    ],
+    "peak_force": [
+      4859.065413475078,
+      8875.257968902877
+    ],
+    "patch_plane_tolerance_scale": 0.0625
+  },
+  "vertices-cad": {
+    "gpu": "NVIDIA GeForce RTX 3090",
+    "method": "cad",
+    "include_vertices": true,
+    "physical_s": 0.32,
+    "requested_s": 0.32,
+    "step_s": 6.25e-05,
+    "terminated": "complete",
+    "coordinates": 3,
+    "pairs": 2,
+    "contact_samples": 16,
+    "minimum_step_s": 1.52587890625e-08,
+    "explicit_crossing_enabled": true,
+    "explicit_crossings": 0,
+    "directional_probes": [
+      [
+        39072,
+        24576
+      ],
+      [
+        200992,
+        239140
+      ]
+    ],
+    "steps": 5120,
+    "trials": 156349,
+    "accepted_increments": 77658,
+    "setup_s": 6.137299834983423,
+    "online_s": 41.72609171294607,
+    "p99_us": 32258.7340800007,
+    "over_budget": 5120,
+    "device_pool_MiB": 572.22509765625,
+    "peak_normal_N": [
+      7172.618176391307,
+      18697.745038250265
+    ],
+    "max_active_regions": [
+      4.0,
+      6.0
+    ]
+  },
+  "vertices-mesh": {
+    "gpu": "NVIDIA GeForce RTX 3090",
+    "method": "mesh",
+    "include_vertices": true,
+    "physical_s": 0.32,
+    "requested_s": 0.32,
+    "step_s": 6.25e-05,
+    "terminated": "complete",
+    "coordinates": 3,
+    "pairs": 2,
+    "contact_samples": 16,
+    "minimum_step_s": 1.52587890625e-08,
+    "explicit_crossing_enabled": true,
+    "explicit_crossings": 0,
+    "directional_probes": [
+      [
+        39264,
+        24672
+      ],
+      [
+        200992,
+        239140
+      ]
+    ],
+    "steps": 5120,
+    "trials": 152587,
+    "accepted_increments": 75638,
+    "setup_s": 6.14010396390222,
+    "online_s": 40.902390321018174,
+    "p99_us": 39186.17600000057,
+    "over_budget": 5120,
+    "device_pool_MiB": 572.26318359375,
+    "peak_normal_N": [
+      7432.600515826502,
+      18766.640833284924
+    ],
+    "max_active_regions": [
+      4.0,
+      6.0
+    ]
+  },
+  "pair-cad": {
+    "gpu": "NVIDIA GeForce RTX 3090",
+    "method": "cad",
+    "include_vertices": false,
+    "stiffness_scope": "pair",
+    "physical_s": 3.0,
+    "requested_s": 3.0,
+    "step_s": 6.25e-05,
+    "terminated": "complete",
+    "coordinates": 3,
+    "pairs": 2,
+    "contact_samples": 16,
+    "minimum_step_s": 1.52587890625e-08,
+    "explicit_crossing_enabled": true,
+    "explicit_crossings": 0,
+    "directional_probes": [
+      [
+        25152,
+        15456
+      ],
+      [
+        133496,
+        159016
+      ]
+    ],
+    "steps": 48000,
+    "trials": 850498,
+    "accepted_increments": 383861,
+    "setup_s": 7.2149670019280165,
+    "online_s": 212.00065882201307,
+    "p99_us": 37973.012480000005,
+    "over_budget": 48000,
+    "device_pool_MiB": 502.185546875,
+    "peak_normal_N": [
+      4795.753227087765,
+      9175.504789476476
+    ],
+    "max_active_regions": [
+      1.0,
+      1.0
+    ]
+  },
+  "pair-mesh": {
+    "gpu": "NVIDIA GeForce RTX 3090",
+    "method": "mesh",
+    "include_vertices": false,
+    "stiffness_scope": "pair",
+    "physical_s": 3.0,
+    "requested_s": 3.0,
+    "step_s": 6.25e-05,
+    "terminated": "complete",
+    "coordinates": 3,
+    "pairs": 2,
+    "contact_samples": 16,
+    "minimum_step_s": 1.52587890625e-08,
+    "explicit_crossing_enabled": true,
+    "explicit_crossings": 0,
+    "directional_probes": [
+      [
+        25344,
+        15552
+      ],
+      [
+        133496,
+        159016
+      ]
+    ],
+    "steps": 48000,
+    "trials": 796571,
+    "accepted_increments": 383844,
+    "setup_s": 5.199496694840491,
+    "online_s": 234.78659388516098,
+    "p99_us": 50588.160000000105,
+    "over_budget": 48000,
+    "device_pool_MiB": 502.220703125,
+    "peak_normal_N": [
+      4726.122249886651,
+      9196.508428893037
+    ],
+    "max_active_regions": [
+      1.0,
+      1.0
+    ]
+  }
+}

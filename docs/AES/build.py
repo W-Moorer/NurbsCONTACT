@@ -13,7 +13,10 @@ def main():
     source = Path(__file__).resolve().parent
     results = source.parents[1] / "results" / "aes"
     for report, figure in (("resident-cam", "accuracy-cost"), ("resident-reducer", "shaft-response")):
-        pdf = results / report / f"{figure}.pdf"
+        folder = results / report
+        if report == "resident-reducer":
+            folder = folder / "physical"
+        pdf = folder / f"{figure}.pdf"
         target = source / "figures" / f"{report}-{figure}.pdf"
         if pdf.is_file() and (not target.is_file() or not filecmp.cmp(pdf, target, shallow=False)):
             shutil.copyfile(pdf, target)

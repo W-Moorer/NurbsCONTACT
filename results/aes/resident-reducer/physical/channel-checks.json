@@ -1,0 +1,73 @@
+{
+  "native": {
+    "max_support_identity_difference_Nm": [
+      1.6988304096798856e-09,
+      1.0385292625869624e-10,
+      5.1781273713302767e-11
+    ],
+    "max_applied_load_difference_Nm": [
+      0.0024144566853152583,
+      0.0,
+      0.0023598424765509662
+    ]
+  },
+  "native31": {
+    "max_support_identity_difference_Nm": [
+      5.856115592450806e-10,
+      3.14986370320014e-11,
+      1.3950424149200558e-11
+    ],
+    "max_applied_load_difference_Nm": [
+      0.00241445646703653,
+      0.0,
+      0.0023598424765509662
+    ]
+  },
+  "native_dense_short": {
+    "max_support_identity_difference_Nm": [
+      1.2583978303837284e-10,
+      6.392327639437312e-12,
+      3.5024782553405576e-12
+    ],
+    "max_applied_load_difference_Nm": [
+      0.00241445646703653,
+      0.0,
+      0.0023598424765509662
+    ]
+  },
+  "native_dense": {
+    "max_support_identity_difference_Nm": [
+      5.506022304757607e-10,
+      2.8206555147125556e-11,
+      1.487258580179507e-11
+    ],
+    "max_applied_load_difference_Nm": [
+      0.002414456481588445,
+      0.0,
+      0.0023598424765509662
+    ]
+  },
+  "native_dense_repeat_prefix": {
+    "speed_max_difference": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "twist_max_difference": [
+      0.0,
+      0.0
+    ],
+    "torque_max_difference": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "power_max_difference": [
+      0.0,
+      0.0
+    ],
+    "energy_max_difference": [
+      0.0
+    ]
+  }
+}

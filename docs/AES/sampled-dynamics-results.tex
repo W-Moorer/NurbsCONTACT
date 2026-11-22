@@ -22,20 +22,44 @@ The reducer contains four complete STEP gear solids with 339,868 triangles. Two 
 \begin{figure}[pos=!htbp]\centering
 \includegraphics[width=.78\linewidth]{reducer-model.png}\par\smallskip
 \includegraphics[width=.83\linewidth]{resident-reducer-shaft-response.pdf}
-\caption{Two-stage reducer with a shared middle shaft. The enlarged view shows the helical mesh. Both GPU trajectories use a 62.5~\microsec{} main step. The short speed excursions distinguish the three responses over the 3~s load history.}
+\caption{Two-stage reducer with a shared middle shaft. The enlarged view shows the helical mesh. The GPU trajectories use a 62.5~\microsec{} main step. The response plots compare two stiffness assignments with the refined native solution during a brake-load increase. Output contact torque is the change of angular momentum per output interval, less the known drive and support torque.}
 \label{fig:sampled-reducer}\end{figure}
 
 \begin{table}[pos=!htbp]\small\centering
-\caption{Shared-shaft reducer over 3~s. RMS differences use the RecurDyn trajectory with a 125~\microsec{} output interval. GPU times include contact discovery, force assembly, adaptive integration and synchronization. Each row is one complete run.}
+\caption{Three-second reducer run. RMS differences use RecurDyn at 24,001 common times. The pure mesh and STEP variants use identical contact search and integration settings on an RTX~3090.}
 \label{tab:sampled-reducer}
-\begin{tabular}{lrrrr}\toprule
-Method & Step & Online & Middle speed & Stage 2 twist\\
- & (\microsec{}) & (s) & (rad/s) & (mrad)\\\midrule
-STEP samples (ours) & 62.5 & 236.48 & 1.66 & 1.43\\
-Mesh samples & 62.5 & 233.19 & 2.32 & 1.59\\
-STEP samples (ours) & 125 & 236.27 & 1.69 & 1.44\\
-RecurDyn & 125 & 594.44 & --- & ---\\
+\begin{tabular}{lrrrrr}\toprule
+ & Step & Input speed & Middle speed & Output speed & Stage 2 twist\\
+ & (\microsec{}) & (rad/s) & (rad/s) & (rad/s) & (mrad)\\\midrule
+STEP samples (ours) & 62.5 & 3.333 & 0.924 & 0.907 & 1.221\\
+Mesh samples & 62.5 & 3.341 & 0.925 & 0.909 & 1.212\\
 \bottomrule\end{tabular}\end{table}
 
-At 62.5~\microsec{} the STEP run gives a smaller RMS difference from RecurDyn on all three shaft speeds and both relative twists at a similar online cost to the mesh run (Table~\ref{tab:sampled-reducer}). Both GPU methods exceed the real-time deadline on every main step. The STEP run requires 1.35 million contact and dynamics trials for 48,000 steps. Its largest middle-shaft discrepancy occurs at 1.25275~s, when it gives 65.06~rad/s and RecurDyn gives 93.47~rad/s (Fig.~\ref{fig:sampled-reducer}). The mesh run at 125~\microsec{} stops at 0.754~s on a Newton convergence failure. Each simulation had a 30~min wall-time limit.
+The closest-point query reprojects its selected triangle and compares the resulting squared distance with the distance returned by the parallel search. A disagreement triggers a fresh double-precision BVH traversal. The penetration and normal then use the same displacement vector. At an accepted helical-stage trial at 1.252708~s, the previous query reported 47.04~\micron{} of penetration. A CPU solid classifier and distance query placed the point 17.64~\micron{} outside the STEP solid. The erroneous normal had length 459 and contributed a spurious $-6.85$~kN\,m to the middle shaft. Restarting the two kernels with identical states and caches removed this impulse. The middle speed at 1.25275~s changed from 65.06 to 94.60~rad/s, compared with 93.47~rad/s in RecurDyn. Contact and dynamics evaluations in that main step fell from 171 to 16.
+
+Over 3~s the STEP and mesh variants give similar shaft-speed and twist histories (Table~\ref{tab:sampled-reducer}). Mean output contact torque is 138.904~N\,m for STEP and 138.899~N\,m for RecurDyn. Their interval torque RMS difference is 60.69~N\,m. The mean stage 1 and 2 transmission errors are smaller for STEP by 0.970 and 1.132~mrad. Both runs contain the nominal 330 and 720~Hz mesh frequencies. At 720~Hz the input-speed power spectral density is 0.0098 for STEP and 0.300 for RecurDyn, in (rad/s)$^2$/Hz. The corrected model reproduces the mean power transfer more closely than the amplitude of the gear-mesh vibration. With instrumentation disabled, the two STEP runs take 271.09 and 271.72~s, and the two mesh runs take 308.33 and 306.73~s. RecurDyn takes 594.44~s with the default contact facets. Both GPU configurations exceed the real-time deadline on all 48,000 main steps.
+
+\paragraph{Contact surface resolution and the meaning of stiffness.}
+The native solver exports 20,636 contact facets at its default settings. Reducing its plane tolerance factor from 3 to 0.1875 produces 307,392 facets across the four parts, compared with 339,868 target triangles on the GPU. On the output gear, the 95th percentile distance from native facet centroids to the fine target mesh falls from 57.28 to 1.07~\micron{}. During the first 0.32~s of loading, this change alone reduces the middle-speed RMS difference from 1.033 to 0.406~rad/s at the same native step.
+
+The normal coefficient can describe a stiffness per contact region or a single stiffness for a pair of bodies. The region model sums the spring energies $k d_i^2/2$ over positive sampled depths $d_i$. The pair model uses $k(\max_i d_i)^2/2$ and applies one normal force at the deepest witness. Both use the same numerical value $k=1.6\times10^8$~N/m. The pair model supplies a resultant for the body pair. Individual tooth load sharing requires a distributed model. We selected this control from a fixed-pose test during brake engagement. At the 25 refined native poses from 0.099 to 0.102~s the mean output contact torque is 176.59~N\,m in RecurDyn, 597.79~N\,m with the region model and 205.56~N\,m with the pair model. The native generalized torque follows independently from instantaneous shaft acceleration and the measured external torques. Over the first 0.32~s the change of stiffness assignment reduces the stage~2 twist RMS difference from 0.461 to 0.182~mrad.
+
+We then ran the refined native model for 1.26~s. Its first 0.32~s reproduces the independent short run at every common output. At 1.25275~s it gives 94.579~rad/s on the middle shaft, compared with 94.603~rad/s for STEP with region stiffness and 94.313~rad/s with pair stiffness. At 25 prescribed native poses around this switch the mean native output torque is 144.96~N\,m. The region and pair models give 486.00 and 168.14~N\,m. In free rotation over the held-out interval 0.50--1.26~s, the STEP output-torque RMS difference falls from 40.02 to 9.93~N\,m when a single stiffness is assigned to each body pair. Table~\ref{tab:refined-reducer} gives the full common-interval differences. STEP and pure mesh give similar results with the same spring model. The corresponding three-second pair-stiffness simulations take 212.00 and 234.79~s on the RTX~3090. The refined native run takes 1,330.82~s online for 1.26~s of motion.
+
+\begin{table}[pos=!htbp]\small\centering
+\caption{RMS difference from refined RecurDyn solid contact over 0--1.26~s. Torque is averaged over the same 125~\microsec{} output intervals in all methods. The native default row changes only the commercial solver's contact tessellation.}
+\label{tab:refined-reducer}
+\begin{tabular}{lrrr}\toprule
+Method & Middle speed & Stage 2 twist & Output torque\\
+ & (rad/s) & (mrad) & (N\,m)\\\midrule
+RecurDyn, default facets & 0.902 & 0.900 & 48.67\\
+Mesh, region stiffness & 0.333 & 0.383 & 41.82\\
+STEP, region stiffness (ours) & 0.332 & 0.392 & 41.41\\
+Mesh, pair stiffness & 0.205 & 0.123 & 17.62\\
+STEP, pair stiffness (ours) & 0.210 & 0.128 & 17.55\\
+\bottomrule\end{tabular}\end{table}
+
+The RMS change in successive middle-speed outputs over 0.50--1.26~s is 0.184~rad/s for refined RecurDyn, 0.492~rad/s for STEP with region stiffness and 0.032~rad/s with pair stiffness. The latter produces less high-frequency ripple than the refined native solution. The torque agreement in Table~\ref{tab:refined-reducer} therefore supports load transfer at the shafts, while the amplitude at a particular mesh frequency remains sensitive to the contact model.
+
+A separate equal-mass sphere impact with an exact sinusoidal contact force checks the complete GPU solver. At 125~\microsec{}, reducing the source and target tessellation deflection from 8 to 2~\micron{} lowers the displacement RMS error from 14.14 to 3.51~\micron{} and the force RMS error from 0.0280 to 0.00713~N. RecurDyn sphere--sphere contact gives 0.291~\micron{} and 0.000952~N against the same closed form. Adding vertex samples of each incident surface to the GPU query brings the errors to 0.098~\micron{} and 0.000443~N in the original orientation. Rotating the two tessellations independently leaves the mechanics invariant and gives 0.791~\micron{} and 0.00180~N with or without the additional vertices. This sensitivity identifies spatial sampling error even at fixed CAD geometry. For the eccentric cam the corrected solver retains all 71 transitions and gives 0.164~\micron{} RMS displacement error against independently integrated analytic support.
 \FloatBarrier

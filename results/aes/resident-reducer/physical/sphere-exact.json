@@ -1,0 +1,92 @@
+[
+  {
+    "method": "STEP",
+    "deflection_um": 8,
+    "triangles": 76752,
+    "step_us": 500,
+    "displacement_RMS_um": 15.498057402766483,
+    "force_RMS_N": 0.03031941890200505,
+    "peak_force_N": 22.48982492956155,
+    "com_drift_um": 0.0
+  },
+  {
+    "method": "RecurDyn",
+    "deflection_um": null,
+    "triangles": null,
+    "step_us": 500,
+    "displacement_RMS_um": 6.712625194122391,
+    "force_RMS_N": 0.014310576791119934,
+    "peak_force_N": 22.471432980415216,
+    "com_drift_um": 1.9081958235744878e-11
+  },
+  {
+    "method": "STEP",
+    "deflection_um": 8,
+    "triangles": 76752,
+    "step_us": 250,
+    "displacement_RMS_um": 14.382105745975203,
+    "force_RMS_N": 0.02838727459995692,
+    "peak_force_N": 22.498780367001974,
+    "com_drift_um": 0.0
+  },
+  {
+    "method": "RecurDyn",
+    "deflection_um": null,
+    "triangles": null,
+    "step_us": 250,
+    "displacement_RMS_um": 1.2641371900522005,
+    "force_RMS_N": 0.003733199085027969,
+    "peak_force_N": 22.494312267578778,
+    "com_drift_um": 1.994931997373328e-11
+  },
+  {
+    "method": "STEP",
+    "deflection_um": 8,
+    "triangles": 76752,
+    "step_us": 125,
+    "displacement_RMS_um": 14.1363761966287,
+    "force_RMS_N": 0.027965475390888336,
+    "peak_force_N": 22.499549603840187,
+    "com_drift_um": 0.0
+  },
+  {
+    "method": "RecurDyn",
+    "deflection_um": null,
+    "triangles": null,
+    "step_us": 125,
+    "displacement_RMS_um": 0.29119938909623594,
+    "force_RMS_N": 0.0009521082721633973,
+    "peak_force_N": 22.49845996398527,
+    "com_drift_um": 2.0383000842727483e-11
+  },
+  {
+    "method": "STEP",
+    "deflection_um": 2,
+    "triangles": 307524,
+    "step_us": 500,
+    "displacement_RMS_um": 4.1233403798078125,
+    "force_RMS_N": 0.009897875668563988,
+    "peak_force_N": 22.492698500159346,
+    "com_drift_um": 0.0
+  },
+  {
+    "method": "STEP",
+    "deflection_um": 2,
+    "triangles": 307524,
+    "step_us": 250,
+    "displacement_RMS_um": 3.504708856487896,
+    "force_RMS_N": 0.0076574376135628945,
+    "peak_force_N": 22.49932658507317,
+    "com_drift_um": 0.0
+  },
+  {
+    "method": "STEP",
+    "deflection_um": 2,
+    "triangles": 307524,
+    "step_us": 125,
+    "displacement_RMS_um": 3.509185163040853,
+    "force_RMS_N": 0.007131569699410785,
+    "peak_force_N": 22.499685740982347,
+    "com_drift_um": 0.0
+  }
+]

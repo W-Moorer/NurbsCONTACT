@@ -63,17 +63,64 @@ def solve(args):
     ):
         raise ValueError("Unsupported coordinate count, inertia or duration")
     files = Path(__file__).parent
-    code = (files / "resident_contact.cu").read_text() + "\n" + (files / "resident_assembly.cuh").read_text()
-    module = cp.RawModule(
-        code=code,
-        options=(
-            "--std=c++17",
-            f"-DQUERY_LANES={args.lanes}",
-            "-DNC_TWO_SIDED",
-            f"-DASSEMBLY_TICKS={args.ticks}",
-        ),
-        enable_cooperative_groups=True,
+    audit_args = ()
+    if (args.audit_window is None) != (args.audit_output is None):
+        raise ValueError("Supply both the audit interval and the audit output")
+    if args.audit_window is None and (
+        args.audit_regions_at is not None or args.prefix_contact or args.audit_samples
+    ):
+        raise ValueError("Region logging and replay options require an audit window")
+    first_audit, last_audit = count, count
+    if args.audit_window is not None:
+        first_audit, last_audit = (round(t / h) for t in args.audit_window)
+        if not 1 <= first_audit <= last_audit < count or not np.allclose(
+            np.array([first_audit, last_audit]) * h, args.audit_window, atol=1e-12, rtol=0
+        ):
+            raise ValueError("Audit window endpoints must be output times")
+        capacity = 100000
+        history = cp.empty((capacity, 8 + 5 * n + 4 * m), dtype=cp.float64)
+        logged = cp.zeros(1, cp.int32)
+        if args.audit_regions_at is not None:
+            region_step = round(args.audit_regions_at / h)
+            if (
+                not first_audit <= region_step <= last_audit
+                or abs(region_step * h - args.audit_regions_at) > 1e-12
+            ):
+                raise ValueError("Region audit must be a main step ending in the trial interval")
+        else:
+            region_step = -1
+        region_capacity = 30000 if region_step >= 0 else 1
+        region_log = cp.empty((region_capacity, 14))
+        region_count = cp.zeros(1, cp.int32)
+        audit_args = (
+            np.int32(first_audit),
+            np.int32(last_audit),
+            history,
+            logged,
+            np.int32(capacity),
+            np.int32(region_step),
+            region_log,
+            region_count,
+            np.int32(region_capacity),
+        )
+    assembly = (files / "resident_assembly.cuh").read_text()
+    options = (
+        "--std=c++17",
+        f"-DQUERY_LANES={args.lanes}",
+        "-DNC_TWO_SIDED",
+        f"-DASSEMBLY_TICKS={args.ticks}",
     )
+    if audit_args:
+        options += ("-DNC_ASSEMBLY_AUDIT",)
+    if args.stiffness_scope == "pair":
+        options += ("-DNC_PAIR_STIFFNESS",)
+
+    def compile_module(contact):
+        return cp.RawModule(
+            code=contact.read_text() + "\n" + assembly, options=options, enable_cooperative_groups=True
+        )
+
+    module = compile_module(files / "resident_contact.cu")
     views = cp.empty((2 * m, 320), cp.uint8)
     orders = cp.empty((2 * m, 32), cp.uint8)
     frames = cp.zeros(2 * m * 1024, cp.uint8)
@@ -94,6 +141,7 @@ def solve(args):
                 source_points=pts if args.method == "cad" else None,
                 merge_planar=True,
                 reverse=reverse,
+                include_vertices=args.include_vertices,
             )
             select = swept_samples(target, model.samples[0].get(), bodies[[a, b]])
             if select.any() and not select.all():
@@ -134,27 +182,37 @@ def solve(args):
     blocks = cp.cuda.Device().attributes["MultiProcessorCount"]
     module.get_function("assembly_start")((1,), (1,), (state, device_args[7], np.int32(n)))
     advance = module.get_function("assembly_advance")
+    prefix_advance = None
+    if args.prefix_contact:
+        prefix_module = compile_module(args.prefix_contact)
+        prefix_advance = prefix_module.get_function("assembly_advance")
     get_status = module.get_function("assembly_status")
 
-    def run(stop):
-        advance(
+    def run(stop, samples):
+        kernel = prefix_advance if prefix_advance is not None and stop <= first_audit else advance
+        kernel(
             (blocks,),
             (128,),
             (
                 *device_args,
                 np.int32(stop),
-                np.int32(args.contact_samples),
+                np.int32(samples),
                 np.int32(args.explicit_crossing),
                 output,
                 elapsed,
+                *audit_args,
             ),
         )
 
-    run(1)
+    run(1, args.contact_samples)
     cp.cuda.get_current_stream().synchronize()
     tic = perf_counter()
     for first in range(1, count, 32):
-        run(min(first + 32, count))
+        stop = min(first + 32, count)
+        if (args.audit_samples or prefix_advance is not None) and first < first_audit < stop:
+            run(first_audit, args.contact_samples)
+        samples = args.audit_samples if args.audit_samples and stop > first_audit else args.contact_samples
+        run(stop, samples)
         if first % 512 == 1:
             get_status((1,), (1,), (state, status))
             if status.get()[1] or perf_counter() - start >= 1800:
@@ -171,6 +229,8 @@ def solve(args):
     report = dict(
         gpu=cp.cuda.runtime.getDeviceProperties(cp.cuda.Device().id)["name"].decode(),
         method=args.method,
+        include_vertices=args.include_vertices,
+        stiffness_scope=args.stiffness_scope,
         physical_s=(steps - 1) * h,
         requested_s=args.duration,
         step_s=h,
@@ -213,6 +273,37 @@ def solve(args):
             )
         )
     np.save(args.trace, data)
+    if audit_args:
+        entries = int(logged.get()[0])
+        if entries > capacity:
+            raise ValueError("Audit capacity exceeded")
+        columns = ["step", "tick", "span", "iteration", "halvings", "residual", "scale", "decision"]
+        for label in ("q", "v", "previous_a", "trial_a", "applied"):
+            columns.extend(f"{label}{j}" for j in range(n))
+        for j in range(m):
+            columns.extend(f"{name}{j}" for name in ("normal", "torque_a", "torque_b", "regions"))
+        size = int(region_count.get()[0])
+        if size > region_capacity:
+            raise ValueError("Region audit capacity exceeded")
+        metadata = {}
+        if region_step >= 0:
+            for p in range(m):
+                forward = keep_alive[2 * p + 1][0]
+                metadata[f"tags_a{p}"] = forward.tags_a
+                metadata[f"tags_b{p}"] = forward.tags_b
+                metadata[f"forward_n{p}"] = forward.n
+        np.savez_compressed(
+            args.audit_output,
+            trials=history[:entries].get(),
+            columns=columns,
+            h=h,
+            ticks=args.ticks,
+            first=first_audit,
+            last=last_audit,
+            regions=region_log[:size].get(),
+            **metadata,
+        )
+        report.update(audit_trials=entries, audit_samples=args.audit_samples or args.contact_samples)
     args.output.write_text(json.dumps(report, indent=2) + "\n")
     print(report, flush=True)
 
@@ -246,4 +337,33 @@ if __name__ == "__main__":
         help="Retry an unresolved minimum interval with a counted velocity-Verlet step",
     )
     p.add_argument("--method", choices=("cad", "mesh"), default="cad")
+    p.add_argument(
+        "--stiffness-scope",
+        choices=("region", "pair"),
+        default="region",
+        help="Apply the input normal stiffness to each active region or once at the deepest contact of each body pair",
+    )
+    p.add_argument(
+        "--include-vertices",
+        action="store_true",
+        help="Also test mesh vertices on each incident CAD face when selecting the contact witness",
+    )
+    p.add_argument("--audit-window", nargs=2, type=float, metavar=("FIRST_END_S", "LAST_END_S"))
+    p.add_argument("--audit-output", type=Path)
+    p.add_argument(
+        "--audit-regions-at",
+        type=float,
+        help="Record individual witnesses throughout the main step ending at this time",
+    )
+    p.add_argument(
+        "--prefix-contact",
+        type=Path,
+        help="Use this compatible reference contact kernel up to the first audited step; retain the complete state and caches",
+    )
+    p.add_argument(
+        "--audit-samples",
+        type=int,
+        choices=(16, 32),
+        help="Change local contact resolution from the first audited step onward",
+    )
     solve(p.parse_args())
