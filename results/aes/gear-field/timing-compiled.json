@@ -1,0 +1,142 @@
+{
+  "seed": 825,
+  "threads": 1,
+  "repeats": 3,
+  "single_points_per_repeat": 96,
+  "points_per_batch": 1536,
+  "pose_points": 4,
+  "open3d_version": "0.19.0",
+  "torch_version": "2.7.1+cu126",
+  "processor": "AMD64 Family 25 Model 33 Stepping 0, AuthenticAMD",
+  "methods": {
+    "numpy_fitted_faces": {
+      "single_median_ms": 5.753099976573139,
+      "single_p95_ms": 23.30649002105929,
+      "single_face_median_ms": 4.856750019825995,
+      "single_edge_median_ms": 18.9640500175301,
+      "mixed_1536_seconds": [
+        1.8114310000091791,
+        1.823638200003188,
+        1.721196600003168
+      ],
+      "mixed_1536_median_s": 1.8114310000091791,
+      "mixed_per_point_ms": 1.1793170572976426,
+      "mixed_points_per_second": 847.9483899702592,
+      "four_contact_points_median_ms": 12.466624997614417,
+      "within_0p125_um": 1536,
+      "max_error_um": 0.006017640921673895,
+      "setup_s": 2.954871899972204,
+      "first_query_s": 0.004293200036045164
+    },
+    "fitted_faces": {
+      "single_median_ms": 0.08415000047534704,
+      "single_p95_ms": 0.14629500801675016,
+      "single_face_median_ms": 0.07745000766590238,
+      "single_edge_median_ms": 0.08955004159361124,
+      "mixed_1536_seconds": [
+        0.05606339999940246,
+        0.05441079998854548,
+        0.05531839997274801
+      ],
+      "mixed_1536_median_s": 0.05531839997274801,
+      "mixed_per_point_ms": 0.03601458331559115,
+      "mixed_points_per_second": 27766.529775927957,
+      "four_contact_points_median_ms": 0.23936249635880813,
+      "within_0p125_um": 1536,
+      "max_error_um": 0.006017640926694184,
+      "setup_s": 3.515363399987109,
+      "first_query_s": 0.537091700010933
+    },
+    "triangle_bvh_open3d": {
+      "single_median_ms": 0.05099998088553548,
+      "single_p95_ms": 0.0847850053105503,
+      "single_face_median_ms": 0.05069997860118747,
+      "single_edge_median_ms": 0.051149982027709484,
+      "mixed_1536_seconds": [
+        0.008217399998102337,
+        0.007496399979572743,
+        0.007428400043863803
+      ],
+      "mixed_1536_median_s": 0.007496399979572743,
+      "mixed_per_point_ms": 0.004880468736701005,
+      "mixed_points_per_second": 204898.35176691628,
+      "four_contact_points_median_ms": 0.0651500013191253,
+      "within_0p125_um": 838,
+      "max_error_um": 1.795583946569494,
+      "setup_s": 0.06488680001348257,
+      "first_query_s": 0.26296150003327057
+    },
+    "nhrep": {
+      "single_median_ms": 0.23585002054460347,
+      "single_p95_ms": 0.3128599957562983,
+      "single_face_median_ms": 0.23449998116120696,
+      "single_edge_median_ms": 0.2382999809924513,
+      "mixed_1536_seconds": [
+        0.023032700002659112,
+        0.0178456999710761,
+        0.016225500032305717
+      ],
+      "mixed_1536_median_s": 0.0178456999710761,
+      "mixed_per_point_ms": 0.01161829425200267,
+      "mixed_points_per_second": 86071.15453523894,
+      "four_contact_points_median_ms": 0.2927625027950853,
+      "within_0p125_um": 9,
+      "max_error_um": 111.32861608451172,
+      "setup_s": 0.023382299987133592,
+      "first_query_s": 0.08531449997099116
+    },
+    "occt": {
+      "single_median_ms": 13.84825,
+      "single_p95_ms": 25.32525,
+      "single_face_median_ms": 4.74935,
+      "single_edge_median_ms": 16.723499999999998,
+      "mixed_1536_seconds": [
+        19.1916105,
+        18.9583389,
+        21.1803685
+      ],
+      "mixed_1536_median_s": 19.1916105,
+      "mixed_per_point_ms": 12.4945380859375,
+      "mixed_points_per_second": 80.03497153091972,
+      "four_contact_points_median_ms": 26.7178,
+      "within_0p125_um": 1536,
+      "max_error_um": 0.0,
+      "setup_s": 8.5103252
+    }
+  },
+  "numpy_projection_profile": {
+    "points": 1536,
+    "total_s": 2.285109199990984,
+    "projection_s": 2.1795627000392415,
+    "all_point_projection_s": 0.7600501000415534,
+    "additional_crease_projections_s": 1.419512599997688
+  },
+  "acceleration_validation": {
+    "seed": 5119,
+    "fresh_points": 1536,
+    "fresh": {
+      "within_0p125_um": 1536,
+      "max_error_um": 0.00019186684696278003
+    },
+    "fresh_wrong_sign": 0,
+    "archived": {
+      "within_0p125_um": 452,
+      "max_error_um": 0.0001251940170698962
+    },
+    "compiled_vs_numpy_max_um": 2.1316282072803006e-11,
+    "loads": {
+      "142/10": {
+        "compiled_N": 149.3528242895171,
+        "cad_N": 149.35276952524282
+      },
+      "4/4": {
+        "compiled_N": 149.35367615385695,
+        "cad_N": 149.35350427835294
+      }
+    },
+    "normal_checks": 128,
+    "normal_p95_deg": 5.185925709036756e-05,
+    "normal_max_deg": 0.0019181407806967803
+  },
+  "numba_version": "0.61.2"
+}

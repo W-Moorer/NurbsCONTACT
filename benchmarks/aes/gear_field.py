@@ -92,7 +92,7 @@ def barycentric(points, tris):
 class FittedFaces:
     """Use mesh proximity to choose candidate CAD faces, then query the fitted geometry."""
 
-    def __init__(self, guide_path, fits_path):
+    def __init__(self, guide_path, fits_path, *, compiled=True):
         with np.load(guide_path) as guide:
             self.xyz = guide['vertices']
             self.tri = guide['triangles'].astype(np.int64)
@@ -118,6 +118,21 @@ class FittedFaces:
                 coef = fits[f'coef_{idx}']
                 self.faces[idx] = (fits[f'center_{idx}'], fits[f'half_{idx}'], coef,
                                    cheb.chebder(coef, axis=0), cheb.chebder(coef, axis=1), fits[f'sign_{idx}'])
+        self.refine = None
+        if compiled:
+            try:
+                from fitted_projection import pack_faces, refine
+            except ModuleNotFoundError as exc:
+                if exc.name != 'numba':
+                    raise
+            else:
+                self.refine = refine
+                a,b,c = self.xyz[self.tri].transpose(1,0,2)
+                ab, ac = b-a, c-a
+                normal = np.cross(ab,ac)
+                denom = np.einsum('ij,ij->i',normal,normal)
+                self.bary_grad = np.stack((np.cross(ac,normal),np.cross(normal,ab)),axis=1)/denom[:,None,None]
+                self.packed = pack_faces(self.faces)
 
     def support(self, points):
         _, nearest, seeds = self.tree.squared_distance(self.xyz, self.tri, points)
@@ -179,6 +194,14 @@ class FittedFaces:
             raise ValueError('Expected a finite N by 3 array in millimetres')
         if len(points) == 0:
             return np.empty(0)
+        if self.refine is not None:
+            _, nearest, seeds = self.tree.squared_distance(self.xyz,self.tri,points)
+            if len(self.edges):
+                sq, edge, edge_seeds = self.edge_tree.squared_distance(self.xyz,self.edges,points)
+            else:
+                sq, edge, edge_seeds = np.empty(0), np.empty(0,np.int64), np.empty((0,3))
+            return self.refine(points,nearest,seeds,sq,edge,edge_seeds,self.xyz,self.tri,self.owner,self.uv,
+                               self.incident,self.edge_pairs,self.convex_sign,self.bary_grad,*self.packed)
         seeds, query, tri = self.support(points)
         foot, normal = self.project(points, seeds, query, tri)
         delta = points-foot

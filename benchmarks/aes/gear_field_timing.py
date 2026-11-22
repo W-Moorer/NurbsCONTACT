@@ -56,6 +56,54 @@ def profile_projections(field, points):
             'all_point_projection_s':samples[0],'additional_crease_projections_s':sum(samples[1:])}
 
 
+def verify_acceleration(exe, out):
+    """Check new CAD distances, the archived contact pose and signed-distance derivatives."""
+    import trimesh
+    from gear_field import FittedFaces, probe_set
+
+    model = Path('results/aes/gear-field')
+    source = Path('build/aes-nhrep')
+    baseline = FittedFaces(model/'guide.npz',model/'faces.npz',compiled=False)
+    accelerated = FittedFaces(model/'guide.npz',model/'faces.npz')
+    if accelerated.refine is None:
+        raise RuntimeError('Install Numba to benchmark the compiled projection')
+    mesh = trimesh.load_mesh(source/'spur.obj',process=False)
+    with np.load(source/'spur-geometry.npz') as geometry:
+        probes = probe_set(mesh,geometry,5119)
+    inputs, outputs = out/'probe-5119.txt', out/'truth-5119.csv'
+    np.savetxt(inputs,probes,fmt='%.17g')
+    subprocess.run([exe,'cad-point-distance','results/gears/models/spur-1a.step',inputs,outputs],check=True)
+    cad = np.genfromtxt(outputs,delimiter=',',skip_header=1)
+    with np.load('build/aes-nhrep-parametric/spur-reference.npz') as ref:
+        points = np.vstack((probes,ref['points_mm']))
+        reference = baseline.predict(points)
+        measured = accelerated.predict(points)
+        all_delta = 1000*np.max(abs(reference-measured))
+        distances = measured[:len(probes)]
+        archived = measured[len(probes):]
+        loads = {}
+        for pair in sorted(set(ref['contact_pair'])-{''}):
+            ids = ref['contact_pair'] == pair
+            weights = ref['weights_m'][ids]*1e6
+            loads[pair] = {name:float(weights @ np.maximum(.055-d[ids],0))
+                           for name,d in [('compiled_N',archived),('cad_N',ref['distance_mm'])]}
+        archived_accuracy = accuracy(archived,ref['distance_mm'])
+    ids = np.arange(0,len(probes),12)
+    ids = ids[np.isfinite(cad[ids,1:]).all(axis=1)]
+    h = 1e-5
+    shifts = np.r_[np.eye(3),-np.eye(3)]*h
+    v = accelerated.predict((probes[ids]+shifts[:,None,:]).reshape(-1,3)).reshape(6,len(ids))
+    grad = ((v[:3]-v[3:])/(2*h)).T
+    angle = np.degrees(np.arccos(np.clip(np.einsum('ij,ij->i',grad,cad[ids,1:])/np.linalg.norm(grad,axis=1),-1,1)))
+    fresh = accuracy(distances,cad[:,0])
+    sign_errors = int(sum(np.sign(distances)!=np.sign(cad[:,0])))
+    if fresh['within_0p125_um'] != len(probes) or sign_errors or all_delta > 1e-5:
+        raise RuntimeError('Compiled projection differs from the reference or misses the CAD tolerance')
+    return {'seed':5119,'fresh_points':len(probes),'fresh':fresh,'fresh_wrong_sign':sign_errors,
+            'archived':archived_accuracy,'compiled_vs_numpy_max_um':float(all_delta),'loads':loads,
+            'normal_checks':len(ids),'normal_p95_deg':float(np.percentile(angle,95)),'normal_max_deg':float(max(angle))}
+
+
 def run_cad(exe, out, points, truth, indices, shuffle, pose):
     # One process retains the solid, face bounds and classifier across every query.
     warm = points[indices[:8]]
@@ -128,6 +176,7 @@ def main():
         os.environ[name] = '1'
     import torch
     import open3d as o3d
+    import numba
     from gear_field import FittedFaces
 
     torch.set_num_threads(1)
@@ -147,6 +196,9 @@ def main():
 
     def fitted():
         return FittedFaces(folder/'guide.npz',folder/'faces.npz').predict
+
+    def numpy_fitted():
+        return FittedFaces(folder/'guide.npz',folder/'faces.npz',compiled=False).predict
 
     def mesh():
         with np.load(folder/'guide.npz') as guide:
@@ -171,16 +223,19 @@ def main():
 
     report = {'seed':825, 'threads':1, 'repeats':3, 'single_points_per_repeat':len(indices),
               'points_per_batch':len(points),'pose_points':len(pose),'open3d_version':o3d.__version__,
-              'torch_version':torch.__version__,'processor':os.environ.get('PROCESSOR_IDENTIFIER'),'methods':{}}
+              'torch_version':torch.__version__, 'numba_version':numba.__version__,
+              'processor':os.environ.get('PROCESSOR_IDENTIFIER'),'methods':{}}
     with threadpool_limits(1):
-        for name, factory in [('fitted_faces',fitted),('triangle_bvh_open3d',mesh),('nhrep',neural)]:
+        for name, factory in [('numpy_fitted_faces',numpy_fitted),('fitted_faces',fitted),
+                              ('triangle_bvh_open3d',mesh),('nhrep',neural)]:
             print('Measuring',name,flush=True)
             report['methods'][name] = run_python(factory,points,truth,indices,shuffle,pose)
             print(json.dumps(report['methods'][name]),flush=True)
         print('Measuring native OCCT',flush=True)
         report['methods']['occt'] = run_cad(args.executable.resolve(),args.output,points,truth,indices,shuffle,pose)
-        field = FittedFaces(folder/'guide.npz',folder/'faces.npz')
-        report['projection_profile'] = profile_projections(field,points[shuffle])
+        field = FittedFaces(folder/'guide.npz',folder/'faces.npz',compiled=False)
+        report['numpy_projection_profile'] = profile_projections(field,points[shuffle])
+        report['acceleration_validation'] = verify_acceleration(args.executable.resolve(),args.output)
     print(json.dumps(report['methods']['occt']),flush=True)
     (args.output/'timing.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 

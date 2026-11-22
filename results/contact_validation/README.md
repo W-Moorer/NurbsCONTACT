@@ -313,6 +313,18 @@ Open3D installed and the parametric NH-Rep checkpoint available locally.
 python benchmarks/aes/gear_field_timing.py build/aes-occt/Release/nc_contact.exe build/aes-gear-field-timing
 ```
 
+`FittedFaces.predict` uses a single-threaded Numba kernel when Numba is
+installed. It packs the polynomial coefficients and triangle chart data at
+setup, shares derivative evaluation scratch space across the batch, and
+skips the discarded face projection on the crease path. One- and two-face
+updates use small linear solves. The remaining multi-face intersections
+retain the pseudoinverse. Set `compiled=False` in the constructor to replay
+the NumPy implementation. The first compiled call builds or loads the
+on-disk Numba cache. The [accelerated timings](../aes/gear-field/timing-compiled.json)
+compare both paths against a warm mesh BVH on identical queries. The report
+also checks new STEP distances (seed 5119), the two contact-line loads and
+finite-difference distance gradients.
+
 ~~~text
 drives count
 body_id orbit arm_xyz axis_xyz angular_speed
