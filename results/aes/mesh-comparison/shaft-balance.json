@@ -1,0 +1,58 @@
+{
+  "window_s": 0.1,
+  "driven_inertia_kg_m2": 0.004095140211102863,
+  "driven_base_radius_m": 0.056381557247154504,
+  "shaft_damping_Nm_s": 0.09,
+  "configurations": {
+    "cad-100us": {
+      "mean_normal_force_N": 941.3943191831843,
+      "mean_from_shaft_balance_N": 941.3939808791982,
+      "max_abs_100ms_mean_imbalance_N": 0.008729767257164962
+    },
+    "cad-10us": {
+      "mean_normal_force_N": 941.3837024524124,
+      "mean_from_shaft_balance_N": 941.3837088177428,
+      "max_abs_100ms_mean_imbalance_N": 0.00014614822887893728
+    },
+    "cad-20us": {
+      "mean_normal_force_N": 941.3912645000082,
+      "mean_from_shaft_balance_N": 941.3912390988565,
+      "max_abs_100ms_mean_imbalance_N": 0.0007282956870823689
+    },
+    "cad-50us": {
+      "mean_normal_force_N": 941.3856513633639,
+      "mean_from_shaft_balance_N": 941.3856902959478,
+      "max_abs_100ms_mean_imbalance_N": 0.0010800948440703759
+    },
+    "cad-5us": {
+      "mean_normal_force_N": 941.3829712106426,
+      "mean_from_shaft_balance_N": 941.3829728724783,
+      "max_abs_100ms_mean_imbalance_N": 4.8762367157436634e-05
+    },
+    "mesh-391nm-100us": {
+      "mean_normal_force_N": 941.3940887173354,
+      "mean_from_shaft_balance_N": 941.3937758003096,
+      "max_abs_100ms_mean_imbalance_N": 0.008268632122536548
+    },
+    "mesh-391nm-10us": {
+      "mean_normal_force_N": 941.3840001156917,
+      "mean_from_shaft_balance_N": 941.3840046075644,
+      "max_abs_100ms_mean_imbalance_N": 0.00014559195193442949
+    },
+    "mesh-391nm-20us": {
+      "mean_normal_force_N": 941.392982279916,
+      "mean_from_shaft_balance_N": 941.3929432007711,
+      "max_abs_100ms_mean_imbalance_N": 0.0006976747053499174
+    },
+    "mesh-391nm-50us": {
+      "mean_normal_force_N": 941.3860638669834,
+      "mean_from_shaft_balance_N": 941.3861112249882,
+      "max_abs_100ms_mean_imbalance_N": 0.0019423717209577362
+    },
+    "mesh-391nm-5us": {
+      "mean_normal_force_N": 941.3831945832246,
+      "mean_from_shaft_balance_N": 941.3831962933551,
+      "max_abs_100ms_mean_imbalance_N": 4.7356846266652226e-05
+    }
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "gpu": "NVIDIA GeForce RTX 3070",
+  "input_sha256": {
+    "spur-1a.step": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d",
+    "faces.npz": "ecedd7e20cf41ad48727816f820665e3a98387d56e2325a9bbf26749fddb45bf",
+    "transition-points.csv": "9a5f10f783919dd3a8ce3539ed4095fbdef089a704ac30fb1cf536875edde93e",
+    "spur-poses.txt": "9fae2ae7abd1e65a6a3961deaaf2b5356583492aadd2eacf91f6a32e6f7edfda",
+    "cold.loads.csv": "4b4a0e09fc33e528605ccccf3dbc961eaf5034d0bd4f8f6cf28412bef37647fd"
+  },
+  "stage": "known face and quadrature; fitted chart projection plus line force and moment on B",
+  "poses": 10,
+  "lines": 18,
+  "checked_trim_interior_points": 36,
+  "repeats": 100,
+  "previous_pose_seed_available": 28,
+  "max_seed_age_s": 2.5e-05,
+  "cutoff_mm": 0.055,
+  "stiffness_N_per_m2": 1000000000.0,
+  "max_gap_error_um": 5.705873987182919e-05,
+  "max_line_force_vector_error_N": 0.0010534223204692159,
+  "max_line_moment_vector_error_Nm": 6.040545895765417e-05,
+  "paired_resident_us_per_known_pose": [
+    {
+      "repeats": 20,
+      "serial": 1061.6320133209229,
+      "parallel": 254.77120876312256,
+      "previous_uv": 40.03840088844299,
+      "mesh_0.1um": 35.52799969911575,
+      "mesh_0.04um": 40.84800034761429,
+      "mesh_0.01um": 49.76640045642853,
+      "full_mesh-0.1": 76.6975998878479,
+      "full_mesh-0.04": 92.15999841690063
+    },
+    {
+      "repeats": 20,
+      "parallel": 45.710399746894836,
+      "previous_uv": 40.03840088844299,
+      "mesh_0.1um": 35.520000755786896,
+      "mesh_0.04um": 40.857601165771484,
+      "mesh_0.01um": 49.76640045642853,
+      "full_mesh-0.1": 76.6975998878479,
+      "full_mesh-0.04": 92.15999841690063,
+      "serial": 177.3568034172058
+    },
+    {
+      "repeats": 20,
+      "previous_uv": 36.454400420188904,
+      "mesh_0.1um": 32.35839903354645,
+      "mesh_0.04um": 37.171199917793274,
+      "mesh_0.01um": 45.260798931121826,
+      "full_mesh-0.1": 69.72320079803467,
+      "full_mesh-0.04": 83.76320004463196,
+      "serial": 161.17759943008423,
+      "parallel": 41.9840008020401
+    },
+    {
+      "repeats": 20,
+      "mesh_0.1um": 32.256001234054565,
+      "mesh_0.04um": 37.15200126171112,
+      "mesh_0.01um": 45.260798931121826,
+      "full_mesh-0.1": 69.71840262413025,
+      "full_mesh-0.04": 83.76159965991974,
+      "serial": 161.17759943008423,
+      "parallel": 41.9840008020401,
+      "previous_uv": 36.454400420188904
+    },
+    {
+      "repeats": 20,
+      "mesh_0.04um": 37.06879913806915,
+      "mesh_0.01um": 45.260798931121826,
+      "full_mesh-0.1": 69.73440051078796,
+      "full_mesh-0.04": 83.76320004463196,
+      "serial": 161.17759943008423,
+      "parallel": 41.9840008020401,
+      "previous_uv": 36.454400420188904,
+      "mesh_0.1um": 32.256001234054565
+    }
+  ],
+  "serial_resident_us_per_known_pose": 161.17759943008423,
+  "parallel_resident_us_per_known_pose": 41.9840008020401,
+  "previous_uv_resident_us_per_known_pose": 36.454400420188904,
+  "triangle_meshes": {
+    "mesh_0.1um": {
+      "scope": "independently tessellated supplied STEP faces",
+      "deflection_um": 0.1,
+      "triangles": 916,
+      "prepare_bvh_and_upload_s": 4.027677899983246,
+      "max_gap_error_um": 0.0814786134808107,
+      "max_line_force_vector_error_N": 1.9565015805780166,
+      "max_line_moment_vector_error_Nm": 0.11116942982345715,
+      "resident_us_per_known_pose": 32.35839903354645
+    },
+    "mesh_0.04um": {
+      "scope": "independently tessellated supplied STEP faces",
+      "deflection_um": 0.04,
+      "triangles": 1568,
+      "prepare_bvh_and_upload_s": 12.520747100003064,
+      "max_gap_error_um": 0.017076344048717884,
+      "max_line_force_vector_error_N": 0.41127994562377224,
+      "max_line_moment_vector_error_Nm": 0.022599195930284102,
+      "resident_us_per_known_pose": 37.171199917793274
+    },
+    "mesh_0.01um": {
+      "scope": "independently tessellated supplied STEP faces",
+      "deflection_um": 0.01,
+      "triangles": 3144,
+      "prepare_bvh_and_upload_s": 111.8861330000218,
+      "max_gap_error_um": 0.0037917602795714545,
+      "max_line_force_vector_error_N": 0.20505565616222318,
+      "max_line_moment_vector_error_Nm": 0.0061796763487993655,
+      "resident_us_per_known_pose": 45.260798931121826
+    },
+    "full_mesh-0.1": {
+      "scope": "whole-body closest triangle",
+      "mesh_file": "mesh-0.1.npz",
+      "sha256": "f81a9aa298dba2f0dae6fcef00d6c649891a1b23ba3f28edb100d7fdcf6160d5",
+      "triangles": 42296,
+      "prepare_bvh_and_upload_s": 0.10298559995135292,
+      "max_gap_error_um": 0.0814786134808107,
+      "max_line_force_vector_error_N": 1.9565015805780166,
+      "max_line_moment_vector_error_Nm": 0.11116942982345715,
+      "resident_us_per_known_pose": 69.73440051078796
+    },
+    "full_mesh-0.04": {
+      "scope": "whole-body closest triangle",
+      "mesh_file": "mesh-0.04.npz",
+      "sha256": "43194a2ee161fbc8cb1560334aa666ed0ee11ad7035aa30117d434f9ded0e848",
+      "triangles": 70960,
+      "prepare_bvh_and_upload_s": 0.16277250001439825,
+      "max_gap_error_um": 0.017076344048717884,
+      "max_line_force_vector_error_N": 0.41127994562377224,
+      "max_line_moment_vector_error_Nm": 0.022599195930284102,
+      "resident_us_per_known_pose": 83.76320004463196
+    }
+  }
+}

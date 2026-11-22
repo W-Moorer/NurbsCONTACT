@@ -4,7 +4,10 @@ Each input line supplies its two face IDs, world-space quadrature points on B
 (in A's frame) and weights. The GPU projects onto A's fitted face, then sums
 the force and moment on B. The CPU checks the returned UV against the STEP
 trim and compares gaps and line wrenches with the independent OCCT replay.
-Region discovery and HHT integration are outside this timing.
+With --mesh-um the mesh projects the same points onto triangles of the same
+STEP face. With --full-mesh it searches the complete rigid mesh of A.
+All methods use the same quadrature and force law. Region
+discovery and HHT integration are outside this timing.
 
 From the repository root, after the cold region replay:
     python benchmarks/aes/gpu_line_wrench.py results/gears/models/spur-1a.step results/aes/gear-field/faces.npz results/aes/gear-field/transition-points.csv build/aes-region-replay/spur-poses.txt build/aes-region-replay/cold.loads.csv results/aes/gpu-face-candidates/spur-wrenches.json --cutoff-mm 0.055 --stiffness 1e9
@@ -23,7 +26,23 @@ from gpu_face_candidates import resident_screen_us
 from nhrep_gear import read_occt_solid
 
 
-CUDA = r'''
+POINT_WRENCH = r'''
+__device__ void add_point_wrench(const double* p, const double* center, const double* d,
+                                 double gap, double cutoff_mm, double stiffness, double* w) {
+    if (!(gap>0)) { for (int k=0;k<6;++k) w[k]=nan(""); return; }
+    double scale=stiffness*p[3]*0.001*fmax(cutoff_mm-gap,0.0)/gap;
+    double f[3], r[3];
+    for (int k=0;k<3;++k) {
+        f[k]=scale*d[k]; w[k]+=f[k];
+        r[k]=p[k]*0.001-center[k];
+    }
+    w[3]+=r[1]*f[2]-r[2]*f[1];
+    w[4]+=r[2]*f[0]-r[0]*f[2];
+    w[5]+=r[0]*f[1]-r[1]*f[0];
+}
+'''
+
+CUDA = POINT_WRENCH + r'''
 // Evaluate the normalized Chebyshev chart and both first derivatives.
 __device__ void surface(const double* coef, int nu, int nv, double u, double v,
                         double* x, double* xu, double* xv) {
@@ -118,16 +137,7 @@ __device__ void accumulate(int j, const int* chart, const double* coeffs, const 
     double gap=ok ? sqrt(dot(d,d)) : nan("");
     result[0]=gap;
     result[1]=ok ? uv[0] : nan(""); result[2]=ok ? uv[1] : nan("");
-    if (!(gap>0)) { for (int k=0;k<6;++k) w[k]=nan(""); return; }
-    double scale=stiffness*p[3]*0.001*fmax(cutoff_mm-gap,0.0)/gap;
-    double f[3], r[3];
-    for (int k=0;k<3;++k) {
-        f[k]=scale*d[k]; w[k]+=f[k];
-        r[k]=p[k]*0.001-center[k];
-    }
-    w[3]+=r[1]*f[2]-r[2]*f[1];
-    w[4]+=r[2]*f[0]-r[0]*f[2];
-    w[5]+=r[0]*f[1]-r[1]*f[0];
+    add_point_wrench(p,center,d,gap,cutoff_mm,stiffness,w);
 }
 extern "C" __global__ void line_wrench(const int* range, const int* offsets,
     const int* charts, const double* coeffs, const double* samples, const double* centers,
@@ -269,13 +279,24 @@ def run(args):
     sources = (args.step, args.fits, args.samples, args.poses, args.loads)
     paired = []
     methods = [('serial', launch_serial), ('parallel', launch_parallel), ('previous_uv', launch_warm)]
+    mesh_checks = {}
+    if args.mesh_um or args.full_mesh:
+        from gpu_mesh_line import MeshLines
+        mesh_cases = [(f'mesh_{d:g}um',d,None) for d in (args.mesh_um or [])]
+        mesh_cases += [(f'full_{p.stem}',None,p) for p in (args.full_mesh or [])]
+        for label, deflection, path in mesh_cases:
+            mesh = MeshLines(args.step, deflection, keys, max_lines, offsets, points,
+                             [centers[k[0]] for k in keys], prior, args.cutoff_mm, args.stiffness,
+                             POINT_WRENCH, path)
+            mesh_checks[label] = mesh.check(ranges, target_gaps, target_wrenches)
+            methods.append((label, mesh.launch))
     for i, group in enumerate(np.array_split(np.arange(args.repeats), min(5, args.repeats))):
         row = {'repeats': len(group)}
         start = i % len(methods)
         for name, launch in methods[start:] + methods[:start]:
             row[name] = resident_screen_us(launch, ranges, len(group))
         paired.append(row)
-    return dict(gpu=cp.cuda.runtime.getDeviceProperties(0)['name'].decode(),
+    report = dict(gpu=cp.cuda.runtime.getDeviceProperties(0)['name'].decode(),
                 input_sha256={p.name: sha256(p.read_bytes()).hexdigest() for p in sources},
                 stage='known face and quadrature; fitted chart projection plus line force and moment on B',
                 poses=len(poses), lines=len(keys), checked_trim_interior_points=len(pr), repeats=args.repeats,
@@ -287,6 +308,11 @@ def run(args):
                 serial_resident_us_per_known_pose=float(np.median([row['serial'] for row in paired])),
                 parallel_resident_us_per_known_pose=float(np.median([row['parallel'] for row in paired])),
                 previous_uv_resident_us_per_known_pose=float(np.median([row['previous_uv'] for row in paired])))
+    if mesh_checks:
+        for label, check in mesh_checks.items():
+            check['resident_us_per_known_pose'] = float(np.median([r[label] for r in paired]))
+        report['triangle_meshes'] = mesh_checks
+    return report
 
 
 if __name__ == '__main__':
@@ -296,11 +322,18 @@ if __name__ == '__main__':
     parser.add_argument('--cutoff-mm', type=float, required=True)
     parser.add_argument('--stiffness', type=float, required=True, help='Line stiffness in N/m²')
     parser.add_argument('--max-seed-age-s', type=float, default=25e-6,
-                        help='Discard hints across gaps in the recorded 20 µs pose grid')
+                        help='Discard hints between poses separated by more than this time')
     parser.add_argument('--repeats', type=int, default=100)
+    parser.add_argument('--mesh-um', type=float, nargs='+', help='STEP triangle mesh deflections in micrometres')
+    parser.add_argument('--full-mesh', type=Path, nargs='+', help='Search each complete v/f triangle archive in mm')
     args = parser.parse_args()
     if args.repeats < 1 or not all(np.isfinite(x) and x>0 for x in (args.cutoff_mm,args.stiffness,args.max_seed_age_s)):
         parser.error('Use finite, positive cutoff, stiffness and repeats')
+    if args.mesh_um and (len(set(args.mesh_um)) != len(args.mesh_um)
+                         or any(not np.isfinite(h) or h<=0 for h in args.mesh_um)):
+        parser.error('Mesh deflections must be positive, finite and distinct')
+    if args.full_mesh and len({p.stem for p in args.full_mesh}) != len(args.full_mesh):
+        parser.error('Use distinct file stems for the full-mesh inputs')
     report = run(args)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2, allow_nan=False)+'\n', encoding='utf-8')

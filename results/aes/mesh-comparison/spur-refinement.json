@@ -1,0 +1,290 @@
+{
+  "scope": "CPU mechanism-specific flank probes; 24/48 spur; 1800 rpm",
+  "duration_s": 2,
+  "comparison_grid_us": 100,
+  "requested_axial_stations": 31,
+  "effective_axial_stations": 1,
+  "repeats": 1,
+  "configurations": {
+    "cad-5us": {
+      "step_us": 5,
+      "deflection_mm": 0.0,
+      "runs": [
+        {
+          "integrator_s": 8.0160044,
+          "setup_s": 0.0259735,
+          "process_s": 44.173973500030115
+        }
+      ],
+      "trace_sha256": "421148aff09ff2ba51f0a44a21f1c3345f3c6f5d0dc9b94181269427c99dc96b",
+      "triangles": 0,
+      "force_peak_N": 1988.8967851892348,
+      "newton": 411758,
+      "subdivisions": 0,
+      "median_integrator_s": 8.0160044,
+      "median_process_s": 44.173973500030115,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.0,
+        "force_rms_difference_N": 0.0,
+        "peak_difference_N": 0.0
+      },
+      "same_method_5us": {
+        "te_rms_difference_um": 0.0,
+        "force_rms_difference_N": 0.0,
+        "peak_difference_N": 0.0
+      }
+    },
+    "mesh-391nm-5us": {
+      "step_us": 5,
+      "deflection_mm": 0.000390625,
+      "runs": [
+        {
+          "integrator_s": 41.8015387,
+          "setup_s": 4.161517,
+          "process_s": 74.86433880002005
+        }
+      ],
+      "trace_sha256": "829480d9a181bc2aacfe7f391c5405417b7e4dbddd8f7621292a4930fb23c334",
+      "triangles": 60084,
+      "force_peak_N": 1997.022055249512,
+      "newton": 650515,
+      "subdivisions": 0,
+      "median_integrator_s": 41.8015387,
+      "median_process_s": 74.86433880002005,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.24155491182452116,
+        "force_rms_difference_N": 26.912352427218718,
+        "peak_difference_N": 8.125270060277217
+      },
+      "same_method_5us": {
+        "te_rms_difference_um": 0.0,
+        "force_rms_difference_N": 0.0,
+        "peak_difference_N": 0.0
+      }
+    },
+    "cad-10us": {
+      "step_us": 10,
+      "deflection_mm": 0.0,
+      "runs": [
+        {
+          "integrator_s": 3.317886,
+          "setup_s": 0.024103,
+          "process_s": 17.417191299959086
+        }
+      ],
+      "trace_sha256": "e98ea69e693d0db62fa6307f7895a5a245622e32b2522076ab263fd7ae5aca30",
+      "triangles": 0,
+      "force_peak_N": 2007.0078193090535,
+      "newton": 211183,
+      "subdivisions": 0,
+      "median_integrator_s": 3.317886,
+      "median_process_s": 17.417191299959086,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.0,
+        "force_rms_difference_N": 0.0,
+        "peak_difference_N": 0.0
+      },
+      "same_method_5us": {
+        "te_rms_difference_um": 0.17390805108439408,
+        "force_rms_difference_N": 41.19556435374305,
+        "peak_difference_N": 18.11103411981867
+      }
+    },
+    "mesh-391nm-10us": {
+      "step_us": 10,
+      "deflection_mm": 0.000390625,
+      "runs": [
+        {
+          "integrator_s": 23.9513565,
+          "setup_s": 2.9351194,
+          "process_s": 40.77515629999107
+        }
+      ],
+      "trace_sha256": "752b4d7e6cec647b722792fe930149e39cbcd51d15b7f96d17599d41fadd81a7",
+      "triangles": 60084,
+      "force_peak_N": 2021.2342836745122,
+      "newton": 380403,
+      "subdivisions": 0,
+      "median_integrator_s": 23.9513565,
+      "median_process_s": 40.77515629999107,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.24461684942498924,
+        "force_rms_difference_N": 28.286404768705324,
+        "peak_difference_N": 14.226464365458696
+      },
+      "same_method_5us": {
+        "te_rms_difference_um": 0.18463652743264997,
+        "force_rms_difference_N": 43.790182988092226,
+        "peak_difference_N": 24.21222842500015
+      }
+    },
+    "cad-20us": {
+      "step_us": 20,
+      "deflection_mm": 0.0,
+      "runs": [
+        {
+          "integrator_s": 1.5873707,
+          "setup_s": 0.0209664,
+          "process_s": 8.740370800020173
+        }
+      ],
+      "trace_sha256": "d8aa48468f96afba2944ee0428f896f5b4ccd836fc5fb9bcde3ca32e6311d642",
+      "triangles": 0,
+      "force_peak_N": 2518.723895628772,
+      "newton": 105845,
+      "subdivisions": 0,
+      "median_integrator_s": 1.5873707,
+      "median_process_s": 8.740370800020173,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.0,
+        "force_rms_difference_N": 0.0,
+        "peak_difference_N": 0.0
+      },
+      "same_method_5us": {
+        "te_rms_difference_um": 1.3846057040597584,
+        "force_rms_difference_N": 332.57819505764496,
+        "peak_difference_N": 529.8271104395371
+      }
+    },
+    "mesh-391nm-20us": {
+      "step_us": 20,
+      "deflection_mm": 0.000390625,
+      "runs": [
+        {
+          "integrator_s": 11.8651891,
+          "setup_s": 3.1400524,
+          "process_s": 21.00452040001983
+        }
+      ],
+      "trace_sha256": "f1af87c90f0f3d1b6efeb9ba4b262ec572e215c922f186f369913fb38e7033dd",
+      "triangles": 60084,
+      "force_peak_N": 2608.3236403222386,
+      "newton": 197045,
+      "subdivisions": 0,
+      "median_integrator_s": 11.8651891,
+      "median_process_s": 21.00452040001983,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.3516106725932733,
+        "force_rms_difference_N": 71.9890915658175,
+        "peak_difference_N": 89.59974469346662
+      },
+      "same_method_5us": {
+        "te_rms_difference_um": 1.5853238374562613,
+        "force_rms_difference_N": 382.17863520840586,
+        "peak_difference_N": 611.3015850727265
+      }
+    },
+    "cad-50us": {
+      "step_us": 50,
+      "deflection_mm": 0.0,
+      "runs": [
+        {
+          "integrator_s": 0.6619529,
+          "setup_s": 0.0187668,
+          "process_s": 3.027049399970565
+        }
+      ],
+      "trace_sha256": "6e535e01e40f45560770931b234cabdb2bb7e5f3d7ec92f0242eee43788d3088",
+      "triangles": 0,
+      "force_peak_N": 1848.7682990897224,
+      "newton": 42954,
+      "subdivisions": 0,
+      "median_integrator_s": 0.6619529,
+      "median_process_s": 3.027049399970565,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.0,
+        "force_rms_difference_N": 0.0,
+        "peak_difference_N": 0.0
+      },
+      "same_method_5us": {
+        "te_rms_difference_um": 1.2856376354532615,
+        "force_rms_difference_N": 332.77222892963715,
+        "peak_difference_N": -140.12848609951243
+      }
+    },
+    "mesh-391nm-50us": {
+      "step_us": 50,
+      "deflection_mm": 0.000390625,
+      "runs": [
+        {
+          "integrator_s": 4.525752,
+          "setup_s": 2.7123005,
+          "process_s": 9.358830899989698
+        }
+      ],
+      "trace_sha256": "e4899b375d4e5c910f7be7ddb8775770c89e8b4d9b4b90acfb04d5f75570e1e8",
+      "triangles": 60084,
+      "force_peak_N": 1855.011668461499,
+      "newton": 84389,
+      "subdivisions": 0,
+      "median_integrator_s": 4.525752,
+      "median_process_s": 9.358830899989698,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.23825898567851503,
+        "force_rms_difference_N": 27.538658164708536,
+        "peak_difference_N": 6.24336937177668
+      },
+      "same_method_5us": {
+        "te_rms_difference_um": 1.3572355998450971,
+        "force_rms_difference_N": 351.033443782808,
+        "peak_difference_N": -142.01038678801297
+      }
+    },
+    "cad-100us": {
+      "step_us": 100,
+      "deflection_mm": 0.0,
+      "runs": [
+        {
+          "integrator_s": 0.3070291,
+          "setup_s": 0.0164572,
+          "process_s": 1.4589629999827594
+        }
+      ],
+      "trace_sha256": "4a60d5b3141e83ebf74271f46c5446d195c47893df500136e4bfef4fcd411e27",
+      "triangles": 0,
+      "force_peak_N": 2004.1229959652283,
+      "newton": 25152,
+      "subdivisions": 0,
+      "median_integrator_s": 0.3070291,
+      "median_process_s": 1.4589629999827594,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.0,
+        "force_rms_difference_N": 0.0,
+        "peak_difference_N": 0.0
+      },
+      "same_method_5us": {
+        "te_rms_difference_um": 1.9260494477874954,
+        "force_rms_difference_N": 417.71557235696446,
+        "peak_difference_N": 15.226210775993422
+      }
+    },
+    "mesh-391nm-100us": {
+      "step_us": 100,
+      "deflection_mm": 0.000390625,
+      "runs": [
+        {
+          "integrator_s": 2.4555175,
+          "setup_s": 2.2565978,
+          "process_s": 5.818199699977413
+        }
+      ],
+      "trace_sha256": "55ec9825e4f829afc42911a46d6070eefefdfcfd511570fb60e2c63d4e975b47",
+      "triangles": 60084,
+      "force_peak_N": 2019.895007990886,
+      "newton": 54019,
+      "subdivisions": 0,
+      "median_integrator_s": 2.4555175,
+      "median_process_s": 5.818199699977413,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.2421489908474189,
+        "force_rms_difference_N": 21.505450944629107,
+        "peak_difference_N": 15.77201202565766
+      },
+      "same_method_5us": {
+        "te_rms_difference_um": 1.988290591179508,
+        "force_rms_difference_N": 434.5154086636173,
+        "peak_difference_N": 22.872952741373865
+      }
+    }
+  }
+}

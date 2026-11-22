@@ -542,8 +542,9 @@ void contact_regions(int argc,char** argv,bool line_load) {
 }
 
 void replay_contact_regions(int argc,char** argv) {
-    if (argc!=9) throw std::invalid_argument(
-        "nc_contact regions-replay A.step B.step CUTOFF_M STIFFNESS_N_PER_M2 POSES.txt OUTPUT_PREFIX cold|reuse");
+    const bool write_samples=argc==10 && std::string_view(argv[9])=="--samples";
+    if (argc!=9 && !write_samples) throw std::invalid_argument(
+        "nc_contact regions-replay A.step B.step CUTOFF_M STIFFNESS_N_PER_M2 POSES.txt OUTPUT_PREFIX cold|reuse [--samples]");
     const std::string_view mode(argv[8]);
     if (mode!="cold" && mode!="reuse") throw std::invalid_argument("invalid contact replay mode");
     const double cutoff=std::stod(argv[4]), stiffness=std::stod(argv[5]);
@@ -559,6 +560,11 @@ void replay_contact_regions(int argc,char** argv) {
     auto witnesses=open_output(output+".csv");
     auto loads=open_output(output+".loads.csv");
     auto stats=open_output(output+".stats.csv");
+    std::ofstream samples;
+    if (write_samples) {
+        samples=open_output(output+".samples.csv");
+        samples<<"time_s,face_pair,weight_m,x_mm,y_mm,z_mm,cad_distance_mm\n";
+    }
     witnesses<<"time_s,face_a,face_b,distance_m,facing_interiors\n";
     loads<<"time_s,face_a,face_b,length_m,force_bx_N,force_by_N,force_bz_N,"
            "moment_bx_Nm,moment_by_Nm,moment_bz_Nm\n";
@@ -578,7 +584,14 @@ void replay_contact_regions(int argc,char** argv) {
         const auto lines=a.straight_lines(b,pose,cutoff,1e-7,regions);
         for (const auto& line:lines.lines) {
             double length=0;
-            for (const auto& sample:line.samples) length+=sample.weight_m;
+            for (const auto& sample:line.samples) {
+                length+=sample.weight_m;
+                if (write_samples) {
+                    samples<<time<<','<<line.face_a<<'/'<<line.face_b<<','<<sample.weight_m;
+                    for (double v:sample.points.b) samples<<','<<v*1000;
+                    samples<<','<<sample.points.distance*1000<<'\n';
+                }
+            }
             const auto wrenches=line_contact_wrenches(line.samples,cutoff,stiffness,{},pose.origin);
             loads<<time<<','<<line.face_a<<','<<line.face_b<<','<<length;
             for (const auto& vector:{wrenches.b.force,wrenches.b.moment}) {
@@ -597,7 +610,8 @@ void replay_contact_regions(int argc,char** argv) {
              <<setup_s<<','<<std::chrono::duration<double>(assembly_start-query_start).count()<<','
              <<std::chrono::duration<double>(end-assembly_start).count()<<'\n';
     }
-    if (!witnesses || !loads || !stats) throw std::runtime_error("failed to write CAD contact replay");
+    if (!witnesses || !loads || !stats || (write_samples && !samples))
+        throw std::runtime_error("failed to write CAD contact replay");
 }
 
 void cad_point_distances(int argc,char** argv) {
