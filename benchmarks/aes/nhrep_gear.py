@@ -7,6 +7,7 @@ import json
 from math import gcd
 from collections import defaultdict
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import time
@@ -58,6 +59,147 @@ def prepare(solid, output, deflection_mm):
              normals=mesh.face_normals)
     return {"center_mm": center.tolist(), "mm_per_network_unit": float(scale), "deflection_mm": deflection_mm,
             "mesh_vertices": len(xyz), "mesh_triangles": len(faces), "feature_segments": len(edges)}
+
+
+def cad_triangle_parameters(step, deflection_mm, mesh, center, scale):
+    """Associate each triangle of the original training mesh with its CAD chart."""
+    from OCP.BRep import BRep_Tool
+    from OCP.BRepCheck import BRepCheck_Analyzer
+    from OCP.BRepMesh import BRepMesh_IncrementalMesh
+    from OCP.IFSelect import IFSelect_RetDone
+    from OCP.STEPControl import STEPControl_Reader
+    from OCP.TopAbs import TopAbs_FACE, TopAbs_REVERSED, TopAbs_SOLID
+    from OCP.TopExp import TopExp
+    from OCP.TopLoc import TopLoc_Location
+    from OCP.TopoDS import TopoDS
+    from OCP.TopTools import TopTools_IndexedMapOfShape
+
+    reader = STEPControl_Reader()
+    if reader.ReadFile(str(step)) != IFSelect_RetDone or not reader.TransferRoots():
+        raise ValueError(f"Could not read STEP solid: {step}")
+    solids = TopTools_IndexedMapOfShape()
+    TopExp.MapShapes_s(reader.OneShape(), TopAbs_SOLID, solids)
+    if solids.Extent() != 1 or not BRepCheck_Analyzer(solids.FindKey(1)).IsValid():
+        raise ValueError("NH-Rep requires one valid closed STEP solid")
+    solid = solids.FindKey(1)
+    BRepMesh_IncrementalMesh(solid, deflection_mm, True, .1)
+    faces = TopTools_IndexedMapOfShape()
+    TopExp.MapShapes_s(solid, TopAbs_FACE, faces)
+    owners, triangle_uv = [], []
+    start = 0
+    for face_id in range(1, faces.Extent() + 1):
+        face = TopoDS.Face_s(faces.FindKey(face_id))
+        location = TopLoc_Location()
+        triangulation = BRep_Tool.Triangulation_s(face, location)
+        if triangulation is None or not triangulation.HasUVNodes():
+            raise ValueError(f"Missing parameter coordinates on CAD face {face_id}")
+        triangles = np.asarray([t.Get() for t in triangulation.Triangles()]) - 1
+        if face.Orientation() == TopAbs_REVERSED:
+            triangles = triangles[:, [0, 2, 1]]
+        count = triangulation.NbNodes()
+        transform = location.Transformation()
+        positions = np.asarray([triangulation.Node(i).Transformed(transform).Coord() for i in range(1, count + 1)])
+        uv = np.asarray([triangulation.UVNode(i).Coord() for i in range(1, count + 1)])
+        end = start + len(triangles)
+        np.testing.assert_allclose(mesh.triangles[start:end] * scale + center, positions[triangles], atol=2e-6, rtol=0)
+        triangle_uv.append(uv[triangles])
+        owners.append(np.full(len(triangles), face_id))
+        start = end
+    if start != len(mesh.faces):
+        raise ValueError("The original tessellation could not be matched to the training mesh")
+    return np.concatenate(owners), np.concatenate(triangle_uv)
+
+
+def nearest_training_triangles(mesh, points, labels, face_labels):
+    # The upstream XYZ writer rounds samples to six significant digits.
+    # Query just the triangles intersecting that coordinate error box.
+    radius = 3e-6
+    tree = mesh.triangles_tree
+    ids, counts = tree.intersection_v(points - radius, points + radius)
+    source_ids = np.repeat(np.arange(len(points)), counts.astype(np.int64))
+    matches = face_labels[ids] == labels[source_ids]
+    ids, source_ids = ids[matches], source_ids[matches]
+    triangles = mesh.triangles[ids]
+    samples = points[source_ids]
+    a, b, c = triangles.transpose(1, 0, 2)
+    ab, ac, ap = b - a, c - a, samples - a
+    normal = np.cross(ab, ac)
+    normal_squared = np.einsum("ij,ij->i", normal, normal)
+    if np.any(normal_squared == 0):
+        raise ValueError("Degenerate triangle in the source mesh")
+    # Cross products avoid cancellation for long, narrow triangles.
+    v = np.einsum("ij,ij->i", np.cross(ap, ac), normal) / normal_squared
+    w = np.einsum("ij,ij->i", np.cross(ab, ap), normal) / normal_squared
+    barycentric = np.column_stack((1 - v - w, v, w))
+    planar = np.einsum("ni,nij->nj", barycentric, triangles)
+    distance = np.linalg.norm(planar - samples, axis=1)
+    distance[np.any(barycentric < 0, axis=1)] = np.inf
+    for start, end in ((0, 1), (1, 2), (2, 0)):
+        base = triangles[:, start]
+        edge = triangles[:, end] - base
+        t = np.clip(np.einsum("ij,ij->i", samples - base, edge) / np.einsum("ij,ij->i", edge, edge), 0, 1)
+        edge_distance = np.linalg.norm(base + t[:, None] * edge - samples, axis=1)
+        better = edge_distance < distance
+        distance[better] = edge_distance[better]
+        barycentric[better] = 0
+        barycentric[better, start] = 1 - t[better]
+        barycentric[better, end] = t[better]
+    order = np.lexsort((ids, distance, source_ids))
+    found, first = np.unique(source_ids[order], return_index=True)
+    if len(found) != len(points):
+        raise ValueError(f"No triangle with the original label for {len(points) - len(found)} training samples")
+    best = order[first]
+    if np.max(distance[best]) > radius:
+        raise ValueError(f"Some upstream training points are {np.max(distance[best]):g} units from their patch")
+    return barycentric[best], ids[best]
+
+
+def prepare_parametric(step, mesh_trial, output, executable):
+    import trimesh
+
+    started = time.perf_counter()
+    metadata = json.loads((mesh_trial / "spur.json").read_text(encoding="utf-8"))
+    center, scale = np.asarray(metadata["center_mm"]), metadata["mm_per_network_unit"]
+    mesh = trimesh.load_mesh(mesh_trial / "spur.obj", process=False)
+    samples = np.loadtxt(mesh_trial / "spur_50k.xyz")
+    labels = np.loadtxt(mesh_trial / "spur_50k_mask.txt", dtype=int)
+    face_labels = np.loadtxt(mesh_trial / "spur_50k_fid.txt", dtype=int) + 1
+    if len(face_labels) != len(mesh.faces) or samples.shape != (len(labels), 6):
+        raise ValueError("The mesh and upstream training labels have incompatible sizes")
+    owners, triangle_uv = cad_triangle_parameters(step, metadata["deflection_mm"], mesh, center, scale)
+    barycentric, ids = nearest_training_triangles(mesh, samples[:, :3], labels, face_labels)
+    parameters = np.einsum("ni,nij->nj", barycentric, triangle_uv[ids])
+    def evaluate(uv, face_ids, name):
+        params_path = output / f"{name}-uv.txt"
+        samples_path = output / f"{name}-samples.csv"
+        np.savetxt(params_path, np.column_stack((face_ids, uv)), fmt=("%d", "%.17g", "%.17g"))
+        subprocess.run([executable.resolve(), "cad-surface-samples", step.resolve(), params_path, samples_path], check=True)
+        return np.genfromtxt(samples_path, delimiter=",", skip_header=1, ndmin=2)
+
+    cad = evaluate(parameters, owners[ids], "spur-cad")
+    outside = cad[:, 0] != 1
+    if outside.any():
+        # A flat UV triangle can slightly overrun a curved trim. The nearest
+        # vertex of the same triangle supplies parameters on the original face.
+        vertex = np.argmax(barycentric[outside], axis=1)
+        cad[outside] = evaluate(triangle_uv[ids[outside], vertex], owners[ids[outside]], "spur-trim-vertex")
+    if not (cad[:, 0] == 1).all() or not np.isfinite(cad).all():
+        raise ValueError("Some training samples cannot be evaluated on their original CAD face")
+    xyz, normals = cad[:, 1:4], cad[:, 4:]
+    np.testing.assert_allclose(np.linalg.norm(normals, axis=1), 1, atol=1e-9, rtol=0)
+    correction_um = np.linalg.norm(xyz - samples[:, :3] * scale - center, axis=1) * 1000
+    if np.max(correction_um[~outside]) > 10 or np.any(np.sum(samples[:, 3:] * normals, axis=1) <= 0):
+        raise ValueError("The original CAD positions or normals disagree with their source triangles")
+    np.savetxt(output / "spur_50k.xyz", np.column_stack(((xyz - center) / scale, normals)), fmt="%.16g")
+    for file in ("spur_50k_mask.txt", "spur_50k_csg.conf", "spur-reference.npz"):
+        shutil.copyfile(mesh_trial / file, output / file)
+    metadata.update(training_geometry="original CAD parametric surface", training_samples=len(samples),
+                    trim_vertex_fallbacks=int(outside.sum()),
+                    paired_position_shift_p95_um=float(np.percentile(correction_um, 95)),
+                    paired_position_shift_max_um=float(correction_um.max()),
+                    preparation_s=time.perf_counter() - started)
+    (output / "spur.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps(metadata, indent=2))
 
 
 def contact_samples(witnesses):
@@ -206,22 +348,32 @@ def audit(output, model):
 def nhrep_composite(self, values, operation, convex=True):
     import torch
 
-    direct = [node for node in operation if not isinstance(node, list)]
-    children = [node for node in operation if isinstance(node, list)]
-    terms = [values[:, direct]] if direct else []
+    if not hasattr(self, "_reduction_indices"):
+        self._reduction_indices = {}
+    key = (id(operation), values.device)
+    if key not in self._reduction_indices:
+        direct = [node for node in operation if not isinstance(node, list)]
+        children = [node for node in operation if isinstance(node, list)]
+        direct_ids = torch.tensor(direct, dtype=torch.int64, device=values.device) if direct else None
+        child_ids = None
+        if children and all(not isinstance(node, list) for child in children for node in child):
+            width = max(map(len, children))
+            # Pad with the last index so ties select the same feature as upstream.
+            padded = [child + [child[-1]] * (width - len(child)) for child in children]
+            child_ids = torch.tensor(padded, dtype=torch.int64, device=values.device)
+        self._reduction_indices[key] = (direct_ids, child_ids, children)
+    direct_ids, child_ids, children = self._reduction_indices[key]
+    terms = [values.index_select(1, direct_ids)] if direct_ids is not None else []
     reduce = torch.max if convex else torch.min
-    if children and all(not isinstance(node, list) for child in children for node in child):
-        width = max(map(len, children))
-        # Pad with the last index so ties select the same feature as upstream.
-        indices = [child + [child[-1]] * (width - len(child)) for child in children]
+    if child_ids is not None:
         combine = torch.min if convex else torch.max
-        terms.append(combine(values[:, indices], dim=2).values)
+        terms.append(combine(values[:, child_ids], dim=2).values)
     else:
         terms.extend(nhrep_composite(self, values, child, not convex) for child in children)
     return reduce(torch.cat(terms, dim=1), dim=1, keepdim=True).values
 
 
-def train(upstream, output, epochs, batch):
+def train(upstream, output, epochs, batch, trial):
     import torch
     from pyhocon import ConfigFactory
 
@@ -264,13 +416,18 @@ def train(upstream, output, epochs, batch):
     source = source.replace("self.lr_schedules[0].get_learning_rate(0)", "float(self.lr_schedules[0].get_learning_rate(0))")
     source = source.replace("self.lr_schedules[i].get_learning_rate(epoch)",
                             "float(self.lr_schedules[i].get_learning_rate(epoch))")
+    source = source.replace("        traced_script_module = torch.jit.trace(network, example)",
+                            "        with torch.no_grad():\n"
+                            "            network(example)\n"
+                            "        traced_script_module = torch.jit.trace(network, example)")
     namespace = {"__name__": "nhrep_replay", "__file__": str(entry)}
     exec(compile(source, str(entry), "exec"), namespace)
     runner_type = namespace["ReconstructionRunner"]
     settings = ConfigFactory.parse_file(str(code / "conversion/setup.conf"))
     settings["train"]["input_path"] = str(output)
     settings["train"]["checkpoint_frequency"] = gcd(epochs, 1000)
-    runner = runner_type(conf=settings, folder_prefix="gear_trial_", file_prefix="spur_50k", expname="single_shape",
+    prefix = "gear_parametric_trial_" if trial == "parametric" else "gear_trial_"
+    runner = runner_type(conf=settings, folder_prefix=prefix, file_prefix="spur_50k", expname="single_shape",
                          gpu_index="0", is_continue=False, checkpoint="latest", eval=False,
                          flag_list=True, points_batch=batch, nepochs=epochs)
     if not runner.flag_data_load:
@@ -299,13 +456,15 @@ def train(upstream, output, epochs, batch):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("stage", choices=("prepare", "reference", "train", "audit"))
+    parser.add_argument("stage", choices=("prepare", "prepare-parametric", "reference", "train", "audit"))
     parser.add_argument("source", type=Path, help="STEP solid, NH-Rep checkout for training, or field for audit")
     parser.add_argument("output", type=Path)
     parser.add_argument("--deflection-mm", type=float, default=.0001)
     parser.add_argument("--anchors", type=int, default=32, help="Points per geometry group for the CAD reference")
     parser.add_argument("--epochs", type=int, default=4000)
     parser.add_argument("--batch", type=int, default=16384)
+    parser.add_argument("--trial", choices=("mesh", "parametric"), default="mesh")
+    parser.add_argument("--mesh-trial", type=Path, help="Existing mesh-sampled trial for prepare-parametric")
     parser.add_argument("--exe", type=Path, help="nc_contact executable for the CAD reference")
     parser.add_argument("--witnesses", type=Path, help="regions CSV for the optional frozen contact pose")
     args = parser.parse_args()
@@ -316,7 +475,14 @@ def main():
         audit(args.output, args.source)
         return
     if args.stage == "train":
-        train(args.source, args.output, args.epochs, args.batch)
+        train(args.source, args.output, args.epochs, args.batch, args.trial)
+        return
+    if args.stage == "prepare-parametric":
+        if args.mesh_trial is None or args.exe is None:
+            parser.error("prepare-parametric requires --mesh-trial and --exe")
+        if args.mesh_trial.resolve() == args.output.resolve():
+            parser.error("prepare-parametric requires a separate output directory")
+        prepare_parametric(args.source, args.mesh_trial, args.output, args.exe)
         return
     if args.stage == "reference":
         if args.exe is None:

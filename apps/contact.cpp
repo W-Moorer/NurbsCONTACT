@@ -2,8 +2,10 @@
 #include "nurbscontact/occt_contact.hpp"
 
 #include <BRepAlgoAPI_Cut.hxx>
+#include <BRepAdaptor_Surface.hxx>
 #include <BRepBndLib.hxx>
 #include <BRepBuilderAPI_MakeVertex.hxx>
+#include <BRepClass_FaceClassifier.hxx>
 #include <BRepClass3d_SolidClassifier.hxx>
 #include <BRepExtrema_DistShapeShape.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
@@ -669,6 +671,41 @@ void cad_point_distances(int argc,char** argv) {
     if (!output) throw std::runtime_error("failed to write CAD distances");
 }
 
+void cad_surface_samples(int argc,char** argv) {
+    if (argc!=5) throw std::invalid_argument(
+        "nc_contact cad-surface-samples A.step FACE_UV.txt OUTPUT.csv");
+    const auto shape=read_step_shape(argv[2]);
+    TopTools_IndexedMapOfShape faces;
+    TopExp::MapShapes(shape,TopAbs_FACE,faces);
+    std::vector<BRepAdaptor_Surface> surfaces;
+    surfaces.reserve(faces.Extent());
+    for (int i=1;i<=faces.Extent();++i) surfaces.emplace_back(TopoDS::Face(faces(i)));
+    std::ifstream parameters(argv[3]);
+    if (!parameters) throw std::invalid_argument("could not open CAD sampling parameters");
+    auto output=open_output(argv[4]);
+    output<<"inside_trim,x_mm,y_mm,z_mm,nx,ny,nz\n";
+    while (!(parameters>>std::ws).eof()) {
+        int id;
+        double u,v;
+        if (!(parameters>>id>>u>>v) || id<1 || id>faces.Extent() || !std::isfinite(u) || !std::isfinite(v))
+            throw std::invalid_argument("invalid CAD surface sampling parameter");
+        const auto& face=TopoDS::Face(faces(id));
+        const auto state=BRepClass_FaceClassifier(face,gp_Pnt2d{u,v},1e-9).State();
+        if (state!=TopAbs_IN && state!=TopAbs_ON) {
+            output<<"0,,,,,,\n";
+            continue;
+        }
+        gp_Pnt point;
+        gp_Vec du,dv;
+        surfaces[id-1].D1(u,v,point,du,dv);
+        auto normal=du.Crossed(dv).Normalized();
+        if (face.Orientation()==TopAbs_REVERSED) normal.Reverse();
+        output<<1<<','<<point.X()<<','<<point.Y()<<','<<point.Z()<<','
+              <<normal.X()<<','<<normal.Y()<<','<<normal.Z()<<'\n';
+    }
+    if (!output) throw std::runtime_error("failed to write CAD surface samples");
+}
+
 double sampled_load(const std::vector<LoadSample>& table,double time) {
     if (table.empty()) return 0;
     const auto right=std::upper_bound(table.begin()+1,table.end()-1,time,
@@ -911,6 +948,10 @@ void export_fixture(int argc,char** argv) {
 
 int main(int argc,char** argv) {
     try {
+        if (argc>=2 && std::string_view(argv[1])=="cad-surface-samples") {
+            cad_surface_samples(argc,argv);
+            return 0;
+        }
         if (argc>=2 && std::string_view(argv[1])=="cad-point-distance") {
             cad_point_distances(argc,argv);
             return 0;

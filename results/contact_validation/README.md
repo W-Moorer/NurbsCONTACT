@@ -235,6 +235,31 @@ that pose. The CPU timings measure field evaluations on prescribed
 points. Contact-region discovery and the HHT solve are outside these
 timings.
 
+The parametric-sampling trial reuses the 50,000 sample locations and
+the 54 branches from the mesh trial. The adapter recovers each sample's
+original STEP face and interpolates its surface parameters using the
+tessellation chart. `nc_contact cad-surface-samples` checks the trimmed
+face and evaluates its CAD position and outward normal. For an out-of-trim
+sample, the adapter uses parameters of a vertex on the same triangle and
+records the count and position shifts. The branch labels, Boolean tree,
+validation queries and line-load setup are shared with the mesh trial.
+
+```powershell
+$cad = 'build/aes-nhrep-parametric'
+python benchmarks/aes/nhrep_gear.py prepare-parametric $gear $cad --mesh-trial $out --exe build/aes-occt/Release/nc_contact.exe
+python benchmarks/aes/nhrep_gear.py train build/deps/nh-rep $cad --trial parametric --epochs 15000 --batch 16384
+python benchmarks/aes/nhrep_gear.py audit "$cad/gear_parametric_trial_spur_50k_model_h.pt" $cad
+```
+
+The parametric model trained from epoch zero. The archived mesh trial
+resumed from checkpoints. Both used the same batch size and final epoch.
+Each report represents one trained model. The [parametric trial report](../aes/nhrep-spur-parametric.json)
+records a P95 distance error of 40.10 µm on smooth faces and 48.98 µm
+near sharp edges, against 41.03 µm and 61.21 µm in the mesh-sampled
+trial. All 448 distance-check errors exceed 0.125 µm in both trials.
+The parametric field gives 0 N and 711.67 N on the two contact lines,
+against 149.35 N per line with CAD distances at the same pose.
+
 ~~~text
 drives count
 body_id orbit arm_xyz axis_xyz angular_speed

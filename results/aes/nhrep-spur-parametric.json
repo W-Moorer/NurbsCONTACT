@@ -1,0 +1,100 @@
+{
+  "step": "spur-1a.step",
+  "center_mm": [
+    1.5276668818842154e-12,
+    1.5276668818842154e-12,
+    2.374989094278135e-12
+  ],
+  "mm_per_network_unit": 36.11109931001229,
+  "deflection_mm": 0.0001,
+  "mesh_vertices": 180993,
+  "mesh_triangles": 361986,
+  "feature_segments": 4494,
+  "training_geometry": "original CAD parametric surface",
+  "training_samples": 50000,
+  "trim_vertex_fallbacks": 0,
+  "paired_position_shift_p95_um": 1.8938855088608981,
+  "paired_position_shift_max_um": 6.8422375086666785,
+  "preparation_s": 129.73621519998414,
+  "epochs": 15000,
+  "start_epoch": 0,
+  "batch": 16384,
+  "training_s": 1487.1005967999808,
+  "device": "NVIDIA GeForce RTX 3070",
+  "patches": 54,
+  "upstream_commit": "bf807e998e613ba17d03c1c8e160b7fe2262e734",
+  "sample_sha256": "cc19ae9335dba35d58ab99beffc376e9b3e3420ca1ba178a6b5126147375e414",
+  "model": "gear_parametric_trial_spur_50k_model_h.pt",
+  "gap_check_um": 0.125,
+  "batched_cpu_query_us_per_point": 22.067716813942962,
+  "single_cpu_value_and_gradient_us": 1010.9939996618778,
+  "point_reference_total_s_including_setup": 15.444040800037328,
+  "groups": {
+    "face": {
+      "queries": 224,
+      "mean_distance_error_um": 15.7227692618703,
+      "p95_distance_error_um": 40.096084441345695,
+      "max_distance_error_um": 61.81905975222624,
+      "max_boundary_error_um": 61.60568445920944,
+      "source_mesh_max_distance_error_um": 0.014668806821681313,
+      "within_0p125_um": 0,
+      "normal_checks": 192,
+      "normal_error_p95_deg": 1.6099000089745472,
+      "wrong_sign": 56,
+      "checked_sign": 192
+    },
+    "sharp": {
+      "queries": 224,
+      "mean_distance_error_um": 21.69104751544591,
+      "p95_distance_error_um": 48.98293332884545,
+      "max_distance_error_um": 64.21168893575668,
+      "max_boundary_error_um": 64.21168893575668,
+      "source_mesh_max_distance_error_um": 0.3416742635732051,
+      "within_0p125_um": 0,
+      "normal_checks": 172,
+      "normal_error_p95_deg": 90.70351763226105,
+      "wrong_sign": 66,
+      "checked_sign": 186
+    }
+  },
+  "frozen_pose_line_loads": [
+    {
+      "face_pair": "142/10",
+      "cad_gaps_um": [
+        48.77696793648938,
+        48.77696793665544
+      ],
+      "cad_load_N": 149.3527695252428,
+      "mesh_gaps_um": [
+        48.898953178657955,
+        48.898953178809776
+      ],
+      "mesh_load_N": 146.42512371330943,
+      "nhrep_gaps_um": [
+        67.52690887451172,
+        60.104393005371094
+      ],
+      "nhrep_load_N": 0.0,
+      "gap_budget_um_for_2pct_load": 0.12446064126855186
+    },
+    {
+      "face_pair": "4/4",
+      "cad_gaps_um": [
+        48.7769373217136,
+        48.77693732175698
+      ],
+      "cad_load_N": 149.35350427835294,
+      "mesh_gaps_um": [
+        49.15290309877094,
+        49.15290309880805
+      ],
+      "mesh_load_N": 140.33032562905203,
+      "nhrep_gaps_um": [
+        22.02324676513672,
+        28.670902252197266
+      ],
+      "nhrep_load_N": 711.6702273488045,
+      "gap_budget_um_for_2pct_load": 0.12446125356529412
+    }
+  ]
+}
