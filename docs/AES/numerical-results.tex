@@ -1,6 +1,6 @@
 \section{Numerical study}
 \label{sec:evaluation}
-We answer three questions. How closely do the force and motion histories follow closed-form solutions? Can CAD clearance be certified at times where a coarse geometric approximation or a sampling-only witness search becomes unreliable? What is the online cost of each geometry representation at a prescribed tolerance on mechanism response?
+We compare force and motion histories with closed-form solutions and measure the cost of each geometry representation at prescribed tolerances on mechanism response. We also evaluate the cost of force enclosures and the effect of reusing information across force evaluations.
 
 The C++ implementations use Release builds and binary64 arithmetic. The Windows STEP runs use MSVC and Open CASCADE 7.9.3 on an AMD Ryzen 9 5900X. We give setup and online integration time separately and exclude trace serialization. Cam setup includes the common model preparation used by the selected backend. The refinement ladders use one to three repeats per setting. A serial timing batch repeats the selected cam and spur configurations three times and the selected reducer configurations twice. We report the median online time for repeated configurations. The Linux engine results were obtained on the same workstation under WSL. The RecurDyn timings report the Windows solver and process interface separately. Software versions, individual timing records and precise settings are in the repository.
 
@@ -41,29 +41,6 @@ Table~\ref{tab:spheres} compares the fine-step results. For the native engine co
 \end{table}
 
 At 125~\microsec{}, the bounded oracle reuses 927 inactive-pair exclusions in the plane fixture and 1,029 in the two-sphere fixture. The intervals preserve the force and position errors of the fixed native solver at the reported precision. On these cheap primitive evaluations the interval machinery increases time relative to the direct native force path. MuJoCo with RK4 and Drake with RK3 produce smaller position errors at the finest step. The comparison therefore records the effect of the selected time integrator along with that of the contact representation.
-
-\subsection{Disk passing a circular trim}
-\label{sec:trim}
-A disk of radius $a=0.25$ mm translates through the plane of a circular opening with radius $r=1$ mm. If its axis has in-plane eccentricity $e$, its minimum rim gap is $g=r-a-e$. With the disk at height $z(t)$, the separation near the inner rim is $\sqrt{g^2+z(t)^2}$. The threshold is $\delta=0.03125$ mm. For a monotonically approaching disk the first entry occurs at height $\sqrt{\delta^2-g^2}$ if $g\leq\delta$. For $g>\delta$ the path is clear. We use the actual binary64 input offsets to compute the analytic times in high-precision arithmetic. Figure~\ref{fig:trim} shows the diagonal case. A counterbored pin provides an additional trim fixture with the same positive-gap construction at the throat rim.
-
-\resultfigure{trim}{Disk crossing a circular trim on an eccentric path. The enlarged views show the disk edge against the critical rim. The graph gives the analytical threshold-entry and near-miss curves for the $3{:}4$ diagonal direction with signed gap offsets of $-100$ nm and $+100$ nm. The dashed marker locates the analytical first entry. Shading gives the bracket returned by the guided query.}{fig:trim}
-
-Together the trim fixtures supply 34 translations over a normalized time interval of $[0,1]$. The scan varies the signed gap about the threshold between $-10$ and $+10$~\micron{}, including two exact-equality paths and offsets of 10 and 100 nm in a $3{:}4$ diagonal direction. We request a time width of $5\times10^{-4}$ and cap the native search at 200,000 tasks. Each variant runs three times. The independent audit checks the reported status, inclusion of the analytic first time in any bracket and the enclosed distance between the witness points. Guidance raises the number of within-target results from 29 to 32. The three newly witnessed diagonal entries finish in median times of 0.494, 0.616 and 1.586 ms. Ordinary sampling in these same cases exhausts the task limit after median times of 2.127, 2.415 and 3.190 s. The two exact-equality paths retain safe prefixes.
-
-A separate baseline batch uses the same configurations and target time width. A swept triangle BVH at a 6.104 nm nominal tessellation deflection matches the analytic result within target on all 34 paths. Its pooled preparation time is 0.282 s for the disk/plate fixture and 2.620 s for the pin/counterbore fixture. The swept mesh search operates on the triangulations. CAD conservative advancement with bounded static distance and mesh-guided CAD verification each deliver a complete CAD outcome within target in 4 of 34 paths. Numerical Open CASCADE distance advancement is within target and consistent with the analytic result in 17 paths. The native sweep uses original-boundary witnesses and exclusions. Table~\ref{tab:events} gives both the cost of matching the numerical time bracket and the geometry on which the result holds for the recovered paths.
-
-\begin{table}[pos=!htbp]
-\centering\small
-\caption{Online medians for the three recovered diagonal entries. The mesh column selects the fastest tested deflection at each path whose bracket contains the analytic event and meets the target width. The guided results certify a bracket on the nominal CAD. Ordinary sampling exhausts its work budget on these paths. The mesh and witness studies were timed in separate batches.}
-\label{tab:events}
-\begin{tabular}{lrrrr}\toprule
-Path & Guided & Ordinary & Mesh & Mesh deflection \\
- & (ms) & (ms) & (ms) & (nm) \\\midrule
-Disk, $-100$ nm & 0.616 & 2415 & 19.82 & 48.829 \\
-Disk, $-10$ nm & 0.494 & 2127 & 88.43 & 6.104 \\
-Counterbore, $-10$ nm & 1.586 & 3190 & 131.36 & 48.829 \\
-\bottomrule\end{tabular}
-\end{table}
 
 \FloatBarrier
 \subsection{Industrial mechanisms at matched accuracy}
@@ -113,5 +90,5 @@ The complex model places a spur stage upstream of a 22-degree helical stage. The
 \label{sec:ablation}
 We compare the fixed native force kernel, the bounded kernel with tight evaluation, and the residual-driven mode with reuse. At 500~\microsec{} over 20 s, the cam's residual-driven mode with reuse records 113 omitted low-force pairs, 692 revalidated exclusions and 119 precision refinements in 40,000 accepted steps. In this batch the tight and adaptive cached bounded runs take 2.07 and 1.96 s. The original direct force computation takes 0.59 s. The three modes have a 4.479~\micron{} displacement RMS error relative to the 62.5~\microsec{} reference. Most of this error is associated with the integration step.
 
-At a 10~\microsec{} step over 2 s, the spur gear's tight and cached bounded variants complete with the same reported trajectory and force errors as the fixed native kernel. The cached run obtains over $3.5\times 10^5$ accepted ray-coordinate enclosures from prior points but also reaches the tighter evaluation on most steps. Its online time is higher than that of the tight bounded mode in the paired ablation. In a separate 0.2 s diagnostic that reaches the first reducer load transient at a 20~\microsec{} internal step, both bounded variants complete all 10,000 steps. The cached version reuses over $9\times10^5$ ray-coordinate enclosures. It also requires 9,987 refinements and takes more time than the tight version in this diagnostic. These effects depend on how often a trial changes the active contacts or yields overlapping residual intervals. The timings show a strong benefit for guided clearance on the hard trim paths and a geometry-dependent cost at matched dynamics accuracy.
+At a 10~\microsec{} step over 2 s, the spur gear's tight and cached bounded variants complete with the same reported trajectory and force errors as the fixed native kernel. The cached run obtains over $3.5\times 10^5$ accepted ray-coordinate enclosures from prior points but also reaches the tighter evaluation on most steps. Its online time is higher than that of the tight bounded mode in the paired ablation. In a separate 0.2 s diagnostic that reaches the first reducer load transient at a 20~\microsec{} internal step, both bounded variants complete all 10,000 steps. The cached version reuses over $9\times10^5$ ray-coordinate enclosures. It also requires 9,987 refinements and takes more time than the tight version in this diagnostic. These effects depend on how often a trial changes the active contacts or yields overlapping residual intervals.
 \FloatBarrier

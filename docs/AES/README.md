@@ -10,7 +10,7 @@ From the repository root, run `python benchmarks/hht/paper.py results/hht` with 
 
 ## Reproduce the figures
 
-Run the [numerical protocol](../../benchmarks/aes/protocol.md) first. The figure script uses the recorded fine-step sphere traces, the diagonal trim audit, and the selected industrial runs named in its `industrial` function. The run folders used for the published figures were under `build/aes-benchmark`.
+Run the [numerical protocol](../../benchmarks/aes/protocol.md) first. The figure script uses the recorded fine-step sphere traces and the selected industrial runs named in its `industrial` function. The run folders used for the published figures were under `build/aes-benchmark`.
 
 Prepare the model renders by tessellating each gear solid named in `results/gears/models/spur.csv` and `reducer.csv` with `python benchmarks/gears/tessellate.py STEP_FILE STEM.npz`. Put the resulting files in `build/aes-benchmark/paper/step-meshes`. Populate `build/aes-benchmark/paper/frames` with three completed traces named `cam.csv`, `spur.csv`, and `reducer.csv`. The published inputs were `cam-native-24-125us.csv`, `spur-native-0nm-10us-31.csv`, and `reducer-native-0nm-10us-31.csv`.
 

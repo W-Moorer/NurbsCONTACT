@@ -1,8 +1,8 @@
-"""Render the six nominal benchmark assemblies using Blender's Python runtime."""
+"""Render the manuscript benchmark assemblies using Blender's Python runtime."""
 
 import argparse
 import csv
-from math import cos, pi, sin, sqrt
+from math import cos, pi, sin
 from pathlib import Path
 import sys
 
@@ -67,18 +67,6 @@ def cylinder(name, center, radius, depth, mat):
     return obj
 
 
-def bore_plate(mat):
-    angles = np.linspace(0., 2*pi, 256, endpoint=False)
-    outer = [(3*cos(t)/max(abs(cos(t)),abs(sin(t))), 3*sin(t)/max(abs(cos(t)),abs(sin(t))), 0.) for t in angles]
-    inner = [(cos(t),sin(t),0.) for t in angles]
-    n = len(angles)
-    faces = [(i,(i+1)%n,(i+1)%n+n,i+n) for i in range(n)]
-    obj = mesh("Plate with circular trim", outer+inner, faces, mat, smooth=False)
-    # Thin display backing keeps the nominal top contact face at z = 0.
-    obj.modifiers.new("Display backing", "SOLIDIFY").thickness = .075
-    return obj
-
-
 def loading_frame(path, target):
     with path.open(newline="", encoding="utf-8") as stream:
         for row in csv.DictReader(stream):
@@ -99,15 +87,6 @@ def mechanism(case, folder, mesh_dir, trace_dir, materials):
         sphere("Lower sphere", (-distance/2,0.,0.), .055, steel)
         sphere("Upper sphere", (distance/2,0.,0.), .055, blue)
         return ((0.,0.,0.), .272, (.28,-1.78,.91), (0.,0.,0.), .082, (.13,-1.8,.38))
-    if case == "trim":
-        bore_plate(steel)
-        threshold, offset = .03125, 1e-4
-        eccentricity = .75-threshold+offset
-        disk = cylinder("Circular moving face", (.6*eccentricity,.8*eccentricity,.0335), .25, .065, blue)
-        # The underside is at the positive entry height of the prescribed path.
-        disk.location.z = .0325 + sqrt(threshold**2-(threshold-offset)**2)
-        close = (.6,.8,.027)
-        return ((0.,0.,.023), 7.75, (1.19,-2.04,2.32), close, .85, (1.19,-2.04,2.32))
     if case == "cam":
         q = loading_frame(trace_dir/"cam.csv", .44)
         cx, cy = .024*cos(q["q0"]), .024*sin(q["q0"])
@@ -192,7 +171,7 @@ def main():
     parser.add_argument("output",type=Path)
     args = parser.parse_args(sys.argv[sys.argv.index("--")+1:])
     args.output.mkdir(parents=True,exist_ok=True)
-    for case in ("plane","spheres","trim","cam","spur","reducer"):
+    for case in ("plane","spheres","cam","spur","reducer"):
         bpy.ops.wm.read_factory_settings(use_empty=True)
         bpy.context.scene.world = bpy.data.worlds.new("Studio")
         mats = [material(name,color) for name,color in (("Blue",BLUE),("Steel",STEEL),

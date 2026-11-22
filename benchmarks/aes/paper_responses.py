@@ -1,7 +1,6 @@
 """Make the AES response figures and assemble the Blender model panels."""
 
 import argparse
-import csv
 from pathlib import Path
 
 import matplotlib
@@ -12,11 +11,11 @@ from matplotlib.ticker import MaxNLocator
 import numpy as np
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
-from paper_diagrams import AMBER, BLUE, GREEN, GRID, INK, save
+from paper_diagrams import AMBER, BLUE, GRID, INK, save
 from sphere_accuracy import reference
 
 
-CASES = ("plane", "spheres", "trim", "cam", "spur", "reducer")
+CASES = ("plane", "spheres", "cam", "spur", "reducer")
 
 
 def series(path, fields):
@@ -54,27 +53,6 @@ def spheres(work, output):
         axes[0].legend(ncol=2,frameon=False,loc="best",fontsize=8.6)
         style(axes,"Time (ms)")
         save(fig,output,case+"-response")
-
-
-def trim(root, output):
-    with (root/"results/aes/event-accuracy.csv").open(encoding="utf-8") as stream:
-        selected = next(row for row in csv.DictReader(stream) if row["scene"] == "trim-edge-diagonal--100nm"
-                        and row["method"] == "guided")
-    low, high = float(selected["safe_prefix"]),float(selected["witness_time"])
-    first = float(selected["analytic_time"])
-    x = np.linspace(min(first-.0007,low-.0001), max(first+.0011,high+.0001), 600)
-    fig,ax = plt.subplots(figsize=(7.12,2.65),layout="constrained")
-    ax.axvspan((low-first)*1e6,(high-first)*1e6,color="#e0efeb",label="Certified bracket")
-    for offset,color,label in ((-100,BLUE,"Threshold entry"),(100,AMBER,"Near miss")):
-        g = .03125+offset*1e-6
-        y = (np.hypot(g,.375-x)-.03125)*1e6
-        ax.plot((x-first)*1e6,y,color=color,lw=1.7,label=label)
-    ax.axhline(0,color=INK,ls=":",lw=.9)
-    ax.axvline(0,color=BLUE,ls="--",lw=.9)
-    ax.set_ylabel(r"Separation minus $\delta$ (nm)")
-    style(ax,r"Path time relative to analytical entry ($10^{-6}$ of path duration)")
-    ax.legend(fontsize=8.6,loc="upper right",frameon=False,ncol=3)
-    save(fig,output,"trim-response")
 
 
 def industrial(work, output):
@@ -133,7 +111,6 @@ def main():
     args.output.mkdir(parents=True,exist_ok=True)
     if not args.models_only:
         spheres(args.work,args.output)
-        trim(Path(__file__).resolve().parents[2],args.output)
         industrial(args.work,args.output)
     if not args.plots_only:
         model_panels(args.work,args.output)
