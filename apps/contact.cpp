@@ -601,8 +601,10 @@ void replay_contact_regions(int argc,char** argv) {
 }
 
 void cad_point_distances(int argc,char** argv) {
-    if (argc!=5) throw std::invalid_argument(
-        "nc_contact cad-point-distance A.step POINTS_MM.txt OUTPUT.csv");
+    if (argc!=5 && argc!=6) throw std::invalid_argument(
+        "nc_contact cad-point-distance A.step POINTS_MM.txt OUTPUT.csv [TIMINGS.csv]");
+    const bool measure=argc==6;
+    const auto setup_start=Clock::now();
     const auto shape=read_step_shape(argv[2]);
     TopTools_IndexedMapOfShape solids, faces;
     TopExp::MapShapes(shape,TopAbs_SOLID,solids);
@@ -615,16 +617,23 @@ void cad_point_distances(int argc,char** argv) {
         if (boxes[i-1].IsVoid() || boxes[i-1].IsOpen()) throw std::invalid_argument("invalid CAD face bounds");
     }
     BRepClass3d_SolidClassifier classifier(solid);
+    const double setup_s=std::chrono::duration<double>(Clock::now()-setup_start).count();
     std::ifstream points(argv[3]);
     if (!points) throw std::invalid_argument("could not open CAD distance points");
     auto output=open_output(argv[4]);
     output<<"signed_distance_mm,nx,ny,nz\n";
     std::vector<std::pair<double,int>> order(boxes.size());
+    std::ofstream timings;
+    if (measure) {
+        timings=open_output(argv[5]);
+        timings<<"setup_s,query_s\n";
+    }
     constexpr double tolerance=1e-7;
     while (!(points>>std::ws).eof()) {
         double x,y,z;
         if (!(points>>x>>y>>z) || !(std::isfinite(x) && std::isfinite(y) && std::isfinite(z)))
             throw std::invalid_argument("invalid CAD distance point");
+        const auto query_start=measure?Clock::now():Clock::time_point{};
         const gp_Pnt point{x,y,z};
         const auto vertex=BRepBuilderAPI_MakeVertex(point).Vertex();
         Bnd_Box point_box;
@@ -653,6 +662,7 @@ void cad_point_distances(int argc,char** argv) {
         }
         classifier.Perform(point,tolerance);
         const auto state=classifier.State();
+        if (measure) timings<<setup_s<<','<<std::chrono::duration<double>(Clock::now()-query_start).count()<<'\n';
         if (state==TopAbs_ON && distance<=1e-6) {
             output<<"0,,,\n";
             continue;
@@ -669,6 +679,7 @@ void cad_point_distances(int argc,char** argv) {
         }
     }
     if (!output) throw std::runtime_error("failed to write CAD distances");
+    if (measure && !timings) throw std::runtime_error("failed to write CAD timings");
 }
 
 void cad_surface_samples(int argc,char** argv) {

@@ -300,6 +300,19 @@ field = FittedFaces(model/'guide.npz', model/'faces.npz')
 distance_mm = field.predict([[30.365967780378336, 1.8307461969484468, 0.0]])
 ```
 
+The [point-query timings](../aes/gear-field/timing.json) use the same seed-1407
+points, a fixed four-point contact pose and prepared CPU models. Each of three
+repeats measures 96 individual queries (48 from each stratum) and a shuffled
+batch of 1,536. The triangle baseline uses an Open3D BVH and three sign rays.
+The native OCCT reference reuses its STEP solid, face bounds and solid classifier.
+Its internal timers exclude point-file I/O. The timing report lists construction,
+warm queries and the number of distances within 0.125 µm of CAD. Run with
+Open3D installed and the parametric NH-Rep checkpoint available locally.
+
+```powershell
+python benchmarks/aes/gear_field_timing.py build/aes-occt/Release/nc_contact.exe build/aes-gear-field-timing
+```
+
 ~~~text
 drives count
 body_id orbit arm_xyz axis_xyz angular_speed

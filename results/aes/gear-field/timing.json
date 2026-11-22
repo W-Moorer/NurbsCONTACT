@@ -1,0 +1,95 @@
+{
+  "seed": 825,
+  "threads": 1,
+  "repeats": 3,
+  "single_points_per_repeat": 96,
+  "points_per_batch": 1536,
+  "pose_points": 4,
+  "open3d_version": "0.19.0",
+  "torch_version": "2.7.1+cu126",
+  "processor": "AMD64 Family 25 Model 33 Stepping 0, AuthenticAMD",
+  "methods": {
+    "fitted_faces": {
+      "single_median_ms": 6.566800002474338,
+      "single_p95_ms": 26.242270020884458,
+      "single_face_median_ms": 5.386050033848733,
+      "single_edge_median_ms": 21.04995000991039,
+      "mixed_1536_seconds": [
+        1.996070699999109,
+        2.1590099000022747,
+        1.9920321000390686
+      ],
+      "mixed_1536_median_s": 1.996070699999109,
+      "mixed_per_point_ms": 1.2995251953119198,
+      "mixed_points_per_second": 769.511821400257,
+      "four_contact_points_median_ms": 14.288212500105146,
+      "within_0p125_um": 1536,
+      "max_error_um": 0.006017640921673895,
+      "setup_s": 3.8990421000053175,
+      "first_query_s": 0.004480799951124936
+    },
+    "triangle_bvh_open3d": {
+      "single_median_ms": 0.048649992095306516,
+      "single_p95_ms": 0.07341999735217507,
+      "single_face_median_ms": 0.04819995956495404,
+      "single_edge_median_ms": 0.048900023102760315,
+      "mixed_1536_seconds": [
+        0.007696099986787885,
+        0.0077556000323966146,
+        0.007875800016336143
+      ],
+      "mixed_1536_median_s": 0.0077556000323966146,
+      "mixed_per_point_ms": 0.005049218771091546,
+      "mixed_points_per_second": 198050.44014439065,
+      "four_contact_points_median_ms": 0.06246249540708959,
+      "within_0p125_um": 838,
+      "max_error_um": 1.795583946569494,
+      "setup_s": 0.09156800003256649,
+      "first_query_s": 0.3288545999675989
+    },
+    "nhrep": {
+      "single_median_ms": 0.2747999969869852,
+      "single_p95_ms": 0.37175999896135165,
+      "single_face_median_ms": 0.27249997947365046,
+      "single_edge_median_ms": 0.2788499987218529,
+      "mixed_1536_seconds": [
+        0.0255475000012666,
+        0.02287290000822395,
+        0.022310299973469228
+      ],
+      "mixed_1536_median_s": 0.02287290000822395,
+      "mixed_per_point_ms": 0.014891210942854135,
+      "mixed_points_per_second": 67153.70588984044,
+      "four_contact_points_median_ms": 0.403750003897585,
+      "within_0p125_um": 9,
+      "max_error_um": 111.32861608451172,
+      "setup_s": 0.024819299986120313,
+      "first_query_s": 0.09667260001879185
+    },
+    "occt": {
+      "single_median_ms": 14.080200000000001,
+      "single_p95_ms": 24.375915,
+      "single_face_median_ms": 4.639950000000001,
+      "single_edge_median_ms": 16.25,
+      "mixed_1536_seconds": [
+        18.8845753,
+        18.829081900000002,
+        17.8578571
+      ],
+      "mixed_1536_median_s": 18.829081900000002,
+      "mixed_per_point_ms": 12.258516861979167,
+      "mixed_points_per_second": 81.57593706148785,
+      "four_contact_points_median_ms": 24.7084,
+      "within_0p125_um": 1536,
+      "max_error_um": 0.0,
+      "setup_s": 9.7272417
+    }
+  },
+  "projection_profile": {
+    "points": 1536,
+    "total_s": 2.2847850999678485,
+    "projection_s": 2.1614614000427537,
+    "all_point_projection_s": 0.8132359000155702,
+    "additional_crease_projections_s": 1.3482255000271834
+  }
+}
