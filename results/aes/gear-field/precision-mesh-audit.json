@@ -1,0 +1,158 @@
+{
+  "mesh-0.1": {
+    "vertices": 21148,
+    "triangles": 42296,
+    "volume_mm3": 59321.617725807046,
+    "open3d": {
+      "1407": {
+        "n": 1536,
+        "within": 1481,
+        "max_um": 14.452643619610813,
+        "wrong_sign": 0
+      },
+      "5119": {
+        "n": 1536,
+        "within": 1490,
+        "max_um": 4.267696419822888,
+        "wrong_sign": 0
+      },
+      "contact": {
+        "n": 36,
+        "within": 36,
+        "max_um": 0.08544767143077447,
+        "wrong_sign": 0,
+        "max_line_force_error_N": 2.020218384270578
+      }
+    }
+  },
+  "mesh-0.04": {
+    "vertices": 35480,
+    "triangles": 70960,
+    "volume_mm3": 59321.776941156364,
+    "open3d": {
+      "1407": {
+        "n": 1536,
+        "within": 1453,
+        "max_um": 7.67200852408508,
+        "wrong_sign": 0
+      },
+      "5119": {
+        "n": 1536,
+        "within": 1466,
+        "max_um": 6.288173967989863,
+        "wrong_sign": 0
+      },
+      "contact": {
+        "n": 36,
+        "within": 34,
+        "max_um": 0.1644213427768465,
+        "wrong_sign": 0,
+        "max_line_force_error_N": 3.9461193791902858
+      }
+    }
+  },
+  "conditioned-4": {
+    "vertices": 214308,
+    "triangles": 428616,
+    "volume_mm3": 59321.61772580841,
+    "open3d": {
+      "1407": {
+        "n": 1536,
+        "within": 1536,
+        "max_um": 0.0926727783571446,
+        "wrong_sign": 0
+      },
+      "5119": {
+        "n": 1536,
+        "within": 1533,
+        "max_um": 0.292923393065081,
+        "wrong_sign": 0
+      },
+      "contact": {
+        "n": 36,
+        "within": 36,
+        "max_um": 0.08366698266810968,
+        "wrong_sign": 0,
+        "max_line_force_error_N": 1.994960916047006
+      }
+    }
+  },
+  "conditioned-2": {
+    "vertices": 653052,
+    "triangles": 1306104,
+    "volume_mm3": 59321.61772580881,
+    "open3d": {
+      "1407": {
+        "n": 1536,
+        "within": 1536,
+        "max_um": 0.09358547448026777,
+        "wrong_sign": 0
+      },
+      "5119": {
+        "n": 1536,
+        "within": 1535,
+        "max_um": 0.238048743923951,
+        "wrong_sign": 0
+      },
+      "contact": {
+        "n": 36,
+        "within": 36,
+        "max_um": 0.0827356600934942,
+        "wrong_sign": 0,
+        "max_line_force_error_N": 1.9788676619576506
+      }
+    }
+  },
+  "conditioned-1": {
+    "vertices": 1934916,
+    "triangles": 3869832,
+    "volume_mm3": 59321.61772581023,
+    "open3d": {
+      "1407": {
+        "n": 1536,
+        "within": 1536,
+        "max_um": 0.0926727783571446,
+        "wrong_sign": 0
+      },
+      "5119": {
+        "n": 1536,
+        "within": 1536,
+        "max_um": 0.0839632855894959,
+        "wrong_sign": 0
+      },
+      "contact": {
+        "n": 36,
+        "within": 36,
+        "max_um": 0.08360361912143621,
+        "wrong_sign": 0,
+        "max_line_force_error_N": 1.9744867205666594
+      }
+    }
+  },
+  "mesh-full-0.08": {
+    "vertices": 4880825,
+    "triangles": 9761650,
+    "volume_mm3": 59321.70074941902,
+    "open3d": {
+      "1407": {
+        "n": 1536,
+        "within": 1485,
+        "max_um": 12.517121659097542,
+        "wrong_sign": 0
+      },
+      "5119": {
+        "n": 1536,
+        "within": 1501,
+        "max_um": 11.358915615341143,
+        "wrong_sign": 0
+      },
+      "contact": {
+        "n": 36,
+        "within": 36,
+        "max_um": 0.03334404715948924,
+        "wrong_sign": 0,
+        "max_line_force_error_N": 0.8002642840330698
+      }
+    }
+  }
+}

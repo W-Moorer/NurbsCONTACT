@@ -92,8 +92,8 @@ def barycentric(points, tris):
 class FittedFaces:
     """Use mesh proximity to choose candidate CAD faces, then query the fitted geometry."""
 
-    def __init__(self, guide_path, fits_path, *, compiled=True, crease_band_mm=.1):
-        """Use extra adjacent-face projections within crease_band_mm of the guide."""
+    def __init__(self, guide_path, fits_path, *, compiled=True, crease_band_mm=.1, trim_step=None):
+        """Optionally index shared edges from the same STEP solid used for the guide."""
         if not np.isfinite(crease_band_mm) or crease_band_mm < 0:
             raise ValueError('Expected a finite nonnegative crease band in millimetres')
         self.crease_band_mm = float(crease_band_mm)
@@ -140,7 +140,13 @@ class FittedFaces:
                 self.edge_grid = pack_grid(self.xyz, self.crease_tree, resolution)
         self.tree = self.edge_tree = None
         if self.refine is None:
+            if trim_step is not None:
+                raise ValueError('STEP edge queries require the compiled projection backend')
             self._init_reference_trees()
+        elif trim_step is not None:
+            from functools import partial
+            from trim_bounds import build_index
+            self.refine = partial(self.refine,trim_index=build_index(trim_step,self),prune=True)
 
     def _init_reference_trees(self):
         self.tree = igl.AABB()

@@ -61,17 +61,12 @@ def prepare(solid, output, deflection_mm):
             "mesh_vertices": len(xyz), "mesh_triangles": len(faces), "feature_segments": len(edges)}
 
 
-def cad_triangle_parameters(step, deflection_mm, mesh, center, scale):
-    """Associate each triangle of the original training mesh with its CAD chart."""
-    from OCP.BRep import BRep_Tool
+def read_occt_solid(step):
     from OCP.BRepCheck import BRepCheck_Analyzer
-    from OCP.BRepMesh import BRepMesh_IncrementalMesh
     from OCP.IFSelect import IFSelect_RetDone
     from OCP.STEPControl import STEPControl_Reader
-    from OCP.TopAbs import TopAbs_FACE, TopAbs_REVERSED, TopAbs_SOLID
+    from OCP.TopAbs import TopAbs_SOLID
     from OCP.TopExp import TopExp
-    from OCP.TopLoc import TopLoc_Location
-    from OCP.TopoDS import TopoDS
     from OCP.TopTools import TopTools_IndexedMapOfShape
 
     reader = STEPControl_Reader()
@@ -81,7 +76,20 @@ def cad_triangle_parameters(step, deflection_mm, mesh, center, scale):
     TopExp.MapShapes_s(reader.OneShape(), TopAbs_SOLID, solids)
     if solids.Extent() != 1 or not BRepCheck_Analyzer(solids.FindKey(1)).IsValid():
         raise ValueError("NH-Rep requires one valid closed STEP solid")
-    solid = solids.FindKey(1)
+    return solids.FindKey(1)
+
+
+def cad_triangle_parameters(step, deflection_mm, mesh, center, scale):
+    """Associate each triangle of the original training mesh with its CAD chart."""
+    from OCP.BRep import BRep_Tool
+    from OCP.BRepMesh import BRepMesh_IncrementalMesh
+    from OCP.TopAbs import TopAbs_FACE, TopAbs_REVERSED
+    from OCP.TopExp import TopExp
+    from OCP.TopLoc import TopLoc_Location
+    from OCP.TopoDS import TopoDS
+    from OCP.TopTools import TopTools_IndexedMapOfShape
+
+    solid = read_occt_solid(step)
     BRepMesh_IncrementalMesh(solid, deflection_mm, True, .1)
     faces = TopTools_IndexedMapOfShape()
     TopExp.MapShapes_s(solid, TopAbs_FACE, faces)

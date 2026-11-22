@@ -4,6 +4,7 @@ from numba import njit
 from scipy.spatial import cKDTree
 
 from fitted_projection import refine
+from trim_bounds import box_distance, segment_foot
 
 
 def pack_tree(xyz, elements):
@@ -85,28 +86,6 @@ def pack_grid(xyz, tree, resolution):
         return origin, width, dims, np.empty(0,np.int32), np.empty(0,np.int32)
     offsets, entries = cell_lists(low, high, leaves, dims)
     return origin, width, dims, offsets, entries
-
-
-@njit(cache=True, inline='always')
-def box_distance(point, box):
-    sq = 0.
-    for k in range(3):
-        delta = max(box[0,k]-point[k], point[k]-box[1,k], 0.)
-        sq += delta*delta
-    return sq
-
-
-@njit(cache=True, inline='always')
-def segment_foot(point, a, b):
-    dx, dy, dz = b[0]-a[0], b[1]-a[1], b[2]-a[2]
-    length_sq = dx*dx + dy*dy + dz*dz
-    u = 0.
-    if length_sq:
-        u = min(1., max(0., ((point[0]-a[0])*dx + (point[1]-a[1])*dy
-                              + (point[2]-a[2])*dz) / length_sq))
-    x, y, z = a[0]+u*dx, a[1]+u*dy, a[2]+u*dz
-    sq = (point[0]-x)**2 + (point[1]-y)**2 + (point[2]-z)**2
-    return sq, x, y, z
 
 
 @njit(cache=True, inline='always')
@@ -224,8 +203,10 @@ def locate(points, xyz, tri, edges, bary_grad, tri_tree, edge_tree, tri_grid, ed
 
 @njit(cache=True)
 def signed_distances(points, xyz, tri, edges, bary_grad, tri_tree, edge_tree, tri_grid, edge_grid, owner, uv,
-                     incident, edge_pairs, convex_sign, coefficients, offsets, frames, crease_band_mm):
+                     incident, edge_pairs, convex_sign, coefficients, offsets, frames, crease_band_mm,
+                     trim_index=None, prune=True):
     nearest, seeds, edge_sq, edge, edge_seeds = locate(
         points, xyz, tri, edges, bary_grad, tri_tree, edge_tree, tri_grid, edge_grid, crease_band_mm)
     return refine(points, nearest, seeds, edge_sq, edge, edge_seeds, xyz, tri, owner, uv,
-                  incident, edge_pairs, convex_sign, bary_grad, coefficients, offsets, frames, crease_band_mm)
+                  incident, edge_pairs, convex_sign, bary_grad, coefficients, offsets, frames, crease_band_mm,
+                  trim_index, prune)

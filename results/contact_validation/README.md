@@ -359,6 +359,40 @@ python benchmarks/aes/gear_field_replay.py verify build/aes-occt/Release/nc_cont
 python benchmarks/aes/gear_field_replay.py time results/aes/gear-field/timing-transition.json --repeats 30
 ```
 
+The [matched-distance comparison](../aes/gear-field/precision-matched.json)
+tests the same 0.125 µm threshold on both 1,536-point sets and the 36 recorded
+Gauss points. It reports line-force error separately. To use the experimental
+edge query, pass `trim_step=Path("results/gears/models/spur-1a.step")` to
+`FittedFaces` with that solid's guide and fitted faces. The two face projections
+determine eligibility and sign. Their smallest admissible gap bounds the search
+along shared STEP edges. Preprocessing subdivides positive-weight rational
+Bezier spans until each control hull fits within 0.001 µm of its chord.
+Continuity between the endpoints also puts every chord point within that
+distance of the curve. Padded BVH boxes bound the distance to both representations.
+The unbounded-edge comparison starts that same search with an infinite gap.
+Face pairs without a supported edge index use the existing joint projection.
+
+The compact mesh uses absolute OCCT boundary deflection. The mesh conditioning
+experiment bisects long edges in the triangle planes and preserves the shared
+connectivity. The [mesh audit](../aes/gear-field/precision-mesh-audit.json)
+checks closed, oriented connectivity and STEP distances. The double-precision
+baselines use either libigl nearest distance with three Open3D sign rays or
+the same spatial lookup as the fitted field with face, edge and angle-weighted
+vertex pseudonormals. Warm query timings exclude mesh generation and indexing.
+
+```powershell
+$p = "build/aes-gear-field-fast/precision"
+New-Item -ItemType Directory -Force $p | Out-Null
+python benchmarks/aes/gear_precision.py mesh "$p/mesh-0.1.npz" --deflection-um 0.1
+python benchmarks/aes/gear_precision.py mesh "$p/mesh-0.04.npz" --deflection-um 0.04
+python benchmarks/aes/gear_precision.py split "$p/mesh-0.1.npz" "$p/conditioned-4.npz" --max-edge-mm 4
+python benchmarks/aes/gear_precision.py split "$p/mesh-0.1.npz" "$p/conditioned-2.npz" --max-edge-mm 2
+python benchmarks/aes/gear_precision.py split "$p/conditioned-4.npz" "$p/conditioned-1.npz" --max-edge-mm 1
+python benchmarks/aes/gear_precision.py mesh "$p/mesh-full-0.08.npz" --deflection-um 0.08 --interior --parallel-mesh
+python benchmarks/aes/gear_precision.py audit results/aes/gear-field/precision-mesh-audit.json "$p/mesh-0.1.npz" "$p/mesh-0.04.npz" "$p/conditioned-4.npz" "$p/conditioned-2.npz" "$p/conditioned-1.npz" "$p/mesh-full-0.08.npz"
+python benchmarks/aes/gear_precision.py compare $p results/aes/gear-field/precision-matched.json --repeats 30
+```
+
 ~~~text
 drives count
 body_id orbit arm_xyz axis_xyz angular_speed

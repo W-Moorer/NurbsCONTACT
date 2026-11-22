@@ -1,6 +1,7 @@
 """Single-thread compiled kernels for projection onto fitted Chebyshev faces."""
 import numpy as np
 from numba import njit
+from trim_bounds import edge_minimum
 
 
 def pack_faces(faces):
@@ -217,11 +218,13 @@ def any_incident(triangles, owner, first, second):
 
 @njit(cache=True)
 def refine(points, nearest, seeds, edge_sq, edge, edge_seeds, xyz, tri, owner, uv, incident,
-           edge_pairs, convex_sign, bary_grad, coefficients, offsets, frames, crease_band_mm):
+           edge_pairs, convex_sign, bary_grad, coefficients, offsets, frames, crease_band_mm,
+           trim_index=None, prune=True, counts=None):
     bu = np.empty((np.max(offsets[:,1]),2))
     bv = np.empty((np.max(offsets[:,2]),2))
     out = np.empty((3,3))
     result = np.empty(len(points))
+    stack = np.empty(1 if trim_index is None else trim_index[4],np.int32)
     for k in range(len(points)):
         x, t, seed = points[k], nearest[k], seeds[k]
         weights = weights_at(seed,t,xyz,tri,bary_grad)
@@ -247,13 +250,24 @@ def refine(points, nearest, seeds, edge_sq, edge, edge_seeds, xyz, tri, owner, u
         # projection, so the initial projection can be skipped entirely.
         sides, start = edge_pairs[edge[k]], edge_seeds[k]
         sign = convex_sign[edge[k]]
-        joint,_ = projected(x,start,sides,xyz,tri,owner,uv,bary_grad,coefficients,offsets,frames,bu,bv,out)
-        p,n = projected(x,start,sides[:1],xyz,tri,owner,uv,bary_grad,coefficients,offsets,frames,bu,bv,out)
-        q,m = projected(x,start,sides[1:],xyz,tri,owner,uv,bary_grad,coefficients,offsets,frames,bu,bv,out)
-        dist = np.linalg.norm(x-joint)
+        p,n = project_one(x,start,sides[0],xyz,tri,owner,uv,bary_grad,coefficients,offsets,frames,bu,bv,out)
+        q,m = project_one(x,start,sides[1],xyz,tri,owner,uv,bary_grad,coefficients,offsets,frames,bu,bv,out)
+        dist = np.inf
         if sign*((p-q)@m)<=0:
-            dist = min(dist,np.linalg.norm(x-p))
+            dist = np.linalg.norm(x-p)
         if sign*((q-p)@n)<=0:
             dist = min(dist,np.linalg.norm(x-q))
+        if trim_index is not None and trim_index[0][edge[k]]>=0:
+            roots,boxes,links,chords,_ = trim_index
+            bound = dist if prune else np.inf
+            value,tested = edge_minimum(x,roots[edge[k]],boxes,links,chords,stack,bound)
+            dist = min(dist,value)
+            if counts is not None:
+                counts[0] += 1
+                counts[1] += int(tested==0)
+                counts[2] += tested
+        else:
+            joint,_ = projected(x,start,sides,xyz,tri,owner,uv,bary_grad,coefficients,offsets,frames,bu,bv,out)
+            dist = min(dist,np.linalg.norm(x-joint))
         result[k] = sign*np.copysign(dist,max(sign*((x-p)@n),sign*((x-q)@m)))
     return result
