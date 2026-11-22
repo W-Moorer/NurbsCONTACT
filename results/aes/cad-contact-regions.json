@@ -1,0 +1,131 @@
+{
+  "reference_scope": "Numerical geometry at prescribed poses. Local tracking receives the two known face pairs.",
+  "spur": {
+    "trace": "spur-native-0nm-5us-31.csv",
+    "initial": {
+      "time_s": 0.0002000000000000002,
+      "activation_um": 55.0,
+      "reference_loaded_teeth": 2,
+      "candidate_face_pairs": 15,
+      "faces_a": 147,
+      "faces_b": 291,
+      "tested_face_pairs": 96,
+      "unresolved_face_pairs": 0,
+      "witnesses": 23,
+      "setup_s": 21.0086553,
+      "query_s": 9.9614687,
+      "facing_face_pairs": [
+        {
+          "face_a": 4,
+          "face_b": 4,
+          "distance_um": 48.776992691693145,
+          "point_on_a_m": [
+            0.030309880368201175,
+            0.0017980923150918982,
+            0.010731473683972738
+          ]
+        },
+        {
+          "face_a": 142,
+          "face_b": 10,
+          "distance_um": 48.77701196979811,
+          "point_on_a_m": [
+            0.027979060070112263,
+            -0.005204516245428559,
+            0.011994000020445575
+          ]
+        }
+      ]
+    },
+    "next_frame_cold": {
+      "time_s": 0.00022000000000000025,
+      "activation_um": 55.0,
+      "reference_loaded_teeth": 2,
+      "candidate_face_pairs": 15,
+      "faces_a": 147,
+      "faces_b": 291,
+      "tested_face_pairs": 92,
+      "unresolved_face_pairs": 0,
+      "witnesses": 23,
+      "setup_s": 18.375633,
+      "query_s": 8.8812725,
+      "facing_face_pairs": [
+        {
+          "face_a": 4,
+          "face_b": 4,
+          "distance_um": 48.77693732181469,
+          "point_on_a_m": [
+            0.03035038884019036,
+            0.0017845240568301398,
+            -0.006943894763477292
+          ]
+        },
+        {
+          "face_a": 142,
+          "face_b": 10,
+          "distance_um": 48.776968408705415,
+          "point_on_a_m": [
+            0.02799318535201234,
+            -0.00520924757312912,
+            -0.0094689473374953
+          ]
+        }
+      ]
+    },
+    "next_frame_tracked": {
+      "time_s": 0.00022000000000000025,
+      "activation_um": 55.0,
+      "reference_loaded_teeth": 2,
+      "candidate_face_pairs": 2,
+      "faces_a": 147,
+      "faces_b": 291,
+      "tested_face_pairs": 2,
+      "unresolved_face_pairs": 0,
+      "witnesses": 2,
+      "setup_s": 15.747752,
+      "query_s": 0.0002264,
+      "facing_face_pairs": [
+        {
+          "face_a": 4,
+          "face_b": 4,
+          "distance_um": 48.776937321704104,
+          "point_on_a_m": [
+            0.030350388915676464,
+            0.0017845240313881735,
+            0.01073147368421577
+          ]
+        },
+        {
+          "face_a": 142,
+          "face_b": 10,
+          "distance_um": 48.776968153470825,
+          "point_on_a_m": [
+            0.027993185374020995,
+            -0.0052092475805467645,
+            0.009852396627681673
+          ]
+        }
+      ]
+    },
+    "max_tracking_gap_difference_um": 2.552345880761815e-07,
+    "max_representative_point_shift_mm": 19.321343965176972
+  },
+  "cam_initial": {
+    "translation_b_in_a_m": [
+      0,
+      -0.115,
+      0
+    ],
+    "angle_rad": 0,
+    "activation_m": 0.012,
+    "analytic_distance_m": 0.01,
+    "facing_interior_pairs": 1,
+    "faces_a": 1,
+    "faces_b": 3,
+    "tested_face_pairs": 3,
+    "unresolved_face_pairs": 0,
+    "witnesses": 5,
+    "setup_s": 0.0258892,
+    "query_s": 0.0019331
+  }
+}

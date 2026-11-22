@@ -28,7 +28,7 @@ if(NC_WITH_OCCT)
     else()
         set(NC_OCCT_STEP_TARGET TKSTEP)
     endif()
-    add_library(nurbscontact_occt STATIC src/occt.cpp src/occt_contact.cpp)
+    add_library(nurbscontact_occt STATIC src/occt.cpp src/occt_contact.cpp src/cad_contact_regions.cpp)
     target_include_directories(nurbscontact_occt SYSTEM PUBLIC ${OpenCASCADE_INCLUDE_DIR})
     target_link_libraries(nurbscontact_occt PUBLIC nurbscontact
         TKernel TKMath TKG2d TKG3d TKGeomBase TKBRep TKGeomAlgo TKTopAlgo TKPrim TKBO TKBool TKXSBase ${NC_OCCT_STEP_TARGET} TKMesh)

@@ -1,3 +1,4 @@
+#include "nurbscontact/cad_contact_regions.hpp"
 #include "nurbscontact/occt_contact.hpp"
 
 #include <BRepAlgoAPI_Cut.hxx>
@@ -400,6 +401,70 @@ std::ofstream open_output(const Path& path) {
     return out;
 }
 
+void contact_regions(int argc,char** argv) {
+    if (argc!=13 && argc!=14) {
+        throw std::invalid_argument("nc_contact regions A.step B.step CUTOFF_M TX TY TZ AX AY AZ ANGLE_RAD OUTPUT_PREFIX [SEEDS.txt]");
+    }
+    const auto scalar=[&](int i) {
+        std::size_t end=0;
+        const std::string value(argv[i]);
+        const double x=std::stod(value,&end);
+        if (end!=value.size() || !std::isfinite(x)) throw std::invalid_argument("invalid contact region argument");
+        return x;
+    };
+    const double cutoff=scalar(4);
+    const ContactPose pose{{scalar(5),scalar(6),scalar(7)},unit({scalar(8),scalar(9),scalar(10)}),scalar(11)};
+    std::vector<CadContactSeed> seeds;
+    if (argc==14) {
+        std::ifstream input(argv[13]);
+        if (!input) throw std::invalid_argument("could not open CAD contact seed file");
+        while (!(input>>std::ws).eof()) {
+            CadContactSeed seed;
+            if (!(input>>seed.face_a>>seed.face_b>>seed.uv_a[0]>>seed.uv_a[1]>>seed.uv_b[0]>>seed.uv_b[1])) {
+                throw std::invalid_argument("invalid CAD contact seed");
+            }
+            seeds.push_back(seed);
+        }
+        if (seeds.empty()) throw std::invalid_argument("CAD contact seed file is empty");
+    }
+    const auto setup_start=Clock::now();
+    const CadContactIndex a{read_step_shape(argv[2])},b{read_step_shape(argv[3])};
+    const auto start=Clock::now();
+    const auto report=seeds.empty() ? a.query(b,pose,cutoff) : a.track_interiors(b,pose,cutoff,seeds);
+    const auto end=Clock::now();
+
+    const auto kind=[](FeatureKind feature) {
+        switch (feature) {
+        case FeatureKind::face: return "face";
+        case FeatureKind::edge: return "edge";
+        case FeatureKind::vertex: return "vertex";
+        }
+        return "";
+    };
+    auto points=open_output(std::string(argv[12])+".csv");
+    points<<"face_a,face_b,support_a,support_b,distance_m,"
+             "ax_m,ay_m,az_m,bx_m,by_m,bz_m,ua,va,ub,vb,facing_interiors\n";
+    for (const auto& candidate:report.candidates) {
+        points<<candidate.a.face<<','<<candidate.b.face<<','<<kind(candidate.a.support)<<','
+              <<kind(candidate.b.support)<<','<<candidate.points.distance;
+        for (double coordinate:candidate.points.a) points<<','<<coordinate;
+        for (double coordinate:candidate.points.b) points<<','<<coordinate;
+        for (const auto* sample:{&candidate.a,&candidate.b}) {
+            points<<',';
+            if (sample->uv) points<<(*sample->uv)[0];
+            points<<',';
+            if (sample->uv) points<<(*sample->uv)[1];
+        }
+        points<<','<<candidate.facing_interiors<<'\n';
+    }
+    auto stats=open_output(std::string(argv[12])+".stats.csv");
+    stats<<"faces_a,faces_b,tested_face_pairs,unresolved_face_pairs,witnesses,setup_s,query_s\n"
+         <<a.face_count()<<','<<b.face_count()<<','<<report.tested_face_pairs<<','<<report.unresolved_face_pairs<<','
+         <<report.candidates.size()<<','<<std::chrono::duration<double>(start-setup_start).count()<<','
+         <<std::chrono::duration<double>(end-start).count()<<'\n';
+    if (!points || !stats) throw std::runtime_error("failed to write CAD contact region query");
+}
+
 double sampled_load(const std::vector<LoadSample>& table,double time) {
     if (table.empty()) return 0;
     const auto right=std::upper_bound(table.begin()+1,table.end()-1,time,
@@ -642,6 +707,10 @@ void export_fixture(int argc,char** argv) {
 
 int main(int argc,char** argv) {
     try {
+        if (argc>=2 && std::string_view(argv[1])=="regions") {
+            contact_regions(argc,argv);
+            return 0;
+        }
         if (argc>=3 && std::string_view(argv[1])=="make") {
             export_fixture(argc,argv);
             return 0;

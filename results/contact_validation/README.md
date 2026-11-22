@@ -85,6 +85,26 @@ python benchmarks/aes/pair_dynamics.py "$out/cam-models" results/gears/models "$
 
 [`pair_cam_accuracy.py`](../../benchmarks/aes/pair_cam_accuracy.py) scores the sampled follower displacement and normal force against the refined `nc_hht` cam trace. It checks the end time and accepted step count before calculating errors. The [measured report](../aes/pair-dynamics.json) records the two mesh resolutions, OCCT, the gear startup checks, and the native and step-CCD budget failures.
 
+### CAD contact candidates by face pair
+
+`CadContactIndex` prepares a hierarchy of bounds for the faces of a STEP shape. A static query finds nearby bounded face pairs and evaluates numerical OCCT extrema on their trimmed faces. The output retains each witness's one-based source face index, support type, separation, and parameters for face-interior witnesses. It flags opposing face-interior normals with a cosine test. The unflagged edge, vertex, and face witnesses remain in the report so a later contact law can account for boundary and extended contacts.
+
+The `regions` command takes the relative pose of B in A's frame. Translation and cutoff are in meters, the rotation uses an axis and an angle in radians, and the witness coordinates are returned in A's frame.
+
+```text
+nc_contact regions A.step B.step CUTOFF_M TX TY TZ AX AY AZ ANGLE_RAD OUTPUT_PREFIX [SEEDS.txt]
+```
+
+Each row of an optional seed file stores `face_a face_b ua va ub vb`. The tracking query starts at these parameters, updates the surface extrema numerically, and rechecks both trims, the cutoff and the opposing normals. An unsuccessful seed is reported as unresolved. The whole-shape search finds new candidate faces. Tracking updates only the supplied interiors. Both entry points return numerical candidates for a future contact assembly. Initial interpenetration, enumeration of distinct extrema within a single face pair, and distributed force error bounds require additional geometry and contact modelling.
+
+Use the existing spur trajectory to compare the whole-shape query and local tracking on consecutive double-tooth frames.
+
+```powershell
+python benchmarks/aes/cad_contact_regions.py build/occt/Release/nc_contact.exe results/gears/models build/aes-benchmark/industrial-pilot/spur-native-0nm-5us-31.csv build/aes-pair-dynamics/spur-contact-regions
+```
+
+The [measured report](../aes/cad-contact-regions.json) records the two saved spur frames and the initial eccentric-cam pose. The cold timings cover face-pair discovery. The tracked timing covers only the two supplied face pairs and excludes the separately reported STEP import and index preparation.
+
 ~~~text
 drives count
 body_id orbit arm_xyz axis_xyz angular_speed
