@@ -1,0 +1,39 @@
+\section{Cross-engine checks on primitive contacts}
+\label{sec:analytic}
+The first fixture places a 1 kg sphere of radius 55 mm above a fixed plane. The second places two identical spheres on the line of centers with a stationary center of mass. The initial closing speed is 0.45 m/s and the initial distance beyond the 12 mm activation layer is $\ell=18$ mm. We set $k=5{,}000$ N/m and omit gravity and physical damping. The effective mass is $m_e=1$ kg for the plane and $m_e=0.5$ kg for the sphere pair. Motion is free until $t_0=\ell/v_0=40$ ms. The positive compression within the activation layer then follows an undamped oscillator with $\omega=\sqrt{k/m_e}$ and $t_e=t_0+\pi/\omega$. The closing displacement is
+\begin{equation}
+ c(t)=\begin{cases}
+ v_0t,&0\leq t\leq t_0,\\
+ \ell+\dfrac{v_0}{\omega}\sin[\omega(t-t_0)],& t_0<t\leq t_e,\\
+ \ell-v_0(t-t_e),& t>t_e.
+ \end{cases}
+ \label{eq:halfsine}
+\end{equation}
+The normal force is $k[c(t)-\ell]_+$. We integrate for 160 ms at 500, 250 and 125~\microsec{}, covering free approach, the complete loading pulse and free release. Figures~\ref{fig:plane} and~\ref{fig:spheres} show the finest-step bounded CAD solutions and their analytic references. At this step the minimum positive bounds on clearance during integration are 5.64 mm for the plane fixture and 7.50 mm for the sphere pair. The force residual test is performed at every accepted bounded HHT step.
+
+\resultfigure{plane}{Sphere approaching a plane with a compliant contact layer. The Blender panels show the nominal surfaces and the gap near maximum compression. The curves show the center displacement and normal force over the complete run.}{fig:plane}
+\resultfigure{spheres}{Two identical translating spheres. The axis of motion lies along the line of centers. The curves show relative closure and normal force, including the interval after both bodies leave the contact layer.}{fig:spheres}
+
+Table~\ref{tab:spheres} compares the fine-step results. For the native engine comparisons, contact padding implements the same layer with each engine's normal collision geometry. The recorded engine force is checked against the shared force law along the engine's own trajectory. On both fixtures, all three external engines match that force law to within $10^{-9}$ N. We use MuJoCo 4.0.1 with the implicit integrator and RK4, and Drake 1.58.0 with third-order Runge--Kutta. RecurDyn 2023 uses its native sphere contacts and reports a separate normal-force channel. Its requested maximum step and its result sampling interval equal the stated step. Its process wall times include the analysis call and result handling. These measurements are separate from the Linux timing batch.
+
+\begin{table}[pos=!htbp]
+\caption{Analytical fixtures at a nominal step of 125~\microsec{}. Position and force errors are RMS deviations from the closed-form solution. Windows RecurDyn process time includes result handling.}
+\label{tab:spheres}
+\centering\small
+\begin{tabular}{lrrrrrr}\toprule
+ & \multicolumn{3}{c}{Sphere--plane} & \multicolumn{3}{c}{Two spheres} \\
+ \cmidrule(lr){2-4}\cmidrule(lr){5-7}
+ Solver & Position & Force & Online & Position & Force & Online \\
+ & (\micron) & (mN) & (ms) & (\micron) & (mN) & (ms) \\\midrule
+ CAD/HHT fixed, Linux & 0.0744 & 0.184 & 2.14 & 0.0878 & 0.219 & 2.31 \\
+ CAD/HHT bounded cache, Linux & 0.0744 & 0.184 & 3.95 & 0.0878 & 0.219 & 3.79 \\
+ MuJoCo, implicit & 0.171 & 0.121 & 6.06 & 0.178 & 0.144 & 7.22 \\
+ MuJoCo, RK4 & 0.0221 & $1.17\times10^{-6}$ & 18.77 & 0.00131 & $2.78\times10^{-6}$ & 26.41 \\
+ Drake, RK3 & 0.0233 & $5.72\times10^{-4}$ & 56.57 & 0.000874 & $9.63\times10^{-4}$ & 67.20 \\
+ RecurDyn, Windows & 0.427 & 0.803 & 5281 & 0.291 & 0.952 & 5281 \\
+ \bottomrule\end{tabular}
+\end{table}
+
+At 125~\microsec{}, the bounded oracle reuses 927 inactive-pair exclusions in the plane fixture and 1,029 in the two-sphere fixture. The intervals preserve the force and position errors of the fixed native solver at the reported precision. On these cheap primitive evaluations the interval machinery increases time relative to the direct native force path. MuJoCo with RK4 and Drake with RK3 produce smaller position errors at the finest step. The comparison therefore records the effect of the selected time integrator along with that of the contact representation.
+
+\FloatBarrier

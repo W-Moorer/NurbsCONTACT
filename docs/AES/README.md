@@ -1,4 +1,4 @@
-# Residual-Aware CAD Contact for Rigid Mechanisms with Certified Clearance Events
+# Residual-Controlled CAD Contact Simulation of Rigid Mechanisms
 
 [Manuscript PDF](Residual-Aware-CAD-Contact.pdf) · [LaTeX source](Residual-Aware-CAD-Contact.tex) · [Benchmark protocol](../../benchmarks/aes/protocol.md) · [Measured results](../../results/aes/)
 
@@ -10,7 +10,13 @@ From the repository root, run `python benchmarks/hht/paper.py results/hht` with 
 
 ## Reproduce the figures
 
-Run the [numerical protocol](../../benchmarks/aes/protocol.md) first. The figure script uses the recorded fine-step sphere traces and the selected industrial runs named in its `industrial` function. The run folders used for the published figures were under `build/aes-benchmark`.
+Run the [numerical protocol](../../benchmarks/aes/protocol.md) first. The published-case figure script uses the traces in `build/aes-literature` and a Blender 5.1 executable on `PATH`.
+
+```powershell
+python benchmarks/aes/literature_figures.py build/aes-literature docs/AES/figures (Get-Command blender).Source
+```
+
+The industrial and appendix figure script uses the selected industrial runs named in its `industrial` function and the recorded fine-step sphere traces. These run folders were under `build/aes-benchmark`.
 
 Prepare the model renders by tessellating each gear solid named in `results/gears/models/spur.csv` and `reducer.csv` with `python benchmarks/gears/tessellate.py STEP_FILE STEM.npz`. Put the resulting files in `build/aes-benchmark/paper/step-meshes`. Populate `build/aes-benchmark/paper/frames` with three completed traces named `cam.csv`, `spur.csv`, and `reducer.csv`. The published inputs were `cam-native-24-125us.csv`, `spur-native-0nm-10us-31.csv`, and `reducer-native-0nm-10us-31.csv`.
 

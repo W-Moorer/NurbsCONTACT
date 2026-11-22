@@ -87,6 +87,16 @@ def mechanism(case, folder, mesh_dir, trace_dir, materials):
         sphere("Lower sphere", (-distance/2,0.,0.), .055, steel)
         sphere("Upper sphere", (distance/2,0.,0.), .055, blue)
         return ((0.,0.,0.), .272, (.28,-1.78,.91), (0.,0.,0.), .082, (.13,-1.8,.38))
+    if case == "constant-breadth":
+        with np.load(mesh_dir/"constant-breadth.npz") as data:
+            points, triangles = data["points"], data["triangles"]
+            upper, lower = float(data["right"]), float(data["left"])
+        mesh("Six-arc cam", points.tolist(), triangles.tolist(), blue)
+        block("Right follower face", (upper+.32,0.,.5), (.64,10.8,1.4), steel)
+        block("Left follower face", (lower-.32,0.,.5), (.64,10.8,1.4), steel)
+        closest = points[np.argmax(points[:, 0])]
+        return (((upper+lower)/2,-.55,.4), 25., (.22,-.40,1.3),
+                (upper,float(closest[1]),.55), 3.9, (.28,-.46,1.3))
     if case == "cam":
         q = loading_frame(trace_dir/"cam.csv", .44)
         cx, cy = .024*cos(q["q0"]), .024*sin(q["q0"])
@@ -169,9 +179,11 @@ def main():
     parser.add_argument("meshes",type=Path)
     parser.add_argument("traces",type=Path)
     parser.add_argument("output",type=Path)
+    parser.add_argument("--constant-breadth-only",action="store_true")
     args = parser.parse_args(sys.argv[sys.argv.index("--")+1:])
     args.output.mkdir(parents=True,exist_ok=True)
-    for case in ("plane","spheres","cam","spur","reducer"):
+    cases = ("constant-breadth",) if args.constant_breadth_only else ("plane","spheres","cam","spur","reducer")
+    for case in cases:
         bpy.ops.wm.read_factory_settings(use_empty=True)
         bpy.context.scene.world = bpy.data.worlds.new("Studio")
         mats = [material(name,color) for name,color in (("Blue",BLUE),("Steel",STEEL),

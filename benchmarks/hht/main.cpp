@@ -67,6 +67,54 @@ void oscillator(const fs::path& file) {
     }
 }
 
+void unilateral_oscillator(double omega, double contact_stiffness, double amplitude, double dt,
+                           double duration, const fs::path& file) {
+    if (!(std::isfinite(omega) && omega > 0 && std::isfinite(contact_stiffness) && contact_stiffness > 0 &&
+          std::isfinite(amplitude) && amplitude > 0 && std::isfinite(dt) && dt > 0 &&
+          std::isfinite(duration) && duration >= dt && duration / dt <= 1'000'000)) {
+        throw std::invalid_argument("invalid unilateral oscillator setting");
+    }
+    const double stiffness = omega * omega;
+    Hht stepper({1}, [=](const Vector& q, const Vector&, double) {
+        const double tangent = stiffness + (q[0] > 0 ? contact_stiffness : 0);
+        return Forces{{-tangent * q[0]}, {tangent}, {0}};
+    });
+    auto state = stepper.initialize({amplitude}, {0});
+    HhtStats stats;
+    auto out = output(file);
+    out << "time,displacement,velocity,contact_force,accepted_steps,subdivisions,max_residual\n";
+    const auto write_state = [&] {
+        out << state.time << ',' << state.q[0] << ',' << state.v[0] << ','
+            << contact_stiffness * std::max(state.q[0], 0.) << ',' << stats.accepted_steps << ','
+            << stats.subdivisions << ',' << stats.maximum_residual << '\n';
+    };
+    write_state();
+    const auto steps = static_cast<std::size_t>(std::ceil(duration / dt));
+    const double step = duration / static_cast<double>(steps);
+    for (std::size_t i = 0; i < steps; ++i) {
+        stepper.step(state, step, stats);
+        write_state();
+    }
+}
+
+void constant_breadth_cam(const fs::path& cam_file, const fs::path& face_file, unsigned samples,
+                          double tolerance, const fs::path& file) {
+    if (samples == 0 || samples > 10'000 || !(std::isfinite(tolerance) && tolerance > 0)) {
+        throw std::invalid_argument("invalid cam sampling setting");
+    }
+    const PreparedModel cam{read_step(cam_file)};
+    const PreparedModel face{read_step(face_file)};
+    const Options options{.distance_tolerance = tolerance, .max_nodes = 40'000};
+    auto out = output(file);
+    out << "angle,distance_lower,distance_upper,visited\n";
+    Motion motion;
+    for (unsigned i = 0; i <= samples; ++i) {
+        motion.angle = 2 * std::numbers::pi * i / samples;
+        const auto result = distance(face, cam, motion, 0, options);
+        out << motion.angle << ',' << result.lower << ',' << result.upper << ',' << result.statistics.visited << '\n';
+    }
+}
+
 struct Snapshot { double t; Vector q; Vector v; double peak_force; };
 
 void simulation(std::string_view scene_name, Backend backend, unsigned facets, double step, double duration,
@@ -244,6 +292,13 @@ int main(int argc, char** argv) {
         const std::string_view action = argc > 1 ? argv[1] : "";
         if (action == "models" && argc == 3) make_step_models(argv[2]);
         else if (action == "oscillator" && argc == 3) oscillator(argv[2]);
+        else if (action == "unilateral-oscillator" && argc == 8) {
+            unilateral_oscillator(std::stod(argv[2]), std::stod(argv[3]), std::stod(argv[4]),
+                                  std::stod(argv[5]), std::stod(argv[6]), argv[7]);
+        }
+        else if (action == "constant-breadth-cam" && argc == 7) {
+            constant_breadth_cam(argv[2], argv[3], std::stoul(argv[4]), std::stod(argv[5]), argv[6]);
+        }
         else if (action == "cam-queries" && argc == 4) cam_queries(argv[2],argv[3]);
         else if (action == "trimmed-queries" && argc == 4) trimmed_queries(argv[2],argv[3]);
         else if (action == "run" && (argc == 10 || argc == 11)) {
@@ -258,6 +313,8 @@ int main(int argc, char** argv) {
         } else {
             std::cerr << "nc_hht models MODEL_DIR\n"
                          "nc_hht oscillator OUTPUT.csv\n"
+                         "nc_hht unilateral-oscillator OMEGA CONTACT_STIFFNESS AMPLITUDE DT DURATION OUTPUT.csv\n"
+                         "nc_hht constant-breadth-cam CAM.step FACE.step SAMPLES DISTANCE_TOL OUTPUT.csv\n"
                          "nc_hht cam-queries MODEL_DIR OUTPUT.csv\n"
                          "nc_hht trimmed-queries BORE_STEP_DIR OUTPUT.csv\n"
                          "nc_hht run SCENE BACKEND FACETS DT DURATION MODEL_DIR PREFIX REPEATS "

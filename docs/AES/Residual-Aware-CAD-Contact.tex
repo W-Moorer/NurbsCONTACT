@@ -35,7 +35,7 @@
   \skip_vertical:n { \l_aes_keywords_height_dim }
 }
 \ExplSyntaxOff
-\newcommand{\manuscripttitle}{Residual-Aware CAD Contact for Rigid Mechanisms with Certified Clearance Events}
+\newcommand{\manuscripttitle}{Residual-Controlled CAD Contact Simulation of Rigid Mechanisms}
 \hypersetup{pdftitle={\manuscripttitle}}
 \providecommand{\doi}[1]{\href{https://doi.org/#1}{\nolinkurl{#1}}}
 \renewcommand\linenumberfont{\normalfont\tiny\sffamily\color{gray}}
@@ -51,14 +51,14 @@
 
 \begin{document}
 \title[mode=title]{\manuscripttitle}
-\shorttitle{Residual-aware CAD contact}
+\shorttitle{Residual-controlled CAD contact}
 \shortauthors{Manuscript for review}
 % Add the confirmed author list, affiliations and correspondence before submission.
 \begin{abstract}
-Rigid mechanisms with small clearances require geometric queries that resolve the operating gap and supply sufficiently accurate loads for time integration. We present a CAD contact software framework that selects the accuracy of a contact-force evaluation from the nonlinear residual of an implicit time step. Force intervals bound the effect of geometric uncertainty on Newton convergence and line search. A relative displacement bound revalidates cached exclusions, and a separate clearance query uses the earliest surviving space--time region to construct feasible witnesses on the trimmed CAD boundary. Two closed-form impact models and three industrial mechanisms evaluate the dynamics. At a joint tolerance of 0.5~\micron{} in RMS displacement or transmission error and 2\% in RMS force, native CAD reduces time for the cam relative to the tested polygonal configurations and has comparable cost to a tuned polyline for the spur pair. The two-stage spur--helical reducer completed 90 input revolutions and admitted a 10~\microsec{} native step at the 1~\micron{}, 5\% tolerance. Bounded force evaluations certify the residual decisions and incur additional cost relative to direct force kernels.
+We couple geometric accuracy to the nonlinear residual in implicit simulation of rigid mechanisms. The solver requests tighter CAD contact-force estimates when their uncertainty prevents a convergence or line-search decision. Bounds on relative point travel let it reuse earlier separation checks across trial configurations. We verify repeated contact and release against a published unilateral spring solution and check the computed motion of a reconstructed six-arc cam against published follower kinematics. Across 50 oscillator periods, the largest onset or release timing error decreases nearly fourfold when the step is halved. In three industrial mechanisms, we compare integration cost at matched tolerances on position and force. At 0.5~\micron{} RMS displacement and 2\% RMS force error, the native eccentric cam runs in 1.60~s compared with 1.78~s for the selected polygonal configuration. The native spur and reducer runs have comparable cost to tuned polyline queries at their matched tolerances. Bounded force evaluation supplies the residual guarantee and adds cost to direct force computation in the tested mechanisms.
 \end{abstract}
 \begin{keywords}
-Rigid multibody dynamics \sep Boundary representation \sep Implicit time integration \sep Certified clearance \sep Contact geometry
+Rigid multibody dynamics \sep Boundary representation \sep Implicit time integration \sep Contact geometry \sep Contact onset
 \end{keywords}
 \maketitle
 \pagestyle{plain}
@@ -68,25 +68,24 @@ Rigid multibody dynamics \sep Boundary representation \sep Implicit time integra
 \section{Introduction}
 The clearance between moving components can be smaller than the geometric features that determine their contact. A small shift of a tooth profile can change the temporal distribution of the mesh load. Tessellation allows established collision libraries to process such components, but resolving the remaining gap or the force waveform can require substantially finer geometry than a visual representation. The relevant engineering question is how much geometry and solver work a method needs at a prescribed response accuracy, and what information it can certify about the nominal CAD during motion.
 
-Rigid contact simulation poses two different numerical decisions. In an implicit step, the solver asks whether the forces at a trial state satisfy the discrete equations and whether a further Newton trial improves them. In a clearance query, it asks whether every earlier pose stays above a specified separation and whether a feasible point pair establishes an entry. A force residual can tolerate a bounded local approximation. A certificate of clearance depends on an exclusion that holds over an entire interval of motion. We treat these two decisions through explicit numerical bounds on the CAD geometry and reuse information across nearby evaluations when those bounds permit it.
+An implicit solver needs to know whether the contact forces at a trial state satisfy its discrete equations and whether another Newton trial improves them. The accuracy required from the geometry therefore changes during the solve. An independent query can locate when contact begins on a prescribed motion, using the activation distance of the contact model. This query uses bounds over a whole interval of motion. The implementation shares CAD geometry and point-travel bounds between these tasks.
 
 The contributions are as follows.
 \begin{itemize}
-\item We use force enclosures to control geometric evaluation in HHT integration. The residual interval decides whether a trial can be accepted or whether the geometry must be resolved more tightly. This gives the solver a force-accuracy criterion tied to its discrete equations.
-\item We use the earliest surviving region of a continuous clearance search to construct feasible CAD witnesses. A verified witness tightens the upper end of a first-entry bracket while the interval search continues to establish the safe prefix.
-\item We revalidate earlier pair exclusions with a bound on relative point travel and use previously computed gear points to propose bounded ray intersections. We measure the cost of this reuse and distinguish it from the effect of using smooth CAD geometry in otherwise matched simulations.
+\item We use force enclosures to control geometric evaluation in HHT integration. Bounds on the nonlinear residual determine whether a Newton trial is acceptable, whether the line search has made progress, or whether the force evaluation needs more accuracy.
+\item We revalidate earlier pair exclusions with a bound on relative point travel and use previously computed gear points to propose bounded ray intersections. These checks let the solver reuse contact information within the current force budget. Matched simulations measure the cost of the bounded solver and of the geometry representation.
 \end{itemize}
-We implement the methods in a C++ library with STEP import. We evaluate the dynamics in two closed-form impact models, two single-stage mechanisms, and a two-stage reducer.
+The C++ library also locates contact onset on a prescribed motion. It uses the earliest surviving region of the continuous search to propose a pair of points on the CAD boundary. The numerical study uses two published reference cases, two single-stage industrial mechanisms, and a two-stage reducer.
 
 \section{Related work}
 \paragraph{Contact on CAD boundaries.}
 Crozet et al. compute multiple local minimum distances directly on smooth boundary representations and use them in rigid dynamics \citep{crozet2018}. Their analysis shows how continuous normals and geometry-specific culling can improve contact for rolling and sliding near small gaps. We build on this established use of smooth geometry. Our solver controls the uncertainty of the assembled generalized force and uses it to make nonlinear acceptance decisions. Our discrete comparison includes both general triangle-BVH queries and structure-aware polygonal queries with the same prescribed contact law.
 
-\paragraph{Continuous collision and clearance.}
-Geometric collision search between moving parametric surfaces can use derivative bounds to exclude regions of parameter space and time \citep{vonherzen1990}. Chen et al. construct time-dependent inclusion functions for time-linear parametric patches \citep{chen2024}. Their subsequent work analyses floating-point errors and benchmarks exact ground-truth collision times \citep{chen2026}. We consider positive clearance on trimmed STEP boundaries under a fixed-axis rigid motion and return separate lower and upper time bounds. The witness mechanism uses the search state to propose a point pair on a trimmed face and validates its distance before narrowing the time bracket. For triangular representations, inclusion-based CCD and rigid IPC accommodate, respectively, linearly moving primitive pairs with prescribed separation and curved rigid trajectories with barrier contact \citep{wang2021,ferguson2021}.
+\paragraph{Continuous contact detection.}
+Geometric collision search between moving parametric surfaces can use derivative bounds to exclude regions of parameter space and time \citep{vonherzen1990}. Chen et al. construct time-dependent inclusion functions for time-linear parametric patches \citep{chen2024}. Their subsequent work analyses floating-point errors and benchmarks collision times with exact ground truth \citep{chen2026}. Our prescribed-motion query searches trimmed STEP boundaries under fixed-axis rigid motion. It uses the earliest surviving region to propose a pair of CAD points that can bound contact onset from above. For triangular representations, inclusion-based CCD and rigid IPC accommodate, respectively, linearly moving primitive pairs with prescribed separation and curved rigid trajectories with barrier contact \citep{wang2021,ferguson2021}.
 
 \paragraph{Implicit integration and geometric accuracy.}
-HHT introduces controllable numerical dissipation into time integration \citep{hht1977}. Inexact Newton methods allocate accuracy to the linear solve \citep{dembo1982}. Here the uncertain quantity is the contact force entering the nonlinear equations. Enclosing this force provides a conservative interval for the residual norm at each presented trial. Our time integration comparisons use native MuJoCo \citep{todorov2012}, Drake \citep{drakecontact}, and RecurDyn \citep{recurdyn} where their contact laws can be matched to the nominal experiment.
+HHT introduces controllable numerical dissipation into time integration \citep{hht1977}. Inexact Newton methods allocate accuracy to the linear solve \citep{dembo1982}. Rigid IPC uses continuous collision queries to screen the line-search path for intersections \citep{ferguson2021}. Our solver bounds uncertainty in the CAD contact force entering the nonlinear equations and uses the resulting residual interval to control the force accuracy at each trial. Our time integration comparisons use native MuJoCo \citep{todorov2012}, Drake \citep{drakecontact}, and RecurDyn \citep{recurdyn} where their contact laws can be matched to the nominal experiment.
 
 \input{method}
 \input{numerical-results}
@@ -94,13 +93,16 @@ HHT introduces controllable numerical dissipation into time integration \citep{h
 \section{Discussion}
 For geometry that the mechanism revisits at every step, smooth support points and CAD flank roots avoid the resolution-dependent cost of a general triangle search. The specialized polygonal baselines remove most of that search cost and narrow the gap in runtime. A bounded residual decision adds interval work to each contact evaluation. On these mechanisms the unbounded fixed CAD path is faster than the bounded variants.
 
-The residual test applies to force oracles that can enclose their own error. The implementations here cover frictionless compliance with positively separated surfaces, the primitive pairs in the validation cases, and projected sections of the tested nonrational cubic gear flanks. The full STEP clearance query accepts trimmed patches and prescribed fixed-axis relative trajectories. Witness guidance currently proposes point pairs on planar faces. At exact grazing a finite search can yield a safe prefix and leave the event unresolved. The gear results establish feasibility for rotational transmission dynamics under the specified contact and axial quadrature. Gear trials use a sampled projected gap. The continuous clearance certificate applies to the guarded primitive simulations when their paths satisfy the motion assumptions of the query. Force-residual bounds control solution of the discretized equations. The trajectory errors also depend on the time step, contact law, and spatial quadrature.
+The residual test applies to force oracles that can enclose their own error. The bounded force implementations cover the primitive contact pairs and projected sections of the tested nonrational cubic gear flanks. Gear trials use a sampled projected gap. The prescribed-motion search accepts trimmed patches and fixed-axis relative trajectories. Its guided point-pair proposals currently cover planar faces. At grazing it can verify an initial inactive interval while leaving contact onset unresolved. Force-residual bounds control the discrete equations. The oscillator results show how the step size affects contact timing even with a directly evaluated force law. The constant-breadth cam evaluates the geometry under prescribed kinematics, with the follower kept in contact by the opposing flat faces.
 
 \section{Conclusion}
-The framework uses the implicit residual to set contact-force precision, revalidates cached separation exclusions, and constructs CAD witnesses to bound clearance-event times. The bounded HHT mode verified the force residual in the analytical cases and the supported mechanism runs. The industrial comparisons show that the cost advantage depends on the response tolerance and the geometric query available to the competing representation. Full force enclosures add cost to the direct CAD path. Their overhead identifies where cheaper enclosures and more selective refinement can improve the implementation.
+The nonlinear HHT residual provides a contact-force accuracy criterion for the CAD queries. Revalidating previous exclusions and gear intersections preserves that criterion across trial configurations. The published oscillator and cam cases check repeated contact timing and follower motion, respectively. At matched response accuracy the industrial timings depend on the competing geometry query. Direct CAD has a lower cost than the tested polygonal cam at the strictest target, while tuned gear polylines give comparable costs. Force enclosures provide a numerical guarantee on the residual decisions and add substantial cost to direct force evaluation in these runs.
 
 \section*{Software and data availability}
 The implementation, benchmark configurations, STEP model generators, measured summaries, and figure scripts are available in the accompanying \href{https://github.com/W-Moorer/NurbsCONTACT}{NurbsCONTACT repository}. The study protocol in the repository specifies the execution and reference settings. The RecurDyn runs require a licensed RecurDyn 2023 installation and its ProcessNet interface.
+
+\appendix
+\input{primitive-checks}
 
 \bibliographystyle{model3-num-names}
 \bibliography{references}

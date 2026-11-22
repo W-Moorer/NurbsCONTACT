@@ -1,0 +1,70 @@
+{
+  "oscillator": {
+    "omega_0": 1.0,
+    "epsilon": 0.1,
+    "amplitude": 1.0,
+    "cycles": 50,
+    "period": 6.136983719436448,
+    "contact_duration": 2.995391065846655,
+    "detached_duration": 3.141592653589793,
+    "observed_transitions": 100,
+    "steps": [
+      {
+        "step": 0.009999973471462356,
+        "steps": 30685,
+        "displacement_rms": 0.0014410662572083173,
+        "force_rms": 0.00010065729912144977,
+        "max_event_error": 0.0033484673351154015,
+        "last_onset_error": 0.0033484673351154015,
+        "max_contact_duration_error": 3.44791561479596e-05,
+        "max_detached_duration_error": 3.288227351916362e-05,
+        "subdivisions": 0,
+        "max_residual": 3.885780586188048e-16
+      },
+      {
+        "step": 0.004999986735731178,
+        "steps": 61370,
+        "displacement_rms": 0.0003602742844839061,
+        "force_rms": 2.5168999735317582e-05,
+        "max_event_error": 0.0008371251215066877,
+        "last_onset_error": 0.0008371251215066877,
+        "max_contact_duration_error": 8.615916505583243e-06,
+        "max_detached_duration_error": 8.218869954390584e-06,
+        "subdivisions": 0,
+        "max_residual": 1.8650046507140416e-08
+      },
+      {
+        "step": 0.002499993367865589,
+        "steps": 122740,
+        "displacement_rms": 9.006908097317288e-05,
+        "force_rms": 6.292858010651441e-06,
+        "max_event_error": 0.0002092822058443744,
+        "last_onset_error": 0.0002092822058443744,
+        "max_contact_duration_error": 2.15396448322025e-06,
+        "max_detached_duration_error": 2.0541056819922687e-06,
+        "subdivisions": 0,
+        "max_residual": 5.514407486195694e-09
+      }
+    ]
+  },
+  "cam": {
+    "a": 6.0,
+    "b": 5.0,
+    "c": 7.0,
+    "d": 2.5,
+    "omega": 1.0,
+    "step": 0.0008726646259971648,
+    "samples": 7201,
+    "derivative_samples": 7175,
+    "position_max": 2.6645352591003757e-15,
+    "velocity_max": 4.503952766299335e-12,
+    "acceleration_max": 1.3060419412624924e-08,
+    "breadth": 9.0,
+    "breadth_max_error": 3.552713678800501e-15,
+    "native_samples": 361,
+    "native_tolerance": 0.0001,
+    "native_within_tolerance": 361,
+    "native_max_bracket_width": 9.985707296156221e-05,
+    "native_max_midpoint_error": 4.906609007448992e-05
+  }
+}

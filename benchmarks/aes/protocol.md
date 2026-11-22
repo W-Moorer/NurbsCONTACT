@@ -6,18 +6,29 @@ The study compares end-to-end rigid contact simulation at matched trajectory and
 
 | Role | Model | Reference and primary outcomes |
 | --- | --- | --- |
-| Analytic 1 | Frictionless sphere against a plane | Piecewise closed-form motion and compliant normal force. Compare peak force, force duration and sphere displacement. |
-| Analytic 2 | Translating sphere pair | Closed-form relative response at reduced mass and conserved center-of-mass motion. Compare force and both translations. |
+| Published dynamics reference | Junca and Rousselet's unilateral oscillator, Sec. 2 | Contact duration, detached duration, and onset and release timing over 50 periods. Compare the exact scalar-force HHT runs to the piecewise harmonic solution. |
+| Published kinematics reference | Dhande and Rajaram's constant-breadth cam, Example 1 | Compare the six-arc STEP model and translating flat follower to the published displacement, velocity, and acceleration. |
 | Simple industrial 1 | Single-stage spur gear pair | Use the existing STEP assets and matched projected contact law. Compare transmission error and total mesh force over steady meshing and load changes. |
 | Simple industrial 2 | Cam and single follower | Use the existing eccentric cam and follower geometry. Compare follower displacement and normal force over several complete rotations. |
 | Complex industrial | Two-stage spur–helical reducer | Use the existing assembly and loading schedule. Compare output transmission error, the critical stage force, completion, and cost. |
+| Appendix cross-engine checks | Sphere against a plane and translating sphere pair | Compare the native engines to a shared compliant force law and closed-form response. |
 
-The sphere cases use the existing half-sine response as the reference and include approach, loading, unloading and free motion after release. Begin time-refinement ladders at 500, 250 and 125 µs for the sphere cases, 1, 0.5 and 0.25 ms for the cam, and 20, 10 and 5 µs for the gear pairs. These are starting values. Resolve the most restrictive force or trajectory requirement on each model before selecting the production step. A gear run covers at least 60 input turns and, for the reducer, the full loaded schedule with its transients. A cam run covers at least 12 driven revolutions. Event-query time resolution is varied independently of the time-integration step.
+The sphere cases use the existing half-sine response as the reference and include approach, loading, unloading and free motion after release. Begin time-refinement ladders at 500, 250 and 125 µs for the sphere cases, 1, 0.5 and 0.25 ms for the industrial cam, and 20, 10 and 5 µs for the gear pairs. These are starting values. Resolve the most restrictive force or trajectory requirement on each model before selecting the production step. A gear run covers at least 60 input turns and, for the reducer, the full loaded schedule with its transients. The industrial cam run covers at least 12 driven revolutions.
+
+## Published reference reproductions
+
+With the `nc_hht` Release target built, its OCCT DLLs on `PATH`, and NumPy and OCP available to Python, run from the repository root:
+
+```powershell
+python benchmarks/aes/literature_validation.py build/occt/Release/nc_hht.exe build/aes-literature
+```
+
+The script records the full trajectories, STEP files, and `summary.json`. The [measured summary](../../results/aes/literature-validation.json) lists the three oscillator steps and the two cam checks. Section 2 of [Junca and Rousselet](https://doi.org/10.1007/978-3-540-89105-5_15) gives a parameterized model. The reproduced setting has `omega_0 = a_0 = 1` and `epsilon = 0.1`. The cam follows the dimensions and 1 rad/s rotation of [Dhande and Rajaram's Example 1](https://doi.org/10.1115/1.3258582). Dense CAD extrema provide the positions for finite differences. The 1-degree grid independently exercises the native bounded distance implementation on the imported STEP surfaces. The arc profile uses the original paper's length units.
 
 ## Comparisons
 
 - Compare the existing CAD and triangle backends under the same contact law, time-discretization family, load and acceptance requirements. Refine mesh resolution as well as time step. Separate setup from online cost and expose both the first-run and repeated-run costs.
-- Isolate the residual-driven query, guided event witness and exclusion reuse. Run each with independently enabled support for the remaining strategies, then run the combined method. Record force refinements, geometry work and rejected or subdivided steps. Count valid CAD brackets, clear intervals, safe prefixes and unresolved results.
+- Compare the direct, tight bounded, and adaptive cached force paths at the same time step. Record refinements, reused enclosures, response errors, and cost. The adaptive cached mode combines force adaptation and reuse.
 - Use MuJoCo and Drake on an equivalent model where their contact law can be matched. RecurDyn uses the same dimensions, masses, generalized coordinates, initial conditions and load history where its model supports them. An imposed common projected force law and a native engine contact law are different protocols and have different result labels. Verify actual contact laws against the engines' traces before ranking costs. Run same-host comparisons and document solver and platform settings.
 - Compare against analytic references where available. For industrial response, use a demonstrably refined reference and retain residual, time-step and mesh-sensitivity records. Compare competing methods at equivalent response tolerances rather than at a single step or tessellation setting.
 

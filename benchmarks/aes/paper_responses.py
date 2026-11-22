@@ -81,10 +81,10 @@ def industrial(work, output):
         save(fig,output,case+"-response")
 
 
-def model_panels(work, output):
+def model_panels(work, output, cases=CASES):
     render = work/"paper/renders"
     font = ImageFont.truetype(findfont("DejaVu Sans"),24)
-    for case in CASES:
+    for case in cases:
         full = Image.new("RGB",(1280,493),"white")
         for name,box,title in (("overview",(0,0,780,468),"(a) Assembly"),
                               ("detail",(812,0,1280,468),"(b) Contact region")):
