@@ -54,6 +54,25 @@ Both cards found zero intersections at all six poses (numerical touch tolerance 
 
 On a Ryzen 9 5900X the FCL OBBRSS trees took a median 42.36 ms per pose to return one globally closest pair on those two meshes. A separate finer-wheel check (119,108 triangles) reduced the maximum difference from STEP to 0.018 µm. Another tessellation was running during part of the finer CPU test, so the published fine-case trace records a contended timing. [Finer mesh check](cpu-fcl-pair-distance.json)
 
+### Loading at zero signed gap
+
+The existing CPU gear solver can compare both geometry representations under the unilateral law `F = k max(0, -g)`. Here `g` measures the signed separation of the opposing flank intersections along the probe normal. The two runs start from the original shaft positions and speeds, with about 48.8 µm of separation. Both use the same per-pair stiffness, flank weights, torque history and HHT settings. The gear solver selects tooth pairs from the mechanism kinematics. Its signed probes continue working during interpenetration. The general OCCT line finder in the earlier hybrid test reports zero-distance witnesses as unsupported.
+
+Each row covers two seconds of motion at 1,800 rpm on a Ryzen 9 5900X. Timings are medians of three runs. Integrator timing includes force evaluations and frame capture. Process timing also includes geometry setup, a native CAD audit and trace export.
+
+| Step | Method | Integrator (s) | Process (s) | Peak load (N) |
+|---|---|---:|---:|---:|
+| 100 µs | CAD flank probe | 0.484 | 2.696 | 4,537 |
+| 100 µs | Triangle BVH, 60,084 flank triangles | 4.479 | 11.506 | 4,508 |
+| 50 µs | CAD flank probe | 0.673 | 3.669 | 5,843 |
+| 50 µs | Triangle BVH, 60,084 flank triangles | 5.587 | 11.769 | 5,803 |
+| 20 µs | CAD flank probe | 2.182 | 11.589 | 6,616 |
+| 20 µs | Triangle BVH, 60,084 flank triangles | 14.123 | 26.703 | 6,629 |
+
+At 20 µs both histories first report load at 220 µs. At 100 µs the first loaded sample is at 300 µs. The CAD peak changes by 31% between the 20 and 100 µs runs. The driven-shaft impulse balance checks average load over 100 ms windows. It does not resolve peak load accuracy. [CPU histories and timing summary](zero-gap-spur.json) · [Shaft balance](zero-gap-shaft-balance.json)
+
+At six frames of the 20 µs CAD trajectory, the original closed STEP solids were intersected directly to measure common volume. Independently, a GPU kernel counted intersecting triangles on the two complete meshes used in the previous section. The zero/nonzero decisions agreed with the load state in all six frames. At 200 µs the two parts were separated. At 220 µs the CAD common volume was 0.0156 mm³, with 252 intersecting triangle pairs. At 380 µs both geometric checks indicated release. These are sampled times. On the RTX 3090, full-mesh overlap detection took a median 4.27 ms across those six poses (20 repetitions each). The six previously recorded separated poses took a median 1.73 ms when rerun on the same card in the same session. The GPU clock covers collision queries and device reduction at resident poses. [Whole-solid audit](zero-gap-whole-body.json) · [RTX 3090 loading and release](zero-gap-rtx3090.json) · [Separated-pose control](zero-gap-separated-control.json)
+
 ## Reproduce
 
 From the repository root build the persistent OCCT worker and run the following commands with CUDA, CuPy, SciPy and the OCCT runtime available. Shown for the 100 µs step on Linux.
@@ -87,4 +106,14 @@ D=results/aes/mesh-comparison/100us
 O=results/aes/online-gear
 python benchmarks/aes/mesh_pair_distance.py "$M/mesh-0.04.npz" "$M/wheel-0.4.npz" "$D/poses.txt" "$D/cold.csv" "$O/cpu-fcl-mesh-pairs.json"
 python benchmarks/aes/gpu_mesh_pairs.py "$M/mesh-0.04.npz" "$M/wheel-0.4.npz" "$D/poses.txt" "$O/cpu-fcl-mesh-pairs.json" "$O/device-mesh-pairs.json"
+```
+
+For the zero-gap comparisons, use the same mesh and output directory variables from above and set the OCCT runtime on the process path.
+
+```sh
+W=build/aes-zero-gap
+python benchmarks/aes/spur_mesh_steps.py build/occt/Release/nc_gears.exe results/gears/models "$W" "$O/zero-gap-spur.json" --zero-gap --repeats 3
+python benchmarks/aes/spur_mesh_steps.py build/occt/Release/nc_gears.exe results/gears/models "$W" "$O/zero-gap-shaft-balance.json" --balance
+python benchmarks/aes/zero_gap_contact_check.py audit results/gears/models "$W/cad-20us.csv" "$M/mesh-0.04.npz" "$M/wheel-0.4.npz" "$O/zero-gap-whole-body.json"
+python benchmarks/aes/zero_gap_contact_check.py replay "$O/zero-gap-whole-body.json" "$M/mesh-0.04.npz" "$M/wheel-0.4.npz" "$O/device-zero-gap.json"
 ```

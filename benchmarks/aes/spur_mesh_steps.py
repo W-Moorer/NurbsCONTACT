@@ -68,7 +68,7 @@ def replay_inputs(models, work, destination):
         write_poses(windows, a, b, folder/'poses.txt')
 
 
-def run(executable, models, work, output, repeats, refinement=False):
+def run(executable, models, work, output, repeats, refinement=False, zero_gap=False):
     work.mkdir(parents=True, exist_ok=True)
     output.parent.mkdir(parents=True, exist_ok=True)
     configs = [('cad', 0.), ('mesh-1563nm', 0.0015625), ('mesh-391nm', 0.000390625)]
@@ -88,6 +88,8 @@ def run(executable, models, work, output, repeats, refinement=False):
                     continue
                 command = [str(executable), 'run', 'spur', str(models), str(deflection),
                            str(step*1e-6), '2', str(prefix), '1', '31', '1']
+                if zero_gap:
+                    command.extend(('fixed','zero-gap'))
                 start = perf_counter()
                 try:
                     completed = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -105,13 +107,22 @@ def run(executable, models, work, output, repeats, refinement=False):
                 digest = hashlib.sha256(trace.read_bytes()).hexdigest()
                 if rep == 0:
                     data = np.genfromtxt(trace, delimiter=',', names=True,
-                                         usecols=('time','te0_um','normal0_N','active0'))
+                                         usecols=('time','te0_um','normal0_N','active0','mesh_gap0_mm'))
                     if (len(data) != 2_000_000//step + 1 or not np.isfinite(data.tolist()).all()
                             or not np.allclose(data['time'], np.arange(len(data))*step*1e-6, atol=1e-9, rtol=0)):
                         raise ValueError(f'Incomplete or invalid history: {name}')
                     record.update(trace_sha256=digest, triangles=int(stats['triangles']),
                                   force_peak_N=float(data['normal0_N'].max()),
                                   newton=int(stats['newton']), subdivisions=int(stats['subdivisions']))
+                    if zero_gap:
+                        loaded = data['normal0_N'] > 0
+                        gaps = data['mesh_gap0_mm']
+                        if float(stats['activation_mm'])!=0 or not np.array_equal(loaded,gaps<0):
+                            raise ValueError(f'Load and signed gap disagree: {name}')
+                        if loaded[0] or not loaded.any():
+                            raise ValueError(f'Expected separation followed by contact: {name}')
+                        record.update(initial_gap_um=1000*gaps[0], first_loaded_us=1e6*data['time'][loaded][0],
+                                      minimum_gap_um=1000*min(gaps), loaded_samples=int(loaded.sum()))
                     signals[name] = data[::100//step]
                 if digest != record['trace_sha256']:
                     raise RuntimeError(f'Nonrepeatable trace: {name}')
@@ -135,6 +146,7 @@ def run(executable, models, work, output, repeats, refinement=False):
     output.write_text(json.dumps(dict(scope='CPU mechanism-specific flank probes; 24/48 spur; 1800 rpm',
                                       duration_s=2, comparison_grid_us=100, requested_axial_stations=31,
                                       effective_axial_stations=1,
+                                      activation_mm=0 if zero_gap else .055,
                                       repeats=repeats, configurations=rows),indent=2,allow_nan=False)+'\n')
 
 
@@ -143,6 +155,7 @@ if __name__ == '__main__':
     for key in ('executable','models','work','output'):
         parser.add_argument(key,type=Path)
     parser.add_argument('--repeats',type=int,default=5)
+    parser.add_argument('--zero-gap',action='store_true', help='Use zero force on every separated flank')
     parser.add_argument('--refinement',action='store_true',
                         help='Compare the fine mesh and CAD at 5, 10, 20, 50 and 100 microseconds')
     parser.add_argument('--balance',action='store_true', help='Check existing 2 s traces against angular impulse balance')
@@ -156,4 +169,4 @@ if __name__ == '__main__':
     elif args.replay_poses:
         replay_inputs(args.models, args.work, args.replay_poses)
     else:
-        run(args.executable.resolve(),args.models.resolve(),args.work.resolve(),args.output,args.repeats,args.refinement)
+        run(args.executable.resolve(),args.models.resolve(),args.work.resolve(),args.output,args.repeats,args.refinement,args.zero_gap)

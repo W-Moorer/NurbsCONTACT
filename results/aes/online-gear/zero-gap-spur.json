@@ -1,0 +1,389 @@
+{
+  "scope": "CPU mechanism-specific flank probes; 24/48 spur; 1800 rpm",
+  "duration_s": 2,
+  "comparison_grid_us": 100,
+  "requested_axial_stations": 31,
+  "effective_axial_stations": 1,
+  "activation_mm": 0,
+  "repeats": 3,
+  "configurations": {
+    "cad-20us": {
+      "step_us": 20,
+      "deflection_mm": 0.0,
+      "runs": [
+        {
+          "integrator_s": 2.1819499,
+          "setup_s": 0.1027358,
+          "process_s": 11.589454300003126
+        },
+        {
+          "integrator_s": 2.0673796,
+          "setup_s": 0.025476,
+          "process_s": 9.303026899986435
+        },
+        {
+          "integrator_s": 2.2856953,
+          "setup_s": 0.0447662,
+          "process_s": 12.057631000003312
+        }
+      ],
+      "trace_sha256": "4e11b38b82b2a06e95903300bdf294d98cc9d8293a8db3436e965942329a02f4",
+      "triangles": 0,
+      "force_peak_N": 6616.369536929025,
+      "newton": 106434,
+      "subdivisions": 0,
+      "initial_gap_um": 48.79229977293137,
+      "first_loaded_us": 219.99999999999997,
+      "minimum_gap_um": -26.184390489143127,
+      "loaded_samples": 99862,
+      "median_integrator_s": 2.1819499,
+      "median_process_s": 11.589454300003126,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.0,
+        "force_rms_difference_N": 0.0,
+        "peak_difference_N": 0.0
+      },
+      "same_method_20us": {
+        "te_rms_difference_um": 0.0,
+        "force_rms_difference_N": 0.0,
+        "peak_difference_N": 0.0
+      }
+    },
+    "mesh-1563nm-20us": {
+      "step_us": 20,
+      "deflection_mm": 0.0015625,
+      "runs": [
+        {
+          "integrator_s": 12.5279805,
+          "setup_s": 0.7714067,
+          "process_s": 20.002866700000595
+        },
+        {
+          "integrator_s": 14.4367623,
+          "setup_s": 0.9760644,
+          "process_s": 25.0244710999541
+        },
+        {
+          "integrator_s": 14.4551346,
+          "setup_s": 0.8138313,
+          "process_s": 24.093866400013212
+        }
+      ],
+      "trace_sha256": "a9b0fcaa6bf18eeb8fa641211da167add5b71fdbaabd77e85e0fbeb372308bd1",
+      "triangles": 13770,
+      "force_peak_N": 6586.837855497947,
+      "newton": 192866,
+      "subdivisions": 0,
+      "initial_gap_um": 50.01239184801243,
+      "first_loaded_us": 219.99999999999997,
+      "minimum_gap_um": -27.680952542546102,
+      "loaded_samples": 92349,
+      "median_integrator_s": 14.4367623,
+      "median_process_s": 24.093866400013212,
+      "same_step_cad": {
+        "te_rms_difference_um": 2.1725299283309965,
+        "force_rms_difference_N": 498.5733319125064,
+        "peak_difference_N": -29.53168143107814
+      },
+      "same_method_20us": {
+        "te_rms_difference_um": 0.0,
+        "force_rms_difference_N": 0.0,
+        "peak_difference_N": 0.0
+      }
+    },
+    "mesh-391nm-20us": {
+      "step_us": 20,
+      "deflection_mm": 0.000390625,
+      "runs": [
+        {
+          "integrator_s": 14.1229048,
+          "setup_s": 3.7092176,
+          "process_s": 26.170446699950844
+        },
+        {
+          "integrator_s": 14.5468087,
+          "setup_s": 4.1863576,
+          "process_s": 26.70298509998247
+        },
+        {
+          "integrator_s": 13.8800117,
+          "setup_s": 3.6373097,
+          "process_s": 27.78127440001117
+        }
+      ],
+      "trace_sha256": "a9589a152f8d570f97f1d97a57e071b3afbba0d775c3cf62cec39dcdc3a4bf4d",
+      "triangles": 60084,
+      "force_peak_N": 6629.167526374157,
+      "newton": 196564,
+      "subdivisions": 0,
+      "initial_gap_um": 48.89210878285732,
+      "first_loaded_us": 219.99999999999997,
+      "minimum_gap_um": -26.13593046203522,
+      "loaded_samples": 97136,
+      "median_integrator_s": 14.1229048,
+      "median_process_s": 26.70298509998247,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.5972223209737383,
+        "force_rms_difference_N": 129.12866240061228,
+        "peak_difference_N": 12.797989445131861
+      },
+      "same_method_20us": {
+        "te_rms_difference_um": 0.0,
+        "force_rms_difference_N": 0.0,
+        "peak_difference_N": 0.0
+      }
+    },
+    "cad-50us": {
+      "step_us": 50,
+      "deflection_mm": 0.0,
+      "runs": [
+        {
+          "integrator_s": 0.6504574,
+          "setup_s": 0.0228588,
+          "process_s": 3.891172200033907
+        },
+        {
+          "integrator_s": 0.6733098,
+          "setup_s": 0.01985,
+          "process_s": 3.2408881000010297
+        },
+        {
+          "integrator_s": 0.7091246,
+          "setup_s": 0.0217514,
+          "process_s": 3.668726399948355
+        }
+      ],
+      "trace_sha256": "ee3a3a4bf24d87bfda5bf94e3e6dc9f927e0d9eb52ac9dac42b6ddd3c12804d5",
+      "triangles": 0,
+      "force_peak_N": 5842.909143261841,
+      "newton": 43230,
+      "subdivisions": 0,
+      "initial_gap_um": 48.79229977293137,
+      "first_loaded_us": 250.0,
+      "minimum_gap_um": -24.216271496410197,
+      "loaded_samples": 39951,
+      "median_integrator_s": 0.6733098,
+      "median_process_s": 3.668726399948355,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.0,
+        "force_rms_difference_N": 0.0,
+        "peak_difference_N": 0.0
+      },
+      "same_method_20us": {
+        "te_rms_difference_um": 1.9607335170714777,
+        "force_rms_difference_N": 477.7388350757034,
+        "peak_difference_N": -773.4603936671847
+      }
+    },
+    "mesh-1563nm-50us": {
+      "step_us": 50,
+      "deflection_mm": 0.0015625,
+      "runs": [
+        {
+          "integrator_s": 6.5044944,
+          "setup_s": 0.7533672,
+          "process_s": 10.071774600015488
+        },
+        {
+          "integrator_s": 5.6202007,
+          "setup_s": 0.7523783,
+          "process_s": 9.361342900025193
+        },
+        {
+          "integrator_s": 5.6997342,
+          "setup_s": 0.8479223,
+          "process_s": 10.597110200033057
+        }
+      ],
+      "trace_sha256": "9b6460e13e1a5aec0f7469ed52e75418bb045c25ae020cfc4f0fcc41b0e8cb91",
+      "triangles": 13770,
+      "force_peak_N": 5794.784383184307,
+      "newton": 95915,
+      "subdivisions": 0,
+      "initial_gap_um": 50.01239184801243,
+      "first_loaded_us": 250.0,
+      "minimum_gap_um": -24.370425689722364,
+      "loaded_samples": 39946,
+      "median_integrator_s": 5.6997342,
+      "median_process_s": 10.071774600015488,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.9000553262159903,
+        "force_rms_difference_N": 85.53660827485218,
+        "peak_difference_N": -48.12476007753321
+      },
+      "same_method_20us": {
+        "te_rms_difference_um": 2.112813936128788,
+        "force_rms_difference_N": 494.87388257311875,
+        "peak_difference_N": -792.0534723136398
+      }
+    },
+    "mesh-391nm-50us": {
+      "step_us": 50,
+      "deflection_mm": 0.000390625,
+      "runs": [
+        {
+          "integrator_s": 6.1896738,
+          "setup_s": 3.3856924,
+          "process_s": 13.187615500006359
+        },
+        {
+          "integrator_s": 5.1188518,
+          "setup_s": 3.0103443,
+          "process_s": 10.597138900018763
+        },
+        {
+          "integrator_s": 5.5869663,
+          "setup_s": 3.4665548,
+          "process_s": 11.768763200030662
+        }
+      ],
+      "trace_sha256": "4aa146299a4762aab4dab13255d4d3438d71116ef8b98523c8b1d13f2f2119ef",
+      "triangles": 60084,
+      "force_peak_N": 5803.089648513092,
+      "newton": 84334,
+      "subdivisions": 0,
+      "initial_gap_um": 48.89210878285732,
+      "first_loaded_us": 250.0,
+      "minimum_gap_um": -25.07864648373337,
+      "loaded_samples": 39952,
+      "median_integrator_s": 5.5869663,
+      "median_process_s": 11.768763200030662,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.23906265027693666,
+        "force_rms_difference_N": 27.42035197195789,
+        "peak_difference_N": -39.819494748749094
+      },
+      "same_method_20us": {
+        "te_rms_difference_um": 2.1506085263211987,
+        "force_rms_difference_N": 517.0195041951108,
+        "peak_difference_N": -826.0778778610656
+      }
+    },
+    "cad-100us": {
+      "step_us": 100,
+      "deflection_mm": 0.0,
+      "runs": [
+        {
+          "integrator_s": 0.4837926,
+          "setup_s": 0.0309568,
+          "process_s": 2.6961905999924056
+        },
+        {
+          "integrator_s": 0.4093712,
+          "setup_s": 0.024438,
+          "process_s": 1.9592173999990337
+        },
+        {
+          "integrator_s": 0.6889938,
+          "setup_s": 0.0383643,
+          "process_s": 3.498984100006055
+        }
+      ],
+      "trace_sha256": "8dd813addea31439e2b9deffec8f368078b960241ff8fad329316954adfa9bd5",
+      "triangles": 0,
+      "force_peak_N": 4536.50715932767,
+      "newton": 25504,
+      "subdivisions": 0,
+      "initial_gap_um": 48.79229977293137,
+      "first_loaded_us": 300.0,
+      "minimum_gap_um": -17.394808747844884,
+      "loaded_samples": 19977,
+      "median_integrator_s": 0.4837926,
+      "median_process_s": 2.6961905999924056,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.0,
+        "force_rms_difference_N": 0.0,
+        "peak_difference_N": 0.0
+      },
+      "same_method_20us": {
+        "te_rms_difference_um": 2.302127410259166,
+        "force_rms_difference_N": 567.7801978511659,
+        "peak_difference_N": -2079.8623776013555
+      }
+    },
+    "mesh-1563nm-100us": {
+      "step_us": 100,
+      "deflection_mm": 0.0015625,
+      "runs": [
+        {
+          "integrator_s": 3.9485379,
+          "setup_s": 0.7855156,
+          "process_s": 6.966252000012901
+        },
+        {
+          "integrator_s": 3.1025115,
+          "setup_s": 0.6126039,
+          "process_s": 5.082702299987432
+        },
+        {
+          "integrator_s": 5.5137834,
+          "setup_s": 0.9395331,
+          "process_s": 9.178077200020198
+        }
+      ],
+      "trace_sha256": "ac4265b493ce96414d2977f893556c04645782bdad555932e8351c37f5f3604c",
+      "triangles": 13770,
+      "force_peak_N": 4462.00544191629,
+      "newton": 58873,
+      "subdivisions": 0,
+      "initial_gap_um": 50.01239184801243,
+      "first_loaded_us": 300.0,
+      "minimum_gap_um": -17.88784211387462,
+      "loaded_samples": 19982,
+      "median_integrator_s": 3.9485379,
+      "median_process_s": 6.966252000012901,
+      "same_step_cad": {
+        "te_rms_difference_um": 1.1329200249083025,
+        "force_rms_difference_N": 202.9262482910376,
+        "peak_difference_N": -74.50171741138001
+      },
+      "same_method_20us": {
+        "te_rms_difference_um": 2.3550226075749943,
+        "force_rms_difference_N": 670.7391618322764,
+        "peak_difference_N": -2124.8324135816574
+      }
+    },
+    "mesh-391nm-100us": {
+      "step_us": 100,
+      "deflection_mm": 0.000390625,
+      "runs": [
+        {
+          "integrator_s": 5.6491767,
+          "setup_s": 4.5162737,
+          "process_s": 13.037259300006554
+        },
+        {
+          "integrator_s": 3.1558182,
+          "setup_s": 2.9113743,
+          "process_s": 7.503689199977089
+        },
+        {
+          "integrator_s": 4.4788822,
+          "setup_s": 4.9389549,
+          "process_s": 11.50616709998576
+        }
+      ],
+      "trace_sha256": "2a68ef7ab8c0b2682480e63a8e81e2108bee4bdfac94a1c9ba08c27d437d3d0b",
+      "triangles": 60084,
+      "force_peak_N": 4507.938510884948,
+      "newton": 54280,
+      "subdivisions": 0,
+      "initial_gap_um": 48.89210878285732,
+      "first_loaded_us": 300.0,
+      "minimum_gap_um": -17.517325082014644,
+      "loaded_samples": 19979,
+      "median_integrator_s": 4.4788822,
+      "median_process_s": 11.50616709998576,
+      "same_step_cad": {
+        "te_rms_difference_um": 0.2499638639960977,
+        "force_rms_difference_N": 24.142043722622603,
+        "peak_difference_N": -28.568648442721496
+      },
+      "same_method_20us": {
+        "te_rms_difference_um": 2.4411686297256234,
+        "force_rms_difference_N": 618.4161667472596,
+        "peak_difference_N": -2121.229015489209
+      }
+    }
+  }
+}

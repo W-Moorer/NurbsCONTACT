@@ -264,6 +264,7 @@ struct Pair {
     std::vector<std::array<Vec,4>> ends;
     std::vector<std::array<std::optional<Flank::Hint>, 4>> cached_a, cached_b;
     QueryWork work;
+    double activation_mm{skin};
 
     Pair(Stage data, const Path& folder, const Case& scene, std::size_t index, double speed,
          double deflection, unsigned axial)
@@ -340,7 +341,7 @@ struct Pair {
                     auto* hint_b = bounded->reuse ? &cached_b[station][slot] : nullptr;
                     auto ra = a.probe_bound(local_a,normal_a,u1,v,station,target,work,hint_a);
                     auto rb = b.probe_bound(local_b,normal_b,u2,v,station,target,work,hint_b);
-                    if (ra && rb && bounded->reuse && ((*rb-*ra)*cosine_base).lo <= minimum_probe_gap) {
+                    if (ra && rb && bounded->reuse && activation_mm>0 && ((*rb-*ra)*cosine_base).lo <= minimum_probe_gap) {
                         // A low-weight ray may meet the force budget while its
                         // bracket is too wide for the independent gap check.
                         ra = a.probe_bound(local_a,normal_a,u1,v,station,0,work,hint_a);
@@ -378,10 +379,10 @@ struct Pair {
                 } else if (experimental) {
                     damping=weight*experimental->damping;
                 }
-                double normal_force = k*mm*std::max(0.,skin-gap);
+                double normal_force = k*mm*std::max(0.,activation_mm-gap);
                 Interval normal_range;
                 if (bounded) {
-                    const Interval depth = Interval{skin} - gap_range;
+                    const Interval depth = Interval{activation_mm} - gap_range;
                     normal_range = Interval{k} * mm * Interval{std::max(0.0,depth.lo), std::max(0.0,depth.hi)};
                     normal_force = normal_range.center();
                 }
@@ -446,13 +447,14 @@ struct Dynamics {
     double speed;
     double input_torque;
 
-    Dynamics(const Case& scene,const Path& folder,double deflection,unsigned axial)
+    Dynamics(const Case& scene,const Path& folder,double deflection,unsigned axial,double activation_mm=skin)
         : mass(scene.stages.size()+1,.0003), last(scene.stages.size()), brake(scene.torque),
           speed(scene.rpm*2*pi/60), input_torque(brake) {
         double omega = speed;
         for (std::size_t i=0; i<scene.stages.size(); ++i) {
             const auto& s=scene.stages[i];
             pairs.emplace_back(s,folder,scene,i,omega,deflection,axial);
+            pairs.back().activation_mm=activation_mm;
             mass[i] += inertia(s.driver);
             mass[i+1] += inertia(s.wheel);
             omega /= s.ratio();
@@ -467,6 +469,7 @@ struct Dynamics {
             const Stage& stage=pairs[i].stage;
             const double c=std::cos(stage.beta_base());
             const double force=drive_torque/(stage.driver.base_radius()*mm*c);
+            // Preserve the original initial shaft positions when comparing contact laws.
             const double closed = stage.driver.backlash/2-(skin-force/stiffness/mm)/c;
             q[i+1]=(stage.driver.base_radius()*q[i]-closed)/stage.wheel.base_radius();
             drive_torque*=stage.ratio();
@@ -495,7 +498,7 @@ struct Dynamics {
         if (bounded) bounded->target /= static_cast<double>(pairs.size());
         for (std::size_t i=0; i<pairs.size(); ++i) {
             last[i]=pairs[i].evaluate(q[i],q[i+1],time,&f,i,n,nullptr,bounded);
-            if (!last[i].valid || last[i].min_gap < minimum_probe_gap) {
+            if (!last[i].valid || (pairs[i].activation_mm>0 && last[i].min_gap < minimum_probe_gap)) {
                 f.value[0]=std::numeric_limits<double>::quiet_NaN();
             }
         }
@@ -507,7 +510,7 @@ struct Frame { double time; Vector q,v; std::vector<Measurements> mesh; };
 
 void integrate(const Case& scene,const Path& geometry,double deflection,double dt,double duration,
                const Path& prefix,unsigned repeats,unsigned stations,unsigned trace_stride,
-               std::string_view force_strategy) {
+               std::string_view force_strategy, double activation_mm) {
     if (!(dt>0 && duration>0 && repeats && stations && trace_stride)) {
         throw std::invalid_argument("invalid run protocol");
     }
@@ -515,12 +518,12 @@ void integrate(const Case& scene,const Path& geometry,double deflection,double d
     const auto steps = static_cast<std::size_t>(std::llround(duration/dt));
     if (std::abs(steps*dt-duration)>1e-12) throw std::invalid_argument("duration must be divisible by dt");
     const auto prep_start=Clock::now();
-    Dynamics system(scene,geometry,deflection,stations);
+    Dynamics system(scene,geometry,deflection,stations,activation_mm);
     const double setup=std::chrono::duration<double>(Clock::now()-prep_start).count();
     auto stats_out = output(prefix.string()+".stats.csv");
     stats_out << "repeat,deflection_mm,dt_s,duration_s,steps,wall_s,setup_s,accepted,subdivisions,evaluations,newton,"
                  "probe_calls,surface_evaluations,probe_misses,bvh_nodes,triangle_tests,triangles,max_residual_Nm,"
-                 "trace_stride,force_strategy,force_refinements,certificate_hits\n";
+                 "trace_stride,force_strategy,force_refinements,certificate_hits,activation_mm\n";
     std::vector<Frame> frames;
     frames.reserve(steps/trace_stride+2);
     HhtOptions opts;
@@ -577,10 +580,10 @@ void integrate(const Case& scene,const Path& geometry,double deflection,double d
             << ',' << stats.accepted_steps << ',' << stats.subdivisions << ',' << stats.evaluations << ','
             << stats.newton_iterations << ',' << calls << ',' << evaluations << ',' << misses << ',' << nodes
             << ',' << tests << ',' << triangles << ',' << stats.maximum_residual << ',' << trace_stride
-            << ',' << force_strategy << ',' << stats.force_refinements << ',' << hits << '\n' << std::flush;
+            << ',' << force_strategy << ',' << stats.force_refinements << ',' << hits << ',' << activation_mm << '\n' << std::flush;
         std::cout << scene.name << ' ' << deflection << " mm pass " << repetition+1 << " " << wall << " s\n" << std::flush;
     }
-    Dynamics audit(scene,geometry,0,stations);
+    Dynamics audit(scene,geometry,0,stations,activation_mm);
     auto trace=output(prefix.string()+".csv");
     trace << "time,load_Nm";
     for (std::size_t i=0; i<system.mass.size(); ++i) trace << ",q" << i << ",v" << i;
@@ -798,16 +801,18 @@ int main(int argc,char** argv) {
     try {
         if (argc==4 && std::string_view(argv[1])=="models") {
             make_models(configuration(argv[2],argv[3]),argv[3]);
-        } else if (argc>=10 && argc<=12 && std::string_view(argv[1])=="run") {
+        } else if (argc>=10 && argc<=13 && std::string_view(argv[1])=="run") {
             const int trace_stride = argc>=11 ? std::stoi(argv[10]) : 1;
             if (trace_stride<=0) throw std::invalid_argument("trace stride must be positive");
-            const std::string_view force_strategy = argc==12 ? argv[11] : "fixed";
+            const std::string_view force_strategy = argc>=12 ? argv[11] : "fixed";
+            const std::string_view activation = argc==13 ? argv[12] : "skin";
+            if (activation!="skin" && activation!="zero-gap") throw std::invalid_argument("unknown contact activation");
             if (force_strategy!="fixed" && force_strategy!="bounded-exact" && force_strategy!="bounded-cache") {
                 throw std::invalid_argument("unknown gear force strategy");
             }
             integrate(configuration(argv[2]),argv[3],std::stod(argv[4]),std::stod(argv[5]),std::stod(argv[6]),
                       argv[7],static_cast<unsigned>(std::stoi(argv[8])),static_cast<unsigned>(std::stoi(argv[9])),
-                      static_cast<unsigned>(trace_stride),force_strategy);
+                      static_cast<unsigned>(trace_stride),force_strategy,activation=="skin" ? skin : 0.);
         } else if ((argc==12 || argc==13) && std::string_view(argv[1])=="experiment") {
             experiment(configuration(argv[2],argv[3]),argv[3],std::stod(argv[4]),std::stod(argv[5]),std::stod(argv[6]),
                        std::stod(argv[7]),std::stod(argv[8]),std::stod(argv[9]),std::stod(argv[10]),argv[11],
@@ -818,7 +823,7 @@ int main(int argc,char** argv) {
         } else {
             std::cerr << "nc_gears models {spur|helical|reducer|rig28|rig28-flex|unsw} MODEL_DIR\n"
                          "nc_gears run CASE MODEL_DIR DEFLECTION_MM DT_S DURATION_S PREFIX REPEATS AXIAL_STATIONS "
-                         "[TRACE_STRIDE [bounded-exact|bounded-cache]]\n"
+                         "[TRACE_STRIDE [fixed|bounded-exact|bounded-cache [skin|zero-gap]]]\n"
                          "nc_gears experiment CASE MODEL_DIR DEFLECTION_MM RPM INPUT_NM DT_S DURATION_S K_N_M ZETA PREFIX [INERTIA_SCALE]\n"
                          "nc_gears statics rig28-flex MODEL_DIR DEFLECTION_MM INPUT_NM K_N_M FILE\n";
             return 2;

@@ -1,0 +1,53 @@
+{
+  "window_s": 0.1,
+  "driven_inertia_kg_m2": 0.004095140211102863,
+  "driven_base_radius_m": 0.056381557247154504,
+  "shaft_damping_Nm_s": 0.09,
+  "configurations": {
+    "cad-100us": {
+      "mean_normal_force_N": 941.39353442874,
+      "mean_from_shaft_balance_N": 941.3931963777407,
+      "max_abs_100ms_mean_imbalance_N": 0.008695993095102335
+    },
+    "cad-20us": {
+      "mean_normal_force_N": 941.3909870080248,
+      "mean_from_shaft_balance_N": 941.3909591682565,
+      "max_abs_100ms_mean_imbalance_N": 0.0008010597152007616
+    },
+    "cad-50us": {
+      "mean_normal_force_N": 941.384738053024,
+      "mean_from_shaft_balance_N": 941.3847792897625,
+      "max_abs_100ms_mean_imbalance_N": 0.0011644511239694898
+    },
+    "mesh-1563nm-100us": {
+      "mean_normal_force_N": 941.3891664776537,
+      "mean_from_shaft_balance_N": 941.3888844318363,
+      "max_abs_100ms_mean_imbalance_N": 0.004536697883423729
+    },
+    "mesh-1563nm-20us": {
+      "mean_normal_force_N": 941.3954420137411,
+      "mean_from_shaft_balance_N": 941.3953942768997,
+      "max_abs_100ms_mean_imbalance_N": 0.0014450779667639405
+    },
+    "mesh-1563nm-50us": {
+      "mean_normal_force_N": 941.3829983625799,
+      "mean_from_shaft_balance_N": 941.3830287850775,
+      "max_abs_100ms_mean_imbalance_N": 0.0016115953123120974
+    },
+    "mesh-391nm-100us": {
+      "mean_normal_force_N": 941.3936028994318,
+      "mean_from_shaft_balance_N": 941.3933012230236,
+      "max_abs_100ms_mean_imbalance_N": 0.008424766661647555
+    },
+    "mesh-391nm-20us": {
+      "mean_normal_force_N": 941.393562169151,
+      "mean_from_shaft_balance_N": 941.3935238497863,
+      "max_abs_100ms_mean_imbalance_N": 0.0008248811117538624
+    },
+    "mesh-391nm-50us": {
+      "mean_normal_force_N": 941.3846294459123,
+      "mean_from_shaft_balance_N": 941.3847051013236,
+      "max_abs_100ms_mean_imbalance_N": 0.0018432724830575425
+    }
+  }
+}
