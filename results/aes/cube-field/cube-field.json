@@ -1,0 +1,89 @@
+{
+  "side_mm": 50.0,
+  "band_um": 55.0,
+  "train_points": 49152,
+  "test_points": 21504,
+  "cad_checks": 256,
+  "cad_max_difference_um": 0.0,
+  "train_seed": 42,
+  "test_seed": 1701,
+  "nhrep_steps": 4000,
+  "nhrep_batch": 512,
+  "teacher": "analytic signed Euclidean distance and gradient, units mm",
+  "volume_domain_mm": [
+    -37.5,
+    37.5
+  ],
+  "training_device": "cuda",
+  "affine_neurons": 20541,
+  "tangent": {
+    "boundary_26_max_um": 1.4210854715202004e-11,
+    "face": {
+      "n": 3072,
+      "p95_um": 0.0,
+      "max_um": 0.0,
+      "within_0p125_um": 3072,
+      "normal_checks": 192,
+      "p95_normal_deg": 0.0
+    },
+    "edge": {
+      "n": 6144,
+      "p95_um": 0.0005776513835299696,
+      "max_um": 0.0049075509579304954,
+      "within_0p125_um": 6144,
+      "normal_checks": 384,
+      "p95_normal_deg": 0.3411710439260778
+    },
+    "corner": {
+      "n": 8192,
+      "p95_um": 0.005599301644935994,
+      "max_um": 0.025219003834998227,
+      "within_0p125_um": 8192,
+      "normal_checks": 512,
+      "p95_normal_deg": 1.1018670298698812
+    },
+    "volume": {
+      "n": 4096,
+      "p95_um": 0.22066928248420936,
+      "max_um": 4.678941918895063,
+      "within_0p125_um": 3807,
+      "normal_checks": 256,
+      "p95_normal_deg": 0.3427294751313678
+    }
+  },
+  "nhrep": {
+    "boundary_26_max_um": 33.61403942108154,
+    "face": {
+      "n": 3072,
+      "p95_um": 191.06939594028506,
+      "max_um": 419.3713758047686,
+      "within_0p125_um": 8,
+      "normal_checks": 192,
+      "p95_normal_deg": 12.139405584978645
+    },
+    "edge": {
+      "n": 6144,
+      "p95_um": 96.7270556147225,
+      "max_um": 152.29644488437444,
+      "within_0p125_um": 34,
+      "normal_checks": 384,
+      "p95_normal_deg": 68.69152874563724
+    },
+    "corner": {
+      "n": 8192,
+      "p95_um": 13.711390014736855,
+      "max_um": 20.386454882101773,
+      "within_0p125_um": 105,
+      "normal_checks": 512,
+      "p95_normal_deg": 64.53729513320167
+    },
+    "volume": {
+      "n": 4096,
+      "p95_um": 2793.4301452564246,
+      "max_um": 8644.936211410875,
+      "within_0p125_um": 10,
+      "normal_checks": 256,
+      "p95_normal_deg": 37.24713215889722
+    }
+  }
+}

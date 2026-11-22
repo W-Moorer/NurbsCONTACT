@@ -260,6 +260,18 @@ trial. All 448 distance-check errors exceed 0.125 µm in both trials.
 The parametric field gives 0 N and 711.67 N on the two contact lines,
 against 149.35 N per line with CAD distances at the same pose.
 
+The [50 mm cube control](../aes/cube-field/cube-field.json) uses analytic
+signed distances and outward distance gradients for supervision. It tests
+a six-branch NH-Rep with distance and gradient losses and a convex field
+fitted from tangent planes. It checks analytic distances against the
+archived STEP cube at 256 test points. Both TorchScript files beside the
+report accept an `N × 3` coordinate tensor in millimetres and return one
+signed distance in millimetres per point (negative inside).
+
+```powershell
+python benchmarks/aes/cube_field.py build/deps/nh-rep build/aes-occt/Release/nc_contact.exe build/aes-cube-field
+```
+
 ~~~text
 drives count
 body_id orbit arm_xyz axis_xyz angular_speed
