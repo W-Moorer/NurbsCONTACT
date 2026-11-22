@@ -1,0 +1,121 @@
+{
+  "method": "mesh",
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "duration_target_s": 2.0,
+  "dt_s": 9.999999999999999e-05,
+  "stiffness_N_per_m2": 1000000000.0,
+  "backend": "CPU OCCT live regions and line points; GPU geometry projection, wrenches and HHT algebra",
+  "geometry_input": "mesh-0.04.npz",
+  "loads": "nc_contact spur deck",
+  "calls": [
+    {
+      "t": 0.0,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "samples": 2,
+      "tested": 95,
+      "reused": 0,
+      "region_s": 5.359447906,
+      "assembly_s": 0.001156306
+    },
+    {
+      "t": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "samples": 2,
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.067443573,
+      "assembly_s": 0.001150894
+    },
+    {
+      "t": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "samples": 2,
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.070083193,
+      "assembly_s": 0.001149988
+    },
+    {
+      "t": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "samples": 2,
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.06573916,
+      "assembly_s": 0.001146945
+    }
+  ],
+  "steps": [
+    {
+      "time_s": 9.999999999999999e-05,
+      "wall_s": 9.222996256081387,
+      "newton": 2,
+      "residual_Nm": 2.259687548189504e-09,
+      "tolerance_Nm": 4.8610673987233285e-06,
+      "q": [
+        0.019029781388486995,
+        0.008642973988089296
+      ],
+      "v": [
+        192.10690222949756,
+        93.22795104312769
+      ],
+      "a": [
+        30646.49002492628,
+        -9246.382649434583
+      ],
+      "force_Nm": [
+        15.647396641820155,
+        -36.78240665995597
+      ]
+    }
+  ],
+  "occt": "7.5.1",
+  "face_counts": [
+    147,
+    291
+  ],
+  "setup_s": 6.549149221042171,
+  "initial_force_s": 5.424143800046295,
+  "initial_force_Nm": [
+    23.8052294251842,
+    -47.610673987233284
+  ],
+  "initial_q": [
+    0.0,
+    -0.0007308720383890398
+  ],
+  "initial_v": [
+    188.49555921538757,
+    94.24777960769379
+  ],
+  "initial_a": [
+    44313.84031536062,
+    -11626.14014000054
+  ],
+  "wall_after_initialization_s": 9.223028793931007,
+  "physical_s": 9.999999999999999e-05,
+  "completed": false,
+  "realtime": false,
+  "max_line_force_difference_N": 0.21311917549180162
+}

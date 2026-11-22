@@ -1,0 +1,115 @@
+{
+  "method": "CPU OCCT line forces and SciPy HHT residual root",
+  "occt": "7.5.1",
+  "face_counts": [
+    147,
+    291
+  ],
+  "dt_s": 4.9999999999999996e-05,
+  "q": [
+    0.009476338457894189,
+    0.003967498222680518
+  ],
+  "v": [
+    190.55924179129622,
+    93.68686198704133
+  ],
+  "a": [
+    39253.34605221339,
+    -10948.195537497773
+  ],
+  "residual_Nm": 1.2710721364328492e-11,
+  "calls": [
+    {
+      "time_s": 0.0,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 95,
+      "reused": 0,
+      "region_s": 5.362678139,
+      "assembly_s": 0.001146935,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    },
+    {
+      "time_s": 4.9999999999999996e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 77,
+      "reused": 18,
+      "region_s": 3.011398439,
+      "assembly_s": 0.00116541,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    },
+    {
+      "time_s": 4.9999999999999996e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 77,
+      "reused": 18,
+      "region_s": 3.023893681,
+      "assembly_s": 0.00115263,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    },
+    {
+      "time_s": 4.9999999999999996e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 77,
+      "reused": 18,
+      "region_s": 3.01057691,
+      "assembly_s": 0.001144906,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    },
+    {
+      "time_s": 4.9999999999999996e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 77,
+      "reused": 18,
+      "region_s": 3.0166314,
+      "assembly_s": 0.001144901,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    },
+    {
+      "time_s": 4.9999999999999996e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 77,
+      "reused": 18,
+      "region_s": 3.013435437,
+      "assembly_s": 0.001153689,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    }
+  ],
+  "stiffness_N_per_m2": 1000000000.0
+}

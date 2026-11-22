@@ -1,3 +1,4 @@
+#include "nurbscontact/cad_contact_regions.hpp"
 #include "nurbscontact/occt.hpp"
 #include "nurbscontact/occt_contact.hpp"
 #include "nurbscontact/query.hpp"
@@ -65,6 +66,35 @@ void check_directional_contact(const TopoDS_Shape& a, const TopoDS_Shape& b) {
             "compiled planar trim filled a rectangular hole");
     const auto rim=perforated->first_hit({.002,0,.002},{0,0,-1},.004,work);
     require(rim && std::abs(rim->distance-.002)<1e-11,"compiled planar trim missed the supported area");
+}
+
+void check_region_mask(const TopoDS_Shape& shape_a, const TopoDS_Shape& shape_b) {
+    const CadContactIndex a(shape_a), b(shape_b);
+    const auto first=a.face_bounds(), second=b.face_bounds();
+    const double cutoff=.0006;
+    std::vector<unsigned char> mask(a.face_count()*b.face_count(),0);
+    for (std::size_t j=0;j<second.size();++j) {
+        for (std::size_t i=0;i<first.size();++i) {
+            Vec gap{};
+            for (int k=0;k<3;++k)
+                gap[k]=std::max({0.,first[i][0][k]-second[j][1][k],second[j][0][k]-first[i][1][k]});
+            mask[j*first.size()+i]=dynamics::length(gap)<=cutoff;
+        }
+    }
+    const auto baseline=a.query(b,{},cutoff);
+    const auto filtered=a.query(b,{},cutoff,nullptr,mask);
+    require(!baseline.candidates.empty() && filtered.candidates.size()==baseline.candidates.size(),
+            "external face mask lost a contact");
+    for (std::size_t i=0;i<filtered.candidates.size();++i) {
+        const auto& x=baseline.candidates[i];
+        const auto& y=filtered.candidates[i];
+        require(x.a.face==y.a.face && x.b.face==y.b.face && std::abs(x.points.distance-y.points.distance)<1e-12,
+                "external face mask changed a witness");
+    }
+    mask.pop_back();
+    bool rejected=false;
+    try { a.query(b,{},cutoff,nullptr,mask); } catch (const std::invalid_argument&) { rejected=true; }
+    require(rejected,"incorrect face mask dimensions were accepted");
 }
 
 void check_pair_contact(const TopoDS_Shape& a, const TopoDS_Shape& b) {
@@ -181,6 +211,7 @@ int main(int argc, char** argv) {
         const auto shape_a = read_step_shape(fixtures / "block-a.step");
         const auto shape_b = read_step_shape(fixtures / "block-b.step");
         check_directional_contact(shape_a,shape_b);
+        check_region_mask(shape_a,shape_b);
         check_pair_contact(shape_a,shape_b);
         BRepExtrema_DistShapeShape reference{shape_a, shape_b};
         require(reference.IsDone(), "OCCT reference distance failed");

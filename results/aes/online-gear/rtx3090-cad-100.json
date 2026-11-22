@@ -1,0 +1,107 @@
+{
+  "method": "cad",
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "duration_target_s": 2.0,
+  "dt_s": 9.999999999999999e-05,
+  "stiffness_N_per_m2": 1000000000.0,
+  "backend": "CPU OCCT live regions and line points; GPU geometry projection, wrenches and HHT algebra",
+  "geometry_input": "faces.npz",
+  "loads": "nc_contact spur deck",
+  "calls": [
+    {
+      "t": 0.0,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "samples": 2,
+      "tested": 95,
+      "reused": 0,
+      "region_s": 5.373063078,
+      "assembly_s": 0.001157451
+    },
+    {
+      "t": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "samples": 2,
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.073405534,
+      "assembly_s": 0.001166985
+    },
+    {
+      "t": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "samples": 2,
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.082192706,
+      "assembly_s": 0.001168809
+    }
+  ],
+  "steps": [
+    {
+      "time_s": 9.999999999999999e-05,
+      "wall_s": 6.273868604097515,
+      "newton": 1,
+      "residual_Nm": 1.4941030634929575e-08,
+      "tolerance_Nm": 4.860022844707962e-06,
+      "q": [
+        0.019029748726207763,
+        0.008642983312913834
+      ],
+      "v": [
+        192.1062463461675,
+        93.22813810635498
+      ],
+      "a": [
+        30642.04138803535,
+        -9244.96540639367
+      ],
+      "force_Nm": [
+        15.645321749684381,
+        -36.7771186180119
+      ]
+    }
+  ],
+  "occt": "7.5.1",
+  "face_counts": [
+    147,
+    291
+  ],
+  "setup_s": 6.733983086887747,
+  "initial_force_s": 6.436136382166296,
+  "initial_force_Nm": [
+    23.800005660004814,
+    -47.60022844707962
+  ],
+  "initial_q": [
+    0.0,
+    -0.0007308720383890398
+  ],
+  "initial_v": [
+    188.49555921538757,
+    94.24777960769379
+  ],
+  "initial_a": [
+    44304.11618744445,
+    -11623.589423879675
+  ],
+  "wall_after_initialization_s": 6.273901520064101,
+  "physical_s": 9.999999999999999e-05,
+  "completed": false,
+  "realtime": false,
+  "max_line_force_difference_N": 0.00011893505875230887
+}

@@ -155,6 +155,49 @@ def cpu_foot(p, tri):
     return all_points[np.argmin(np.linalg.norm(p-all_points,axis=1))]
 
 
+def read_full_mesh(full_mesh):
+    with np.load(full_mesh) as m:
+        vertices, faces = np.asarray(m['v'], dtype=np.float64), m['f']
+        if (vertices.ndim != 2 or vertices.shape[1] != 3 or not np.isfinite(vertices).all()
+                or faces.ndim != 2 or faces.shape[1] != 3 or not len(faces)
+                or not np.issubdtype(faces.dtype,np.integer) or faces.min()<0 or faces.max()>=len(vertices)):
+            raise ValueError(f'Invalid triangle coordinates or indices in {full_mesh}')
+        triangles = vertices[faces]
+        if np.any(np.linalg.norm(np.cross(triangles[:,1]-triangles[:,0],
+                                          triangles[:,2]-triangles[:,0]),axis=1)==0):
+            raise ValueError(f'Degenerate triangle in {full_mesh}')
+        return triangles
+
+
+def device_bvhs(faces):
+    ordered, bounds, nodes, roots = [], [], [], {}
+    total = 0
+    for face_id, tri in faces.items():
+        tree = cKDTree(tri.mean(axis=1),leafsize=32)
+        block = tri[tree.indices]
+        ordered.append(block)
+
+        def visit(node):
+            i = len(nodes)
+            nodes.append(None)
+            bounds.append(None)
+            if node.split_dim < 0:
+                a, b = node.start_idx, node.end_idx
+                bounds[i] = [block[a:b].min(axis=(0,1)), block[a:b].max(axis=(0,1))]
+                nodes[i] = [i+1,total+a,total+b,-1]
+            else:
+                left, right = visit(node.lesser), visit(node.greater)
+                bounds[i] = [np.minimum(bounds[left][0],bounds[right][0]),
+                             np.maximum(bounds[left][1],bounds[right][1])]
+                nodes[i] = [len(nodes),-1,-1,right]
+            return i
+
+        roots[face_id] = visit(tree.tree)
+        total += len(block)
+    return roots, (cp.asarray(nodes,dtype=cp.int32), cp.asarray(bounds,dtype=cp.float64),
+                   cp.asarray(np.concatenate(ordered)))
+
+
 class MeshLines:
     def __init__(self, step, deflection, keys, max_lines, offsets, points, centers, prior, cutoff, stiffness, common,
                  full_mesh=None):
@@ -164,51 +207,17 @@ class MeshLines:
         if full_mesh is None:
             self.faces = dict(triangulate(step, deflection, sorted(set(self.face_ids))))
         else:
-            with np.load(full_mesh) as m:
-                vertices, faces = np.asarray(m['v'], dtype=np.float64), m['f']
-                if (vertices.ndim != 2 or vertices.shape[1] != 3 or not np.isfinite(vertices).all()
-                        or faces.ndim != 2 or faces.shape[1] != 3 or not len(faces)
-                        or not np.issubdtype(faces.dtype,np.integer) or faces.min()<0 or faces.max()>=len(vertices)):
-                    raise ValueError(f'Invalid triangle coordinates or indices in {full_mesh}')
-                triangles = vertices[faces]
-                if np.any(np.linalg.norm(np.cross(triangles[:,1]-triangles[:,0],
-                                                  triangles[:,2]-triangles[:,0]),axis=1)==0):
-                    raise ValueError(f'Degenerate triangle in {full_mesh}')
-                self.faces = {0: triangles}
+            self.faces = {0: read_full_mesh(full_mesh)}
             self.face_ids = [0]*len(keys)
             self.source = dict(scope='whole-body closest triangle',mesh_file=full_mesh.name,
                                sha256=sha256(full_mesh.read_bytes()).hexdigest())
-        ordered, bounds, nodes, roots = [], [], [], {}
-        total = 0
-        for face_id, tri in self.faces.items():
-            tree = cKDTree(tri.mean(axis=1),leafsize=32)
-            block = tri[tree.indices]
-            ordered.append(block)
-
-            def visit(node):
-                i = len(nodes)
-                nodes.append(None)
-                bounds.append(None)
-                if node.split_dim < 0:
-                    a, b = node.start_idx, node.end_idx
-                    bounds[i] = [block[a:b].min(axis=(0,1)), block[a:b].max(axis=(0,1))]
-                    nodes[i] = [i+1,total+a,total+b,-1]
-                else:
-                    left, right = visit(node.lesser), visit(node.greater)
-                    bounds[i] = [np.minimum(bounds[left][0],bounds[right][0]),
-                                 np.maximum(bounds[left][1],bounds[right][1])]
-                    nodes[i] = [len(nodes),-1,-1,right]
-                return i
-
-            roots[face_id] = visit(tree.tree)
-            total += len(block)
+        roots, geometry = device_bvhs(self.faces)
         self.keys, self.offsets, self.points = keys, offsets, np.asarray(points)
         self.max_lines = max_lines
         self.kernel = cp.RawKernel(common+CUDA,'mesh_line')
         line_roots = [roots[i] for i in self.face_ids]
-        self.inputs = tuple(cp.asarray(x,dtype=cp.int32) for x in (offsets,line_roots,nodes))
-        self.inputs += (cp.asarray(bounds,dtype=cp.float64),cp.asarray(np.concatenate(ordered)),
-                        cp.asarray(self.points),cp.asarray(centers),cp.asarray(prior),
+        self.inputs = tuple(cp.asarray(x,dtype=cp.int32) for x in (offsets,line_roots)) + geometry
+        self.inputs += (cp.asarray(self.points),cp.asarray(centers),cp.asarray(prior),
                         np.float64(cutoff),np.float64(stiffness))
         self.ids = cp.full(len(points),-1,cp.int32)
         self.witness = cp.full((len(points),3),np.nan)

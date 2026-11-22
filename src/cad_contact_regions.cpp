@@ -330,8 +330,23 @@ CadContactIndex::CadContactIndex(const TopoDS_Shape& shape) {
 
 std::size_t CadContactIndex::face_count() const { return data_->faces.size(); }
 
+std::vector<std::array<Vec,2>> CadContactIndex::face_bounds() const {
+    std::vector<std::array<Vec,2>> boxes;
+    boxes.reserve(face_count());
+    for (const auto& face : data_->faces)
+        boxes.push_back({point(face.bounds.CornerMin()),point(face.bounds.CornerMax())});
+    return boxes;
+}
+
 CadContactRegions CadContactIndex::query(const CadContactIndex& b, ContactPose pose, double cutoff_m,
                                          CadContactCache* cache) const {
+    return query(b,pose,cutoff_m,cache,{});
+}
+
+CadContactRegions CadContactIndex::query(const CadContactIndex& b, ContactPose pose, double cutoff_m,
+                                         CadContactCache* cache, std::span<const unsigned char> candidates) const {
+    if (!candidates.empty() && candidates.size()!=b.face_count()*face_count())
+        throw std::invalid_argument("incorrect CAD candidate mask dimensions");
     const double cutoff_mm = cutoff_m / mm;
     const auto placement = relative_placement(pose, cutoff_m);
     const auto transform = placement.Transformation();
@@ -350,7 +365,14 @@ CadContactRegions CadContactIndex::query(const CadContactIndex& b, ContactPose p
         // Enlarge overrides small box gaps. Keep the existing geometric margin.
         expanded.SetGap(moved_bounds.GetGap() + cutoff_mm);
         NearBox selection(expanded);
-        data_->tree.Select(selection);
+        if (candidates.empty()) {
+            data_->tree.Select(selection);
+        } else {
+            const auto row=candidates.subspan(j*face_count(),face_count());
+            for (std::size_t i=0;i<row.size();++i) {
+                if (row[i]) selection.faces.push_back(i);
+            }
+        }
         if (selection.faces.empty()) continue;
         std::sort(selection.faces.begin(), selection.faces.end());
         const auto face_b = TopoDS::Face(local.shape.Moved(placement));

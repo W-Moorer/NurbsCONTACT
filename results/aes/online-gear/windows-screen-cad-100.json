@@ -1,0 +1,122 @@
+{
+  "method": "cad",
+  "gpu": "NVIDIA GeForce RTX 3070",
+  "duration_target_s": 2.0,
+  "dt_s": 9.999999999999999e-05,
+  "stiffness_N_per_m2": 1000000000.0,
+  "backend": "CPU OCCT live regions and line points; GPU geometry projection, wrenches and HHT algebra",
+  "geometry_input": "faces.npz",
+  "loads": "nc_contact spur deck",
+  "calls": [
+    {
+      "t": 0.0,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "samples": 2,
+      "tested": 95,
+      "reused": 0,
+      "region_s": 28.9786247,
+      "assembly_s": 0.0055811,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 111
+    },
+    {
+      "t": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "samples": 2,
+      "tested": 79,
+      "reused": 15,
+      "region_s": 15.4707168,
+      "assembly_s": 0.0053436,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 94
+    },
+    {
+      "t": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "samples": 2,
+      "tested": 79,
+      "reused": 15,
+      "region_s": 15.552219,
+      "assembly_s": 0.0057678,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 94
+    }
+  ],
+  "steps": [
+    {
+      "time_s": 9.999999999999999e-05,
+      "wall_s": 31.07225260004634,
+      "newton": 1,
+      "residual_Nm": 1.495183177269155e-08,
+      "tolerance_Nm": 4.8600228447079556e-06,
+      "q": [
+        0.019029748726207763,
+        0.00864298331291384
+      ],
+      "v": [
+        192.1062463461674,
+        93.22813810635512
+      ],
+      "a": [
+        30642.04138803429,
+        -9244.965406391375
+      ],
+      "force_Nm": [
+        15.645321749685225,
+        -36.77711861801346
+      ]
+    }
+  ],
+  "diagnostic_window_s": 0.0,
+  "mass_kg_m2": [
+    0.0005371962631939289,
+    0.004095140211102863
+  ],
+  "broad_phase": "GPU face boxes",
+  "occt": "7.9.3",
+  "face_counts": [
+    147,
+    291
+  ],
+  "setup_s": 36.42069330002414,
+  "initial_force_s": 29.17351370002143,
+  "initial_force_Nm": [
+    23.800005660004782,
+    -47.60022844707956
+  ],
+  "initial_q": [
+    0.0,
+    -0.0007308720383890398
+  ],
+  "initial_v": [
+    188.49555921538757,
+    94.24777960769379
+  ],
+  "initial_a": [
+    44304.11618744439,
+    -11623.589423879659
+  ],
+  "wall_after_initialization_s": 31.072975300019607,
+  "physical_s": 9.999999999999999e-05,
+  "completed": false,
+  "realtime": false,
+  "max_line_force_difference_N": 0.00011893504435664965
+}

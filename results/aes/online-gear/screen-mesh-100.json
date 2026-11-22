@@ -1,0 +1,1263 @@
+{
+  "method": "mesh",
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "duration_target_s": 2.0,
+  "dt_s": 9.999999999999999e-05,
+  "stiffness_N_per_m2": 1000000000.0,
+  "backend": "CPU OCCT live regions and line points; GPU geometry projection, wrenches and HHT algebra",
+  "geometry_input": "mesh-0.04.npz",
+  "loads": "nc_contact spur deck",
+  "calls": [
+    {
+      "t": 0.0,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "samples": 2,
+      "tested": 95,
+      "reused": 0,
+      "region_s": 5.364894941,
+      "assembly_s": 0.00117237,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 111
+    },
+    {
+      "t": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "samples": 2,
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.060298106,
+      "assembly_s": 0.001145078,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 94
+    },
+    {
+      "t": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "samples": 2,
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.062297634,
+      "assembly_s": 0.0011346,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 94
+    },
+    {
+      "t": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "samples": 2,
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.070710183,
+      "assembly_s": 0.001245828,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 94
+    },
+    {
+      "t": 0.00019999999999999998,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 84,
+      "reused": 11,
+      "region_s": 3.135008733,
+      "assembly_s": 0.002231245,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 103
+    },
+    {
+      "t": 0.00019999999999999998,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 81,
+      "reused": 14,
+      "region_s": 3.030763461,
+      "assembly_s": 0.002248836,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 103
+    },
+    {
+      "t": 0.00019999999999999998,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 81,
+      "reused": 14,
+      "region_s": 3.034539326,
+      "assembly_s": 0.002247291,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 103
+    },
+    {
+      "t": 0.00019999999999999998,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 81,
+      "reused": 14,
+      "region_s": 3.032533369,
+      "assembly_s": 0.002225419,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 103
+    },
+    {
+      "t": 0.0003,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 85,
+      "reused": 7,
+      "region_s": 2.970007866,
+      "assembly_s": 0.002247385,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 110
+    },
+    {
+      "t": 0.0003,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 84,
+      "reused": 8,
+      "region_s": 2.961726647,
+      "assembly_s": 0.002237345,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 110
+    },
+    {
+      "t": 0.0003,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 83,
+      "reused": 9,
+      "region_s": 2.947648422,
+      "assembly_s": 0.002311464,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 110
+    },
+    {
+      "t": 0.00039999999999999996,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 85,
+      "reused": 6,
+      "region_s": 2.961728819,
+      "assembly_s": 0.002265581,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 120
+    },
+    {
+      "t": 0.00039999999999999996,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 84,
+      "reused": 7,
+      "region_s": 2.911980266,
+      "assembly_s": 0.002234137,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 120
+    },
+    {
+      "t": 0.00039999999999999996,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 84,
+      "reused": 7,
+      "region_s": 2.915802542,
+      "assembly_s": 0.00227291,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 120
+    },
+    {
+      "t": 0.0005,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 88,
+      "reused": 7,
+      "region_s": 3.212248053,
+      "assembly_s": 0.002241613,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 136
+    },
+    {
+      "t": 0.0005,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 83,
+      "reused": 12,
+      "region_s": 3.001312232,
+      "assembly_s": 0.002242282,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 136
+    },
+    {
+      "t": 0.0005,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 83,
+      "reused": 12,
+      "region_s": 3.023538252,
+      "assembly_s": 0.002281018,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 136
+    },
+    {
+      "t": 0.0006,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 84,
+      "reused": 12,
+      "region_s": 3.167055362,
+      "assembly_s": 0.002238292,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 137
+    },
+    {
+      "t": 0.0006,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 80,
+      "reused": 16,
+      "region_s": 2.97412789,
+      "assembly_s": 0.002240784,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 137
+    },
+    {
+      "t": 0.0006,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 80,
+      "reused": 16,
+      "region_s": 2.975654585,
+      "assembly_s": 0.002240164,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 137
+    },
+    {
+      "t": 0.0006999999999999999,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 85,
+      "reused": 10,
+      "region_s": 3.029636813,
+      "assembly_s": 0.002254479,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 140
+    },
+    {
+      "t": 0.0006999999999999999,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 85,
+      "reused": 10,
+      "region_s": 3.022619794,
+      "assembly_s": 0.002236708,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 140
+    },
+    {
+      "t": 0.0006999999999999999,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 85,
+      "reused": 10,
+      "region_s": 3.02489707,
+      "assembly_s": 0.00224044,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 140
+    },
+    {
+      "t": 0.0007999999999999999,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 83,
+      "reused": 8,
+      "region_s": 3.031023828,
+      "assembly_s": 0.002249843,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 154
+    },
+    {
+      "t": 0.0007999999999999999,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 82,
+      "reused": 9,
+      "region_s": 2.959281344,
+      "assembly_s": 0.002366155,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 154
+    },
+    {
+      "t": 0.0007999999999999999,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 82,
+      "reused": 9,
+      "region_s": 2.949440839,
+      "assembly_s": 0.002246714,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 154
+    },
+    {
+      "t": 0.0009,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 84,
+      "reused": 9,
+      "region_s": 3.138285876,
+      "assembly_s": 0.002247503,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 165
+    },
+    {
+      "t": 0.0009,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 82,
+      "reused": 11,
+      "region_s": 3.043313452,
+      "assembly_s": 0.002248191,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 165
+    },
+    {
+      "t": 0.0009,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 82,
+      "reused": 11,
+      "region_s": 3.045518261,
+      "assembly_s": 0.002241941,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 165
+    },
+    {
+      "t": 0.0009,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 82,
+      "reused": 11,
+      "region_s": 3.037514152,
+      "assembly_s": 0.002242691,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 165
+    },
+    {
+      "t": 0.001,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 98,
+      "reused": 9,
+      "region_s": 3.685483755,
+      "assembly_s": 0.002269552,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 171
+    },
+    {
+      "t": 0.001,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 90,
+      "reused": 17,
+      "region_s": 3.245650735,
+      "assembly_s": 0.002233085,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 171
+    },
+    {
+      "t": 0.001,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 90,
+      "reused": 17,
+      "region_s": 3.251092455,
+      "assembly_s": 0.002264121,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 171
+    },
+    {
+      "t": 0.0010999999999999998,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 102,
+      "reused": 13,
+      "region_s": 3.890903057,
+      "assembly_s": 0.002236366,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 181
+    },
+    {
+      "t": 0.0010999999999999998,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 99,
+      "reused": 16,
+      "region_s": 3.803111903,
+      "assembly_s": 0.002227654,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 181
+    },
+    {
+      "t": 0.0010999999999999998,
+      "faces": [
+        [
+          4,
+          4
+        ],
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 4,
+      "tested": 99,
+      "reused": 16,
+      "region_s": 3.800294899,
+      "assembly_s": 0.002242324,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 181
+    },
+    {
+      "t": 0.0012,
+      "faces": [
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 2,
+      "tested": 100,
+      "reused": 14,
+      "region_s": 3.895841894,
+      "assembly_s": 0.001140485,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 185
+    },
+    {
+      "t": 0.0012,
+      "faces": [
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 2,
+      "tested": 96,
+      "reused": 18,
+      "region_s": 3.756252711,
+      "assembly_s": 0.001153585,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 185
+    },
+    {
+      "t": 0.0012,
+      "faces": [
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 2,
+      "tested": 96,
+      "reused": 18,
+      "region_s": 3.756614412,
+      "assembly_s": 0.001152103,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 185
+    },
+    {
+      "t": 0.0013,
+      "faces": [
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 2,
+      "tested": 101,
+      "reused": 15,
+      "region_s": 3.984419736,
+      "assembly_s": 0.001138583,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 201
+    },
+    {
+      "t": 0.0013,
+      "faces": [
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 2,
+      "tested": 98,
+      "reused": 18,
+      "region_s": 3.77981533,
+      "assembly_s": 0.001140405,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 201
+    },
+    {
+      "t": 0.0013,
+      "faces": [
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 2,
+      "tested": 98,
+      "reused": 18,
+      "region_s": 3.783429367,
+      "assembly_s": 0.001155505,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 201
+    },
+    {
+      "t": 0.0013999999999999998,
+      "faces": [
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 2,
+      "tested": 95,
+      "reused": 17,
+      "region_s": 3.70740982,
+      "assembly_s": 0.001143331,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 204
+    },
+    {
+      "t": 0.0013999999999999998,
+      "faces": [
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 2,
+      "tested": 95,
+      "reused": 17,
+      "region_s": 3.709224995,
+      "assembly_s": 0.001139398,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 204
+    },
+    {
+      "t": 0.0013999999999999998,
+      "faces": [
+        [
+          142,
+          10
+        ]
+      ],
+      "samples": 2,
+      "tested": 95,
+      "reused": 17,
+      "region_s": 3.707790531,
+      "assembly_s": 0.001140206,
+      "unresolved": 0,
+      "touching_witnesses": 0,
+      "gpu_box_candidates": 204
+    }
+  ],
+  "steps": [
+    {
+      "time_s": 9.999999999999999e-05,
+      "wall_s": 9.201543651055545,
+      "newton": 2,
+      "residual_Nm": 2.259687548189504e-09,
+      "tolerance_Nm": 4.8610673987233285e-06,
+      "q": [
+        0.019029781388486995,
+        0.008642973988089296
+      ],
+      "v": [
+        192.10690222949756,
+        93.22795104312769
+      ],
+      "a": [
+        30646.49002492628,
+        -9246.382649434583
+      ],
+      "force_Nm": [
+        15.647396641820155,
+        -36.78240665995597
+      ]
+    },
+    {
+      "time_s": 0.00019999999999999998,
+      "wall_s": 12.249038659967482,
+      "newton": 3,
+      "residual_Nm": 1.6153194515311498e-07,
+      "tolerance_Nm": 3.7782406659955967e-06,
+      "q": [
+        0.03822948748485592,
+        0.017961579522606595
+      ],
+      "v": [
+        191.9143629337,
+        93.13721049954036
+      ],
+      "a": [
+        -23639.981613243126,
+        4651.912706500839
+      ],
+      "force_Nm": [
+        -15.848943805580681,
+        25.253861430439542
+      ]
+    },
+    {
+      "time_s": 0.0003,
+      "wall_s": 8.890249341959134,
+      "newton": 2,
+      "residual_Nm": 3.626776194920467e-07,
+      "tolerance_Nm": 4.873368898689973e-06,
+      "q": [
+        0.057239135651852076,
+        0.027318087501680584
+      ],
+      "v": [
+        188.28911085553023,
+        93.98972141820597
+      ],
+      "a": [
+        -44660.880227334164,
+        11107.240173426524
+      ],
+      "force_Nm": [
+        -24.896404155166707,
+        47.733688986899736
+      ]
+    },
+    {
+      "time_s": 0.00039999999999999996,
+      "wall_s": 8.800489309011027,
+      "newton": 2,
+      "residual_Nm": 7.541985880266111e-08,
+      "tolerance_Nm": 4.873368898689973e-06,
+      "q": [
+        0.07589798828485535,
+        0.03676254802441917
+      ],
+      "v": [
+        184.8791408212978,
+        94.90114983325158
+      ],
+      "a": [
+        -27058.91375231786,
+        7785.646801809184
+      ],
+      "force_Nm": [
+        -13.384785455969947,
+        30.1221625704704
+      ]
+    },
+    {
+      "time_s": 0.0005,
+      "wall_s": 9.247898851986974,
+      "newton": 2,
+      "residual_Nm": 4.429516309301107e-09,
+      "tolerance_Nm": 3.11221625704704e-06,
+      "q": [
+        0.09436545206631818,
+        0.046263195205172254
+      ],
+      "v": [
+        184.45115228430677,
+        95.11648734157563
+      ],
+      "a": [
+        10906.133551694966,
+        -1601.472729138513
+      ],
+      "force_Nm": [
+        7.996903035410163,
+        -10.633857358552547
+      ]
+    },
+    {
+      "time_s": 0.0006,
+      "wall_s": 9.127613072982058,
+      "newton": 2,
+      "residual_Nm": 8.205317758580577e-09,
+      "tolerance_Nm": 4.0866887018599915e-06,
+      "q": [
+        0.11294459313588008,
+        0.055744391527529094
+      ],
+      "v": [
+        187.11852940885316,
+        94.51114903087614
+      ],
+      "a": [
+        37185.52970797684,
+        -9021.32335889925
+      ],
+      "force_Nm": [
+        21.30693033866251,
+        -39.86688701859992
+      ]
+    },
+    {
+      "time_s": 0.0006999999999999999,
+      "wall_s": 9.08834801404737,
+      "newton": 2,
+      "residual_Nm": 5.242255518567163e-10,
+      "tolerance_Nm": 4.0866887018599915e-06,
+      "q": [
+        0.1318252275884237,
+        0.06515161884983414
+      ],
+      "v": [
+        190.4969937142308,
+        93.63319592166921
+      ],
+      "a": [
+        31517.385284309516,
+        -8618.336247515874
+      ],
+      "force_Nm": [
+        16.444809517906066,
+        -34.785118464026
+      ]
+    },
+    {
+      "time_s": 0.0007999999999999999,
+      "wall_s": 8.950663763098419,
+      "newton": 2,
+      "residual_Nm": 6.056237378260221e-08,
+      "tolerance_Nm": 3.5785118464025995e-06,
+      "q": [
+        0.15093989518824083,
+        0.07449402331060415
+      ],
+      "v": [
+        191.81166715781902,
+        93.21122774830269
+      ],
+      "a": [
+        899.6338702639472,
+        -1287.2453910981262
+      ],
+      "force_Nm": [
+        -1.290223367890846,
+        -1.9921538396419933
+      ]
+    },
+    {
+      "time_s": 0.0009,
+      "wall_s": 12.279235361143947,
+      "newton": 3,
+      "residual_Nm": 3.815562429343444e-07,
+      "tolerance_Nm": 3.109874633940535e-06,
+      "q": [
+        0.17003782486336563,
+        0.08383246663884547
+      ],
+      "v": [
+        190.16142803228132,
+        93.55371207596708
+      ],
+      "a": [
+        -28103.741339137345,
+        6566.2357218051675
+      ],
+      "force_Nm": [
+        -16.631336242246476,
+        30.098746339405352
+      ]
+    },
+    {
+      "time_s": 0.001,
+      "wall_s": 10.193150009028614,
+      "newton": 2,
+      "residual_Nm": 1.7612252989351873e-08,
+      "tolerance_Nm": 3.6717252862662965e-06,
+      "q": [
+        0.18890108604831296,
+        0.09322677477018462
+      ],
+      "v": [
+        187.10583912312552,
+        94.33144133674459
+      ],
+      "a": [
+        -32190.654259838633,
+        8584.663865088332
+      ],
+      "force_Nm": [
+        -17.366183961426955,
+        35.71725286266297
+      ]
+    },
+    {
+      "time_s": 0.0010999999999999998,
+      "wall_s": 11.505226360168308,
+      "newton": 2,
+      "residual_Nm": 6.859532142300395e-08,
+      "tolerance_Nm": 3.6717252862662965e-06,
+      "q": [
+        0.20751812886034574,
+        0.10268773672691693
+      ],
+      "v": [
+        185.22387460992354,
+        94.89029457414397
+      ],
+      "a": [
+        -9905.639046807164,
+        3591.1113799308014
+      ],
+      "force_Nm": [
+        -3.9829487068637306,
+        12.371532510713443
+      ]
+    },
+    {
+      "time_s": 0.0012,
+      "wall_s": 11.416226687142625,
+      "newton": 2,
+      "residual_Nm": 2.608819116289851e-08,
+      "tolerance_Nm": 3.6296990747744303e-06,
+      "q": [
+        0.226116592331696,
+        0.11216130661304191
+      ],
+      "v": [
+        186.7246337913644,
+        94.58662631003988
+      ],
+      "a": [
+        31616.412388552362,
+        -7455.211988355401
+      ],
+      "force_Nm": [
+        19.313903859010097,
+        -35.2969907477443
+      ]
+    },
+    {
+      "time_s": 0.0013,
+      "wall_s": 11.555610258830711,
+      "newton": 2,
+      "residual_Nm": 2.2833956947465595e-10,
+      "tolerance_Nm": 3.6348447171529884e-06,
+      "q": [
+        0.24494962823911232,
+        0.12157913779461144
+      ],
+      "v": [
+        189.93567270963285,
+        93.7705849890352
+      ],
+      "a": [
+        32439.707045439784,
+        -8630.54735784118
+      ],
+      "force_Nm": [
+        17.21677668680184,
+        -35.348447171529884
+      ]
+    },
+    {
+      "time_s": 0.0013999999999999998,
+      "wall_s": 11.132084710989147,
+      "newton": 2,
+      "residual_Nm": 1.3518134389656211e-08,
+      "tolerance_Nm": 3.6348447171529884e-06,
+      "q": [
+        0.26405411560025277,
+        0.13092360388810273
+      ],
+      "v": [
+        192.16255028921645,
+        93.11699137147158
+      ],
+      "a": [
+        15488.154962766966,
+        -5139.528720832758
+      ],
+      "force_Nm": [
+        7.3316681273387445,
+        -19.458051127461395
+      ]
+    }
+  ],
+  "diagnostic_window_s": 0.0014,
+  "mass_kg_m2": [
+    0.0005371962631939289,
+    0.004095140211102863
+  ],
+  "broad_phase": "GPU face boxes",
+  "occt": "7.5.1",
+  "face_counts": [
+    147,
+    291
+  ],
+  "setup_s": 6.589908394962549,
+  "initial_force_s": 5.394163999939337,
+  "initial_force_Nm": [
+    23.8052294251842,
+    -47.610673987233284
+  ],
+  "initial_q": [
+    0.0,
+    -0.0007308720383890398
+  ],
+  "initial_v": [
+    188.49555921538757,
+    94.24777960769379
+  ],
+  "initial_a": [
+    44313.84031536062,
+    -11626.14014000054
+  ],
+  "wall_after_initialization_s": 143.63779708812945,
+  "physical_s": 0.0013999999999999998,
+  "completed": false,
+  "realtime": false,
+  "max_line_force_difference_N": 2.3785209853308515
+}

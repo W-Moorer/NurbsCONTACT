@@ -1,0 +1,205 @@
+{
+  "method": "CPU OCCT line forces and SciPy HHT residual root",
+  "occt": "7.5.1",
+  "face_counts": [
+    147,
+    291
+  ],
+  "dt_s": 9.999999999999999e-05,
+  "q": [
+    0.019029748725595864,
+    0.008642983313061325
+  ],
+  "v": [
+    192.1062463286832,
+    93.2281381106833
+  ],
+  "a": [
+    30642.04541018584,
+    -9244.966465923619
+  ],
+  "residual_Nm": 1.7896795156957523e-12,
+  "calls": [
+    {
+      "time_s": 0.0,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 95,
+      "reused": 0,
+      "region_s": 5.360832239,
+      "assembly_s": 0.001147182,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    },
+    {
+      "time_s": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.062761199,
+      "assembly_s": 0.001214012,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    },
+    {
+      "time_s": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.050924541,
+      "assembly_s": 0.001136601,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    },
+    {
+      "time_s": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.057965751,
+      "assembly_s": 0.001136873,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    },
+    {
+      "time_s": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.063983238,
+      "assembly_s": 0.00113658,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    },
+    {
+      "time_s": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.056068289,
+      "assembly_s": 0.001144765,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    },
+    {
+      "time_s": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.055572312,
+      "assembly_s": 0.001142309,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    },
+    {
+      "time_s": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.065102102,
+      "assembly_s": 0.001137283,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    },
+    {
+      "time_s": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.055501739,
+      "assembly_s": 0.001138891,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    },
+    {
+      "time_s": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.057868159,
+      "assembly_s": 0.001141341,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    },
+    {
+      "time_s": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.053429151,
+      "assembly_s": 0.001134683,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    },
+    {
+      "time_s": 9.999999999999999e-05,
+      "faces": [
+        [
+          4,
+          4
+        ]
+      ],
+      "tested": 79,
+      "reused": 15,
+      "region_s": 3.055490476,
+      "assembly_s": 0.001137136,
+      "unresolved": 0,
+      "touching_witnesses": 0
+    }
+  ],
+  "stiffness_N_per_m2": 1000000000.0
+}

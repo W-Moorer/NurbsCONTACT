@@ -56,12 +56,17 @@ class CadContactIndex {
 public:
     explicit CadContactIndex(const TopoDS_Shape& shape);
     std::size_t face_count() const;
+    // Lower and upper corners in the body's local frame, in meters and face-ID order.
+    std::vector<std::array<Vec,2>> face_bounds() const;
 
     // Enumerates numerical minima of candidate face pairs. Boundary witnesses
     // and ties are retained for later contact-region assembly.
     // With a cache, skip only the face pairs whose projected boxes still prove separation.
     CadContactRegions query(const CadContactIndex& b, dynamics::ContactPose b_in_a, double cutoff_m,
                             CadContactCache* cache = nullptr) const;
+    // An external broad phase can supply a conservative row-major mask [B face][A face].
+    CadContactRegions query(const CadContactIndex& b, dynamics::ContactPose b_in_a, double cutoff_m,
+                            CadContactCache* cache, std::span<const unsigned char> candidates) const;
 
     // Updates known face-interior candidates. Each seed is reclassified on
     // its trimmed face. A seed that cannot be recovered is counted unresolved.
