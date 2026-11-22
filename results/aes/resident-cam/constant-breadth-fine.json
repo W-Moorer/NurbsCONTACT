@@ -1,0 +1,80 @@
+{
+  "source": "Dhande and Rajaram, Example 1, Tables 1\u20132",
+  "mm_per_paper_length_unit": 1,
+  "samples": 3601,
+  "angular_step_deg": 0.1,
+  "requested_deflection_um": 0.0625,
+  "source_triangles": 3144,
+  "source_probes": 4724,
+  "position_rms_um": 0.005019985529610992,
+  "position_max_um": 0.013870542341365422,
+  "original_1deg_grid_max_um": 0.01382092361001952,
+  "exact_switch_deg": [
+    0.0,
+    78.46304096718453,
+    135.58469140280704,
+    180.0,
+    258.4630409671845,
+    315.58469140280704
+  ],
+  "observed_switch_brackets_deg": [
+    [
+      0.0,
+      0.1
+    ],
+    [
+      78.4,
+      78.5
+    ],
+    [
+      135.7,
+      135.8
+    ],
+    [
+      179.7,
+      179.8
+    ],
+    [
+      258.5,
+      258.6
+    ],
+    [
+      315.4,
+      315.5
+    ]
+  ],
+  "entering_face_ids": [
+    6,
+    5,
+    4,
+    3,
+    2,
+    1
+  ],
+  "entering_arc_radii_mm": [
+    2.5,
+    7.5,
+    0.5,
+    6.5,
+    1.5,
+    8.5
+  ],
+  "expected_branch_radii_mm": [
+    2.5,
+    7.5,
+    0.5,
+    6.5,
+    1.5,
+    8.5
+  ],
+  "branches_in_published_order": true,
+  "reference_peak_to_peak_mm": 4.0,
+  "switch_midpoint_error_deg": [
+    0.05000000000001137,
+    -0.013040967184508645,
+    0.16530859719296132,
+    -0.25,
+    0.08695903281551409,
+    -0.13469140280705005
+  ]
+}

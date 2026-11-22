@@ -232,8 +232,11 @@ def solve(model, rows, loads, stiffness, h, chunk, blocks, guard=0.15, predict=T
 
 def main(args):
     start = perf_counter()
+    case = args.case
     if args.deck:
         with np.load(args.deck, allow_pickle=False) as deck:
+            if "case" in deck:
+                case = str(deck["case"].item())
             a, b, fa, fb, rows, loads = (deck[key] for key in ("a", "b", "fa", "fb", "rows", "loads"))
             k = float(deck["stiffness"])
             if not np.isclose(float(deck["h"]), args.h, rtol=0, atol=1.0e-15):
@@ -285,7 +288,7 @@ def main(args):
         gpu=cp.cuda.runtime.getDeviceProperties(cp.cuda.Device().id)["name"].decode(),
         setup_s=setup,
         step_s=args.h,
-        case=args.case,
+        case=case,
         backend=args.backend,
         predictor=not args.no_predict,
         guard_mm=args.guard,

@@ -1,0 +1,508 @@
+{
+  "step_s": 6.25e-05,
+  "bracket_tolerance_us": 0.1,
+  "queries": 852,
+  "offline_wall_s": 1.1724004000425339,
+  "event_count": 71,
+  "max_abs_error_us": 15.725036226488243,
+  "rms_error_us": 5.9880014690676795,
+  "events": [
+    {
+      "type": "engage",
+      "left_s": 0.05500518798828125,
+      "right_s": 0.0550052490234375,
+      "reference_s": 0.05500501130703285,
+      "midpoint_error_us": 0.20719882652675548
+    },
+    {
+      "type": "release",
+      "left_s": 0.0884259033203125,
+      "right_s": 0.08842596435546875,
+      "reference_s": 0.08842550204449988,
+      "midpoint_error_us": 0.43179339075105627
+    },
+    {
+      "type": "engage",
+      "left_s": 0.17385089111328125,
+      "right_s": 0.17385095214843752,
+      "reference_s": 0.17385040335701638,
+      "midpoint_error_us": 0.5182738430087319
+    },
+    {
+      "type": "release",
+      "left_s": 0.20838409423828125,
+      "right_s": 0.2083841552734375,
+      "reference_s": 0.20838333251932886,
+      "midpoint_error_us": 0.7922365305168544
+    },
+    {
+      "type": "engage",
+      "left_s": 0.2817957763671875,
+      "right_s": 0.28179583740234376,
+      "reference_s": 0.28179524915162485,
+      "midpoint_error_us": 0.557733140782446
+    },
+    {
+      "type": "release",
+      "left_s": 0.3172435302734375,
+      "right_s": 0.31724359130859375,
+      "reference_s": 0.3172427696138302,
+      "midpoint_error_us": 0.7911771854329785
+    },
+    {
+      "type": "engage",
+      "left_s": 0.38392626953125003,
+      "right_s": 0.38392633056640624,
+      "reference_s": 0.38392549336392845,
+      "midpoint_error_us": 0.806684899656851
+    },
+    {
+      "type": "release",
+      "left_s": 0.4198846435546875,
+      "right_s": 0.4198847045898438,
+      "reference_s": 0.4198833709203978,
+      "midpoint_error_us": 1.3031518678596754
+    },
+    {
+      "type": "engage",
+      "left_s": 0.48352484130859374,
+      "right_s": 0.48352490234375,
+      "reference_s": 0.4835235554268647,
+      "midpoint_error_us": 1.3163993071718672
+    },
+    {
+      "type": "release",
+      "left_s": 0.5194727783203125,
+      "right_s": 0.5194728393554687,
+      "reference_s": 0.5194713570522324,
+      "midpoint_error_us": 1.4517856582463295
+    },
+    {
+      "type": "engage",
+      "left_s": 0.5830205688476563,
+      "right_s": 0.5830206298828126,
+      "reference_s": 0.5830192057199687,
+      "midpoint_error_us": 1.3936452657459242
+    },
+    {
+      "type": "release",
+      "left_s": 0.618564453125,
+      "right_s": 0.6185645141601562,
+      "reference_s": 0.6185625883854532,
+      "midpoint_error_us": 1.8952571249064576
+    },
+    {
+      "type": "engage",
+      "left_s": 0.6847042846679687,
+      "right_s": 0.684704345703125,
+      "reference_s": 0.6847024875166882,
+      "midpoint_error_us": 1.8276688587004486
+    },
+    {
+      "type": "release",
+      "left_s": 0.7196619873046876,
+      "right_s": 0.7196620483398438,
+      "reference_s": 0.7196597884701915,
+      "midpoint_error_us": 2.2293520741678563
+    },
+    {
+      "type": "engage",
+      "left_s": 0.7917158203125,
+      "right_s": 0.7917158813476562,
+      "reference_s": 0.7917139949351023,
+      "midpoint_error_us": 1.8558949758107346
+    },
+    {
+      "type": "release",
+      "left_s": 0.8260660400390625,
+      "right_s": 0.8260661010742187,
+      "reference_s": 0.8260636313412943,
+      "midpoint_error_us": 2.4392153462615696
+    },
+    {
+      "type": "engage",
+      "left_s": 0.9087402954101562,
+      "right_s": 0.9087403564453125,
+      "reference_s": 0.908738941428558,
+      "midpoint_error_us": 1.3844991763045655
+    },
+    {
+      "type": "release",
+      "left_s": 0.9425564575195313,
+      "right_s": 0.9425565185546875,
+      "reference_s": 0.9425554089269297,
+      "midpoint_error_us": 1.079110179658116
+    },
+    {
+      "type": "engage",
+      "left_s": 1.0409930419921876,
+      "right_s": 1.0409931030273438,
+      "reference_s": 1.0409902524262973,
+      "midpoint_error_us": 2.8200834683023146
+    },
+    {
+      "type": "release",
+      "left_s": 1.0744663696289063,
+      "right_s": 1.0744664306640626,
+      "reference_s": 1.0744641794797436,
+      "midpoint_error_us": 2.2206667409374603
+    },
+    {
+      "type": "engage",
+      "left_s": 1.18436767578125,
+      "right_s": 1.1843677368164063,
+      "reference_s": 1.1843662681212317,
+      "midpoint_error_us": 1.4381775965688348
+    },
+    {
+      "type": "release",
+      "left_s": 1.217950439453125,
+      "right_s": 1.2179505004882814,
+      "reference_s": 1.2179483194641947,
+      "midpoint_error_us": 2.150506508646899
+    },
+    {
+      "type": "engage",
+      "left_s": 1.3156453857421875,
+      "right_s": 1.3156454467773437,
+      "reference_s": 1.315644081064552,
+      "midpoint_error_us": 1.335195213725271
+    },
+    {
+      "type": "release",
+      "left_s": 1.3499719848632812,
+      "right_s": 1.3499720458984374,
+      "reference_s": 1.3499699164935741,
+      "midpoint_error_us": 2.0988872853067164
+    },
+    {
+      "type": "engage",
+      "left_s": 1.42357177734375,
+      "right_s": 1.4235718383789062,
+      "reference_s": 1.423570346268146,
+      "midpoint_error_us": 1.4615931820394223
+    },
+    {
+      "type": "release",
+      "left_s": 1.4591426391601563,
+      "right_s": 1.4591427001953126,
+      "reference_s": 1.4591403916960446,
+      "midpoint_error_us": 2.277981689946529
+    },
+    {
+      "type": "engage",
+      "left_s": 1.5136823730468751,
+      "right_s": 1.5136824340820312,
+      "reference_s": 1.5136795625749369,
+      "midpoint_error_us": 2.8409895163061805
+    },
+    {
+      "type": "release",
+      "left_s": 1.550866455078125,
+      "right_s": 1.5508665161132813,
+      "reference_s": 1.5508641048559426,
+      "midpoint_error_us": 2.380739760665662
+    },
+    {
+      "type": "engage",
+      "left_s": 1.5923877563476563,
+      "right_s": 1.5923878173828125,
+      "reference_s": 1.5923863470236352,
+      "midpoint_error_us": 1.4398415990601876
+    },
+    {
+      "type": "release",
+      "left_s": 1.63148486328125,
+      "right_s": 1.6314849243164062,
+      "reference_s": 1.6314828990071086,
+      "midpoint_error_us": 1.9947917195839437
+    },
+    {
+      "type": "engage",
+      "left_s": 1.6639266967773438,
+      "right_s": 1.6639267578125,
+      "reference_s": 1.6639245028057428,
+      "midpoint_error_us": 2.2244891793032906
+    },
+    {
+      "type": "release",
+      "left_s": 1.7051652221679687,
+      "right_s": 1.705165283203125,
+      "reference_s": 1.7051634551529213,
+      "midpoint_error_us": 1.7975326254138224
+    },
+    {
+      "type": "engage",
+      "left_s": 1.7309841918945312,
+      "right_s": 1.7309842529296875,
+      "reference_s": 1.7309818961553762,
+      "midpoint_error_us": 2.3262567332427153
+    },
+    {
+      "type": "release",
+      "left_s": 1.774503173828125,
+      "right_s": 1.7745032348632812,
+      "reference_s": 1.7745021662301286,
+      "midpoint_error_us": 1.0381155746141957
+    },
+    {
+      "type": "engage",
+      "left_s": 1.7953237915039062,
+      "right_s": 1.7953238525390625,
+      "reference_s": 1.7953214732706153,
+      "midpoint_error_us": 2.3487508691300008
+    },
+    {
+      "type": "release",
+      "left_s": 1.8411253662109375,
+      "right_s": 1.8411254272460937,
+      "reference_s": 1.8411229640149454,
+      "midpoint_error_us": 2.4327135703661185
+    },
+    {
+      "type": "engage",
+      "left_s": 1.8581305541992188,
+      "right_s": 1.858130615234375,
+      "reference_s": 1.8581277798832403,
+      "midpoint_error_us": 2.8048335565244997
+    },
+    {
+      "type": "release",
+      "left_s": 1.9060150756835939,
+      "right_s": 1.9060151367187501,
+      "reference_s": 1.9060110090980056,
+      "midpoint_error_us": 4.0971031662895285
+    },
+    {
+      "type": "engage",
+      "left_s": 1.9201959228515626,
+      "right_s": 1.9201959838867189,
+      "reference_s": 1.920190061461154,
+      "midpoint_error_us": 5.891907986610434
+    },
+    {
+      "type": "release",
+      "left_s": 1.969712890625,
+      "right_s": 1.9697129516601564,
+      "reference_s": 1.9697090393529302,
+      "midpoint_error_us": 3.8817896479415026
+    },
+    {
+      "type": "engage",
+      "left_s": 1.9820126953125001,
+      "right_s": 1.9820127563476564,
+      "reference_s": 1.9820092437965702,
+      "midpoint_error_us": 3.4820335081953147
+    },
+    {
+      "type": "release",
+      "left_s": 2.0324851684570313,
+      "right_s": 2.0324852294921874,
+      "reference_s": 2.032482436875191,
+      "midpoint_error_us": 2.76209941851846
+    },
+    {
+      "type": "engage",
+      "left_s": 2.04387841796875,
+      "right_s": 2.043878479003906,
+      "reference_s": 2.043875294754938,
+      "midpoint_error_us": 3.153731390259651
+    },
+    {
+      "type": "release",
+      "left_s": 2.0944986572265627,
+      "right_s": 2.0944987182617187,
+      "reference_s": 2.0944933759629016,
+      "midpoint_error_us": 5.311781238859226
+    },
+    {
+      "type": "engage",
+      "left_s": 2.1059429321289063,
+      "right_s": 2.1059429931640627,
+      "reference_s": 2.105939405639662,
+      "midpoint_error_us": 3.5570068224188844
+    },
+    {
+      "type": "release",
+      "left_s": 2.155947021484375,
+      "right_s": 2.1559470825195315,
+      "reference_s": 2.1559415407278375,
+      "midpoint_error_us": 5.511274115743703
+    },
+    {
+      "type": "engage",
+      "left_s": 2.168313537597656,
+      "right_s": 2.1683135986328126,
+      "reference_s": 2.168309620000334,
+      "midpoint_error_us": 3.9481149003428584
+    },
+    {
+      "type": "release",
+      "left_s": 2.2171304321289065,
+      "right_s": 2.2171304931640625,
+      "reference_s": 2.2171246913703317,
+      "midpoint_error_us": 5.771276152977123
+    },
+    {
+      "type": "engage",
+      "left_s": 2.231176513671875,
+      "right_s": 2.2311765747070313,
+      "reference_s": 2.2311721584517707,
+      "midpoint_error_us": 4.385737682355284
+    },
+    {
+      "type": "release",
+      "left_s": 2.2784605712890627,
+      "right_s": 2.2784606323242187,
+      "reference_s": 2.2784544734038876,
+      "midpoint_error_us": 6.128402753269313
+    },
+    {
+      "type": "engage",
+      "left_s": 2.2948928833007813,
+      "right_s": 2.2948929443359374,
+      "reference_s": 2.2948882094556056,
+      "midpoint_error_us": 4.704362754015534
+    },
+    {
+      "type": "release",
+      "left_s": 2.3404836425781252,
+      "right_s": 2.3404837036132813,
+      "reference_s": 2.3404772738956328,
+      "midpoint_error_us": 6.399200070728028
+    },
+    {
+      "type": "engage",
+      "left_s": 2.3600484619140625,
+      "right_s": 2.360048522949219,
+      "reference_s": 2.360042475879529,
+      "midpoint_error_us": 6.016552111631768
+    },
+    {
+      "type": "release",
+      "left_s": 2.403914978027344,
+      "right_s": 2.4039150390625,
+      "reference_s": 2.4039096124740857,
+      "midpoint_error_us": 5.396070835939071
+    },
+    {
+      "type": "engage",
+      "left_s": 2.427470153808594,
+      "right_s": 2.42747021484375,
+      "reference_s": 2.427460847949059,
+      "midpoint_error_us": 9.336377112756367
+    },
+    {
+      "type": "release",
+      "left_s": 2.469684326171875,
+      "right_s": 2.4696843872070313,
+      "reference_s": 2.469676527783986,
+      "midpoint_error_us": 7.828905467022196
+    },
+    {
+      "type": "engage",
+      "left_s": 2.4981801147460936,
+      "right_s": 2.49818017578125,
+      "reference_s": 2.498173220892693,
+      "midpoint_error_us": 6.9243709788224805
+    },
+    {
+      "type": "release",
+      "left_s": 2.5389127807617187,
+      "right_s": 2.538912841796875,
+      "reference_s": 2.538906090844179,
+      "midpoint_error_us": 6.720435117735235
+    },
+    {
+      "type": "engage",
+      "left_s": 2.5731560668945312,
+      "right_s": 2.5731561279296877,
+      "reference_s": 2.5731481456911087,
+      "midpoint_error_us": 7.951721000765133
+    },
+    {
+      "type": "release",
+      "left_s": 2.6127150268554686,
+      "right_s": 2.612715087890625,
+      "reference_s": 2.612705081028595,
+      "midpoint_error_us": 9.97634445187856
+    },
+    {
+      "type": "engage",
+      "left_s": 2.6523800048828123,
+      "right_s": 2.652380065917969,
+      "reference_s": 2.6523700001861608,
+      "midpoint_error_us": 10.0352142298199
+    },
+    {
+      "type": "release",
+      "left_s": 2.69129150390625,
+      "right_s": 2.691291564941406,
+      "reference_s": 2.691280299741476,
+      "midpoint_error_us": 11.23468235242342
+    },
+    {
+      "type": "engage",
+      "left_s": 2.7332451782226563,
+      "right_s": 2.7332452392578124,
+      "reference_s": 2.733234965965926,
+      "midpoint_error_us": 10.242774308277802
+    },
+    {
+      "type": "release",
+      "left_s": 2.772326171875,
+      "right_s": 2.772326232910156,
+      "reference_s": 2.772313560040042,
+      "midpoint_error_us": 12.642352535952028
+    },
+    {
+      "type": "engage",
+      "left_s": 2.8109249877929687,
+      "right_s": 2.810925048828125,
+      "reference_s": 2.8109115982437523,
+      "midpoint_error_us": 13.42006679472263
+    },
+    {
+      "type": "release",
+      "left_s": 2.8511853637695315,
+      "right_s": 2.8511854248046875,
+      "reference_s": 2.8511734413383816,
+      "midpoint_error_us": 11.95294872813335
+    },
+    {
+      "type": "engage",
+      "left_s": 2.8821907348632814,
+      "right_s": 2.8821907958984374,
+      "reference_s": 2.882180834611798,
+      "midpoint_error_us": 9.930769061750055
+    },
+    {
+      "type": "release",
+      "left_s": 2.9247454223632814,
+      "right_s": 2.9247454833984374,
+      "reference_s": 2.9247333505188253,
+      "midpoint_error_us": 12.102362034305258
+    },
+    {
+      "type": "engage",
+      "left_s": 2.9469932250976565,
+      "right_s": 2.9469932861328125,
+      "reference_s": 2.9469775305790082,
+      "midpoint_error_us": 15.725036226488243
+    },
+    {
+      "type": "release",
+      "left_s": 2.9932732543945315,
+      "right_s": 2.9932733154296876,
+      "reference_s": 2.993259690784627,
+      "midpoint_error_us": 13.59412748236366
+    },
+    {
+      "type": "engage",
+      "left_s": 3.006654968261719,
+      "right_s": 3.006655029296875,
+      "reference_s": 3.0066437454800417,
+      "midpoint_error_us": 11.253299255109539
+    }
+  ]
+}

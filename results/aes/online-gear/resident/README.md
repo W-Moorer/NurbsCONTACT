@@ -1,5 +1,7 @@
 # GPU contact discovery and HHT for rigid CAD parts
 
+The [cam–follower transfer test](../../resident-cam/README.md) exercises the same kernel with a hinge and a slider. It includes independent displacement and contact-switch checks, a pure mesh control and measurements on both GPUs.
+
 A single gear pair generates its own trajectory over two seconds. Each trial pose comes from HHT. The geometry receives rigid transforms, closed outward-oriented surfaces and face labels. The model specifies the joint axes, inertias and imposed loads. The search receives no tooth indices, contact stations, measured trajectories or gear profile equations.
 
 ## Geometry and force
