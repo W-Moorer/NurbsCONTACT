@@ -187,6 +187,54 @@ extrema calls and times with preparation and load assembly measured
 separately. The checks cover the sampled poses. Contact within an interval
 between poses and updates during HHT iterations require separate validation.
 
+### NH-Rep on the STEP spur pinion
+
+The pilot uses [upstream NH-Rep](https://github.com/guohaoxiang/NH-Rep)
+at commit `bf807e998e613ba17d03c1c8e160b7fe2262e734`. The upstream
+`FeatureSample` program prepares the Boolean tree and 50,000 training
+samples from the STEP-derived watertight mesh. The adapter retains the
+original losses and shape network. It batches the per-patch index copies
+and the Boolean reductions and checks the original and batched Boolean
+values and gradients for equality before training. The batched evaluation
+also supports CPU TorchScript export. The training loop requires CUDA.
+
+Prepare the upstream checkout and build its `FeatureSample` target using
+its pre-processing instructions. The Python adapter uses CadQuery,
+Trimesh with Rtree, and the upstream training dependencies. With the
+OCCT runtime available, generate the training mesh and the distance
+reference from the repository root.
+
+```powershell
+$out = 'build/aes-nhrep'
+$gear = 'results/gears/models/spur-1a.step'
+python benchmarks/aes/nhrep_gear.py prepare $gear $out
+python benchmarks/aes/nhrep_gear.py reference $gear $out --exe build/aes-occt/Release/nc_contact.exe --witnesses build/aes-pair-dynamics/spur-contact-regions-cold.csv
+```
+
+Run the upstream sampler on the normalized gear mesh. This example uses
+its Linux executable with the output directory as the working directory.
+
+```bash
+../deps/nh-rep/code/pre_processing/Bin/FeatureSample -i spur.obj -o spur_50k.xyz -f spur.fea -k spur_50k_mask.txt -m 1 --ns 50000 --fs 0 -c 1 --csg 1 --convex 1 -r 0 --mp 6 --repairtree
+```
+
+```powershell
+python benchmarks/aes/nhrep_gear.py train build/deps/nh-rep $out --epochs 15000 --batch 16384
+python benchmarks/aes/nhrep_gear.py audit "$out/gear_trial_spur_50k_model_h.pt" $out
+```
+
+The [precision report](../aes/nhrep-spur.json) uses the signed distance
+and well-defined distance gradients evaluated on the original STEP
+solid through `nc_contact cad-point-distance`. The source-mesh distance
+isolates the observed input tessellation error. The four additional
+queries come from Gauss points on the two loaded contact lines of the
+archived double-tooth frame. Their line-load comparison keeps the
+integration points, weights and material fixed and replaces the gap
+only. The reported gap budget follows from a 2% normal-load error at
+that pose. The CPU timings measure field evaluations on prescribed
+points. Contact-region discovery and the HHT solve are outside these
+timings.
+
 ~~~text
 drives count
 body_id orbit arm_xyz axis_xyz angular_speed

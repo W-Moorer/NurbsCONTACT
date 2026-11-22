@@ -2,11 +2,17 @@
 #include "nurbscontact/occt_contact.hpp"
 
 #include <BRepAlgoAPI_Cut.hxx>
+#include <BRepBndLib.hxx>
+#include <BRepBuilderAPI_MakeVertex.hxx>
+#include <BRepClass3d_SolidClassifier.hxx>
+#include <BRepExtrema_DistShapeShape.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <BRepPrimAPI_MakeCylinder.hxx>
 #include <BRepPrimAPI_MakeSphere.hxx>
 #include <STEPControl_Writer.hxx>
 #include <Standard_Failure.hxx>
+#include <TopExp.hxx>
+#include <TopoDS.hxx>
 
 #include <algorithm>
 #include <chrono>
@@ -592,6 +598,77 @@ void replay_contact_regions(int argc,char** argv) {
     if (!witnesses || !loads || !stats) throw std::runtime_error("failed to write CAD contact replay");
 }
 
+void cad_point_distances(int argc,char** argv) {
+    if (argc!=5) throw std::invalid_argument(
+        "nc_contact cad-point-distance A.step POINTS_MM.txt OUTPUT.csv");
+    const auto shape=read_step_shape(argv[2]);
+    TopTools_IndexedMapOfShape solids, faces;
+    TopExp::MapShapes(shape,TopAbs_SOLID,solids);
+    if (solids.Extent()!=1) throw std::invalid_argument("CAD distances require one solid");
+    const auto& solid=solids(1);
+    TopExp::MapShapes(solid,TopAbs_FACE,faces);
+    std::vector<Bnd_Box> boxes(faces.Extent());
+    for (int i=1;i<=faces.Extent();++i) {
+        BRepBndLib::AddOptimal(faces(i),boxes[i-1],false,true);
+        if (boxes[i-1].IsVoid() || boxes[i-1].IsOpen()) throw std::invalid_argument("invalid CAD face bounds");
+    }
+    BRepClass3d_SolidClassifier classifier(solid);
+    std::ifstream points(argv[3]);
+    if (!points) throw std::invalid_argument("could not open CAD distance points");
+    auto output=open_output(argv[4]);
+    output<<"signed_distance_mm,nx,ny,nz\n";
+    std::vector<std::pair<double,int>> order(boxes.size());
+    constexpr double tolerance=1e-7;
+    while (!(points>>std::ws).eof()) {
+        double x,y,z;
+        if (!(points>>x>>y>>z) || !(std::isfinite(x) && std::isfinite(y) && std::isfinite(z)))
+            throw std::invalid_argument("invalid CAD distance point");
+        const gp_Pnt point{x,y,z};
+        const auto vertex=BRepBuilderAPI_MakeVertex(point).Vertex();
+        Bnd_Box point_box;
+        point_box.Add(point);
+        for (int i=1;i<=faces.Extent();++i) order[i-1]={boxes[i-1].Distance(point_box),i};
+        std::sort(order.begin(),order.end());
+        double distance=std::numeric_limits<double>::infinity();
+        gp_Pnt nearest;
+        bool unique=false;
+        for (const auto& [lower,i]:order) {
+            if (lower>distance+tolerance) break;
+            const BRepExtrema_DistShapeShape closest(vertex,faces(i),tolerance);
+            if (!closest.IsDone() || !closest.NbSolution())
+                throw std::runtime_error("unresolved CAD point-to-face distance");
+            for (int j=1;j<=closest.NbSolution();++j) {
+                const auto& candidate=closest.PointOnShape2(j);
+                const double gap=point.Distance(candidate);
+                if (gap < distance-tolerance) {
+                    nearest=candidate;
+                    unique=true;
+                } else if (gap <= distance+tolerance && nearest.Distance(candidate)>tolerance) {
+                    unique=false;
+                }
+                distance=std::min(distance,gap);
+            }
+        }
+        classifier.Perform(point,tolerance);
+        const auto state=classifier.State();
+        if (state==TopAbs_ON && distance<=1e-6) {
+            output<<"0,,,\n";
+            continue;
+        }
+        if (!std::isfinite(distance) || (state!=TopAbs_IN && state!=TopAbs_OUT))
+            throw std::runtime_error("unresolved CAD point classification");
+        const double sign=state==TopAbs_IN ? -1 : 1;
+        output<<sign*distance;
+        if (unique && distance>tolerance) {
+            const auto n=gp_Vec{nearest,point}.Normalized()*sign;
+            output<<','<<n.X()<<','<<n.Y()<<','<<n.Z()<<'\n';
+        } else {
+            output<<",,,\n";
+        }
+    }
+    if (!output) throw std::runtime_error("failed to write CAD distances");
+}
+
 double sampled_load(const std::vector<LoadSample>& table,double time) {
     if (table.empty()) return 0;
     const auto right=std::upper_bound(table.begin()+1,table.end()-1,time,
@@ -834,6 +911,10 @@ void export_fixture(int argc,char** argv) {
 
 int main(int argc,char** argv) {
     try {
+        if (argc>=2 && std::string_view(argv[1])=="cad-point-distance") {
+            cad_point_distances(argc,argv);
+            return 0;
+        }
         if (argc>=2 && std::string_view(argv[1])=="regions-replay") {
             replay_contact_regions(argc,argv);
             return 0;
