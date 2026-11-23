@@ -216,16 +216,26 @@ __device__ float quick_distance(P p, const float4 *axes) {
         planar = fminf(planar, segment2(a - l, b, u - l, v));
     return c * c + planar;
 }
-template <int W> __device__ void sample_contact(int i, const double *pose, GEOM) {
+constexpr int searchStageCount = 7;
+template <int W, bool enabled> __device__ void count_search_stage(unsigned long long *stages, int stage) {
+    if constexpr (enabled)
+        if (threadIdx.x % W == 0)
+            ++stages[stage];
+}
+template <int W, bool countStages = false>
+__device__ void sample_contact(int i, const double *pose, GEOM, unsigned long long *stages = nullptr) {
+    count_search_stage<W, countStages>(stages, 0);
     P p = move(pose, points[i]);
     for (int d = 0; d < 3; ++d)
         if (p.at(d) <= bounds[d] + 1.e-10 || p.at(d) >= bounds[d + 3] - 1.e-10)
             return;
+    count_search_stage<W, countStages>(stages, 1);
     int ix = (int)((p.x - bounds[0]) * bounds[6]), iy = (int)((p.y - bounds[1]) * bounds[6]),
         iz = (int)((p.z - bounds[2]) * bounds[6]);
     int cell = (iz * grid[1] + iy) * grid[0] + ix;
     if (!occupied[cell])
         return;
+    count_search_stage<W, countStages>(stages, 2);
 #ifdef NC_SDF
     // Analytic derivative of the trilinear interpolant. Face tags come from the
     // closest grid node and are categorical, so they are never interpolated.
@@ -251,6 +261,7 @@ template <int W> __device__ void sample_contact(int i, const double *pose, GEOM)
     P nrm = {g.x / length, g.y / length, g.z / length};
     double f = dot(nrm, rotate(pose, normals[i])), o = dot(nrm, rotate(pose, other[i]));
     if (fmin(f, o) < -1e-10) {
+        count_search_stage<W, countStages>(stages, 6);
         int tag = sdfFace[base + ((int)(z > .5) * ny + (int)(y > .5)) * nx + (int)(x > .5)];
         contact_hit(i, tag, o < f ? alt[i] : fb[i], -value, p, nrm, fmin(f, o), keys, peaks, mask, slots,
                     count, witness);
@@ -260,6 +271,7 @@ template <int W> __device__ void sample_contact(int i, const double *pose, GEOM)
     int lane = threadIdx.x % W;
     Best best = {1.e300, 0x7fffffff};
 #ifdef NC_BVH_CONTROL
+    count_search_stage<W, countStages>(stages, 3);
     if (seeds[cell] >= 0)
         test_tri(p, tri, seeds[cell], best);
 #else
@@ -294,6 +306,7 @@ template <int W> __device__ void sample_contact(int i, const double *pose, GEOM)
             reused = sqrt(best.sq) + travel < prev.w;
         }
     }
+    count_search_stage<W, countStages>(stages, 3);
     if (!reused) {
         Best first = {1.e300, 0x7fffffff};
         double second = 1.e300;
@@ -340,6 +353,7 @@ template <int W> __device__ void sample_contact(int i, const double *pose, GEOM)
 #endif
         // Interior points of arbitrary depth and near-boundary cells lacking
         // a local witness take the unrestricted closest-triangle path.
+        count_search_stage<W, countStages>(stages, 4);
         for (int j = 0; j < nodes[0].x;) {
             int4 node = nodes[j];
             if (point_box(p, boxes + 6 * j) > best.sq) {
@@ -366,6 +380,7 @@ template <int W> __device__ void sample_contact(int i, const double *pose, GEOM)
         repeat = !(fabs(sq - best.sq) <= 1.e-20 + 1.e-10 * fmax(sq, best.sq));
     }
     if (repeat) {
+        count_search_stage<W, countStages>(stages, 5);
         id = nearest_scalar(p, tri, nodes, boxes);
         delta = sub(closest(p, tri + 3 * id, region), p);
         sq = dot(delta, delta);
@@ -387,6 +402,7 @@ template <int W> __device__ void sample_contact(int i, const double *pose, GEOM)
            opposite = fb[i] == alt[i] ? facing : dot(normal, rotate(pose, other[i]));
     if (fmin(facing, opposite) >= -1.e-10)
         return;
+    count_search_stage<W, countStages>(stages, 6);
     contact_hit(i, fa[id], opposite < facing ? alt[i] : fb[i], depth, p, normal, fmin(facing, opposite), keys,
                 peaks, mask, slots, count, witness);
 }

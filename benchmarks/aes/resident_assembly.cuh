@@ -57,6 +57,12 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
                  const Joint *joints, const int *map, const int *prefer, const double *coord,
                  const double *stiff, const double *loads, int n, int pairs, double h, int stop,
                  int contactSamples, int allowExplicit, double *trace, unsigned long long *elapsed
+#ifdef NC_ASSEMBLY_PROFILE
+                 , unsigned long long *profile
+#endif
+#ifdef NC_SEARCH_COUNTS
+                 , unsigned long long *searchCounts
+#endif
 #ifdef NC_ASSEMBLY_AUDIT
                  ,
                  int auditFirst, int auditLast, double *audit, int *auditCount, int auditCapacity,
@@ -65,8 +71,18 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
 ) {
     auto all = cg::this_grid();
     int worker = blockIdx.x * blockDim.x + threadIdx.x;
+#ifdef NC_SEARCH_COUNTS
+    static_assert(searchStageCount == NC_SEARCH_COUNTS, "Search counters must match the host output");
+    // Only the first lane updates these totals. The query group owns the same slots across trials.
+    unsigned long long *stages = searchCounts + (worker / QUERY_LANES) * searchStageCount;
+#endif
     AssemblyState &s = *state;
     while (s.step < stop && !s.failed) {
+#ifdef NC_ASSEMBLY_PROFILE
+        unsigned long long begin = 0, prepared = 0, searched = 0;
+        if (!worker)
+            begin = gpu_time();
+#endif
         if (!worker) {
             if (s.step && s.tick == 0 && !s.iter && !s.halves && !s.start)
                 s.start = gpu_time();
@@ -75,18 +91,35 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
             for (int d = 0; d < 2 * pairs; ++d)
                 assembly_frame(frames[d], joints + 2 * d, map + 2 * d, s, t, mesh_at(views, d),
                                orders[d].dirs, orders[d].bins, orders[d].radius);
+#ifdef NC_ASSEMBLY_PROFILE
+            ++profile[3];
+            profile[4] += s.iter != 0;
+            for (int d = 0; d < 2 * pairs; ++d)
+                profile[5 + d] += frames[d].probeCount;
+#endif
         }
         all.sync();
+#ifdef NC_ASSEMBLY_PROFILE
+        if (!worker)
+            prepared = gpu_time();
+#endif
         for (int d = 0; d < 2 * pairs; ++d) {
             MeshView &m = mesh_at(views, d);
             const State &f = frames[d];
             for (int k = worker / QUERY_LANES; k < f.probeCount; k += gridDim.x * blockDim.x / QUERY_LANES) {
                 int src = orders[d].indices[f.firstProbe + k];
+#ifdef NC_SEARCH_COUNTS
+                sample_contact<QUERY_LANES, true>(src, f.pose, VIEW(m), stages);
+#else
                 sample_contact<QUERY_LANES>(src, f.pose, VIEW(m));
+#endif
             }
         }
         all.sync();
         if (!worker) {
+#ifdef NC_ASSEMBLY_PROFILE
+            searched = gpu_time();
+#endif
             ++s.attempts;
             double K[maxCoordinates][maxCoordinates] = {}, applied[maxCoordinates], err = 0, scale = 0,
                    frequency2 = 0;
@@ -336,6 +369,14 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
 #endif
         }
         all.sync();
+#ifdef NC_ASSEMBLY_PROFILE
+        if (!worker) {
+            unsigned long long end = gpu_time();
+            profile[0] += prepared - begin;
+            profile[1] += searched - prepared;
+            profile[2] += end - searched;
+        }
+#endif
     }
 }
 extern "C" __global__ void assembly_status(const AssemblyState *s, int *o) {

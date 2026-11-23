@@ -1,0 +1,107 @@
+{
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "step_s": 6.25e-05,
+  "stiffness_scope": "pair",
+  "methods": {
+    "cad": {
+      "release_online_s": 212.00065882201307,
+      "full": {
+        "physical_s": 3.0,
+        "steps": 48000,
+        "trials": 850498,
+        "accepted_increments": 383861,
+        "explicit_crossings": 0,
+        "phase_profile": {
+          "prepare_s": 37.047176192,
+          "search_s": 156.91266969600002,
+          "merge_and_hht_s": 17.086252032,
+          "online_trials": 850497,
+          "trials_after_newton_update": 466578,
+          "directional_probe_visits": [
+            3130515764,
+            2632879392,
+            17093352668,
+            27620970039
+          ]
+        },
+        "matching_release_shape": [
+          48001,
+          14
+        ],
+        "release_f64_le_sha256": "1e461ddc38f50957f85a42d4c5940fede66c9b582ccc6d48ef47e36e0e59dfea",
+        "profiled_online_s": 211.29752365802415
+      },
+      "first_0.125_s": {
+        "physical_s": 0.125,
+        "steps": 2000,
+        "trials": 34916,
+        "accepted_increments": 15847,
+        "explicit_crossings": 0,
+        "search_paths": {
+          "visited": 2075570778,
+          "inside_bounds": 1352760448,
+          "occupied_cell": 440634496,
+          "closest_triangle_query": 43026570,
+          "unrestricted_bvh": 880,
+          "projection_fallback_bvh": 922,
+          "contact_witness": 34242796
+        },
+        "matching_release_shape": [
+          2001,
+          14
+        ],
+        "release_f64_le_sha256": "fa4dc611584dc948da59824c714689285e1278cb0259941ee50a3381ce81be19"
+      }
+    },
+    "mesh": {
+      "release_online_s": 234.78659388516098,
+      "full": {
+        "physical_s": 3.0,
+        "steps": 48000,
+        "trials": 796571,
+        "accepted_increments": 383844,
+        "explicit_crossings": 0,
+        "phase_profile": {
+          "prepare_s": 34.760295424,
+          "search_s": 182.368750592,
+          "merge_and_hht_s": 16.468086784,
+          "online_trials": 796570,
+          "trials_after_newton_update": 412706,
+          "directional_probe_visits": [
+            2960492988,
+            2484425770,
+            16008382141,
+            25877301401
+          ]
+        },
+        "matching_release_shape": [
+          48001,
+          14
+        ],
+        "release_f64_le_sha256": "56c762055b657b5b05f39d995c3092d65640c5a92b93f470f19a3b9adae3d557",
+        "profiled_online_s": 233.83490158990026
+      },
+      "first_0.125_s": {
+        "physical_s": 0.125,
+        "steps": 2000,
+        "trials": 33047,
+        "accepted_increments": 15844,
+        "explicit_crossings": 0,
+        "search_paths": {
+          "visited": 1966547401,
+          "inside_bounds": 1281468035,
+          "occupied_cell": 417270944,
+          "closest_triangle_query": 40895968,
+          "unrestricted_bvh": 880,
+          "projection_fallback_bvh": 1873,
+          "contact_witness": 32075369
+        },
+        "matching_release_shape": [
+          2001,
+          14
+        ],
+        "release_f64_le_sha256": "1d9d164bd76c9a15241ceb0168518a04916225fba5383612ce147a9271a55f70"
+      }
+    }
+  }
+}

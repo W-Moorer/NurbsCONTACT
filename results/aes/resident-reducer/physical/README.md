@@ -101,3 +101,26 @@ python benchmarks/hht/paper.py results/hht
 ```
 
 增补原生几何和刚度对照时，延长加密模型到 1.26 s，输出命名为 `rd-switch-geometric.json`，并将相应的原生图文件提取为 `rd-switch-geometric-physics.npz`。固定姿态重放可使用 `--native-only` 指定该文件，时间区间用 `--start` 和 `--end` 选择。制动力上升窗口为 0.099–0.102 s，齿面切换窗口为 1.251–1.254 s。实体对集中刚度试验在两个 GPU 几何后端上均使用 `--stiffness-scope pair`。默认 `region` 为每个接触区域配置一根弹簧。
+
+## 集中刚度减速器的 GPU 耗时
+
+RTX 3090 上从相同初态复现同一段 3 s 载荷历程。每一列时间均以秒计。阶段时间取自现有的 GPU 全局同步点，分别包含相应的同步等待。在线总时间由主机计时，包含核启动和状态检查。建模和初始化另计。[完整阶段计时及查询计数](gpu-profile.json)
+
+| 几何方案 | 原始在线时间 | 开启分段计时后的在线时间 | 姿态与候选范围 | 双向接触搜索 | 力汇总与 HHT 更新 | 每主步试算 | 每次试算访问采样点 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| STEP (ours) | 212.00 | 211.30 | 37.05 | 156.91 | 17.09 | 17.72 | 59,351 |
+| 纯网格 | 234.79 | 233.83 | 34.76 | 182.37 | 16.47 | 16.60 | 59,418 |
+
+两个啮合副都在每次试算中更新两个方向的位姿，选择投影区间，再逐点查询。全程 STEP 共有 850,497 次在线试算，其中 466,578 次发生在 Newton 修正之后。区间筛选后累计访问 50,477,717,863 次采样点，其中 88.6% 来自第二级啮合。每次访问从包围盒开始，可以在到达三角形求距之前退出。原始计时文件的 `trials` 还包含一次初始状态求值。
+
+前 0.125 s 的 STEP 运行访问 2,075,570,778 次采样点，其中 43,026,570 次进入最近三角形查询（2.073%），880 次进入不限范围的 BVH 遍历，922 次在投影一致性检查后触发 BVH 复查。纯网格进入最近三角形查询的比例为 2.080%。这些比例统计查询次数，各条路径的单次耗时可以不同。两次全程计时的 48,001 行 × 14 列响应以及两次路径计数的 2,001 行 × 14 列响应，均与各自原始运行对应区间逐位一致。
+
+同一输入目录可直接复测。阶段计时覆盖整个 3 s，单独的路径计数覆盖 0–0.125 s，包含制动力开始上升的过程。
+
+```powershell
+foreach ($method in "cad","mesh") {
+    $common = @("--method",$method,"--step-us","62.5","--ticks","4096","--contact-samples","16","--explicit-crossing","--stiffness-scope","pair")
+    python benchmarks/aes/resident_assembly.py $w "$w/phases-$method.json" --trace "$w/phases-$method.npy" --duration 3 --profile-phases @common
+    python benchmarks/aes/resident_assembly.py $w "$w/paths-$method.json" --trace "$w/paths-$method.npy" --duration 0.125 --count-search-paths @common
+}
+```

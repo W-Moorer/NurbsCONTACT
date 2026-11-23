@@ -114,6 +114,25 @@ def solve(args):
         options += ("-DNC_ASSEMBLY_AUDIT",)
     if args.stiffness_scope == "pair":
         options += ("-DNC_PAIR_STIFFNESS",)
+    profile_args = ()
+    if args.profile_phases:
+        options += ("-DNC_ASSEMBLY_PROFILE",)
+        profile_args = (cp.zeros(5 + 2 * m, cp.uint64),)
+    blocks = cp.cuda.Device().attributes["MultiProcessorCount"]
+    threads = 128
+    search_args = ()
+    search_stages = (
+        "visited",
+        "inside_bounds",
+        "occupied_cell",
+        "closest_triangle_query",
+        "unrestricted_bvh",
+        "projection_fallback_bvh",
+        "contact_witness",
+    )
+    if args.count_search_paths:
+        options += (f"-DNC_SEARCH_COUNTS={len(search_stages)}",)
+        search_args = (cp.zeros((blocks * threads // args.lanes, len(search_stages)), cp.uint64),)
 
     def compile_module(contact):
         return cp.RawModule(
@@ -179,7 +198,6 @@ def solve(args):
     output = cp.empty((count, 2 * n + 4 * m))
     elapsed = cp.zeros(count, cp.uint64)
     status = cp.zeros(5, cp.int32)
-    blocks = cp.cuda.Device().attributes["MultiProcessorCount"]
     module.get_function("assembly_start")((1,), (1,), (state, device_args[7], np.int32(n)))
     advance = module.get_function("assembly_advance")
     prefix_advance = None
@@ -192,7 +210,7 @@ def solve(args):
         kernel = prefix_advance if prefix_advance is not None and stop <= first_audit else advance
         kernel(
             (blocks,),
-            (128,),
+            (threads,),
             (
                 *device_args,
                 np.int32(stop),
@@ -200,11 +218,17 @@ def solve(args):
                 np.int32(args.explicit_crossing),
                 output,
                 elapsed,
+                *profile_args,
+                *search_args,
                 *audit_args,
             ),
         )
 
     run(1, args.contact_samples)
+    if profile_args:
+        profile_args[0].fill(0)
+    if search_args:
+        search_args[0].fill(0)
     cp.cuda.get_current_stream().synchronize()
     tic = perf_counter()
     for first in range(1, count, 32):
@@ -253,6 +277,19 @@ def solve(args):
         peak_normal_N=data[:, 2 * n :: 4].max(axis=0).tolist(),
         max_active_regions=data[:, 2 * n + 3 :: 4].max(axis=0).tolist(),
     )
+    if profile_args:
+        counters = profile_args[0].get().tolist()
+        report["phase_profile"] = dict(
+            prepare_s=counters[0] * 1e-9,
+            search_s=counters[1] * 1e-9,
+            merge_and_hht_s=counters[2] * 1e-9,
+            online_trials=counters[3],
+            trials_after_newton_update=counters[4],
+            directional_probe_visits=counters[5:],
+        )
+    if search_args:
+        totals = search_args[0].get().sum(axis=0).tolist()
+        report["search_paths"] = dict(zip(search_stages, totals, strict=True))
     if failure:
         diagnostic = cp.empty(8)
         module.get_function("assembly_failure")((1,), (1,), (state, diagnostic))
@@ -316,6 +353,16 @@ if __name__ == "__main__":
     p.add_argument("--cam-deck", type=Path)
     p.add_argument("--cam-cache", type=Path)
     p.add_argument("--duration", type=float, default=3.0)
+    p.add_argument(
+        "--profile-phases",
+        action="store_true",
+        help="Measure GPU phases at existing grid barriers and count probe visits after interval culling",
+    )
+    p.add_argument(
+        "--count-search-paths",
+        action="store_true",
+        help="Count the GPU search paths used by online probes; use a separate run for phase timing",
+    )
     p.add_argument(
         "--step-us",
         type=float,
