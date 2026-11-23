@@ -1,5 +1,6 @@
 #include "nurbscontact/hht.hpp"
 #include "nurbscontact/contact_dynamics.hpp"
+#include "nurbscontact/free_rigid.hpp"
 #include "nurbscontact/triangle_bvh.hpp"
 
 #include <iostream>
@@ -13,6 +14,41 @@ using namespace nc::dynamics;
 
 void require(bool condition, const char* message) {
     if (!condition) throw std::runtime_error(message);
+}
+
+void check_spatial_wrench() {
+    FreeRigidBody body(0,{2.,3.,4.},{.2,-.15,.1});
+    ContactPose reference{{.3,.7,-.2},{0,.6,.8},.72};
+    const Vec omega{.8,-1.2,2.},com{.3,-.2,.1},local_point{.9,.2,-.1},load{3.,2.,-5.};
+    const auto attitude=body.initial_attitude(reference),rate=body.initial_rate(attitude,omega);
+    const Vec center=reference.point(com);
+    State state{};
+    state.q={center[0],center[1],center[2]};
+    state.v={0.,0.,0.};
+    for (std::size_t i=0;i<4;++i) {
+        state.q.push_back(1.7*attitude[i]);
+        state.v.push_back(1.7*(rate[i]+.04*attitude[i]));
+    }
+    ContactBodyState placed{nullptr,{},std::vector<Twist>(7)};
+    body.kinematics(state.q,com,placed);
+    require(length(sub(reference.point(local_point),placed.pose.point(local_point)))<1e-13,
+            "free-body placement lost the local mass offset");
+    Forces forces{Vector(7),Vector(49),Vector(49)};
+    for (std::size_t k=0;k<7;++k)
+        forces.value[k]=dot3(load,placed.derivative[k].at(placed.pose.rotate(local_point)));
+    body.apply_euler_equations(state.q,state.v,forces);
+    state.a=state.force=forces.value;
+    const auto alpha=body.body_angular_acceleration(state);
+    const auto inertia=[&](Vec x) -> Vec {
+        return {dot3(body.inertia[0],x),dot3(body.inertia[1],x),dot3(body.inertia[2],x)};
+    };
+    const auto torque=cross3(sub(local_point,com),reference.inverse_rotate(load));
+    require(length(sub(add(inertia(alpha),cross3(omega,inertia(omega))),torque))<1e-12,
+            "off-center point load violates body Euler equations");
+    body.normalize(state);
+    require(length(sub(body.body_angular_velocity(state.q,state.v),omega))<1e-13 &&
+            length(sub(body.body_angular_acceleration(state),alpha))<1e-12,
+            "normalization changed physical angular velocity or acceleration");
 }
 
 void check_oscillator() {
@@ -231,6 +267,7 @@ void check_triangle_bvh() {
 int main() {
     try {
         check_oscillator();
+        check_spatial_wrench();
         check_bounded_force_decisions();
         check_rollback();
         check_point_resistance();

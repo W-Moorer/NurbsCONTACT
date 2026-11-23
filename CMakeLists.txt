@@ -13,7 +13,7 @@ option(NC_WITH_CPU_MESH "Build the FCL / CGAL triangle contact backend" OFF)
 option(NC_WITH_MESH_CCD "Include swept triangle CCD when building the CPU mesh backend" ON)
 
 add_library(nurbscontact STATIC src/geometry.cpp src/axial.cpp src/query.cpp src/hht.cpp src/triangle_bvh.cpp
-    src/contact_dynamics.cpp)
+    src/contact_dynamics.cpp src/free_rigid.cpp)
 target_compile_features(nurbscontact PUBLIC cxx_std_20)
 target_include_directories(nurbscontact PUBLIC include)
 if(MSVC)

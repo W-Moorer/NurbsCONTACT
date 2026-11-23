@@ -36,6 +36,7 @@ struct HhtOptions {
     double minimum_clearance{};
     unsigned max_iterations{18};
     unsigned max_subdivisions{8};
+    bool nonsymmetric_tangent{};
 };
 
 struct State {

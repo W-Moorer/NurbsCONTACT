@@ -1,4 +1,5 @@
 #include "nurbscontact/cad_contact_regions.hpp"
+#include "nurbscontact/free_rigid.hpp"
 #include "nurbscontact/occt_contact.hpp"
 #ifdef NC_WITH_CPU_MESH
 #include "nurbscontact/cpu_mesh.hpp"
@@ -73,6 +74,7 @@ struct Body {
     int hinge;
     Vec pivot;
     Drive drive{};
+    std::optional<FreeRigidBody> free{};
 };
 
 struct Accelerometer {
@@ -229,15 +231,11 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
                 }
             }
         } else throw std::invalid_argument("expected surface, probe or closest contact");
-#ifdef NC_WITH_CPU_MESH
-        if (!surface_options.method.empty())
-            pair.regions=cpu::mesh_region_query(meshes[a],meshes[b],cpu::mesh_method(surface_options.method));
-#endif
         pair.material={number(in),number(in),number(in),number(in),number(in),number(in)};
         const auto& m=pair.material;
         if (!(m.stiffness>0 && m.exponent>=1 && m.rate>=0 && m.friction>=0 && m.slip_speed>0 &&
                 m.maximum_depth>0)) throw std::invalid_argument("invalid contact material");
-        if (detect_events && !pair.regions) {
+        if (detect_events && surface_options.method.empty()) {
             if (!pair.closest || count==0) throw std::invalid_argument("step CCD requires dynamic closest-pair contacts");
             input.event_geometry.emplace_back(load_pair_geometry(a,PairBackend::brep),load_pair_geometry(b,PairBackend::brep));
         }
@@ -276,8 +274,34 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         }
     }
     bool read_resistances=false, read_bushings=false, read_accelerometers=false, read_impact_laws=false;
+    bool read_free=false;
     while (has_drives && !(in>>std::ws).eof()) {
         const auto block=take<std::string>(in);
+        if (block=="free-bodies" && !read_free) {
+            read_free=true;
+            const auto entries=take<unsigned>(in);
+            if (entries>bodies || count+7*entries>1024) throw std::invalid_argument("too many free bodies");
+            for (unsigned j=0;j<entries;++j) {
+                expect(in,"free");
+                const auto id=take<unsigned>(in);
+                if (id>=bodies) throw std::invalid_argument("invalid free body index");
+                auto& body=input.bodies[id];
+                if (body.free || body.mass<=0 || body.hinge>=0 || !body.translations.empty() ||
+                    !std::holds_alternative<std::monostate>(body.drive))
+                    throw std::invalid_argument("free body requires positive mass and independent motion");
+                const Vec diagonal=vector(in),off_diagonal=vector(in);
+                const Vec velocity=vector(in),omega=vector(in);
+                body.free.emplace(input.coordinates.size(),diagonal,off_diagonal);
+                const Vec center=body.reference.point(body.center_of_mass);
+                const auto q=body.free->initial_attitude(body.reference);
+                const auto rate=body.free->initial_rate(q,omega);
+                for (std::size_t k=0;k<3;++k)
+                    input.coordinates.push_back({body.mass,center[k],velocity[k],0,0,0,0});
+                for (std::size_t k=0;k<4;++k)
+                    input.coordinates.push_back({1.,q[k],rate[k],0,0,0,0});
+            }
+            continue;
+        }
         if (block=="loads" && input.loads.empty()) {
             const auto tables=take<unsigned>(in);
             if (count==0 || tables>count)
@@ -302,8 +326,7 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         if (block=="impact-laws" && !read_impact_laws) {
             read_impact_laws=true;
             const auto laws=take<unsigned>(in);
-            if (count==0 || laws>pairs)
-                throw std::invalid_argument("impact laws require dynamic coordinates and valid probe IDs");
+            if (laws>pairs) throw std::invalid_argument("too many impact laws");
             for (unsigned i=0;i<laws;++i) {
                 expect(in,"impact");
                 const auto probe=take<unsigned>(in);
@@ -355,18 +378,33 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         }
     }
     if (!(in>>std::ws).eof()) throw std::invalid_argument("extra fields in scene");
+    if (read_impact_laws && input.coordinates.empty()) throw std::invalid_argument("impact laws require dynamic coordinates");
     if (detect_events && !surface_options.method.empty()) {
         for (const auto& body : input.bodies) {
-            if ((body.hinge>=0 && body.reference.origin!=body.pivot) ||
-                !std::holds_alternative<std::monostate>(body.drive))
+            if (!std::holds_alternative<std::monostate>(body.drive))
                 throw std::invalid_argument("mesh entry checks currently require affine body origins between step endpoints");
         }
     }
+#ifdef NC_WITH_CPU_MESH
+    if (!surface_options.method.empty()) {
+        const auto method=cpu::mesh_method(surface_options.method);
+        const auto center=[&](std::size_t id) -> Vec {
+            const auto& body=input.bodies[id];
+            if (!detect_events) return {};
+            if (body.free) return body.center_of_mass;
+            if (body.hinge>=0) return body.reference.inverse_rotate(sub(body.pivot,body.reference.origin));
+            return {};
+        };
+        for (auto& pair:input.pairs)
+            pair.regions=cpu::mesh_region_query(meshes[pair.a],meshes[pair.b],method,
+                                                {center(pair.a),center(pair.b)});
+    }
+#endif
     for (std::size_t i=0;i<input.event_geometry.size();++i) {
         const auto& pair=input.pairs[i];
         const auto& a=input.bodies[pair.a];
         const auto& b=input.bodies[pair.b];
-        if (a.hinge>=0 || (b.hinge>=0 && b.pivot!=b.reference.origin) ||
+        if (a.free || b.free || a.hinge>=0 || (b.hinge>=0 && b.pivot!=b.reference.origin) ||
             !std::holds_alternative<std::monostate>(a.drive) || !std::holds_alternative<std::monostate>(b.drive)) {
             throw std::invalid_argument("step CCD requires affine origin motion with no rotation of body A");
         }
@@ -381,6 +419,7 @@ std::vector<ContactBodyState> kinematics(const Input& input,const Vector& q,doub
     if (base_accelerations) base_accelerations->clear();
     for (const Body& body:input.bodies) {
         ContactBodyState state{body.surface.get(),body.reference,std::vector<Twist>(q.size())};
+        if (body.free) body.free->kinematics(q,body.center_of_mass,state);
         if (body.hinge>=0) {
             const auto i=static_cast<std::size_t>(body.hinge);
             const ContactPose orbit{body.pivot,body.reference.axis,q[i]};
@@ -418,6 +457,15 @@ std::vector<ContactBodyState> kinematics(const Input& input,const Vector& q,doub
 
 double specific_force(const Accelerometer& sensor,const Body& body,const ContactBodyState& pose,
                       const State& state,Vec base_acceleration,Vec gravity) {
+    if (body.free) {
+        const auto i=body.free->first;
+        const Vec a{state.a[i],state.a[i+1],state.a[i+2]};
+        const Vec offset=sub(sensor.point,body.center_of_mass);
+        const Vec omega=body.free->body_angular_velocity(state.q,state.v);
+        const Vec alpha=body.free->body_angular_acceleration(state);
+        const Vec local_acc=add(cross3(alpha,offset),cross3(omega,cross3(omega,offset)));
+        return dot3(add(pose.pose.inverse_rotate(sub(a,gravity)),local_acc),sensor.axis);
+    }
     const Vec arm=pose.pose.rotate(sensor.point);
     Vec acceleration=sub(base_acceleration,gravity);
     for (std::size_t i=0;i<state.a.size();++i) {
@@ -817,7 +865,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         for (std::size_t i=0;i<n;++i) {
             const auto& coordinate=input.coordinates[i];
             out.value[i]=coordinate.load-coordinate.stiffness*(q_[i]-coordinate.rest)-coordinate.damping*v_[i];
-            if (!input.loads.empty()) out.value[i]+=sampled_load(input.loads[i],time);
+            if (i<input.loads.size()) out.value[i]+=sampled_load(input.loads[i],time);
             out.stiffness[i*n+i]=coordinate.stiffness;
             out.damping[i*n+i]=coordinate.damping;
             for (std::size_t j=0;j<state.size();++j) {
@@ -841,9 +889,13 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                 out.history.push_back(contact.impact_speed);
             }
         }
+        for (const auto& body:input.bodies)
+            if (body.free) body.free->apply_euler_equations(q_,v_,out);
         return out;
     };
     HhtOptions options;
+    options.nonsymmetric_tangent=std::any_of(input.bodies.begin(),input.bodies.end(),
+                                               [](const Body& b) { return b.free.has_value(); });
     options.absolute_tolerance=1e-9;
     options.relative_tolerance=1e-8;
     HhtStats stats;
@@ -859,8 +911,16 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                 if (pair.regions) {
                     const auto& a0=first[pair.a].pose; const auto& a1=last[pair.a].pose;
                     const auto& b0=first[pair.b].pose; const auto& b1=last[pair.b].pose;
-                    if (std::abs(a1.angle-a0.angle)>=std::acos(-1.) || std::abs(b1.angle-b0.angle)>=std::acos(-1.))
-                        return .5;
+                    const auto large_turn=[&](std::size_t id) {
+                        const auto& body=input.bodies[id];
+                        if (!body.free) return std::abs(last[id].pose.angle-first[id].pose.angle)>=std::acos(-1.);
+                        const auto i=body.free->first+3;
+                        double alignment=0.;
+                        for (std::size_t k=i;k<i+4;++k) alignment+=start.q[k]*end.q[k];
+                        return alignment<=0 || dt_trial*std::max(length(body.free->body_angular_velocity(start.q,start.v)),
+                            length(body.free->body_angular_velocity(end.q,end.v)))>=std::acos(-1.);
+                    };
+                    if (large_turn(pair.a) || large_turn(pair.b)) return .5;
                     const auto hit=pair.regions->transition(a0,b0,a1,b1,surface.distance_tolerance);
                     event_nodes+=hit.nodes;
                     if (!hit.fraction) continue;
@@ -908,6 +968,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             samples.push_back(state);
             for (std::size_t s=1;s<=steps;++s) {
                 solver.step(state,dt,stats);
+                for (const auto& body:input.bodies) if (body.free) body.free->normalize(state);
                 if (s%stride==0 || s==steps) samples.push_back(state);
             }
         } catch (const std::exception& error) {
@@ -931,6 +992,12 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     for (std::size_t i=0;i<n;++i) trace<<",q"<<i<<",v"<<i<<",a"<<i;
     for (std::size_t j=0;j<input.bodies.size();++j)
         trace<<",b"<<j<<"_x_m,b"<<j<<"_y_m,b"<<j<<"_z_m,b"<<j<<"_angle_rad";
+    for (std::size_t j=0;j<input.bodies.size();++j) {
+        if (input.bodies[j].free) {
+            for (auto label:{"_qw","_qx","_qy","_qz","_wx_rad_s","_wy_rad_s","_wz_rad_s"})
+                trace<<",b"<<j<<label;
+        }
+    }
     for (std::size_t p=0;p<input.pairs.size();++p)
         trace<<",p"<<p<<"_gap_m,p"<<p<<"_normal_N,p"<<p<<"_friction_N,p"<<p<<"_hit";
     for (std::size_t s=0;s<input.accelerometers.size();++s) trace<<",s"<<s<<"_a_m_s2";
@@ -951,6 +1018,13 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                                     input.accelerometers.empty() ? nullptr : &base_acceleration);
         for (const auto& body:poses)
             trace<<','<<body.pose.origin[0]<<','<<body.pose.origin[1]<<','<<body.pose.origin[2]<<','<<body.pose.angle;
+        for (std::size_t j=0;j<poses.size();++j) {
+            if (const auto& free=input.bodies[j].free) {
+                for (std::size_t k=free->first+3;k<free->first+7;++k) trace<<','<<item.q[k];
+                const Vec omega=poses[j].pose.rotate(free->body_angular_velocity(item.q,item.v));
+                for (double component:omega) trace<<','<<component;
+            }
+        }
         if (n) {
             if (!add_contact_forces(nullptr,poses,input.pairs,item.v,audit,&values,impact_history(item.history)))
                 throw std::runtime_error("invalid saved contact state");

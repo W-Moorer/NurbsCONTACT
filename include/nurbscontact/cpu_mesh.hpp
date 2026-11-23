@@ -85,6 +85,7 @@ std::vector<Vec> intersect_triangles(const Triangle& a, const Triangle& b);
 
 // Each connected overlap volume supplies one unilateral penalty region.
 std::shared_ptr<const dynamics::PairRegionQuery> mesh_region_query(
-    std::shared_ptr<const MeshData> a, std::shared_ptr<const MeshData> b, MeshMethod method);
+    std::shared_ptr<const MeshData> a, std::shared_ptr<const MeshData> b, MeshMethod method,
+    std::array<Vec,2> local_motion_centers = {});
 
 } // namespace nc::cpu

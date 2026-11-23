@@ -114,13 +114,14 @@ std::vector<ContactRegion> overlap_regions(Surface& a,Surface& b) {
 
 class MeshRegions final : public PairRegionQuery {
 public:
-    MeshRegions(std::shared_ptr<const MeshData> a,std::shared_ptr<const MeshData> b,MeshMethod method)
-        : meshes_{std::move(a),std::move(b)},scene_(meshes_,method),
+    MeshRegions(std::shared_ptr<const MeshData> a,std::shared_ptr<const MeshData> b,MeshMethod method,
+                std::array<Vec,2> centers)
+        : meshes_{std::move(a),std::move(b)},centers_(centers),scene_(meshes_,method),
           solids_{std::make_shared<Surface>(solid(*meshes_[0])),nullptr} {
         solids_[1]=meshes_[0]==meshes_[1] ? solids_[0] : std::make_shared<Surface>(solid(*meshes_[1]));
     }
     std::vector<ContactRegion> regions(ContactPose a,ContactPose b,ContactWork& work) const override {
-        const std::array poses{placement(a),placement(b)};
+        const auto poses=placements(a,b);
         const auto hit=scene_.intersect(poses);
         work.mesh.triangles+=hit.triangle_tests;
         work.mesh.nodes+=hit.node_pairs;
@@ -132,7 +133,7 @@ public:
     SurfaceTransition transition(ContactPose a0,ContactPose b0,ContactPose a1,ContactPose b1,
                              double tolerance) const override {
 #ifdef NC_WITH_MESH_CCD
-        const std::array start{placement(a0),placement(b0)},end{placement(a1),placement(b1)};
+        const auto start=placements(a0,b0),end=placements(a1,b1);
         const auto initial=scene_.intersect(start);
         const auto last=scene_.intersect(end);
         SurfaceTransition result;
@@ -151,14 +152,28 @@ public:
 #endif
     }
 private:
+    std::array<RigidPlacement,2> placements(ContactPose a,ContactPose b) const {
+        a.origin=a.point(centers_[0]);
+        b.origin=b.point(centers_[1]);
+        return {placement(a),placement(b)};
+    }
     std::array<std::shared_ptr<const MeshData>,2> meshes_;
+    std::array<Vec,2> centers_;
     mutable MeshScene scene_;
     std::array<std::shared_ptr<const Surface>,2> solids_;
 };
 }
 
 std::shared_ptr<const dynamics::PairRegionQuery> mesh_region_query(std::shared_ptr<const MeshData> a,
-    std::shared_ptr<const MeshData> b,MeshMethod method) {
-    return std::make_shared<MeshRegions>(std::move(a),std::move(b),method);
+    std::shared_ptr<const MeshData> b,MeshMethod method,std::array<Vec,2> centers) {
+    const auto recenter=[](std::shared_ptr<const MeshData> mesh,Vec center) -> std::shared_ptr<const MeshData> {
+        if (center==Vec{}) return mesh;
+        auto local=std::make_shared<MeshData>(*mesh);
+        for (Vec& point:local->vertices) point=sub(point,center);
+        return local;
+    };
+    auto first=recenter(a,centers[0]);
+    auto second=(a==b && centers[0]==centers[1]) ? first : recenter(b,centers[1]);
+    return std::make_shared<MeshRegions>(std::move(first),std::move(second),method,centers);
 }
 } // namespace nc::cpu

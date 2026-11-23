@@ -1,0 +1,48 @@
+{
+  "case": "eccentric",
+  "method": "mesh-obb",
+  "solver": "penalty",
+  "dt_s": 0.00025,
+  "duration_s": 0.16,
+  "event_tolerance_s": 5e-05,
+  "mesh_sha256": "3795e94baf6025aef289fe17a3294fff6abd98c9cbfc53f8f842307b618c0161",
+  "scene_sha256": "8820b94ae5014d6ac18c861e8928253b968963e67a8e41f7ef8ec455c21dcf27",
+  "frames": 641,
+  "process_s": 22.928205300006084,
+  "integration_s": 17.1782305,
+  "subdivisions": 6,
+  "evaluations": 1643,
+  "max_linear_momentum_drift_kg_m_s": 3.885780586188048e-16,
+  "max_angular_momentum_drift_kg_m2_s": 1.502291113193008e-08,
+  "initial_kinetic_energy_J": 0.10125,
+  "final_kinetic_energy_J": 0.10087314186072675,
+  "final_velocities_m_s": [
+    [
+      -0.043632773390097586,
+      1.1157437232152133e-05,
+      -0.4421648566239651
+    ],
+    [
+      0.043632773390097586,
+      -1.1157437232152133e-05,
+      -0.007835143376035303
+    ]
+  ],
+  "final_angular_velocities_rad_s": [
+    [
+      -0.0005465083656261646,
+      -1.1241286880866568,
+      2.6905445626687597e-05
+    ],
+    [
+      -0.0007882961556767607,
+      1.502430391765587,
+      0.00012317811256888167
+    ]
+  ],
+  "peak_normal_force_N": 22.274871557396438,
+  "normal_impulse_Ns": 0.44365825527296426,
+  "trace_sha256": "321d4c41ba393e8eb6d7e137c35761a322a44157c76f2e886c5634c925165991",
+  "step_checks": 652,
+  "event_rejections": 6
+}

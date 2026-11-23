@@ -59,6 +59,33 @@ bool solve_positive_definite(Vector& matrix, Vector& rhs) {
     return finite(rhs);
 }
 
+// Euler equations written in quaternion acceleration coordinates can give
+// a nonsymmetric contact tangent even for a conservative spatial spring.
+bool solve_pivoted(Vector& matrix, Vector& rhs) {
+    const std::size_t n = rhs.size();
+    for (std::size_t k = 0; k < n; ++k) {
+        std::size_t pivot = k;
+        for (std::size_t i = k + 1; i < n; ++i)
+            if (std::abs(matrix[i*n+k]) > std::abs(matrix[pivot*n+k])) pivot = i;
+        const double diagonal = matrix[pivot*n+k];
+        if (diagonal == 0 || !std::isfinite(diagonal)) return false;
+        if (pivot != k) {
+            for (std::size_t j = k; j < n; ++j) std::swap(matrix[k*n+j], matrix[pivot*n+j]);
+            std::swap(rhs[k], rhs[pivot]);
+        }
+        for (std::size_t i = k+1; i < n; ++i) {
+            const double factor = matrix[i*n+k] / diagonal;
+            for (std::size_t j = k+1; j < n; ++j) matrix[i*n+j] -= factor*matrix[k*n+j];
+            rhs[i] -= factor*rhs[k];
+        }
+    }
+    for (std::size_t i = n; i-- > 0;) {
+        for (std::size_t j = i+1; j < n; ++j) rhs[i] -= matrix[i*n+j]*rhs[j];
+        rhs[i] /= matrix[i*n+i];
+    }
+    return finite(rhs);
+}
+
 struct Trial {
     State state;
     Forces forces;
@@ -205,7 +232,8 @@ bool Hht::solve(const State& start, double dt, State& result, HhtStats& statisti
             tangent[i * n + i] += mass_[i];
             correction[i] = -current.residual[i];
         }
-        if (!solve_positive_definite(tangent, correction)) return false;
+        const auto solve_tangent = options_.nonsymmetric_tangent ? solve_pivoted : solve_positive_definite;
+        if (!solve_tangent(tangent, correction)) return false;
         ++statistics.newton_iterations;
         bool improved = false;
         const bool coarse = bounded_forces_ && !current.refined && current.forces.error_bound > 0;

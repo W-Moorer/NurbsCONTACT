@@ -58,6 +58,19 @@ void check_penalty_regions() {
                 release.start_in_contact && !release.end_in_contact,"incorrect release on a reversed sweep");
 #endif
     }
+#ifdef NC_WITH_MESH_CCD
+    const nc::Vec center{-2.,.5,.5};
+    auto pivot_query=mesh_region_query(box,box,MeshMethod::obb,{nc::Vec{},center});
+    const nc::dynamics::ContactPose target{{2.,-.5,-.5},{0,0,1},0};
+    auto orbit=[&](double angle) {
+        nc::dynamics::ContactPose pose{{},{0,0,1},angle};
+        pose.origin=scale(pose.rotate(center),-1.);
+        return pose;
+    };
+    const auto entry=pivot_query->transition(target,orbit(-1.),target,orbit(1.),1e-6);
+    require(!entry.start_in_contact && !entry.end_in_contact && entry.fraction &&
+            *entry.fraction>0 && *entry.fraction<.5,"offset pivot lost the interior contact on a rotating arc");
+#endif
     auto twin=std::make_shared<MeshData>(*box),plate=std::make_shared<MeshData>();
     append_box(*twin,2.,3.);
     append_box(*plate,-.5,3.5);

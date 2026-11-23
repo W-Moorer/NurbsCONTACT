@@ -1,0 +1,23 @@
+{
+  "case": "top",
+  "method": "mesh-obb",
+  "solver": "penalty",
+  "dt_s": 0.001,
+  "duration_s": 2.4,
+  "event_tolerance_s": 0.0,
+  "mesh_sha256": "3795e94baf6025aef289fe17a3294fff6abd98c9cbfc53f8f842307b618c0161",
+  "scene_sha256": "b8ea7a976264ff21a75dc1dd8aa46f6653b3af1db7d4f9492b37a8d5484dbfcf",
+  "frames": 2401,
+  "process_s": 2.9337126000318676,
+  "integration_s": 0.2546948,
+  "subdivisions": 0,
+  "evaluations": 8102,
+  "max_attitude_error_rad": 1.13213099027601e-05,
+  "max_world_omega_error_rad_s": 1.1010562543027115e-05,
+  "max_world_angular_momentum_drift": 1.266479683523571e-09,
+  "max_center_position_error_m": 4.7634940683079205e-12,
+  "max_specific_force_error_m_s2": 3.0513055782360743e-05,
+  "trace_sha256": "33186faa04b8287d8b95c61ac920003b55ee42fd17d6ef9d745ca40360db7c2d",
+  "step_checks": 0,
+  "event_rejections": 0
+}

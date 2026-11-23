@@ -105,3 +105,18 @@ The [impact benchmark](../benchmarks/aes/cpu_mesh_impact.py) integrates both sli
 | [1.5 mm](../results/aes/cpu-mesh/impact/1p5mm-mesh-obb-125us.json) | 125 µs | 40.2 µs | 0.01871 N | 0.450001 N·s | 46.04 s |
 
 Each run spans 0.16 s. The timings are single measurements on the local CPU. The [entry/release guarded run](../results/aes/cpu-mesh/impact/3mm-mesh-obb-250us-guard.json) used 648 acceptance checks and subdivided four trials. Its entry error remained 128.9 µs at the coarse mesh resolution.
+
+## Free rigid bodies
+
+The optional v2 scene block after `drives` adds independent spatial bodies alongside existing hinges and sliders.
+
+```text
+free-bodies 1
+free BODY Ixx Iyy Izz Ixy Ixz Iyz vx vy vz wx wy wz
+```
+
+Specify a positive mass and local center of mass in the existing body record. The six inertia entries are the symmetric tensor components about that center in body axes (kg·m²). Initial center velocity is in world axes and angular velocity is in body axes. The input pose still positions the original CAD or mesh origin. Contact forces act at a shared world point with its moment arm measured from each body's own center of mass. An HHT step advances center position and a homogeneous quaternion with Euler's gyroscopic term. The trace includes each free body's scalar-first quaternion and world angular velocity. Mesh event checks interpolate the moving center and rotate about it. Offset hinges use the same construction about their pivot. An event check interpolates the endpoints of each trial step.
+
+The [free-body driver](../benchmarks/aes/cpu_free_body.py) uses the archived offset-sphere contact mesh. For a freely rotating symmetric top with a nondiagonal local inertia and displaced center of mass, maximum orientation error over 2.4 s was 174.37, 43.50 and 11.32 µrad at 4, 2 and 1 ms. The [1 ms result](../results/aes/cpu-mesh/free/top-mesh-obb-0.001-0.json) also checks the world angular velocity, center trajectory and local accelerometer. In the [free central impact](../results/aes/cpu-mesh/free/head-on-mesh-obb-0.00025-0.json), the peak normal force was 22.4960 N and impulse was 0.449974 N·s against 22.5 N and 0.45 N·s for smooth spheres.
+
+The [eccentric frictional impact](../results/aes/cpu-mesh/free/eccentric-mesh-obb-0.00025-0.json) exercises off-center force application, rotation of both bodies and contact release. For the same scene, the three broad phases produced byte-identical 641-frame traces. The maximum total angular momentum drift was 1.50×10⁻⁸ kg·m²/s at 250 µs and [3.74×10⁻⁹ kg·m²/s at 125 µs](../results/aes/cpu-mesh/free/eccentric-mesh-obb-0.000125-0.json). Using the [50 µs surface-event check](../results/aes/cpu-mesh/free/eccentric-mesh-obb-0.00025-0.00005.json) on the 250 µs grid produced six subdivisions. The eccentric test checks system momentum and dissipation. Its force has no independent closed-form reference.
