@@ -5,6 +5,7 @@ import csv
 import hashlib
 import json
 from pathlib import Path
+import time
 
 import numpy as np
 
@@ -40,8 +41,13 @@ def run(args):
     with args.scene.with_suffix(".csv").open(newline="") as stream:
         parts = list(csv.DictReader(stream))
     meshes = []
+    cad = args.method in ("cad-occt","chen-2024")
+    step_assets = []
     for part in parts:
         step = root / part["step"]
+        if cad:
+            step_assets.append(dict(asset=step.name, step_sha256=hashlib.sha256(step.read_bytes()).hexdigest()))
+            continue
         mesh = step.with_suffix(".msh")
         meta = json.loads(mesh.with_suffix(".quality.json").read_text())
         for path, field in ((step, "step_sha256"), (mesh, "mesh_sha256")):
@@ -56,9 +62,21 @@ def run(args):
             "min_sicn",
         )
         meshes.append({"asset": mesh.name, "file_bytes": mesh.stat().st_size, **{key: meta[key] for key in fields}})
-    report = dynamics(
-        args.exe.resolve(), root, args.scene, args.method, args.dt, args.duration, args.work, args.scope
-    )
+    start = time.perf_counter()
+    try:
+        report = dynamics(
+            args.exe.resolve(), None if cad else root, args.scene, args.method, args.dt, args.duration, args.work,
+            None if cad else args.scope, args.event_tol_s
+        )
+    except TimeoutError:
+        stopped = dict(completed=False, stop_reason="timeout", time_limit_s=1800,
+                       process_s=time.perf_counter() - start, duration_s=args.duration, dt_s=args.dt,
+                       event_tolerance_s=args.event_tol_s or (.2 * args.dt if args.method == "chen-2024" else 0.),
+                       method=args.method, solver="penalty", scene_sha256=hashlib.sha256(args.scene.read_bytes()).hexdigest())
+        stopped["step_assets" if cad else "meshes"] = step_assets if cad else meshes
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(stopped, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+        raise
     data = np.genfromtxt(args.work / "response.csv", names=True, delimiter=",")
     stages = sorted({int(part["stage"]) for part in parts})
     shafts = sorted({int(part["shaft"]) for part in parts})
@@ -81,7 +99,10 @@ def run(args):
     report["shaft_speed_range_rad_s"] = [
         [float(data[f"v{i}"].min()), float(data[f"v{i}"].max())] for i in shafts
     ]
-    report["meshes"] = meshes
+    if cad:
+        report["step_assets"] = step_assets
+    else:
+        report["meshes"] = meshes
     report["method"] = args.method
     if args.compare_trace:
         report["compared_with_previous_run"] = compare_trace(args.compare_trace, data, stages, shafts)
@@ -93,7 +114,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("exe", "scene", "work", "output"):
         parser.add_argument(name, type=Path)
-    parser.add_argument("--method", choices=["mesh-aabb", "mesh-obb", "mesh-sap"], default="mesh-obb")
+    parser.add_argument("--method", choices=["mesh-aabb", "mesh-obb", "mesh-sap", "cad-occt", "chen-2024"], default="mesh-obb")
+    parser.add_argument("--event-tol-s", type=float, default=0.)
     parser.add_argument("--scope", choices=["local", "full"], default="local")
     parser.add_argument("--dt", type=float, default=50e-6)
     parser.add_argument("--duration", type=float, required=True)

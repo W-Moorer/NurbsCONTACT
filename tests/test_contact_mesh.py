@@ -15,6 +15,21 @@ from prepare_contact_mesh import check_topology, open_step, prepare, refine_slen
 
 
 class ContactMeshTest(unittest.TestCase):
+    def test_compact_polyhedron_preserves_shape_and_skips_curved_solids(self):
+        cube = ROOT / "results/contact_validation/models/cube.step"
+        sphere = ROOT / "results/engine-comparison/nurbs/sphere.step"
+        with tempfile.TemporaryDirectory() as work:
+            mesh = Path(work) / "solid.msh"
+            block = prepare(cube, mesh, .01, min_sicn=.2, compact_planar_solids=True)
+            self.assertTrue(block["compact_planar_solid"])
+            self.assertEqual(block["triangles"], 12)
+            self.assertGreater(block["signed_volume_m3"], 0)
+            self.assertLess(block["max_sampled_surface_error_m"], 1e-12)
+            original = prepare(sphere, mesh, .01)
+            curved = prepare(sphere, mesh, .01, compact_planar_solids=True)
+            self.assertFalse(curved["compact_planar_solid"])
+            self.assertEqual(curved["mesh_sha256"], original["mesh_sha256"])
+
     def test_coarser_faces_preserve_edge_segments(self):
         sphere = ROOT / "results/engine-comparison/nurbs/sphere.step"
         with tempfile.TemporaryDirectory() as work:

@@ -1,4 +1,5 @@
 #include "nurbscontact/cad_contact_regions.hpp"
+#include "nurbscontact/cad_solid_contact.hpp"
 #include "nurbscontact/free_rigid.hpp"
 #include "nurbscontact/occt_contact.hpp"
 #ifdef NC_WITH_CPU_MESH
@@ -123,6 +124,7 @@ struct SurfaceOptions {
     Path mesh_directory;
     double distance_tolerance{1e-7};
     bool localize{true};
+    bool cad() const { return method=="cad-occt" || method=="chen-2024"; }
 };
 
 Input read_scene(const Path& path,double deflection,std::optional<PairBackend> pair_backend,
@@ -159,13 +161,18 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         std::string filename;
         if (!(in>>std::quoted(filename))) throw std::invalid_argument("missing body STEP file");
         const auto file=path.parent_path()/filename;
-        if (surface_options.method.empty()) {
+        if (surface_options.method.empty() || surface_options.cad()) {
             if (!shapes.contains(file)) shapes.emplace(file,read_step_shape(file));
         } else {
 #ifdef NC_WITH_CPU_MESH
-            Path asset=filename;
-            if (asset.is_absolute()) asset=std::filesystem::relative(asset,path.parent_path());
-            asset=(surface_options.mesh_directory / asset).replace_extension(".msh");
+            Path asset=file;
+            if (!surface_options.mesh_directory.empty()) {
+                Path relative=filename;
+                if (relative.is_absolute()) relative=std::filesystem::relative(file,path.parent_path());
+                if (relative.empty()) throw std::invalid_argument("cannot resolve the STEP asset under --mesh-dir");
+                asset=surface_options.mesh_directory/relative;
+            }
+            asset.replace_extension(".msh");
             auto& mesh=mesh_cache[asset];
             if (!mesh) mesh=std::make_shared<cpu::MeshData>(cpu::read_gmsh(asset));
             meshes.push_back(mesh);
@@ -383,12 +390,10 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
     if (detect_events && !surface_options.method.empty()) {
         for (const auto& body : input.bodies) {
             if (!std::holds_alternative<std::monostate>(body.drive))
-                throw std::invalid_argument("mesh entry checks currently require affine body origins between step endpoints");
+                throw std::invalid_argument("surface event checks require affine pivot motion between step endpoints");
         }
     }
-#ifdef NC_WITH_CPU_MESH
     if (!surface_options.method.empty()) {
-        const auto method=cpu::mesh_method(surface_options.method);
         const auto center=[&](std::size_t id) -> Vec {
             const auto& body=input.bodies[id];
             if (!detect_events) return {};
@@ -396,11 +401,19 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
             if (body.hinge>=0) return body.reference.inverse_rotate(sub(body.pivot,body.reference.origin));
             return {};
         };
-        for (auto& pair:input.pairs)
-            pair.regions=cpu::mesh_region_query(meshes[pair.a],meshes[pair.b],method,
-                                                  {center(pair.a),center(pair.b)},surface_options.localize);
-    }
+        for (auto& pair:input.pairs) {
+            const std::array centers{center(pair.a),center(pair.b)};
+            if (surface_options.cad()) {
+                pair.regions=cad_solid_region_query(shapes.at(files[pair.a]),shapes.at(files[pair.b]),centers,
+                                                    surface_options.method=="chen-2024");
+            } else {
+#ifdef NC_WITH_CPU_MESH
+                pair.regions=cpu::mesh_region_query(meshes[pair.a],meshes[pair.b],cpu::mesh_method(surface_options.method),
+                                                    centers,surface_options.localize);
 #endif
+            }
+        }
+    }
     for (std::size_t i=0;i<input.event_geometry.size();++i) {
         const auto& pair=input.pairs[i];
         const auto& a=input.bodies[pair.a];
@@ -911,6 +924,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     options.relative_tolerance=1e-8;
     HhtStats stats;
     std::size_t event_nodes=0, unresolved_events=0;
+    std::size_t cad_distances=0,chen_queries=0,chen_confirmed=0;
     StepAcceptanceFunction accept_step;
     if (event_tolerance>0) {
         accept_step=[&](const State& start,const State& end) -> std::optional<double> {
@@ -932,7 +946,16 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                             length(body.free->body_angular_velocity(end.q,end.v)))>=std::acos(-1.);
                     };
                     if (large_turn(pair.a) || large_turn(pair.b)) return .5;
-                    const auto hit=pair.regions->transition(a0,b0,a1,b1,surface.distance_tolerance);
+                    SurfaceTransition hit;
+                    try {
+                        hit=pair.regions->transition(a0,b0,a1,b1,surface.distance_tolerance);
+                    } catch (const UnresolvedContact&) {
+                        ++unresolved_events;
+                        return .5;
+                    }
+                    cad_distances+=hit.cad_distances;
+                    chen_queries+=hit.chen_queries;
+                    chen_confirmed+=hit.chen_confirmed;
                     event_nodes+=hit.nodes;
                     if (!hit.fraction) continue;
                     if (dt_trial>event_tolerance)
@@ -1080,13 +1103,14 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     report<<"wall_s,setup_s,steps,accepted,subdivisions,force_evaluations,max_residual,pairs,culled,rays,missing,triangle_tests,"
             "closest_queries,unresolved_queries,native_nodes,ccd_checks,ccd_rejected,ccd_nodes,ccd_unresolved,saved_contact_reuses,"
             "mesh_boolean_queries,mesh_boolean_input_faces,mesh_local_solid_uses,mesh_local_solid_builds,"
-            "mesh_detection_s,mesh_placement_s,mesh_boolean_s\n"
+            "mesh_detection_s,mesh_placement_s,mesh_boolean_s,cad_boolean_queries,cad_event_distances,chen_patch_queries,chen_confirmed_candidates,event_tolerance_s\n"
         <<(n ? wall : replay_s)<<','<<setup_s<<','<<steps<<','<<stats.accepted_steps<<','<<stats.subdivisions<<','<<stats.evaluations
         <<','<<stats.maximum_residual<<','<<work.pairs<<','<<work.culled<<','<<work.rays<<','<<work.missing
         <<','<<work.mesh.triangles<<','<<work.closest_queries<<','<<work.unresolved_queries<<','<<work.native_nodes
         <<','<<stats.step_checks<<','<<stats.rejected_steps<<','<<event_nodes<<','<<unresolved_events<<','<<reused
         <<','<<work.boolean_queries<<','<<work.boolean_input_faces<<','<<work.local_solid_uses<<','<<work.local_solid_builds
-        <<','<<work.mesh_detection_s<<','<<work.mesh_placement_s<<','<<work.mesh_boolean_s<<'\n';
+        <<','<<work.mesh_detection_s<<','<<work.mesh_placement_s<<','<<work.mesh_boolean_s
+        <<','<<work.cad_boolean_queries<<','<<cad_distances<<','<<chen_queries<<','<<chen_confirmed<<','<<event_tolerance<<'\n';
     if (!trace || !report) throw std::runtime_error("failed to write contact run");
 }
 
@@ -1159,8 +1183,9 @@ int main(int argc,char** argv) {
         if (argc<7 || (!named && argc>11)) {
             std::cerr<<"nc_contact SCENE DEFLECTION_M DT_S DURATION_S OUTPUT_STRIDE OUTPUT_PREFIX "
                         "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
-                        "  or append --method mesh-aabb|mesh-obb|mesh-sap --mesh-dir DIR [--solver penalty] "
-                        "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full]\n";
+                        "  or append --method mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver penalty] "
+                        "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full]\n"
+                        "  or append --method cad-occt|chen-2024 [--solver penalty] [--event-tol-s SECONDS --ccd-tol-m METRES]\n";
             return 2;
         }
         std::optional<PairBackend> pair_backend;
@@ -1168,6 +1193,7 @@ int main(int argc,char** argv) {
         SurfaceOptions surface;
         double event_tolerance=0.;
         if (named) {
+            bool event_specified=false;
             for (int i=7;i<argc;i+=2) {
                 if (i+1==argc) throw std::invalid_argument("missing method, solver or mesh directory value");
                 const std::string_view key=argv[i], value=argv[i+1];
@@ -1177,17 +1203,23 @@ int main(int argc,char** argv) {
                     if (value!="local" && value!="full") throw std::invalid_argument("expected local or full mesh region scope");
                     surface.localize=value=="local";
                 }
-                else if (key=="--event-tol-s") event_tolerance=std::stod(argv[i+1]);
+                else if (key=="--event-tol-s") {
+                    event_tolerance=std::stod(argv[i+1]);
+                    event_specified=true;
+                }
                 else if (key=="--ccd-tol-m") surface.distance_tolerance=std::stod(argv[i+1]);
                 else if (key=="--solver") {
                     if (value!="penalty") throw std::invalid_argument("unsupported surface contact solver");
                 }
                 else throw std::invalid_argument("unsupported surface option or solver");
             }
-            if (surface.method.empty() || surface.mesh_directory.empty())
-                throw std::invalid_argument("surface dynamics requires --method mesh-aabb|mesh-obb|mesh-sap and --mesh-dir DIR");
+            if (!surface.cad() && surface.method!="mesh-aabb" && surface.method!="mesh-obb" && surface.method!="mesh-sap")
+                throw std::invalid_argument("unknown surface contact method");
+            if (surface.method=="chen-2024" && !event_specified) event_tolerance=.2*std::stod(argv[3]);
+            if (surface.method=="chen-2024" && !(event_tolerance>0))
+                throw std::invalid_argument("Chen CCD requires positive --event-tol-s");
             if (!(std::isfinite(surface.distance_tolerance) && surface.distance_tolerance>0))
-                throw std::invalid_argument("invalid mesh CCD tolerance");
+                throw std::invalid_argument("expected a positive finite CCD spatial tolerance in metres");
         } else if (argc>=8) {
             const std::string_view option(argv[7]);
             if (option=="pair-occt") pair_backend=PairBackend::occt;

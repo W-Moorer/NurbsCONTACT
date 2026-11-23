@@ -42,6 +42,7 @@ struct ContactWork {
     std::optional<Interval> last_unresolved_distance;
     std::size_t boolean_queries{}, boolean_input_faces{}, local_solid_uses{}, local_solid_builds{};
     double mesh_detection_s{}, mesh_placement_s{}, mesh_boolean_s{};
+    std::size_t cad_boolean_queries{};
 };
 
 struct ContactLineSample {
@@ -98,6 +99,7 @@ struct SurfaceTransition {
     bool start_in_contact{};
     bool end_in_contact{};
     std::size_t nodes{};
+    std::size_t cad_distances{}, chen_queries{}, chen_confirmed{};
 };
 
 class PairRegionQuery {

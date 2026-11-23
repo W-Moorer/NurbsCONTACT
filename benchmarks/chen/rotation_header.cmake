@@ -27,4 +27,5 @@ edit_header("colTime, bb, cur.tIntv))" "colTime, bb, cur.tIntv, margin))")
 edit_header("while (!heap.empty()) {" "while (!heap.empty()) {
             if (nodes && *nodes >= node_limit) return -2;
             if (nodes) ++*nodes;")
+edit_header("exit(-1);" "throw std::runtime_error(\"TDIB boundary intersection failed\");")
 file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/solverTD_margin.h" CONTENT "${header}")

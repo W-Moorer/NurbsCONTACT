@@ -5,6 +5,7 @@ import csv
 import hashlib
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import time
 
@@ -160,13 +161,22 @@ def collision(eccentric):
 
 def run(args):
     scene, duration, compare = top() if args.case == "top" else collision(args.case == "eccentric")
-    mesh = (args.mesh_dir / SPHERE.with_suffix(".msh").name).resolve()
-    quality = json.loads(mesh.with_suffix(".quality.json").read_text())
-    for asset, key in ((mesh, "mesh_sha256"), (SPHERE, "step_sha256")):
-        with asset.open("rb") as stream:
-            if hashlib.file_digest(stream, "sha256").hexdigest() != quality[key]:
-                raise ValueError(f"geometry fingerprint differs from its quality report: {asset}")
     args.work.mkdir(parents=True, exist_ok=True)
+    geometry = {"step_sha256": hashlib.sha256(SPHERE.read_bytes()).hexdigest()}
+    mesh_args = []
+    if args.method.startswith("mesh-"):
+        if args.mesh_dir is None:
+            raise ValueError("provide the Gmsh directory for a mesh method")
+        mesh = (args.mesh_dir / SPHERE.with_suffix(".msh").name).resolve()
+        quality = json.loads(mesh.with_suffix(".quality.json").read_text())
+        geometry["mesh_sha256"] = hashlib.sha256(mesh.read_bytes()).hexdigest()
+        if any(quality[k] != v for k,v in geometry.items()):
+            raise ValueError("the geometry differs from the mesh quality report")
+        mesh_args = ["--mesh-dir", mesh.parent]
+    else:
+        destination = args.work / SPHERE.name
+        if destination.resolve() != SPHERE:
+            shutil.copyfile(SPHERE, destination)
     model = args.work / "model.scene"
     model.write_text("\n".join(scene) + "\n", encoding="utf-8")
     prefix = args.work / "response"
@@ -180,8 +190,7 @@ def run(args):
         prefix,
         "--method",
         args.method,
-        "--mesh-dir",
-        mesh.parent,
+        *mesh_args,
         "--solver",
         "penalty",
     ]
@@ -201,8 +210,8 @@ def run(args):
         solver="penalty",
         dt_s=args.dt,
         duration_s=duration,
-        event_tolerance_s=args.event_tol,
-        mesh_sha256=quality["mesh_sha256"],
+        event_tolerance_s=float(stats.get("event_tolerance_s",args.event_tol)),
+        **geometry,
         scene_sha256=hashlib.sha256(model.read_bytes()).hexdigest(),
         trace_sha256=hashlib.sha256(prefix.with_suffix(".csv").read_bytes()).hexdigest(),
         frames=len(trace),
@@ -212,16 +221,20 @@ def run(args):
         evaluations=int(stats["force_evaluations"]),
         step_checks=int(stats["ccd_checks"]),
         event_rejections=int(stats["ccd_rejected"]),
+        **{k:int(stats[k]) for k in ("cad_boolean_queries","cad_event_distances","chen_patch_queries",
+                                     "chen_confirmed_candidates") if k in stats},
         **compare(trace),
     )
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ("exe", "mesh_dir", "work", "output"):
+    parser.add_argument("exe", type=Path)
+    parser.add_argument("mesh_dir", nargs="?", type=Path, help="required for a mesh method")
+    for name in ("work", "output"):
         parser.add_argument(name, type=Path)
     parser.add_argument("--case", choices=["top", "head-on", "eccentric"], required=True)
-    parser.add_argument("--method", choices=["mesh-aabb", "mesh-obb", "mesh-sap"], default="mesh-obb")
+    parser.add_argument("--method", choices=["mesh-aabb", "mesh-obb", "mesh-sap","cad-occt","chen-2024"], default="mesh-obb")
     parser.add_argument("--dt", type=float, required=True)
     parser.add_argument("--event-tol", type=float, default=0.0)
     args = parser.parse_args()

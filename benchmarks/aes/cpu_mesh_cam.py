@@ -5,14 +5,13 @@ import csv
 import json
 from pathlib import Path
 import shutil
-import subprocess
 import sys
-import time
 
 import numpy as np
 
 from pair_dynamics import cam
 from resident_cam import backed_plate, reference
+from cpu_mesh_memory import measured_run
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "apps"))
@@ -42,9 +41,10 @@ def model(directory):
     cam(directory, directory / "cam.scene", 20.0, surface=True)
 
 
-def mesh_assets(directory, output, size, deviation):
+def mesh_assets(directory, output, size, deviation, compact_planar=True):
     for asset in ("cam", "follower"):
-        prepare(directory / f"{asset}.step", output / f"{asset}.msh", size, deviation, 8.0, 0.2)
+        prepare(directory / f"{asset}.step", output / f"{asset}.msh", size, deviation, 8.0, 0.2,
+                compact_planar_solids=compact_planar)
 
 
 def run(args):
@@ -72,8 +72,7 @@ def run(args):
     scene = args.model / "cam.scene"
     args.work.mkdir(parents=True, exist_ok=True)
     prefix = args.work / "response"
-    start = time.perf_counter()
-    subprocess.run(
+    usage = measured_run(
         [
             args.exe.resolve(),
             scene,
@@ -90,10 +89,7 @@ def run(args):
             "penalty",
             *(["--mesh-region-scope", args.mesh_region_scope] if args.mesh_region_scope else []),
         ],
-        check=True,
-        timeout=1800,
     )
-    elapsed = time.perf_counter() - start
     path = prefix.with_suffix(".csv")
     data = np.genfromtxt(path, names=True, delimiter=",")
     t = data["time_s"]
@@ -123,7 +119,7 @@ def run(args):
         meshes=quality,
         frames=len(t),
         integration_s=float(stats["wall_s"]),
-        process_s=elapsed,
+        **usage,
         subdivisions=int(stats["subdivisions"]),
         force_evaluations=int(stats["force_evaluations"]),
         angle_rmse_rad=rms(data["q0"] - ref[0]),
@@ -150,6 +146,16 @@ def run(args):
                 [t[switches] - expected, expected - t[switches + 1], np.zeros(len(expected))]
             ).max()
         )
+    if args.compare_trace is not None:
+        previous = np.genfromtxt(args.compare_trace, names=True, delimiter=",")
+        if not np.array_equal(t, previous["time_s"]):
+            raise ValueError("comparison requires both cam responses on the same output grid")
+        result["compared_with_previous_run"] = dict(
+            trace_sha256=sha256(args.compare_trace),
+            different_active_frames=int(np.count_nonzero(active != (previous["p0_normal_N"] > 0))),
+            max_follower_displacement_difference_m=float(np.abs(q - previous["q1"]).max()),
+            max_normal_force_difference_N=float(np.abs(force - previous["p0_normal_N"]).max()),
+        )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, allow_nan=False) + "\n", encoding="utf-8")
 
@@ -162,19 +168,21 @@ if __name__ == "__main__":
     mesh = modes.add_parser("mesh")
     mesh.add_argument("directory", type=Path)
     mesh.add_argument("output", type=Path)
-    mesh.add_argument("--size-m", type=float, required=True)
-    mesh.add_argument("--error-m", type=float, required=True)
+    mesh.add_argument("--size-m", type=float, default=.014, help="target element size in metres (default 0.014)")
+    mesh.add_argument("--error-m", type=float, default=.00035, help="sampled CAD deviation limit in metres (default 0.00035)")
+    mesh.add_argument("--uniform-size", action="store_true", help="also impose the size target on polyhedral solids")
     simulate = modes.add_parser("run")
     for name in ("exe", "model", "meshes", "work", "output"):
         simulate.add_argument(name, type=Path)
     simulate.add_argument("--method", choices=["mesh-aabb", "mesh-obb", "mesh-sap"], required=True)
     simulate.add_argument("--mesh-region-scope", choices=["local", "full"])
+    simulate.add_argument("--compare-trace", type=Path, help="earlier response on the same cam scene and output grid")
     simulate.add_argument("--dt", type=float, required=True)
     simulate.add_argument("--duration", type=float, default=20.0)
     args = parser.parse_args()
     if args.mode == "model":
         model(args.directory)
     elif args.mode == "mesh":
-        mesh_assets(args.directory, args.output, args.size_m, args.error_m)
+        mesh_assets(args.directory, args.output, args.size_m, args.error_m, not args.uniform_size)
     else:
         run(args)

@@ -348,7 +348,7 @@ def map_four_sided_faces(size_mm, chord_mm):
 
 def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sicn=0., audit_workers=1,
             projection="auto", extend_boundary=True, mapped_edge_error_m=None, curvature_samples=24,
-            edge_curvature_samples=None):
+            edge_curvature_samples=None, compact_planar_solids=False):
     limits = (size_m, max_error_m, max_normal_deg, mapped_edge_error_m)
     if any(v is not None and (not math.isfinite(v) or v <= 0) for v in limits):
         raise ValueError("size and requested tolerances must be positive and finite")
@@ -368,6 +368,16 @@ def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sic
         gmsh.initialize(readConfigFiles=False)
         try:
             open_step(step)
+            requested_size_m = size_m
+            polyhedral = (compact_planar_solids and
+                          all(gmsh.model.getType(2, tag) == "Plane" for _, tag in gmsh.model.getEntities(2)) and
+                          all(gmsh.model.getType(1, tag) == "Line" for _, tag in gmsh.model.getEntities(1)))
+            if polyhedral:
+                bounds = gmsh.model.getBoundingBox(-1, -1)
+                size_m = max(size_m, .001 * math.dist(bounds[:3], bounds[3:]))
+                extend_boundary = False
+                if mapped_edge_error_m is None:
+                    mapped_edge_error_m = size_m
             gmsh.option.setNumber("Mesh.MeshSizeMax", size_m * 1000)
             gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", curvature_samples)
             gmsh.option.setNumber("Mesh.MeshSizeExtendFromBoundary", int(extend_boundary))
@@ -412,7 +422,8 @@ def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sic
         finally:
             gmsh.finalize()
         report.update(step_sha256=sha256(step), mesh_sha256=sha256(staged), gmsh_version=gmsh.__version__,
-                      length_unit="m", mesh_size_m=size_m, requested_max_sampled_error_m=max_error_m,
+                      length_unit="m", mesh_size_m=size_m, requested_mesh_size_m=requested_size_m,
+                      compact_planar_solid=polyhedral, requested_max_sampled_error_m=max_error_m,
                       requested_max_normal_angle_deg=max_normal_deg, requested_min_sicn=min_sicn,
                       locally_refined_edges=refined_edges, audit_workers=audit_workers, audit_s=audit_s,
                       preparation_s=time.perf_counter() - start, generation_s=audit_start-start,
@@ -439,6 +450,8 @@ if __name__ == "__main__":
     parser.add_argument("--projection", choices=["auto","gmsh"], default="auto")
     parser.add_argument("--no-extend-boundary", action="store_true",
                         help="keep short trim edges from prescribing the mesh size across neighboring faces")
+    parser.add_argument("--compact-planar-solids", action="store_true",
+                        help="allow larger triangles for solids bounded entirely by planes and straight edges")
     parser.add_argument("--mapped-edge-error-m",type=float,
                         help="map four-sided CAD faces with edge counts adapted to curvature")
     parser.add_argument("--curvature-samples",type=int,default=24,help="Gmsh curvature sampling per full circle")
@@ -447,5 +460,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     result = prepare(args.step, args.output, args.size_m, args.max_error_m, args.max_normal_deg, args.min_sicn,
                      args.audit_workers,args.projection,not args.no_extend_boundary,args.mapped_edge_error_m,
-                     args.curvature_samples, args.edge_curvature_samples)
+                     args.curvature_samples, args.edge_curvature_samples, args.compact_planar_solids)
     print(json.dumps({k: v for k, v in result.items() if k not in ("faces", "edges")}, allow_nan=False))

@@ -88,28 +88,11 @@ def measure(exe, meshes, poses, reference, method):
     )
 
 
-def dynamics(exe, meshes, scene, method, dt, duration, work, region_scope=None):
-    work.mkdir(parents=True, exist_ok=True)
-    prefix = work / "response"
+def measured_run(command):
     started = time.perf_counter()
     peak_rss = peak_commit = 0
     with tempfile.TemporaryFile() as errors, subprocess.Popen(
-        [
-            exe,
-            scene,
-            "0",
-            str(dt),
-            str(duration),
-            "1",
-            prefix,
-            "--method",
-            method,
-            "--mesh-dir",
-            meshes,
-            "--solver",
-            "penalty",
-            *(["--mesh-region-scope", region_scope] if region_scope else []),
-        ],
+        command,
         stdout=subprocess.DEVNULL,
         stderr=errors,
     ) as proc:
@@ -118,8 +101,8 @@ def dynamics(exe, meshes, scene, method, dt, duration, work, region_scope=None):
             while proc.poll() is None:
                 try:
                     info = monitor.memory_info()
-                    peak_rss = max(peak_rss, info.peak_wset)
-                    peak_commit = max(peak_commit, info.peak_pagefile)
+                    peak_rss = max(peak_rss, getattr(info, "peak_wset", info.rss))
+                    peak_commit = max(peak_commit, getattr(info, "peak_pagefile", 0))
                 except psutil.NoSuchProcess:
                     break
                 if time.perf_counter() - started >= 1800:
@@ -131,7 +114,25 @@ def dynamics(exe, meshes, scene, method, dt, duration, work, region_scope=None):
                 proc.wait()
         if proc.returncode:
             errors.seek(0)
-            raise RuntimeError(errors.read().decode(errors="replace"))
+            detail = errors.read().decode(errors="replace").strip()
+            raise RuntimeError(f"{command[0]} exited with code {proc.returncode}. {detail}")
+    result = dict(process_s=time.perf_counter() - started,
+                  observed_peak_working_set_bytes=peak_rss, monitor_interval_s=0.025)
+    if peak_commit:
+        result["observed_peak_commit_bytes"] = peak_commit
+    return result
+
+
+def dynamics(exe, meshes, scene, method, dt, duration, work, region_scope=None, event_tolerance=0.):
+    work.mkdir(parents=True, exist_ok=True)
+    prefix = work / "response"
+    process = measured_run([
+        exe, scene, "0", str(dt), str(duration), "1", prefix,
+        "--method", method, "--solver", "penalty",
+        *([] if meshes is None else ["--mesh-dir", meshes]),
+        *(["--mesh-region-scope", region_scope] if region_scope else []),
+        *(["--event-tol-s", str(event_tolerance)] if event_tolerance else []),
+    ])
     data = np.genfromtxt(prefix.with_suffix(".csv"), names=True, delimiter=",")
     with prefix.with_suffix(".stats.csv").open() as f:
         stats = next(csv.DictReader(f))
@@ -148,12 +149,15 @@ def dynamics(exe, meshes, scene, method, dt, duration, work, region_scope=None):
         peak_normal_N=float(data["p0_normal_N"].max()),
         subdivisions=int(stats["subdivisions"]),
         integration_s=float(stats["wall_s"]),
-        process_s=time.perf_counter() - started,
-        observed_peak_working_set_bytes=peak_rss,
-        observed_peak_commit_bytes=peak_commit,
-        monitor_interval_s=0.025,
+        **process,
     )
-    if "mesh_boolean_queries" in stats:
+    if "cad_boolean_queries" in stats:
+        result.update({k:int(stats[k]) for k in ("ccd_checks","ccd_rejected","ccd_unresolved","ccd_nodes",
+                                                  "cad_boolean_queries","cad_event_distances",
+                                                  "chen_patch_queries","chen_confirmed_candidates")})
+        result.update(event_tolerance_s=float(stats.get("event_tolerance_s",event_tolerance)), setup_s=float(stats["setup_s"]),
+                      evaluations=int(stats["force_evaluations"]))
+    if meshes is not None and "mesh_boolean_queries" in stats:
         result.update(
             region_scope=region_scope or "local",
             evaluations=int(stats["force_evaluations"]),

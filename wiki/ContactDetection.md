@@ -15,6 +15,10 @@ Each triangle contributes a centroid and three edge midpoints to the comparison 
 
 When a requested minSICN fails on a long narrow face, the generator measures its area and perimeter, increases edge subdivision along its length and remeshes. If neighboring triangles still miss the threshold, it applies a graded Gmsh size field around the affected curves. The final quality checks can reject this result. Each output records the number of edges refined.
 
+For surface contact, a planar polygon can be covered by a few triangles while preserving the same plane and boundary. With `--compact-planar-solids`, Gmsh can use the solid's bounding-box diagonal as its size limit when every CAD face is planar and every trim edge is straight. Explicit CAD edges, watertightness, element quality and distance checks still apply. Solids containing curved faces or edges use the supplied size target.
+
+The eccentric cam fixture uses this setting by default. Run `python benchmarks/aes/cpu_mesh_cam.py mesh MODEL_DIR MESH_DIR` after preparing the model. The cam retained its original 1,414 triangles. The follower went from 1,470 to 12 triangles. Across 3.2 s, all 3,201 contact states agreed, with a maximum follower displacement difference of 1.02 µm and a maximum load difference of 0.011 N. Both meshes reproduced the 71 switches of the smooth-cylinder reference in order, with follower displacement RMS error of about 0.574 mm. [Compact result](../results/aes/cpu-mesh/cam/compact-planar.json) · [Uniform-size control](../results/aes/cpu-mesh/cam/compact-control.json)
+
 ## Default spur gear mesh
 
 Generate the compact CPU baseline and replay its archived poses from the repository root.
@@ -174,6 +178,12 @@ The [impact benchmark](../benchmarks/aes/cpu_mesh_impact.py) integrates both sli
 | [1.5 mm](../results/aes/cpu-mesh/impact/1p5mm-mesh-obb-125us.json) | 125 µs | 40.2 µs | 0.01871 N | 0.450001 N·s | 46.04 s |
 
 Each run spans 0.16 s. The timings are single measurements on the local CPU. The [entry/release guarded run](../results/aes/cpu-mesh/impact/3mm-mesh-obb-250us-guard.json) used 648 acceptance checks and subdivided four trials. Its entry error remained 128.9 µs at the coarse mesh resolution.
+
+## Contact on STEP solids
+
+For surface contact on the original STEP solids, `nc_contact --method cad-occt` selects CAD intersection regions and `--method chen-2024` adds the Chen 2024 patch event search. Its default event time tolerance is one fifth of the time step. On the same scene `--method mesh-obb` reads Gmsh files alongside the STEP parts or under `--mesh-dir`. All three use the scene's material and HHT penalty equations. The named options follow the scene, deflection, step, duration, stride and output arguments. The Chen variant requires `NC_CHEN_SOURCE_DIR` at build time. [Algorithm, supported motions and reproduction](../benchmarks/chen/README.md#rigid-step-scenes)
+
+The two-sphere comparison now defaults to 2,610 triangles per sphere. The mesh solver's peak working set was 18.2 MiB, compared with 32.2 MiB at 22,482 triangles per sphere. Over the same 0.16 s collision the maximum displacement errors relative to the analytical solution were 65.0 µm and 12.6 µm. [Mesh sizes, timings and force errors](../results/aes/general-contact/chen-step-impact.json)
 
 ## Free rigid bodies
 
