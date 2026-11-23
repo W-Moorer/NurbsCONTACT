@@ -9,6 +9,7 @@ endif()
 
 include(CTest)
 option(NC_WITH_OCCT "Build STEP import and CAD benchmarks with Open CASCADE" ON)
+option(NC_WITH_CPU_MESH "Build the FCL / CGAL triangle contact backend" OFF)
 
 add_library(nurbscontact STATIC src/geometry.cpp src/axial.cpp src/query.cpp src/hht.cpp src/triangle_bvh.cpp
     src/contact_dynamics.cpp)
@@ -18,6 +19,24 @@ if(MSVC)
     target_compile_options(nurbscontact PUBLIC /fp:strict PRIVATE /W4 /permissive-)
 else()
     target_compile_options(nurbscontact PUBLIC -fno-fast-math -ffp-contract=off PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+if(NC_WITH_CPU_MESH)
+    find_package(fcl CONFIG REQUIRED)
+    find_package(CGAL 6 CONFIG REQUIRED)
+    add_library(nurbscontact_mesh STATIC src/cpu_mesh_io.cpp src/cpu_mesh_intersection.cpp src/cpu_mesh_scene.cpp
+        src/cpu_mesh_solid.cpp)
+    target_link_libraries(nurbscontact_mesh PUBLIC nurbscontact PRIVATE fcl CGAL::CGAL)
+    if(MSVC)
+        target_compile_options(nurbscontact_mesh PRIVATE /bigobj)
+    endif()
+    add_executable(nc_mesh apps/mesh.cpp)
+    target_link_libraries(nc_mesh PRIVATE nurbscontact_mesh)
+    if(BUILD_TESTING)
+        add_executable(nc_cpu_mesh_tests tests/cpu_mesh.cpp)
+        target_link_libraries(nc_cpu_mesh_tests PRIVATE nurbscontact_mesh)
+        add_test(NAME cpu_mesh_intersections COMMAND nc_cpu_mesh_tests)
+    endif()
 endif()
 
 if(NC_WITH_OCCT)
