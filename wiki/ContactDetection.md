@@ -19,6 +19,8 @@ For surface contact, a planar polygon can be covered by a few triangles while pr
 
 The eccentric cam fixture uses this setting by default. Run `python benchmarks/aes/cpu_mesh_cam.py mesh MODEL_DIR MESH_DIR` after preparing the model. The cam retained its original 1,414 triangles. The follower went from 1,470 to 12 triangles. Across 3.2 s, all 3,201 contact states agreed, with a maximum follower displacement difference of 1.02 µm and a maximum load difference of 0.011 N. Both meshes reproduced the 71 switches of the smooth-cylinder reference in order, with follower displacement RMS error of about 0.574 mm. [Compact result](../results/aes/cpu-mesh/cam/compact-planar.json) · [Uniform-size control](../results/aes/cpu-mesh/cam/compact-control.json)
 
+Using a 10.5 mm size target on the cam gave 2,360 curved-body triangles and 12 follower triangles. The cam's maximum sampled CAD deviation fell from 348 to 211 µm, but the simulation produced 69 switches and a follower displacement RMS error of 0.627 mm. The 14 mm target remains the lightweight baseline. [Curved-surface refinement trial](../results/aes/cpu-mesh/cam/compact-10p5mm.json)
+
 ## Default spur gear mesh
 
 Generate the compact CPU baseline and replay its archived poses from the repository root.

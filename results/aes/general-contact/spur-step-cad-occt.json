@@ -1,0 +1,23 @@
+{
+  "completed": false,
+  "stop_reason": "timeout",
+  "time_limit_s": 1800,
+  "native_wall_s_lower_bound": 1800,
+  "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+  "duration_s": 0.00035,
+  "dt_s": 5e-05,
+  "event_tolerance_s": 2.5e-05,
+  "requested_steps": 7,
+  "method": "cad-occt",
+  "solver": "penalty",
+  "step_assets": [
+    {
+      "asset": "spur-1a.step",
+      "step_sha256": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d"
+    },
+    {
+      "asset": "spur-1b.step",
+      "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d"
+    }
+  ]
+}

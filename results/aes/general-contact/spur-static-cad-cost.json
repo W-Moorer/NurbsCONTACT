@@ -1,0 +1,100 @@
+{
+  "occt": "7.9.3",
+  "source_method": "mesh-obb",
+  "source_trace_sha256": "6b8f68c113ec438edddc3981573162249b6ab4abc1a8c127a9ab2dc97589812d",
+  "step_assets": [
+    {
+      "asset": "spur-1a.step",
+      "step_sha256": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d"
+    },
+    {
+      "asset": "spur-1b.step",
+      "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d"
+    }
+  ],
+  "measurement": "Separate native processes. Setup and STEP placement precede timing. BRepExtrema_DistShapeShape(shapeA, shapeB, 1e-7) in STEP millimetres, and BRepAlgoAPI_Common with a single argument, single tool and non-destructive mode enabled. Each static native call was limited to 120 s. Timings on a shared CPU.",
+  "samples": [
+    {
+      "time_s": 0.0,
+      "poses": [
+        {
+          "origin_m": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "axis": [
+            0,
+            0,
+            1
+          ],
+          "angle_rad": -0.06544984694978735
+        },
+        {
+          "origin_m": [
+            0.09,
+            0.0,
+            0.0
+          ],
+          "axis": [
+            0,
+            0,
+            -1
+          ],
+          "angle_rad": -3.109598602153288
+        }
+      ],
+      "full_solid_distance": {
+        "completed": false,
+        "lower_bound_s": 120,
+        "query_phase_wall_s": 120.044962999993
+      },
+      "solid_intersection": {
+        "completed": true,
+        "has_volume": false,
+        "elapsed_s": 3.09762
+      }
+    },
+    {
+      "time_s": 0.00025,
+      "poses": [
+        {
+          "origin_m": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "axis": [
+            0,
+            0,
+            1
+          ],
+          "angle_rad": -0.016936660021318717
+        },
+        {
+          "origin_m": [
+            0.09,
+            0.0,
+            0.0
+          ],
+          "axis": [
+            0,
+            0,
+            -1
+          ],
+          "angle_rad": -3.0864499740923845
+        }
+      ],
+      "full_solid_distance": {
+        "completed": false,
+        "lower_bound_s": 120,
+        "query_phase_wall_s": 120.04704059998039
+      },
+      "solid_intersection": {
+        "completed": true,
+        "has_volume": true,
+        "elapsed_s": 5.26303
+      }
+    }
+  ]
+}
