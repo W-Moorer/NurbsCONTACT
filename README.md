@@ -45,7 +45,7 @@ The CLI prints JSON. Time uses the units supplied with the velocity, rotations u
 
 ## Implicit HHT multibody contact
 
-For the CPU spur-gear baseline, run `python benchmarks/aes/prepare_spur_cpu.py build/cpu-contact/spur-standard`. This builds both contact meshes (23,470 triangles in total), their CAD deviation reports and the shared dynamics scene. Use `python benchmarks/aes/prepare_spur_cpu.py build/cpu-contact/reducer-standard --case reducer` for the two-stage reducer. [Mesh preparation and measured memory](wiki/ContactDetection.md#default-spur-gear-mesh)
+For the CPU spur-gear baseline, run `python benchmarks/aes/prepare_spur_cpu.py build/cpu-contact/spur-edge-compact`. This builds both Gmsh meshes (20,456 triangles total), their CAD deviation reports and the dynamics scene. Use `--case reducer` for the two-stage reducer and `--mesh-profile reference` to reproduce the previous resolution. [Mesh preparation and measured memory](wiki/ContactDetection.md#default-spur-gear-mesh)
 
 The `nc_hht` benchmark couples prismatic and fixed-axis rigid joints through frictionless compliant contact. It compares native STEP boundaries against an AABB hierarchy of triangle faces using the same implicit HHT-α solver and interval clearance acceptance test. The examples include analytic validation, a six-cam assembly, and a driven twelve-ball train.
 

@@ -15,6 +15,23 @@ from prepare_contact_mesh import check_topology, open_step, prepare, refine_slen
 
 
 class ContactMeshTest(unittest.TestCase):
+    def test_coarser_faces_preserve_edge_segments(self):
+        sphere = ROOT / "results/engine-comparison/nurbs/sphere.step"
+        with tempfile.TemporaryDirectory() as work:
+            boundaries = []
+            counts = []
+            for name, face_samples, edge_samples in (("reference", 32, None), ("compact", 20, 32)):
+                path = Path(work) / f"{name}.msh"
+                report = prepare(sphere, path, .02, extend_boundary=False, curvature_samples=face_samples,
+                                 edge_curvature_samples=edge_samples)
+                mesh = meshio.read(path)
+                segments = mesh.points[mesh.get_cells_type("line")]
+                boundaries.append({tuple(sorted(map(tuple, segment))) for segment in segments})
+                counts.append(report["triangles"])
+            self.assertTrue(boundaries[0])
+            self.assertEqual(*boundaries)
+            self.assertLess(counts[1], counts[0])
+
     def test_sphere_refinement_and_failed_publication(self):
         sphere = ROOT / "results/engine-comparison/nurbs/sphere.step"
         with tempfile.TemporaryDirectory() as work:

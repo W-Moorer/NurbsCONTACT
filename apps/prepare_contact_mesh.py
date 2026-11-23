@@ -193,7 +193,18 @@ def audit(step, workers, projection):
                 min_sicn=min(row["min_sicn"] for row in reports))
 
 
-def refine_slender_faces(required_sicn, size_mm):
+def generate_surface(edge_samples=None):
+    if edge_samples is not None:
+        face_samples = gmsh.option.getNumber("Mesh.MeshSizeFromCurvature")
+        gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", edge_samples)
+        try:
+            gmsh.model.mesh.generate(1)
+        finally:
+            gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", face_samples)
+    gmsh.model.mesh.generate(2)
+
+
+def refine_slender_faces(required_sicn, size_mm, edge_samples=None):
     """Resolve narrow CAD strips by dividing their long edges in proportion to local width."""
     edge_counts = {}
     spacing_by_edge = {}
@@ -229,7 +240,7 @@ def refine_slender_faces(required_sicn, size_mm):
             # segments. Concentrate some of the long-edge nodes at both ends.
             gmsh.model.mesh.setTransfiniteCurve(tag, count, "Bump", .7)
         gmsh.option.setNumber("Mesh.MeshSizeExtendFromBoundary", 0)
-        gmsh.model.mesh.generate(2)
+        generate_surface(edge_samples)
         _, tri_tags, _ = gmsh.model.mesh.getElements(2)
         if gmsh.model.mesh.getElementQualities(tri_tags[0], "minSICN").min() < required_sicn:
             # Adjacent faces can inherit a very short boundary edge. Grade their
@@ -257,13 +268,13 @@ def refine_slender_faces(required_sicn, size_mm):
             minimum = field.add("Min")
             field.setNumbers(minimum, "FieldsList", fields)
             field.setAsBackgroundMesh(minimum)
-            gmsh.model.mesh.generate(2)
+            generate_surface(edge_samples)
             elements, _ = gmsh.model.mesh.getElementsByType(2)
             if gmsh.model.mesh.getElementQualities(elements, "minSICN").min() < required_sicn:
                 gmsh.model.mesh.clear()
                 for threshold in fields:
                     field.setNumber(threshold, "DistMax", 4 * size_mm)
-                gmsh.model.mesh.generate(2)
+                generate_surface(edge_samples)
     return len(edge_counts)
 
 
@@ -336,7 +347,8 @@ def map_four_sided_faces(size_mm, chord_mm):
 
 
 def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sicn=0., audit_workers=1,
-            projection="auto", extend_boundary=True, mapped_edge_error_m=None, curvature_samples=24):
+            projection="auto", extend_boundary=True, mapped_edge_error_m=None, curvature_samples=24,
+            edge_curvature_samples=None):
     limits = (size_m, max_error_m, max_normal_deg, mapped_edge_error_m)
     if any(v is not None and (not math.isfinite(v) or v <= 0) for v in limits):
         raise ValueError("size and requested tolerances must be positive and finite")
@@ -346,7 +358,8 @@ def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sic
         raise ValueError("expected a positive integer number of audit workers")
     if projection not in ("auto","gmsh"):
         raise ValueError("unknown CAD projection strategy")
-    if not isinstance(curvature_samples,int) or curvature_samples<3:
+    if not isinstance(curvature_samples,int) or curvature_samples<3 or (edge_curvature_samples is not None and
+            (not isinstance(edge_curvature_samples, int) or edge_curvature_samples < 3)):
         raise ValueError("expected at least three angular samples per full circle")
     start = time.perf_counter()
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -362,16 +375,16 @@ def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sic
             gmsh.option.setNumber("Mesh.Algorithm", 6)
             mapped_faces = (map_four_sided_faces(size_m*1000,mapped_edge_error_m*1000)
                             if mapped_edge_error_m is not None else 0)
-            gmsh.model.mesh.generate(2)
+            generate_surface(edge_curvature_samples)
             initial_mesh_s = time.perf_counter() - start
             if mapped_faces and min_sicn>0:
                 elements,_=gmsh.model.mesh.getElementsByType(2)
                 if gmsh.model.mesh.getElementQualities(elements,"minSICN").min()<min_sicn:
                     gmsh.model.mesh.clear()
                     gmsh.model.mesh.removeConstraints()
-                    gmsh.model.mesh.generate(2)
+                    generate_surface(edge_curvature_samples)
                     mapped_faces=0
-            refined_edges = refine_slender_faces(min_sicn, size_m * 1000) if min_sicn > 0 else 0
+            refined_edges = refine_slender_faces(min_sicn, size_m * 1000, edge_curvature_samples) if min_sicn > 0 else 0
             if min_sicn > 0:
                 elements, _ = gmsh.model.mesh.getElementsByType(2)
                 qualities = gmsh.model.mesh.getElementQualities(elements, "minSICN")
@@ -405,7 +418,8 @@ def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sic
                       preparation_s=time.perf_counter() - start, generation_s=audit_start-start,
                       initial_mesh_s=initial_mesh_s, refinement_and_quality_s=audit_start-start-initial_mesh_s,
                       projection=projection, extend_boundary=extend_boundary, mapped_faces=mapped_faces,
-                      mapped_edge_error_m=mapped_edge_error_m, curvature_samples=curvature_samples)
+                      mapped_edge_error_m=mapped_edge_error_m, curvature_samples=curvature_samples,
+                      edge_curvature_samples=edge_curvature_samples)
         metadata = Path(work) / "quality.json"
         metadata.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")
         staged.replace(output)
@@ -428,8 +442,10 @@ if __name__ == "__main__":
     parser.add_argument("--mapped-edge-error-m",type=float,
                         help="map four-sided CAD faces with edge counts adapted to curvature")
     parser.add_argument("--curvature-samples",type=int,default=24,help="Gmsh curvature sampling per full circle")
+    parser.add_argument("--edge-curvature-samples", type=int,
+                        help="mesh CAD edges at this angular resolution before filling faces")
     args = parser.parse_args()
     result = prepare(args.step, args.output, args.size_m, args.max_error_m, args.max_normal_deg, args.min_sicn,
                      args.audit_workers,args.projection,not args.no_extend_boundary,args.mapped_edge_error_m,
-                     args.curvature_samples)
+                     args.curvature_samples, args.edge_curvature_samples)
     print(json.dumps({k: v for k, v in result.items() if k not in ("faces", "edges")}, allow_nan=False))

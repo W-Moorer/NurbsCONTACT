@@ -17,12 +17,29 @@ When a requested minSICN fails on a long narrow face, the generator measures its
 
 ## Default spur gear mesh
 
-Generate the routine CPU baseline and replay its archived poses from the repository root.
+Generate the compact CPU baseline and replay its archived poses from the repository root.
 
 ```powershell
-python benchmarks/aes/prepare_spur_cpu.py build/cpu-contact/spur-standard
-python benchmarks/aes/cpu_mesh_replay.py build/cpu-swept/Release/nc_mesh.exe build/cpu-contact/spur-standard/spur-1a.msh build/cpu-contact/spur-standard/spur-1b.msh results/aes/cpu-mesh/spur-poses.txt build/cpu-contact/spur-standard/replay.json --compare-overlap
+python benchmarks/aes/prepare_spur_cpu.py build/cpu-contact/spur-edge-compact
+python benchmarks/aes/cpu_mesh_replay.py build/cpu-swept/Release/nc_mesh.exe build/cpu-contact/spur-edge-compact/spur-1a.msh build/cpu-contact/spur-edge-compact/spur-1b.msh results/aes/cpu-mesh/spur-poses.txt build/cpu-contact/spur-edge-compact/replay.json --compare-overlap
 ```
+
+The compact profile meshes the CAD boundary curves first. It uses 64 angular samples per circle on straight-gear edges and 96 on helical-gear edges, with the same mapped-face chord targets as the previous mesh. Gmsh fills the face interiors at 40 or 60 angular samples per circle, respectively. The same two meshing passes are available for other STEP solids through `--edge-curvature-samples` and `--curvature-samples`. The generator checks the finished compact assets against a 160 µm sampled CAD deviation limit and an 8° normal-angle limit.
+
+| Mechanism | Reference → compact triangles | Compact `.msh` files | Peak RAM during preparation | Peak RAM in loaded CPU simulation |
+| --- | ---: | ---: | ---: | ---: |
+| [Spur pair](../results/aes/cpu-mesh/memory/compact.json) | 23,470 → 20,456 | 1.39 MiB | 372.6 MiB | 30.7 MiB |
+| [Two-stage reducer](../results/aes/cpu-mesh/memory/reducer-compact.json) | 76,692 → 65,732 | 4.36 MiB | 440.7 MiB | 61.3 MiB |
+
+RAM denotes Windows process peak working set. Preparation includes STEP loading, meshing and the topology and sampled CAD audits. The archived meshes took 62.6 s and 154.7 s to prepare on a shared machine. Comparing individual segments and triangles by their vertex coordinates showed that each gear changed only on the cylindrical bore. The largest measured surface deviation there was 84.9 µm. All CAD-edge segments, end faces and tooth triangles matched the reference assets. These four gears mesh with one another at their teeth. A model loaded at its bore needs a separate check at that surface. [Per-asset geometry and memory measurements](../results/aes/cpu-mesh/memory/compact-preparation.json)
+
+On the 5 ms, 100-step loaded runs, both compact response CSVs matched their respective reference files byte for byte. At all 101 prescribed poses per stage, the region counts, depths, normals and centroids also matched. The compact spur pair matched the dense mesh's overlap decisions on the 32-pose replay. The compact reducer spent 106.03 s of its 115.14 s integration constructing intersection solids and 3.81 s detecting overlap. [Spur pose replay](../results/aes/cpu-mesh/memory/spur-stage-1-compact-poses.json) · [Reducer stage 1](../results/aes/cpu-mesh/memory/reducer-stage-1-compact-poses.json) · [Reducer stage 2](../results/aes/cpu-mesh/memory/reducer-stage-2-compact-poses.json)
+
+A separate 32/48-sample trial also relaxed the edge discretization on unmapped faces. The 61,182-triangle reducer changed contact activity at 38 and 30 of 101 output times on its two stages, respectively. The 19,008-triangle spur pair changed at three output times. These trials motivate preserving the edge discretization in the default. [Reducer response](../results/aes/cpu-mesh/memory/coarse-edges-reducer.json) · [Spur response](../results/aes/cpu-mesh/memory/coarse-edges-spur.json)
+
+### Previous reference mesh
+
+Add `--mesh-profile reference` to reproduce the following measurements. In this archive the 23,470-triangle pair was called the routine mesh.
 
 Both gears are closed solids. Gmsh uses compatible edge subdivisions on four-sided CAD faces, set by the lengths and sampled curvature of opposite edges. The routine mesh spends triangles along curved profiles and allows long triangles in straight directions. Other faces use the Gmsh surface mesher with 64 curvature samples per full circle. The recipe uses a 2 µm sampled chord target on mapped edges. Across the finished solids the largest sampled surface deviations were 19 and 37 µm at the bores. The CAD trim on the wheel permits some very slender contact triangles. The quality report retains their measured shape and the checks for watertightness, orientation and self-intersection.
 
@@ -136,7 +153,7 @@ The [3.2 s eccentric cam run](../results/aes/cpu-mesh/cam/localized-coarse-mesh-
 
 The [paired spur timings](../results/aes/cpu-mesh/local-regions/spur-timing-pairs.json) reverse the run order on the shared CPU. The second pair took 50.65 s for full solids and 34.77 s for local solids. The local integration spent 0.31 s on discrete detection and 32.63 s constructing overlap regions.
 
-For the two-stage reducer, run `python benchmarks/aes/prepare_spur_cpu.py build/cpu-contact/reducer-standard --case reducer`. Four Gmsh meshes have 76,692 triangles in total. The front pair is straight and the rear pair helical. Two separate preparations reproduced all mesh hashes. An [initial single-cut trial](../results/aes/cpu-mesh/local-regions/reducer-local-5ms.json) used local solids on the [first stage](../results/aes/cpu-mesh/local-regions/reducer-stage-1-poses.json) and full solids on the [second stage](../results/aes/cpu-mesh/local-regions/reducer-stage-2-poses.json).
+For the archived two-stage reducer, run `python benchmarks/aes/prepare_spur_cpu.py build/cpu-contact/reducer-standard --case reducer --mesh-profile reference`. Four Gmsh meshes have 76,692 triangles in total. The front pair is straight and the rear pair helical. Two separate preparations reproduced all mesh hashes. An [initial single-cut trial](../results/aes/cpu-mesh/local-regions/reducer-local-5ms.json) used local solids on the [first stage](../results/aes/cpu-mesh/local-regions/reducer-stage-1-poses.json) and full solids on the [second stage](../results/aes/cpu-mesh/local-regions/reducer-stage-2-poses.json).
 
 The backend can now move a cut farther from the opposing mesh when a narrow cut leaves disconnected strips. It tries up to four positions and applies the same closure and separation checks each time. All 40 loaded poses of the [helical stage](../results/aes/cpu-mesh/local-regions/reducer-stage-2-adaptive-poses.json) used at least one local solid. All region counts, centroids, normals and depths matched the full-solid replay on both this stage and the [straight stage](../results/aes/cpu-mesh/local-regions/reducer-stage-1-adaptive-poses.json).
 

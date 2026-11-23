@@ -1,0 +1,87 @@
+{
+  "measurement": "Single Windows Python process per mechanism, sequential STEP import, Gmsh generation, sampled CAD and topology audits, and scene generation; monitored every 25 ms. Mesh hashes matched the dynamics inputs.",
+  "cases": {
+    "spur": {
+      "observed_peak_working_set_bytes": 390156288,
+      "observed_peak_commit_bytes": 1291677696,
+      "process_s": 62.80185520002851,
+      "assets": [
+        {
+          "asset": "spur-1a.msh",
+          "file_bytes": 668258,
+          "triangles": 9344,
+          "mesh_sha256": "8af5b4b9422af5daad333ba812da8d4be8b0c3ab5a5134408a11fe32a07e1e4c",
+          "step_sha256": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d",
+          "min_sicn": 0.01045735078250156,
+          "max_normal_angle_deg": 7.057830821048942,
+          "max_sampled_surface_error_m": 7.274266858444784e-05,
+          "max_sampled_edge_error_m": 4.622662394691087e-05
+        },
+        {
+          "asset": "spur-1b.msh",
+          "file_bytes": 691315,
+          "triangles": 9664,
+          "mesh_sha256": "ad02225ac3bdff9919cd64969974e0a59502f994c0518e82f7377e2a8b4594c1",
+          "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d",
+          "min_sicn": 0.0005368108854989981,
+          "max_normal_angle_deg": 6.113913373818607,
+          "max_sampled_surface_error_m": 0.00010920748286950188,
+          "max_sampled_edge_error_m": 9.245324789382174e-05
+        }
+      ],
+      "gmsh_version": "4.15.0"
+    },
+    "reducer": {
+      "observed_peak_working_set_bytes": 457060352,
+      "observed_peak_commit_bytes": 1357127680,
+      "process_s": 116.97270340000978,
+      "assets": [
+        {
+          "asset": "reducer-1a.msh",
+          "file_bytes": 668258,
+          "triangles": 9344,
+          "mesh_sha256": "8af5b4b9422af5daad333ba812da8d4be8b0c3ab5a5134408a11fe32a07e1e4c",
+          "step_sha256": "90a5180ba1d3cd2b6e603de00a80c94cded07bfdccdf13f26e8a693845920035",
+          "min_sicn": 0.01045735078250156,
+          "max_normal_angle_deg": 7.057830821048942,
+          "max_sampled_surface_error_m": 7.274266858444784e-05,
+          "max_sampled_edge_error_m": 4.622662394691087e-05
+        },
+        {
+          "asset": "reducer-1b.msh",
+          "file_bytes": 691315,
+          "triangles": 9664,
+          "mesh_sha256": "ad02225ac3bdff9919cd64969974e0a59502f994c0518e82f7377e2a8b4594c1",
+          "step_sha256": "f0b5c19d140b2817f00ba29a3cadcd042141df5e2700e860dff7b9aedd37bf7b",
+          "min_sicn": 0.0005368108854989981,
+          "max_normal_angle_deg": 6.113913373818607,
+          "max_sampled_surface_error_m": 0.00010920748286950188,
+          "max_sampled_edge_error_m": 9.245324789382174e-05
+        },
+        {
+          "asset": "reducer-2a.msh",
+          "file_bytes": 1781677,
+          "triangles": 26042,
+          "mesh_sha256": "54f433908bef58723e409a4e9a4b392e17c3378bfd98fa6de5c64b0de6fbd3ab",
+          "step_sha256": "9037e0d52ca2550e2251621d46a6781b9b698722842b4178b9758858ee8f14a9",
+          "min_sicn": 0.12280293051585442,
+          "max_normal_angle_deg": 6.051116592670291,
+          "max_sampled_surface_error_m": 3.249036766065176e-05,
+          "max_sampled_edge_error_m": 2.4385423116445863e-05
+        },
+        {
+          "asset": "reducer-2b.msh",
+          "file_bytes": 1114748,
+          "triangles": 16132,
+          "mesh_sha256": "404e5dfb30b1d62030ab54963d689d5723d5e69607a8494aa4c0992fcdf27cd8",
+          "step_sha256": "93b72d60ebd26f3e94faedd22be00aa5d80dda5936605541ae3646ace82aee01",
+          "min_sicn": 0.0037408528660150733,
+          "max_normal_angle_deg": 4.378595683276618,
+          "max_sampled_surface_error_m": 8.925903090951107e-05,
+          "max_sampled_edge_error_m": 4.8770846232894795e-05
+        }
+      ],
+      "gmsh_version": "4.15.0"
+    }
+  }
+}

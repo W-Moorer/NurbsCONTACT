@@ -1,0 +1,116 @@
+{
+  "method": "mesh-obb",
+  "pose_sha256": "a9ff0401cb33c8803a978639bcf49c2c5a9f14d6615d4a0d874f198874cd20d7",
+  "triangles": [
+    9344,
+    9664
+  ],
+  "mesh_sha256": [
+    "8af5b4b9422af5daad333ba812da8d4be8b0c3ab5a5134408a11fe32a07e1e4c",
+    "ad02225ac3bdff9919cd64969974e0a59502f994c0518e82f7377e2a8b4594c1"
+  ],
+  "sampled_surface_error_um": [
+    72.74266858444784,
+    109.20748286950189
+  ],
+  "min_sicn": [
+    0.01045735078250156,
+    0.0005368108854989981
+  ],
+  "file_bytes": 1359573,
+  "first_frame_working_set_bytes": 13758464,
+  "final_working_set_bytes": 13770752,
+  "peak_working_set_bytes": 13770752,
+  "final_private_bytes": 10887168,
+  "elapsed_s": 0.5873691000160761,
+  "frames": 32,
+  "positive_frames": 31,
+  "differing_from_dense_frame_indices": [],
+  "mesh_positive": [
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
+  "median_decision_ms": 0.43715,
+  "measurement": "One native nc_mesh process, two complete solids, resident OBB/AABB trees, discrete predicates and containment; Windows working set includes DLLs and temporary allocations.",
+  "dynamics": {
+    "duration_s": 0.005,
+    "dt_s": 5e-05,
+    "steps": 100,
+    "active_frames": 70,
+    "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+    "trace_sha256": "cd1b5dd65bbe8a695807940c0f8eaa70cae5a672faeebd44ab28d827199a0a3c",
+    "normal_impulse_Ns": 5.05605719778113,
+    "peak_normal_N": 5263.091907935646,
+    "subdivisions": 7,
+    "integration_s": 28.8511489,
+    "process_s": 30.171894900035113,
+    "observed_peak_working_set_bytes": 31346688,
+    "observed_peak_commit_bytes": 43495424,
+    "monitor_interval_s": 0.025,
+    "region_scope": "local",
+    "evaluations": 986,
+    "boolean_queries": 918,
+    "boolean_input_faces": 4429682,
+    "local_solid_uses": 1836,
+    "local_solid_builds": 6,
+    "detection_s": 0.3120925999999993,
+    "placement_s": 1.0051499000000008,
+    "boolean_s": 27.224999599999993
+  },
+  "compared_with_previous_run": {
+    "frames": 101,
+    "duration_s": 0.004999999999999997,
+    "trace_sha256": [
+      "65c9eb22ef20aa7fc522392bb92946b815067d2951e6bc457a34f7d57ecd373d",
+      "cd1b5dd65bbe8a695807940c0f8eaa70cae5a672faeebd44ab28d827199a0a3c"
+    ],
+    "peak_normal_N": [
+      5263.091907935672,
+      5263.091907935646
+    ],
+    "normal_impulse_Ns": [
+      5.073322115825701,
+      5.05605719778113
+    ],
+    "normal_force_rms_difference_N": 163.41528793466904,
+    "different_active_frames": 3,
+    "max_shaft_angle_difference_rad": [
+      4.52571344617958e-05,
+      1.3115973936633774e-05
+    ],
+    "max_shaft_speed_difference_rad_s": [
+      0.7900475168165713,
+      0.20120683937133776
+    ]
+  }
+}

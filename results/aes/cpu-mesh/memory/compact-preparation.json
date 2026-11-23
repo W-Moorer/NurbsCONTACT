@@ -1,0 +1,173 @@
+{
+  "coordinate_comparison": "Compare sorted Cartesian vertices of every line segment and triangle grouped by its original STEP entity. Face retessellation may change element IDs and the order of vertices.",
+  "cases": {
+    "spur": {
+      "case": "spur",
+      "measurement": "Windows peak working set of a single Python process through STEP import, Gmsh generation, CAD and topology audits and scene setup.",
+      "peak_working_set_bytes": 390746112,
+      "peak_commit_bytes": 1291591680,
+      "elapsed_s": 62.626696999999695,
+      "meshes": [
+        {
+          "asset": "spur-1a.msh",
+          "file_bytes": 727501,
+          "gmsh_version": "4.15.0",
+          "step_sha256": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d",
+          "mesh_sha256": "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+          "triangles": 10216,
+          "max_sampled_surface_error_m": 4.812533171050068e-05,
+          "max_sampled_edge_error_m": 1.156362043034666e-05,
+          "max_normal_angle_deg": 5.417667657804644,
+          "min_sicn": 0.01045735078250156,
+          "curvature_samples": 40,
+          "edge_curvature_samples": 64,
+          "all_boundary_segments_identical": true,
+          "changed_faces": [
+            {
+              "cad_face": 147,
+              "surface": "Cylinder",
+              "reference_triangles": 3852,
+              "compact_triangles": 1772
+            }
+          ],
+          "face_count": 147,
+          "reference_mesh_sha256": "0c79323fba8662f120fd457f806a298bb5be718021379cad63645e6d4e9ddd33"
+        },
+        {
+          "asset": "spur-1b.msh",
+          "file_bytes": 729966,
+          "gmsh_version": "4.15.0",
+          "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d",
+          "mesh_sha256": "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+          "triangles": 10240,
+          "max_sampled_surface_error_m": 8.487492800076537e-05,
+          "max_sampled_edge_error_m": 2.312724086069332e-05,
+          "max_normal_angle_deg": 4.871479036615452,
+          "min_sicn": 0.0005368108854989981,
+          "curvature_samples": 40,
+          "edge_curvature_samples": 64,
+          "all_boundary_segments_identical": true,
+          "changed_faces": [
+            {
+              "cad_face": 291,
+              "surface": "Cylinder",
+              "reference_triangles": 1928,
+              "compact_triangles": 994
+            }
+          ],
+          "face_count": 291,
+          "reference_mesh_sha256": "c5e7fb1a232e200e204a73bc5b0dd3928758e93eb234eb1860c412e3dd8092ee"
+        }
+      ]
+    },
+    "reducer": {
+      "case": "reducer",
+      "measurement": "Windows peak working set of a single Python process through STEP import, Gmsh generation, CAD and topology audits and scene setup.",
+      "peak_working_set_bytes": 462114816,
+      "peak_commit_bytes": 1364701184,
+      "elapsed_s": 154.68325680005364,
+      "meshes": [
+        {
+          "asset": "reducer-1a.msh",
+          "file_bytes": 727501,
+          "gmsh_version": "4.15.0",
+          "step_sha256": "90a5180ba1d3cd2b6e603de00a80c94cded07bfdccdf13f26e8a693845920035",
+          "mesh_sha256": "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+          "triangles": 10216,
+          "max_sampled_surface_error_m": 4.812533171050068e-05,
+          "max_sampled_edge_error_m": 1.156362043034666e-05,
+          "max_normal_angle_deg": 5.417667657804644,
+          "min_sicn": 0.01045735078250156,
+          "curvature_samples": 40,
+          "edge_curvature_samples": 64,
+          "all_boundary_segments_identical": true,
+          "changed_faces": [
+            {
+              "cad_face": 147,
+              "surface": "Cylinder",
+              "reference_triangles": 3852,
+              "compact_triangles": 1772
+            }
+          ],
+          "face_count": 147,
+          "reference_mesh_sha256": "0c79323fba8662f120fd457f806a298bb5be718021379cad63645e6d4e9ddd33"
+        },
+        {
+          "asset": "reducer-1b.msh",
+          "file_bytes": 729966,
+          "gmsh_version": "4.15.0",
+          "step_sha256": "f0b5c19d140b2817f00ba29a3cadcd042141df5e2700e860dff7b9aedd37bf7b",
+          "mesh_sha256": "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+          "triangles": 10240,
+          "max_sampled_surface_error_m": 8.487492800076537e-05,
+          "max_sampled_edge_error_m": 2.312724086069332e-05,
+          "max_normal_angle_deg": 4.871479036615452,
+          "min_sicn": 0.0005368108854989981,
+          "curvature_samples": 40,
+          "edge_curvature_samples": 64,
+          "all_boundary_segments_identical": true,
+          "changed_faces": [
+            {
+              "cad_face": 291,
+              "surface": "Cylinder",
+              "reference_triangles": 1928,
+              "compact_triangles": 994
+            }
+          ],
+          "face_count": 291,
+          "reference_mesh_sha256": "c5e7fb1a232e200e204a73bc5b0dd3928758e93eb234eb1860c412e3dd8092ee"
+        },
+        {
+          "asset": "reducer-2a.msh",
+          "file_bytes": 1915747,
+          "gmsh_version": "4.15.0",
+          "step_sha256": "9037e0d52ca2550e2251621d46a6781b9b698722842b4178b9758858ee8f14a9",
+          "mesh_sha256": "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+          "triangles": 27934,
+          "max_sampled_surface_error_m": 2.7052420583497806e-05,
+          "max_sampled_edge_error_m": 6.097988248752131e-06,
+          "max_normal_angle_deg": 6.051116592670291,
+          "min_sicn": 0.12280293051593455,
+          "curvature_samples": 60,
+          "edge_curvature_samples": 96,
+          "all_boundary_segments_identical": true,
+          "changed_faces": [
+            {
+              "cad_face": 135,
+              "surface": "Cylinder",
+              "reference_triangles": 9592,
+              "compact_triangles": 4204
+            }
+          ],
+          "face_count": 135,
+          "reference_mesh_sha256": "86e8c8b42c1018cc5bd7b7e0d41290eff0c918e1f6144ae9fea2cf046bfdbcab"
+        },
+        {
+          "asset": "reducer-2b.msh",
+          "file_bytes": 1195517,
+          "gmsh_version": "4.15.0",
+          "step_sha256": "93b72d60ebd26f3e94faedd22be00aa5d80dda5936605541ae3646ace82aee01",
+          "mesh_sha256": "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0",
+          "triangles": 17342,
+          "max_sampled_surface_error_m": 4.8093436127912344e-05,
+          "max_sampled_edge_error_m": 1.2195976497504331e-05,
+          "max_normal_angle_deg": 3.571556915230091,
+          "min_sicn": 0.0037408528660150733,
+          "curvature_samples": 60,
+          "edge_curvature_samples": 96,
+          "all_boundary_segments_identical": true,
+          "changed_faces": [
+            {
+              "cad_face": 267,
+              "surface": "Cylinder",
+              "reference_triangles": 4820,
+              "compact_triangles": 2262
+            }
+          ],
+          "face_count": 267,
+          "reference_mesh_sha256": "fbe785723e109bf7c3ed84ec1bcb24532c32f70804d92b11c0a335420cc9a812"
+        }
+      ]
+    }
+  }
+}
