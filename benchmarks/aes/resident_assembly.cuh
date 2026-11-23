@@ -8,7 +8,7 @@ struct AssemblyState {
         delta[maxCoordinates];
     double lastError, refineUntil;
     int step, tick, span, iter, halves, failed, attempts, accepted, previousContacts, impactSpan;
-    int explicitStep, explicitCount;
+    int explicitStep, explicitCount, refresh;
     double terminalResidual, terminalFrequency;
     unsigned long long start;
 };
@@ -28,13 +28,10 @@ __device__ MeshView &mesh_at(unsigned char *views, int i) {
     return *reinterpret_cast<MeshView *>(views + 320 * i);
 }
 // Each trial needs two independently transformed source bounds.
-__device__ void assembly_frame(State &f, const Joint *j, const int *coords, const AssemblyState &s, double t,
-                               const MeshView &mesh, const double *dirs, const int *bins, double radius) {
+__device__ void assembly_frame(State &f, const Joint *j, const int *coords, const AssemblyState &s, double t) {
     f.pos[0] = s.x[coords[0]];
     f.pos[1] = s.x[coords[1]];
     set_pose(f, j, t);
-    f.cold = 1;
-    source_interval(f, mesh.bounds, dirs, bins, mesh.n, radius, 0.);
 }
 struct SearchOrder {
     const double *dirs;
@@ -57,6 +54,11 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
                  const Joint *joints, const int *map, const int *prefer, const double *coord,
                  const double *stiff, const double *loads, int n, int pairs, double h, int stop,
                  int contactSamples, int allowExplicit, double *trace, unsigned long long *elapsed
+#ifdef NC_PATCHES
+                 , PatchIndex *patches
+#else
+                 , unsigned long long *projectionVisits
+#endif
 #ifdef NC_ASSEMBLY_PROFILE
                  , unsigned long long *profile
 #endif
@@ -87,18 +89,39 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
             if (s.step && s.tick == 0 && !s.iter && !s.halves && !s.start)
                 s.start = gpu_time();
             next_assembly_trial(s, n, h);
+            s.refresh = 0;
+#ifndef NC_PATCHES
             double t = s.step ? (s.step - 1 + double(s.tick + s.span) / ticksPerStep) * h : 0.;
-            for (int d = 0; d < 2 * pairs; ++d)
-                assembly_frame(frames[d], joints + 2 * d, map + 2 * d, s, t, mesh_at(views, d),
-                               orders[d].dirs, orders[d].bins, orders[d].radius);
+            for (int d = 0; d < 2 * pairs; ++d) {
+                State &f = frames[d];
+                assembly_frame(f, joints + 2 * d, map + 2 * d, s, t);
+                f.cold = 1;
+                const MeshView &mesh = mesh_at(views, d);
+                source_interval(f, mesh.bounds, orders[d].dirs, orders[d].bins, mesh.n, orders[d].radius, 0.);
+            }
+#endif
 #ifdef NC_ASSEMBLY_PROFILE
             ++profile[3];
             profile[4] += s.iter != 0;
-            for (int d = 0; d < 2 * pairs; ++d)
-                profile[5 + d] += frames[d].probeCount;
 #endif
         }
         all.sync();
+#ifdef NC_PATCHES
+        for (int d = worker; d < 2 * pairs; d += blockDim.x * gridDim.x) {
+            double t = s.step ? (s.step - 1 + double(s.tick + s.span) / ticksPerStep) * h : 0.;
+            assembly_frame(frames[d], joints + 2*d, map + 2*d, s, t);
+            prepare_patches(frames[d], patches[d]);
+            if (frames[d].cold)
+                atomicExch(&s.refresh, 1);
+        }
+        all.sync();
+        if (s.refresh) {
+            for (int d = 0; d < 2 * pairs; ++d)
+                if (frames[d].cold)
+                    rebuild_patches(frames[d], mesh_at(views, d), patches[d], worker);
+            all.sync();
+        }
+#endif
 #ifdef NC_ASSEMBLY_PROFILE
         if (!worker)
             prepared = gpu_time();
@@ -106,8 +129,23 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
         for (int d = 0; d < 2 * pairs; ++d) {
             MeshView &m = mesh_at(views, d);
             const State &f = frames[d];
-            for (int k = worker / QUERY_LANES; k < f.probeCount; k += gridDim.x * blockDim.x / QUERY_LANES) {
-                int src = orders[d].indices[f.firstProbe + k];
+#ifdef NC_PATCHES
+            int size = f.nc;
+            const int *indices = patches[d].active;
+            if (!worker && s.step)
+                patches[d].visits += size;
+#else
+            int size = f.probeCount;
+            const int *indices = orders[d].indices + f.firstProbe;
+            if (!worker && s.step)
+                projectionVisits[d] += size;
+#endif
+#ifdef NC_ASSEMBLY_PROFILE
+            if (!worker)
+                profile[5 + d] += size;
+#endif
+            for (int k = worker / QUERY_LANES; k < size; k += gridDim.x * blockDim.x / QUERY_LANES) {
+                int src = indices[k];
 #ifdef NC_SEARCH_COUNTS
                 sample_contact<QUERY_LANES, true>(src, f.pose, VIEW(m), stages);
 #else

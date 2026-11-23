@@ -43,6 +43,8 @@ def load_inputs(args):
 
 def solve(args):
     start = perf_counter()
+    if args.broad_phase is None:
+        args.broad_phase = "projection" if args.prefix_contact is not None else "blocks"
     models, coord, bodies, mapping, pairs, stiffness, loads, h = load_inputs(args)
     if args.step_us is not None:
         new_step = args.step_us * 1e-6
@@ -104,6 +106,7 @@ def solve(args):
             np.int32(region_capacity),
         )
     assembly = (files / "resident_assembly.cuh").read_text()
+    patch_args = ()
     options = (
         "--std=c++17",
         f"-DQUERY_LANES={args.lanes}",
@@ -114,6 +117,18 @@ def solve(args):
         options += ("-DNC_ASSEMBLY_AUDIT",)
     if args.stiffness_scope == "pair":
         options += ("-DNC_PAIR_STIFFNESS",)
+    if args.broad_phase == "blocks":
+        from resident_blocks import block_index
+
+        guard = args.pitch / 4 if args.guard_mm is None else args.guard_mm
+        if not np.isfinite(guard) or guard < 0:
+            raise ValueError("Expected a finite, nonnegative candidate reuse margin in mm")
+        assembly = (files / "resident_blocks.cuh").read_text() + "\n" + assembly
+        options += ("-DNC_PATCHES",)
+        patch_args = (cp.empty((2 * m, 104), cp.uint8),)
+    elif args.guard_mm is not None:
+        raise ValueError("The reuse margin applies to the block broad phase")
+    broad_phase_data = patch_args[0] if patch_args else cp.zeros(2 * m, cp.uint64)
     profile_args = ()
     if args.profile_phases:
         options += ("-DNC_ASSEMBLY_PROFILE",)
@@ -167,10 +182,14 @@ def solve(args):
                 idx = cp.asarray(select)
                 model.samples = tuple(cp.ascontiguousarray(v[idx]) for v in model.samples)
                 model.n = int(select.sum())
-            order = projection_order(model)
             i = 2 * p + d
             module.get_function("bind_mesh")((1,), (1,), (*model.args(), views[i]))
-            module.get_function("bind_order")((1,), (1,), (orders[i], *order))
+            if patch_args:
+                order = block_index(model, guard)
+                module.get_function("bind_patches")((1,), (1,), (patch_args[0][i], *order))
+            else:
+                order = projection_order(model)
+                module.get_function("bind_order")((1,), (1,), (orders[i], *order))
             keep_alive.append((model, order))
             if d:
                 reverse = model
@@ -218,6 +237,7 @@ def solve(args):
                 np.int32(args.explicit_crossing),
                 output,
                 elapsed,
+                broad_phase_data,
                 *profile_args,
                 *search_args,
                 *audit_args,
@@ -253,6 +273,7 @@ def solve(args):
     report = dict(
         gpu=cp.cuda.runtime.getDeviceProperties(cp.cuda.Device().id)["name"].decode(),
         method=args.method,
+        broad_phase=args.broad_phase,
         include_vertices=args.include_vertices,
         stiffness_scope=args.stiffness_scope,
         physical_s=(steps - 1) * h,
@@ -287,6 +308,15 @@ def solve(args):
             trials_after_newton_update=counters[4],
             directional_probe_visits=counters[5:],
         )
+    if patch_args:
+        counts = cp.empty((2 * m, 2), cp.uint64)
+        module.get_function("patch_counts")(
+            ((2 * m + 127) // 128,), (128,), (frames, broad_phase_data, counts, np.int32(2 * m))
+        )
+        rebuilds, visits = counts.get().T
+        report.update(guard_mm=guard, directional_rebuilds=rebuilds.tolist(), directional_probe_visits=visits.tolist())
+    else:
+        report["directional_probe_visits"] = broad_phase_data.get().tolist()
     if search_args:
         totals = search_args[0].get().sum(axis=0).tolist()
         report["search_paths"] = dict(zip(search_stages, totals, strict=True))
@@ -369,6 +399,11 @@ if __name__ == "__main__":
         help="Change the integration step, preserving the deck's piecewise-linear loads",
     )
     p.add_argument("--pitch", type=float, default=0.8)
+    p.add_argument(
+        "--broad-phase", choices=("projection", "blocks"),
+        help="Use reusable blocks by default; archived contact-prefix replays default to projection",
+    )
+    p.add_argument("--guard-mm", type=float, help="Candidate reuse margin in mm (default: one quarter cell)")
     p.add_argument("--lanes", type=int, choices=(1, 2, 4, 8, 16, 32), default=4)
     p.add_argument(
         "--contact-samples",

@@ -127,9 +127,13 @@ __device__ void test_tri(P p, const P *tri, int j, Best &b) {
     if (sq < b.sq || (sq == b.sq && j < b.id))
         b = {sq, j};
 }
+template <int W> __device__ unsigned query_mask() {
+    return (0xffffffffu >> (32 - W)) << ((threadIdx.x & 31) / W * W);
+}
 template <int W> __device__ Best nearest_group(Best b) {
     if constexpr (W > 1) {
-        unsigned group = __activemask();
+        // All W lanes own the same probe, including lanes that found no triangle.
+        unsigned group = query_mask<W>();
         for (int k = W / 2; k; k /= 2) {
             double sq = __shfl_xor_sync(group, b.sq, k, W);
             int id = __shfl_xor_sync(group, b.id, k, W);
@@ -335,7 +339,7 @@ __device__ void sample_contact(int i, const double *pose, GEOM, unsigned long lo
         best = nearest_group<W>(best);
         if constexpr (W > 1) {
             neighbors[i * W + lane] = first.id == 0x7fffffff ? -1 : first.id;
-            unsigned group = __activemask();
+            unsigned group = query_mask<W>();
             for (int k = W / 2; k; k /= 2)
                 second = fmin(second, __shfl_xor_sync(group, second, k, W));
             if (!lane)

@@ -115,12 +115,41 @@ RTX 3090 上从相同初态复现同一段 3 s 载荷历程。每一列时间均
 
 前 0.125 s 的 STEP 运行访问 2,075,570,778 次采样点，其中 43,026,570 次进入最近三角形查询（2.073%），880 次进入不限范围的 BVH 遍历，922 次在投影一致性检查后触发 BVH 复查。纯网格进入最近三角形查询的比例为 2.080%。这些比例统计查询次数，各条路径的单次耗时可以不同。两次全程计时的 48,001 行 × 14 列响应以及两次路径计数的 2,001 行 × 14 列响应，均与各自原始运行对应区间逐位一致。
 
-同一输入目录可直接复测。阶段计时覆盖整个 3 s，单独的路径计数覆盖 0–0.125 s，包含制动力开始上升的过程。
+该投影粗筛的历史记录对应提交 `fe6f9c7`。在当前代码上复测时显式选择投影。阶段计时覆盖整个 3 s，单独的路径计数覆盖 0–0.125 s，包含制动力开始上升的过程。
 
 ```powershell
 foreach ($method in "cad","mesh") {
-    $common = @("--method",$method,"--step-us","62.5","--ticks","4096","--contact-samples","16","--explicit-crossing","--stiffness-scope","pair")
+    $common = @("--method",$method,"--broad-phase","projection","--step-us","62.5","--ticks","4096","--contact-samples","16","--explicit-crossing","--stiffness-scope","pair")
     python benchmarks/aes/resident_assembly.py $w "$w/phases-$method.json" --trace "$w/phases-$method.npy" --duration 3 --profile-phases @common
     python benchmarks/aes/resident_assembly.py $w "$w/paths-$method.json" --trace "$w/paths-$method.npy" --duration 0.125 --count-search-paths @common
 }
 ```
+
+## 分块粗筛与跨试算复用
+
+每个刚体对沿两个方向查询。源表面按空间顺序组织为 512 点的父块和 32 点的子块，目标八叉树覆盖表面及内部占用单元。构建候选表时给包围盒加上运动余量，最终保存原始采样点编号。复用条件按目标坐标逐轴检查。设锚定姿态为 $(R_0,t_0)$，源点到局部原点的最大距离为 $r$，则第 $i$ 个坐标的位移由 $|t_i-t_{0i}|+r\|(R-R_0)_{i,:}\|_2$ 界定。任何一个坐标用尽余量都会触发重建，包括 Newton 回退时。窄相位仍在当前试算姿态更新。减速器两条路线均取四分之一网格间距，即 0.2 mm。
+
+同一 RTX 3090、相同载荷、集中刚度、62.5 µs 主步和 HHT 设置，从初态逐一运行至 3 s。下列四次运行使用相同的四线程最近三角形归约。归约掩码包含负责同一采样点的全部线程，在候选点重排后仍能正确比较各线程找到的三角形。上节保存的 212.00 s 和 234.79 s 属于早期实现。
+
+| 几何 | 投影粗筛每主步访问 | 分块复用每主步访问 | 投影在线时间 | 分块在线时间 | 加速比 |
+|---|---:|---:|---:|---:|---:|
+| STEP (ours) | 1,051,558 | 321,179 | 166.72 s | 129.20 s | 1.29× |
+| 纯网格 | 985,970 | 301,023 | 157.45 s | 124.25 s | 1.27× |
+
+每种几何的两条路线在 48,001 个时刻的 14 个输出均逐位一致。1.25275 s 处 STEP 的中间轴转速为 94.313 rad/s，输出接触力矩为 143.98 N·m，加密 RecurDyn 分别为 94.579 rad/s 和 145.93 N·m。图中各条曲线使用各自的原始输出时刻，RecurDyn 输出接触力矩由转动惯量乘角加速度减去支承与外载力矩得到。[切换窗口曲线](block-switch.pdf) · [图中数据](block-switch.csv) · [完整计时和核对指标](block-results.json)
+
+在起动、制动力上升及齿面切换处各取实算姿态，每种几何共 27 个姿态，每个姿态复核两级啮合的正反方向。对照遍历全部源采样点，每点由一个 GPU 线程独立查询，共给出 36,194 次接触见证。分块筛选的候选遗漏数、接触标记差异数和最大深度差均为零。另用 CPU 解析盒体核对复用期间新进入实体以及深埋的采样点。RTX 3070 上，0.25 s 凸轮的在线时间由 0.403 s 降到 0.359 s，0.16 s 双球由 32.67 s 增到 50.64 s。两项回归的全部输出均相同。减速器整机仍超过实时期限。
+
+沿用上文的输入目录，在两种模式下各运行一次即可重做配对比较。
+
+```powershell
+foreach ($mode in "projection","blocks") {
+    foreach ($method in "cad","mesh") {
+        python benchmarks/aes/resident_assembly.py $w "$w/$mode-$method.json" --trace "$w/$mode-$method.npy" --broad-phase $mode --method $method --duration 3 --step-us 62.5 --ticks 4096 --contact-samples 16 --explicit-crossing --stiffness-scope pair
+    }
+}
+python benchmarks/aes/check_resident_blocks.py "$w/blocks-coverage.json"
+python benchmarks/aes/check_resident_blocks.py "$w/blocks-real-coverage.json" --reducer $w
+```
+
+`--guard-mm 0` 每次重建，`--guard-mm 0.8` 给出一格宽的余量。两个设置与默认 0.2 mm、投影粗筛在同一段 0–0.05 s STEP 历程上的耗时分别为 2.712、1.885、2.075 和 2.565 s。轨迹与历史输出一致。完整结果采用预先设定的默认余量。
