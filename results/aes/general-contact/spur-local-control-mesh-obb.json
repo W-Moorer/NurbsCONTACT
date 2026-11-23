@@ -1,0 +1,86 @@
+{
+  "duration_s": 0.00035,
+  "dt_s": 5e-05,
+  "steps": 7,
+  "active_frames": 3,
+  "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+  "trace_sha256": "6b8f68c113ec438edddc3981573162249b6ab4abc1a8c127a9ab2dc97589812d",
+  "normal_impulse_Ns": 0.5241551003509286,
+  "peak_normal_N": 5847.687562046858,
+  "subdivisions": 5,
+  "integration_s": 68.2533918,
+  "process_s": 70.53270450001583,
+  "observed_peak_working_set_bytes": 31367168,
+  "monitor_interval_s": 0.025,
+  "observed_peak_commit_bytes": 42631168,
+  "ccd_checks": 13,
+  "ccd_rejected": 1,
+  "ccd_unresolved": 0,
+  "ccd_nodes": 326811,
+  "cad_boolean_queries": 0,
+  "cad_event_distances": 0,
+  "chen_patch_queries": 0,
+  "chen_confirmed_candidates": 0,
+  "tdib_cells": 0,
+  "tdib_candidates": 0,
+  "tdib_unresolved": 0,
+  "cad_box_tests": 0,
+  "cad_extrema": 0,
+  "cad_classifications": 0,
+  "cad_region_cache_hits": 0,
+  "cad_distance_cache_hits": 0,
+  "event_tolerance_s": 2.5e-05,
+  "setup_s": 1.6410266,
+  "evaluations": 158,
+  "region_scope": "local",
+  "boolean_queries": 146,
+  "boolean_input_faces": 672184,
+  "local_solid_uses": 292,
+  "local_solid_builds": 2,
+  "detection_s": 0.0703142,
+  "placement_s": 0.4677028000000002,
+  "boolean_s": 8.547632100000001,
+  "stages": [
+    {
+      "stage": 1,
+      "active_frames": 3,
+      "peak_normal_N": 5847.687562046858,
+      "normal_impulse_Ns": 0.5241551003509286
+    }
+  ],
+  "simultaneously_loaded_frames": 3,
+  "shaft_speed_range_rad_s": [
+    [
+      178.20311404735793,
+      197.49169185052688
+    ],
+    [
+      91.51750662660318,
+      96.38826850558154
+    ]
+  ],
+  "meshes": [
+    {
+      "asset": "spur-1a.msh",
+      "file_bytes": 727501,
+      "triangles": 10216,
+      "step_sha256": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d",
+      "mesh_sha256": "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+      "max_normal_angle_deg": 5.417667657804644,
+      "max_sampled_surface_error_m": 4.812533171050068e-05,
+      "min_sicn": 0.01045735078250156
+    },
+    {
+      "asset": "spur-1b.msh",
+      "file_bytes": 729966,
+      "triangles": 10240,
+      "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d",
+      "mesh_sha256": "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+      "max_normal_angle_deg": 4.871479036615452,
+      "max_sampled_surface_error_m": 8.487492800076537e-05,
+      "min_sicn": 0.0005368108854989981
+    }
+  ],
+  "method": "mesh-obb",
+  "solver": "penalty"
+}

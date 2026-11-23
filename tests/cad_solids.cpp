@@ -1,8 +1,11 @@
 #include "nurbscontact/cad_solid_contact.hpp"
 #include "../src/cad_boundary_distance.hpp"
+#include "../src/cad_local_solid.hpp"
+#include "../src/cad_rigid_path.hpp"
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepExtrema_DistShapeShape.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
+#include <BRepBuilderAPI_NurbsConvert.hxx>
 #include <BRep_Builder.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <BRepPrimAPI_MakeCylinder.hxx>
@@ -118,6 +121,19 @@ void boundary_distances() {
     check({10,5,5},10,0);
     check({5,5,5},10,0);
     require(counts.cad_extrema && counts.cad_classifications,"missing feature or containment checks");
+    // Flat spline faces can span an entire opposing planar trim. Their trims
+    // must still recover the distance for parallel, tilted and crossing poses.
+    const auto plate=BRepBuilderAPI_NurbsConvert(BRepPrimAPI_MakeBox(20.,2.,1.).Shape()).Shape();
+    const auto plate_index=cad::boundary_index(plate);
+    for (double tilt:{0.,.013,-.25}) {
+        gp_Trsf pose;
+        pose.SetRotation(gp_Ax1({},gp_Dir(0,1,0)),tilt);
+        pose.SetTranslationPart(gp_Vec(-5.,4.,tilt<0. ? 7. : 11.));
+        BRepExtrema_DistShapeShape ref(plate.Moved(TopLoc_Location(pose)),box,1e-7);
+        require(ref.IsDone(),"plate reference failed");
+        close(cad::bounded_distance(*plate_index,*b,pose,5.,1e-7,counts),ref.Value(),2e-6,
+              "trimmed spline against planar face");
+    }
     for (double separation:{3.,2.,1.,0.}) {
         gp_Trsf pose;
         pose.SetRotation(gp_Ax1(gp_Pnt(),gp_Dir(1,2,3)),.7);
@@ -147,9 +163,54 @@ void boundary_distances() {
     const auto repeated=many->transition(origin,left,origin,origin,1e-8,.02);
     require(repeated.fraction==loaded.fraction && repeated.cad_distance_cache_hits>=2,"indexed distance cache");
 }
+
+void local_solids() {
+    using namespace cad;
+    const auto a=BRepPrimAPI_MakeBox(40.,20.,15.).Shape();
+    const auto b=BRepPrimAPI_MakeBox(4.,6.,3.).Shape();
+    LocalSolidSearch search(a,b);
+    ContactWork work;
+    for (double x:{39.,39.2,-2.,8.,50.}) {
+        gp_Trsf t;
+        t.SetTranslationPart(gp_Vec(x,3,4));
+        const auto pair=search.select(t.Inverted(),.1);
+        const auto placed=b.Moved(TopLoc_Location(t));
+        if (x==50.) { require(pair.separated,"envelopes failed to separate distant boxes"); continue; }
+        require(!pair.separated && !pair.a.shape.IsSame(a),"expected retained local CAD solid");
+        SurfaceTransition stats;
+        close(bounded_distance(*pair.a.boundary,*pair.b.boundary,t.Inverted(),.1,1e-7,stats),0,1e-8,
+              "cropped solids lost containment or crossing");
+        if (x==8.) continue; // complete containment has no unique force normal
+        const auto full=solid_regions(a,placed,work);
+        const auto cropped=solid_regions(pair.a.shape,pair.b.shape.Moved(TopLoc_Location(t)),work);
+        require(full.size()==1 && cropped.size()==1,"cropping changed the number of regions");
+        close(length(sub(full[0].point,cropped[0].point)),0,1e-10,"local force point");
+        close(length(sub(full[0].normal,cropped[0].normal)),0,1e-10,"local force direction");
+        close(full[0].depth_m,cropped[0].depth_m,1e-10,"local depth");
+    }
+    // Two different off-center solids undergoing the same finite rigid motion.
+    ContactPose p{},q{{.004,.005,.001},{1,2,3},.49};
+    RigidPath first(p,q,{}),second(p,q,{});
+    require(search.motion_bound(first,second,100.,100.)<1e-5,"common rigid motion failed to cancel");
+
+    RigidPath moving_a(p,ContactPose{{.001,0,0},{0,0,1},.08},{.025,.009,.005});
+    RigidPath moving_b(ContactPose{{.043,.003,.004}},ContactPose{{.039,.005,.004},{1,2,0},-.11},
+                       {.002,.003,.001});
+    const double speed=search.motion_bound(moving_a,moving_b,30.,30.);
+    double previous=0;
+    for (int i=0;i<=16;++i) {
+        const double t=i/16.;
+        BRepExtrema_DistShapeShape whole(a.Moved(TopLoc_Location(moving_a.at(t))),
+                                         b.Moved(TopLoc_Location(moving_b.at(t))),1e-7);
+        require(whole.IsDone(),"rotating box reference failed");
+        const double d=whole.Value();
+        if (i) require(16*std::abs(d-previous)<=speed+2e-6,"local motion bound below measured distance rate");
+        previous=d;
+    }
+}
 }
 int main(int argc,char** argv) {
-    try { if (argc==1) boundary_distances();
+    try { if (argc==1) { boundary_distances(); local_solids(); }
           check(argc==1 ? CadEventMethod::conservative_advancement :
                 std::string_view(argv[1])=="--chen-2026" ? CadEventMethod::chen_2026 : CadEventMethod::chen_2024); }
     catch (const Standard_Failure& e) { std::cerr<<e.GetMessageString()<<'\n'; return 1; }

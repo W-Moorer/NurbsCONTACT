@@ -10,9 +10,12 @@
 |---|---:|---:|---:|---:|---:|---:|
 | 双球碰撞，1,808 片 | 160 ms | 250 / 50 µs | 3.36 | 61.07 | 51.33 | 43.59 |
 | 偏心凸轮首次接触与脱开，1,426 片 | 120 ms | 1,000 / 200 µs | 2.68 | 8.29 | 28.75 | 8.51 |
-| 直齿轮副首次加载段，20,456 片 | 0.35 ms | 50 / 25 µs | 40.49 | 超时 | 超时 | 超时 |
+| 直齿轮副首次加载段，20,456 片，原全实体搜索 | 0.35 ms | 50 / 25 µs | 40.49 | 超时 | 超时 | 超时 |
+| 同一直齿轮副，局部 STEP 复测 | 0.35 ms | 50 / 25 µs | 68.25 | 714.16 | 718.97 | 726.36 |
 
-齿轮三条 STEP 路线均在 1,800 s 截止。首个 50 µs 无载步有独立计时。网格用 15.68 s、STEP 距离推进用 395.49 s，两条输出相同。STEP 用 19 次距离查询、9,314 次顶点／边／面距离计算来检查这个步内是否出现接触。[双球各方法记录](../general-contact/surface-methods-impact.json) · [凸轮各方法的模型与结果](../../../benchmarks/chen/README.md#rigid-step-scenes) · [齿轮首步记录](../general-contact/spur-separated-first-step.json) · [七步对照与截止记录](../../../benchmarks/chen/README.md#gear-distance-and-event-costs)
+齿轮优化前三条 STEP 路线都在 1,800 s 截止。优化后仅对可接触的局部 STEP 实体计算距离和受力，并根据该区域的相对运动约束步内搜索。三条都完成了七步，输出文件逐字节相同。局部 STEP 一行的各进程在同一工作站上重叠运行。配对复测首个 50 µs 无载步，全实体和局部 STEP 在线分别用时 394.54 和 65.22 s，距离查询从 19 次降至 7 次，几何特征求极值从 9,314 次降至 2,487 次。[首步配对记录](../general-contact/spur-local-first-step.json) · [七步对照与截止记录](../../../benchmarks/chen/README.md#gear-distance-and-event-costs) · [双球各方法记录](../general-contact/surface-methods-impact.json) · [凸轮对照](../../../benchmarks/chen/README.md#rigid-step-scenes)
+
+在同一工作站先后单独运行网格和局部 STEP 距离推进，在线耗时分别为 36.14 和 388.21 s，后者约为前者的 10.74 倍。两者分别复现了上表对应的响应文件。首次加载段的 8 帧输出中有 3 帧承载。三个 STEP 方法的采样峰值为 5.377 kN，网格为 5.848 kN。用完整 STEP 实体在相同姿态重算，8 个输出姿态及首次加载附近 3 个插值姿态的接触区数、受力点、法向和深度均与局部实体相同。完整啮合周期的齿轮精度仍需独立参考解。[顺序运行网格](../general-contact/spur-serial-mesh-obb.json) · [顺序运行 STEP](../general-contact/spur-serial-cad-occt.json) · [全实体逐姿态核对](../general-contact/spur-local-regions.json) · [接触力和轴转速曲线](../general-contact/spur-local-response.png)
 
 ## 接触、脱开和位移误差
 

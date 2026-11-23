@@ -1,5 +1,6 @@
 #include "cad_rigid_path.hpp"
 #include "cad_boundary_distance.hpp"
+#include "cad_local_solid.hpp"
 #include <mutex>
 #include <deque>
 #include <BRepAdaptor_Curve.hxx>
@@ -105,6 +106,60 @@ TopTools_IndexedMapOfShape source_faces(const TopoDS_Shape& shape,BRepAlgoAPI_Co
     return faces;
 }
 
+}
+namespace cad {
+std::vector<dynamics::ContactRegion> solid_regions(const TopoDS_Shape& first,const TopoDS_Shape& second,
+                                                  dynamics::ContactWork& work) try {
+    ++work.cad_boolean_queries;
+    BRepAlgoAPI_Common op;
+    TopTools_ListOfShape args,tools;
+    args.Append(first); tools.Append(second);
+    op.SetArguments(args);
+    op.SetTools(tools);
+    op.SetNonDestructive(true);
+    op.Build();
+    if (!op.IsDone() || op.HasErrors() || op.HasWarnings())
+        throw UnresolvedContact("CAD solid intersection failed or reported incomplete geometry");
+    TopExp_Explorer solids(op.Shape(),TopAbs_SOLID);
+    if (!solids.More()) return {};
+    const auto one=source_faces(first,op),two=source_faces(second,op);
+    std::vector<ContactRegion> regions;
+    for (;solids.More();solids.Next()) {
+        const auto& solid=solids.Current();
+        GProp_GProps props;
+        BRepGProp::VolumeProperties(solid,props,1e-8,true);
+        if (!(props.Mass()>0)) throw UnresolvedContact("invalid CAD intersection volume");
+        const auto origin=props.CentreOfMass();
+        Vec direction{};
+        double total=0;
+        bool source_a=false,source_b=false;
+        for (TopExp_Explorer it(solid,TopAbs_FACE);it.More();it.Next()) {
+            const auto face=TopoDS::Face(it.Current());
+            const bool on_a=one.Contains(face),on_b=two.Contains(face);
+            if (!on_a && !on_b) throw UnresolvedContact("CAD intersection face has no source");
+            if (on_a==on_b) continue;
+            source_a|=on_a; source_b|=on_b;
+            const Vec area=vector_area(face,origin);
+            direction=add(direction,scale(area,on_a ? 1. : -1.));
+            total+=length(area);
+        }
+        const auto magnitude=length(direction);
+        if (!source_a || !source_b || !(magnitude>1e-10*total))
+            throw UnresolvedContact("CAD overlap has no resolved separation normal");
+        const auto n=scale(direction,1/magnitude);
+        gp_Trsf frame;
+        frame.SetTransformation(gp_Ax3(origin,gp_Dir(n[0],n[1],n[2])));
+        const auto extent=bounds(solid.Moved(TopLoc_Location(frame)),true);
+        regions.push_back({scale(coordinates(origin),.001),n,
+                           .001*(extent.CornerMax().Z()-extent.CornerMin().Z())});
+    }
+    return regions;
+} catch (const Standard_Failure& e) {
+    throw dynamics::UnresolvedContact(std::string("CAD intersection failed: ")+e.GetMessageString());
+}
+}
+
+namespace {
 class CadSolidPair final : public PairRegionQuery {
 public:
     CadSolidPair(const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,CadEventMethod method)
@@ -129,7 +184,18 @@ public:
                 return entry.regions;
             }
         }
-        auto answer=overlap(ta,tb,work);
+        initialize_search();
+        LocalSolidPair pair{{a_.shape,{}},{b_.shape,{}},false};
+        if (local_) pair=local_->select(tb.Inverted()*ta,100*Precision::Confusion());
+        std::vector<ContactRegion> answer;
+        if (!pair.separated) {
+            try {
+                answer=solid_regions(pair.a.shape.Moved(TopLoc_Location(ta)),pair.b.shape.Moved(TopLoc_Location(tb)),work);
+            } catch (const UnresolvedContact&) {
+                if (pair.a.shape.IsSame(a_.shape) && pair.b.shape.IsSame(b_.shape)) throw;
+                answer=solid_regions(a_.shape.Moved(TopLoc_Location(ta)),b_.shape.Moved(TopLoc_Location(tb)),work);
+            }
+        }
         {
             std::lock_guard lock(cache_mutex_);
             if (regions_.size()==8) regions_.pop_back();
@@ -138,53 +204,6 @@ public:
         return answer;
     } catch (const Standard_Failure& e) {
         throw UnresolvedContact(std::string("CAD overlap failed: ")+e.GetMessageString());
-    }
-    std::vector<ContactRegion> overlap(const gp_Trsf& ta,const gp_Trsf& tb,ContactWork& work) const {
-        const auto first=a_.shape.Moved(TopLoc_Location(ta)),second=b_.shape.Moved(TopLoc_Location(tb));
-        ++work.cad_boolean_queries;
-        BRepAlgoAPI_Common op;
-        TopTools_ListOfShape args,tools;
-        args.Append(first); tools.Append(second);
-        op.SetArguments(args);
-        op.SetTools(tools);
-        op.SetNonDestructive(true);
-        op.Build();
-        if (!op.IsDone() || op.HasErrors() || op.HasWarnings())
-            throw UnresolvedContact("CAD solid intersection failed or reported incomplete geometry");
-        TopExp_Explorer solids(op.Shape(),TopAbs_SOLID);
-        if (!solids.More()) return {};
-        const auto one=source_faces(first,op),two=source_faces(second,op);
-        std::vector<ContactRegion> regions;
-        for (;solids.More();solids.Next()) {
-            const auto& solid=solids.Current();
-            GProp_GProps props;
-            BRepGProp::VolumeProperties(solid,props,1e-8,true);
-            if (!(props.Mass()>0)) throw UnresolvedContact("invalid CAD intersection volume");
-            const auto origin=props.CentreOfMass();
-            Vec direction{};
-            double total=0;
-            bool source_a=false,source_b=false;
-            for (TopExp_Explorer it(solid,TopAbs_FACE);it.More();it.Next()) {
-                const auto face=TopoDS::Face(it.Current());
-                const bool on_a=one.Contains(face),on_b=two.Contains(face);
-                if (!on_a && !on_b) throw UnresolvedContact("CAD intersection face has no source");
-                if (on_a==on_b) continue;
-                source_a|=on_a; source_b|=on_b;
-                const Vec area=vector_area(face,origin);
-                direction=add(direction,scale(area,on_a ? 1. : -1.));
-                total+=length(area);
-            }
-            const auto magnitude=length(direction);
-            if (!source_a || !source_b || !(magnitude>1e-10*total))
-                throw UnresolvedContact("CAD overlap has no resolved separation normal");
-            const auto n=scale(direction,1/magnitude);
-            gp_Trsf frame;
-            frame.SetTransformation(gp_Ax3(origin,gp_Dir(n[0],n[1],n[2])));
-            const auto extent=bounds(solid.Moved(TopLoc_Location(frame)),true);
-            regions.push_back({scale(coordinates(origin),.001),n,
-                               .001*(extent.CornerMax().Z()-extent.CornerMin().Z())});
-        }
-        return regions;
     }
     SurfaceTransition transition(ContactPose a0,ContactPose b0,ContactPose a1,ContactPose b1,
                                  double tolerance_m) const override {
@@ -197,26 +216,14 @@ public:
         const double tol=std::max(1000*tolerance_m,2.*Precision::Confusion());
         RigidPath a(a0,a1,centers_[0]),b(b0,b1,centers_[1]);
         if (a_.swept(a).Distance(b_.swept(b))>tol) return result;
-        const double speed=(gp_Vec(a.from,a.to)-gp_Vec(b.from,b.to)).Magnitude()+
+        const double global_speed=(gp_Vec(a.from,a.to)-gp_Vec(b.from,b.to)).Magnitude()+
                            std::abs(a.angle)*a_.radius+std::abs(b.angle)*b_.radius;
-        std::call_once(index_once_,[&] {
-            // Simple boundaries already have cheap whole-solid queries.
-            // Count topology, independently of the mechanism or surface type.
-            TopTools_IndexedMapOfShape fa,fb;
-            TopExp::MapShapes(a_.shape,TopAbs_FACE,fa);
-            TopExp::MapShapes(b_.shape,TopAbs_FACE,fb);
-            if (fa.Extent()+fb.Extent()<=16) return;
-            try {
-                auto first=boundary_index(a_.shape),second=boundary_index(b_.shape);
-                boundaries_={std::move(first),std::move(second)};
-            } catch (const UnresolvedContact&) {
-                // Unsupported shell topology still uses the whole-solid kernel.
-            }
-        });
-        if (!boundaries_[0]) fraction_tolerance=0.;
+        initialize_search();
+        const double speed=local_ ? local_->motion_bound(a,b,global_speed,global_speed+2*tol) : global_speed;
+        if (!boundaries_[0] && !local_) fraction_tolerance=0.;
         const auto distance=[&](const gp_Trsf& a,const gp_Trsf& b) {
             ++result.nodes;
-            if (boundaries_[0]) {
+            if (boundaries_[0] || local_) {
                 const auto transform=b.Inverted()*a;
                 const auto pose=key(transform);
                 const double cap=speed+2*tol;
@@ -229,7 +236,12 @@ public:
                         }
                 }
                 ++result.cad_distances;
-                const double value=bounded_distance(*boundaries_[0],*boundaries_[1],transform,cap,tol,result);
+                double value;
+                if (local_) {
+                    const auto parts=local_->select(transform,cap);
+                    value=parts.separated ? cap : bounded_distance(*parts.a.boundary,*parts.b.boundary,
+                                                                   transform,cap,tol,result);
+                } else value=bounded_distance(*boundaries_[0],*boundaries_[1],transform,cap,tol,result);
                 std::lock_guard lock(cache_mutex_);
                 if (distances_.size()==32) distances_.pop_back();
                 distances_.push_front({pose,cap,tol,value});
@@ -315,6 +327,33 @@ public:
         throw UnresolvedContact(std::string("CAD sweep failed: ")+e.GetMessageString());
     }
 private:
+    void initialize_search() const {
+        std::call_once(index_once_,[&] {
+            TopTools_IndexedMapOfShape fa,fb;
+            TopExp::MapShapes(a_.shape,TopAbs_FACE,fa);
+            TopExp::MapShapes(b_.shape,TopAbs_FACE,fb);
+            const int faces=fa.Extent()+fb.Extent();
+            if (faces<=16) return;
+            if (faces>=64) {
+                try {
+                    local_=std::make_unique<LocalSolidSearch>(a_.shape,b_.shape);
+                    return;
+                } catch (const UnresolvedContact&) {
+                    // Try the whole-body boundary index if local envelopes are unavailable.
+                } catch (const Standard_Failure&) {
+                    // OCCT can reject optional envelope geometry.
+                }
+            }
+            try {
+                auto first=boundary_index(a_.shape),second=boundary_index(b_.shape);
+                boundaries_={std::move(first),std::move(second)};
+            } catch (const UnresolvedContact&) {
+                // Unsupported topology still uses the whole-solid kernel.
+            } catch (const Standard_Failure&) {
+                // Use the same whole-solid kernel if index construction fails inside OCCT.
+            }
+        });
+    }
     struct RegionEntry { std::array<TransformKey,2> poses; std::vector<ContactRegion> regions; };
     struct DistanceEntry { TransformKey pose; double cap,tol,distance; };
     Solid a_,b_;
@@ -322,6 +361,7 @@ private:
     mutable std::deque<RegionEntry> regions_;
     mutable std::deque<DistanceEntry> distances_;
     mutable std::once_flag index_once_;
+    mutable std::unique_ptr<LocalSolidSearch> local_;
     mutable std::array<std::shared_ptr<const BoundaryIndex>,2> boundaries_;
     std::array<Vec,2> centers_;
     CandidateQuery candidate_;

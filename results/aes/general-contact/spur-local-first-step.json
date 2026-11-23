@@ -1,0 +1,40 @@
+{
+  "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+  "dt_s": 5e-05,
+  "event_tol_s": 2.5e-05,
+  "runs": [
+    {
+      "version": "full_indexed",
+      "process_s": 400.2008999999962,
+      "observed_peak_working_set_bytes": 137519104,
+      "monitor_interval_s": 0.025,
+      "observed_peak_commit_bytes": 147976192,
+      "trace_sha256": "31f511ce88994df9ba9114a06dbb9a374278312739ed160aaef29806cdf30145",
+      "wall_s": 394.5375671,
+      "setup_s": 4.4598966,
+      "cad_boolean_queries": 3,
+      "cad_event_distances": 19,
+      "cad_extrema": 9314,
+      "ccd_checks": 1,
+      "executable_sha256": "2c39a7a4f1530c8336532d49913b16bb8f064c06c42bbc890907b5483a64e2d5"
+    },
+    {
+      "version": "localized_step",
+      "process_s": 77.35129689995665,
+      "observed_peak_working_set_bytes": 117088256,
+      "monitor_interval_s": 0.025,
+      "observed_peak_commit_bytes": 127729664,
+      "trace_sha256": "31f511ce88994df9ba9114a06dbb9a374278312739ed160aaef29806cdf30145",
+      "wall_s": 65.2225043,
+      "setup_s": 11.1118369,
+      "cad_boolean_queries": 3,
+      "cad_event_distances": 7,
+      "cad_extrema": 2487,
+      "ccd_checks": 1,
+      "executable_sha256": "1d086d39236ec3bc10d26099f33793815de3012a2dcb16e652f38e488baa5e8b"
+    }
+  ],
+  "method": "cad-occt",
+  "solver": "penalty",
+  "measurement": "One separated main step, measured sequentially on the shared Ryzen 9 5900X while other benchmarks were running. wall_s is the online integration time. process_s includes startup and setup."
+}

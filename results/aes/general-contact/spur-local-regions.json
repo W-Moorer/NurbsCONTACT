@@ -1,0 +1,132 @@
+{
+  "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+  "trace_sha256": "b84bf55d5019952ab14422f1077ce75385209da0ddc4e2807d430fbbcf11cda7",
+  "step_sha256": {
+    "spur-1a.step": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d",
+    "spur-1b.step": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d"
+  },
+  "stiffness_N_m": 160000000.0,
+  "poses": [
+    {
+      "time_s": 0.0,
+      "pose_source": "output",
+      "regions": 0,
+      "full_force_N": 0.0,
+      "local_force_N": 0.0,
+      "trace_force_N": 0.0,
+      "max_point_delta_m": 0.0,
+      "max_normal_vector_delta": 0.0,
+      "max_depth_delta_m": 0.0
+    },
+    {
+      "time_s": 5e-05,
+      "pose_source": "output",
+      "regions": 0,
+      "full_force_N": 0.0,
+      "local_force_N": 0.0,
+      "trace_force_N": 0.0,
+      "max_point_delta_m": 0.0,
+      "max_normal_vector_delta": 0.0,
+      "max_depth_delta_m": 0.0
+    },
+    {
+      "time_s": 0.0001,
+      "pose_source": "output",
+      "regions": 0,
+      "full_force_N": 0.0,
+      "local_force_N": 0.0,
+      "trace_force_N": 0.0,
+      "max_point_delta_m": 0.0,
+      "max_normal_vector_delta": 0.0,
+      "max_depth_delta_m": 0.0
+    },
+    {
+      "time_s": 0.00015000000000000001,
+      "pose_source": "output",
+      "regions": 0,
+      "full_force_N": 0.0,
+      "local_force_N": 0.0,
+      "trace_force_N": 0.0,
+      "max_point_delta_m": 0.0,
+      "max_normal_vector_delta": 0.0,
+      "max_depth_delta_m": 0.0
+    },
+    {
+      "time_s": 0.0002,
+      "pose_source": "output",
+      "regions": 0,
+      "full_force_N": 0.0,
+      "local_force_N": 0.0,
+      "trace_force_N": 0.0,
+      "max_point_delta_m": 0.0,
+      "max_normal_vector_delta": 0.0,
+      "max_depth_delta_m": 0.0
+    },
+    {
+      "time_s": 0.00021250000000000002,
+      "pose_source": "linear_interpolation",
+      "regions": 0,
+      "full_force_N": 0.0,
+      "local_force_N": 0.0,
+      "trace_force_N": null,
+      "max_point_delta_m": 0.0,
+      "max_normal_vector_delta": 0.0,
+      "max_depth_delta_m": 0.0
+    },
+    {
+      "time_s": 0.000225,
+      "pose_source": "linear_interpolation",
+      "regions": 2,
+      "full_force_N": 984.0466161160659,
+      "local_force_N": 984.0466161160659,
+      "trace_force_N": null,
+      "max_point_delta_m": 0.0,
+      "max_normal_vector_delta": 0.0,
+      "max_depth_delta_m": 0.0
+    },
+    {
+      "time_s": 0.0002375,
+      "pose_source": "linear_interpolation",
+      "regions": 2,
+      "full_force_N": 2713.0577226796127,
+      "local_force_N": 2713.0577226796127,
+      "trace_force_N": null,
+      "max_point_delta_m": 0.0,
+      "max_normal_vector_delta": 0.0,
+      "max_depth_delta_m": 0.0
+    },
+    {
+      "time_s": 0.00025,
+      "pose_source": "output",
+      "regions": 2,
+      "full_force_N": 4413.102267753109,
+      "local_force_N": 4413.102267753109,
+      "trace_force_N": 4413.102267753109,
+      "max_point_delta_m": 0.0,
+      "max_normal_vector_delta": 0.0,
+      "max_depth_delta_m": 0.0
+    },
+    {
+      "time_s": 0.00030000000000000003,
+      "pose_source": "output",
+      "regions": 2,
+      "full_force_N": 5377.07093382959,
+      "local_force_N": 5377.07093382959,
+      "trace_force_N": 5377.070933829591,
+      "max_point_delta_m": 0.0,
+      "max_normal_vector_delta": 0.0,
+      "max_depth_delta_m": 0.0
+    },
+    {
+      "time_s": 0.00035000000000000005,
+      "pose_source": "output",
+      "regions": 2,
+      "full_force_N": 1263.4307968960084,
+      "local_force_N": 1263.4307968960084,
+      "trace_force_N": 1263.4307968960084,
+      "max_point_delta_m": 0.0,
+      "max_normal_vector_delta": 0.0,
+      "max_depth_delta_m": 0.0
+    }
+  ]
+}

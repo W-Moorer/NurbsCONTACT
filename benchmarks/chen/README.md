@@ -73,11 +73,30 @@ At the initial gear pose the indexed query and independent OCCT shell query meas
 
 The [first, separated 50 µs step](../../results/aes/general-contact/spur-separated-first-step.json) took 395.49 s with indexed CAD conservative advancement and 15.68 s with the 20,456-triangle OBB control. Both produced identical traces. HHT evaluated the force twice. A single CAD step-acceptance check made 19 distance queries that visited 132,488 box pairs and called the feature extrema kernel 9,314 times. The run also performed three solid Booleans. These counts distinguish the cost of repeatedly verifying separation along a rotating trajectory from the cost of building the index.
 
-With the boundary index enabled, all three STEP methods still reached the 1,800 s cutoff on the seven-step gear run. The [plain kernel](../../results/aes/general-contact/spur-indexed-cad-occt.json), [2024 proposals](../../results/aes/general-contact/spur-indexed-chen-2024.json) and [2026 proposals](../../results/aes/general-contact/spur-indexed-chen-2026.json) have no completed seven-step timing or response. The previously recorded mesh run completed the same interval. The CAD comparison therefore fails the industrial runtime criterion on this gear pair.
+With only the full-body boundary index, all three STEP methods reached the 1,800 s cutoff on the seven-step gear run. The [plain kernel](../../results/aes/general-contact/spur-indexed-cad-occt.json), [2024 proposals](../../results/aes/general-contact/spur-indexed-chen-2024.json) and [2026 proposals](../../results/aes/general-contact/spur-indexed-chen-2026.json) have no completed baseline trace on this interval.
+
+Localizing the two STEP solids and bounding the relative normal speed over the reachable region brought all seven steps within that cutoff. At each pose the force query retains a padded piece of each original solid and reuses it while its window covers the possible overlap. The event query includes every point that can approach within its distance cap. The first separated step still produced the same two output rows. Original-surface distance calls fell from 19 to 7 and feature extrema from 9,314 to 2,487. Online time fell from 394.54 to 65.22 s in the paired first-step run. [First-step timing and counts](../../results/aes/general-contact/spur-local-first-step.json) · [Full shell distance controls](../../results/aes/general-contact/spur-local-distances.json)
+
+The four runs below used the same 0.35 ms scene, 50 µs main step, 25 µs event tolerance and linear penalty law on the shared Ryzen 9 5900X. Runs overlapped in wall time. The peak is the largest of eight saved loads, including the initial frame. Impulse is the trapezoidal integral on this grid.
+
+| Geometry and event method | Online (s) | Process (s) | Peak working set (MiB) | Peak (N) | Impulse (N·s) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| [Gmsh mesh, OBB](../../results/aes/general-contact/spur-local-control-mesh-obb.json) | 68.25 | 70.53 | 29.9 | 5,847.69 | 0.524155 |
+| [Local STEP + conservative advancement (ours)](../../results/aes/general-contact/spur-local-cad-occt.json) | 714.16 | 716.75 | 139.3 | 5,377.07 | 0.521094 |
+| [Local STEP + Chen 2024 proposals](../../results/aes/general-contact/spur-local-chen-2024.json) | 718.97 | 722.93 | 146.8 | 5,377.07 | 0.521094 |
+| [Local STEP + Chen 2026 variant](../../results/aes/general-contact/spur-local-chen-2026.json) | 726.36 | 730.15 | 156.4 | 5,377.07 | 0.521094 |
+
+Running the mesh and plain local STEP jobs one after the other on the same workstation took 36.14 and 388.21 s online, respectively (37.54 and 390.87 s end to end). Both reproduced their corresponding concurrent-run response files byte for byte. Local STEP used 10.74 times the online time of the compact mesh over this first loading episode. [Sequential mesh run](../../results/aes/general-contact/spur-serial-mesh-obb.json) · [Sequential STEP run](../../results/aes/general-contact/spur-serial-cad-occt.json)
+
+The three STEP traces were byte-identical. Both patch methods made 16 patch queries with zero confirmed proposals. Each STEP run made 143 CAD distances, 45,382 feature extrema and 58 solid Booleans. All four methods first carried load at the 0.25 ms saved frame. Full-solid replay at the eight saved STEP poses and three extra poses linearly interpolated through first loading gave identical region counts, centroids, normals and depths to local-solid replay. At 0.2125 ms the interpolated solids were separated and at 0.2250 ms two regions carried load. These intermediate poses sample the interpolated motion between saved frames. This same-pose comparison checks the geometry change. An independent dynamic reference is still needed to assess the gear's physical peak load. [Full-solid replay](../../results/aes/general-contact/spur-local-regions.json) · [STEP response](../../results/aes/general-contact/spur-local-cad-response.csv) · [Mesh response](../../results/aes/general-contact/spur-local-mesh-response.csv) · [Load and shaft speeds](../../results/aes/general-contact/spur-local-response.png)
 
 ~~~powershell
 cmake --build build/cpu-swept --config Release --target nc_cad_distance_benchmark
 python benchmarks/chen/gear_distance.py build/cpu-swept/Release/nc_cad_distance_benchmark.exe build/chen-scene/gear-distances.json
+python benchmarks/chen/gear_distance.py build/cpu-swept/Release/nc_cad_distance_benchmark.exe build/chen-scene/local-distances.json --local
+python benchmarks/aes/cpu_mesh_gear_dynamics.py build/cpu-swept/Release/nc_contact.exe build/cpu-contact/spur-edge-compact/spur.scene build/chen-scene/spur build/chen-scene/spur.json --method cad-occt --dt .00005 --duration .00035 --event-tol-s .000025
+python benchmarks/chen/gear_region_audit.py build/cpu-swept/Release/nc_cad_distance_benchmark.exe build/cpu-contact/spur-edge-compact/spur.scene results/aes/general-contact/spur-local-cad-response.csv build/chen-scene/local-regions.json
+python benchmarks/chen/plot_spur_loading.py
 ~~~
 
 ## 2026 labeled triangular-patch queries

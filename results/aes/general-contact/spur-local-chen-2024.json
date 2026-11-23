@@ -1,0 +1,66 @@
+{
+  "duration_s": 0.00035,
+  "dt_s": 5e-05,
+  "steps": 7,
+  "active_frames": 3,
+  "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+  "trace_sha256": "b84bf55d5019952ab14422f1077ce75385209da0ddc4e2807d430fbbcf11cda7",
+  "normal_impulse_Ns": 0.5210944300015354,
+  "peak_normal_N": 5377.070933829591,
+  "subdivisions": 3,
+  "integration_s": 718.9669586,
+  "process_s": 722.9302463000058,
+  "observed_peak_working_set_bytes": 153915392,
+  "monitor_interval_s": 0.025,
+  "observed_peak_commit_bytes": 172875776,
+  "ccd_checks": 13,
+  "ccd_rejected": 3,
+  "ccd_unresolved": 0,
+  "ccd_nodes": 153,
+  "cad_boolean_queries": 58,
+  "cad_event_distances": 143,
+  "chen_patch_queries": 16,
+  "chen_confirmed_candidates": 0,
+  "tdib_cells": 0,
+  "tdib_candidates": 0,
+  "tdib_unresolved": 0,
+  "cad_box_tests": 908530,
+  "cad_extrema": 45382,
+  "cad_classifications": 0,
+  "cad_region_cache_hits": 0,
+  "cad_distance_cache_hits": 10,
+  "event_tolerance_s": 2.5e-05,
+  "setup_s": 3.4429145,
+  "evaluations": 57,
+  "stages": [
+    {
+      "stage": 1,
+      "active_frames": 3,
+      "peak_normal_N": 5377.070933829591,
+      "normal_impulse_Ns": 0.5210944300015354
+    }
+  ],
+  "simultaneously_loaded_frames": 3,
+  "shaft_speed_range_rad_s": [
+    [
+      179.02811276341987,
+      197.49169185052688
+    ],
+    [
+      91.51750662660318,
+      96.14906316806383
+    ]
+  ],
+  "step_assets": [
+    {
+      "asset": "spur-1a.step",
+      "step_sha256": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d"
+    },
+    {
+      "asset": "spur-1b.step",
+      "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d"
+    }
+  ],
+  "method": "chen-2024",
+  "solver": "penalty"
+}
