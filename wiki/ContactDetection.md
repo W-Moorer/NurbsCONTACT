@@ -50,4 +50,13 @@ For a pair with constant orientations, exact rational separating-axis projection
 
 ## Last verified against
 
-`tests/test_contact_mesh.py` checks sphere size and volume in the written file, convergence of the sampled surface error, topology failures and preservation of previous outputs after a quality rejection.
+`tests/test_contact_mesh.py` checks sphere size and volume in the written file, convergence of the sampled surface error, narrow-face refinement, topology failures and preservation of previous outputs after a quality rejection. The native tests check the discrete search against exhaustive triangle pairs and cover coplanar intersections, full containment, translation through a solid, rotating contact with clear endpoints and a separated rotating path.
+
+The [two-sphere replay](../benchmarks/aes/cpu_mesh_spheres.py) uses all 641 poses of the legacy 250 µs HHT trace and its 41 mm radius contact surfaces. It checks every discrete intersection witness across all three search methods, then sweeps the entry interval forward and the exit interval backward. On the same interpolated motion, smooth spheres enter at 40.000 ms and separate at 71.418 ms.
+
+| Gmsh target size | Triangles per sphere | Mesh entry | Mesh separation |
+| --- | ---: | ---: | ---: |
+| [3 mm](../results/aes/cpu-mesh/spheres-3mm.json) | 5,708 | 40.129 ms | 71.289 ms |
+| [1.5 mm](../results/aes/cpu-mesh/spheres-1p5mm.json) | 22,482 | 40.040 ms | 71.378 ms |
+
+These comparisons measure event timing on prescribed poses. They do not measure the force response of a mesh-driven simulation.
