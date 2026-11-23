@@ -73,6 +73,8 @@ At the initial gear pose the indexed query and independent OCCT shell query meas
 
 The [first, separated 50 µs step](../../results/aes/general-contact/spur-separated-first-step.json) took 395.49 s with indexed CAD conservative advancement and 15.68 s with the 20,456-triangle OBB control. Both produced identical traces. HHT evaluated the force twice. A single CAD step-acceptance check made 19 distance queries that visited 132,488 box pairs and called the feature extrema kernel 9,314 times. The run also performed three solid Booleans. These counts distinguish the cost of repeatedly verifying separation along a rotating trajectory from the cost of building the index.
 
+With the boundary index enabled, all three STEP methods still reached the 1,800 s cutoff on the seven-step gear run. The [plain kernel](../../results/aes/general-contact/spur-indexed-cad-occt.json), [2024 proposals](../../results/aes/general-contact/spur-indexed-chen-2024.json) and [2026 proposals](../../results/aes/general-contact/spur-indexed-chen-2026.json) have no completed seven-step timing or response. The previously recorded mesh run completed the same interval. The CAD comparison therefore fails the industrial runtime criterion on this gear pair.
+
 ~~~powershell
 cmake --build build/cpu-swept --config Release --target nc_cad_distance_benchmark
 python benchmarks/chen/gear_distance.py build/cpu-swept/Release/nc_cad_distance_benchmark.exe build/chen-scene/gear-distances.json
