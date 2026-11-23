@@ -16,6 +16,7 @@ import gmsh
 import igl
 import igl.copyleft.cgal as cgal
 import numpy as np
+from cad_audit_projection import projectors
 
 
 def sha256(path):
@@ -41,7 +42,7 @@ def check_topology(vertices, faces):
         raise ValueError(f"self-intersecting triangles {intersections[0].tolist()}")
 
 
-def surface_error(tag, triangles):
+def surface_error(tag, triangles, mapping):
     edges = np.roll(triangles, -1, axis=1) - triangles
     area_vectors = np.cross(edges[:, 0], -edges[:, 2])
     lengths = np.linalg.norm(area_vectors, axis=1)
@@ -52,12 +53,21 @@ def surface_error(tag, triangles):
     cosines = (-unit_edges * np.roll(unit_edges, 1, axis=1)).sum(axis=2)
     min_angle = np.degrees(np.arccos(np.clip(cosines.max(), -1, 1)))
     # Probe the face interior and all three edge midpoints, including CAD feature edges.
-    samples = np.stack([triangles.mean(axis=1), *(triangles[:, i] + edges[:, i] / 2
-                                                  for i in range(3))], axis=1)
+    midpoints = (triangles + np.roll(triangles,-1,axis=1)) * .5
+    samples = np.concatenate([triangles.mean(axis=1)[:,None,:], midpoints], axis=1)
     max_error, max_angle = 0., 0.
+    unique_count, legacy_count = 0, 0
     for start in range(0, len(triangles), 1024):
-        points = samples[start:start + 1024].reshape(-1, 3)
-        projected, uv = gmsh.model.getClosestPoint(2, tag, points.ravel())
+        requested = samples[start:start + 1024].reshape(-1, 3)
+        points, indices = np.unique(requested, axis=0, return_inverse=True)
+        indices = indices.reshape(-1)
+        if tag in mapping:
+            projected, uv, fallback = mapping[tag].project(points)
+        else:
+            projected, uv = gmsh.model.getClosestPoint(2, tag, points.ravel())
+            fallback = len(points)
+        unique_count += len(points)
+        legacy_count += fallback
         cad_normals = np.asarray(gmsh.model.getNormal(tag, uv)).reshape(-1, 3)
         cad_lengths = np.linalg.norm(cad_normals, axis=1)
         if np.any(cad_lengths == 0) or not np.isfinite(cad_lengths).all():
@@ -67,9 +77,9 @@ def surface_error(tag, triangles):
             raise ValueError(f"invalid CAD projection at face {tag}")
         max_error = max(max_error, float(distances.max()))
         mesh_normals = np.repeat(normals[start:start + 1024], 4, axis=0)
-        cos = np.einsum("ij,ij->i", mesh_normals, cad_normals) / cad_lengths
+        cos = np.einsum("ij,ij->i", mesh_normals, cad_normals[indices]) / cad_lengths[indices]
         max_angle = max(max_angle, float(np.degrees(np.arccos(np.clip(np.abs(cos), 0, 1))).max()))
-    return float(min_angle), max_error * .001, max_angle
+    return float(min_angle), max_error * .001, max_angle, unique_count, legacy_count
 
 
 def open_step(step):
@@ -88,28 +98,38 @@ def cad_face_signature():
              gmsh.model.occ.getCenterOfMass(2, tag)) for _, tag in gmsh.model.getEntities(2)]
 
 
-def init_audit_worker(step, signature):
+def init_audit_worker(step, signature, projection):
+    global worker_mapping
     gmsh.initialize(readConfigFiles=False)
     open_step(step)
     if cad_face_signature() != signature:
         raise ValueError("worker STEP geometry does not match the meshed body's face tags")
+    worker_mapping = projectors(step) if projection=="auto" else {}
 
 
-def audit(step, workers):
+def audit_chunk(tag, chunk):
+    return surface_error(tag,chunk,worker_mapping)
+
+
+def audit(step, workers, projection):
+    start_time = time.perf_counter()
     node_tags, coords, _ = gmsh.model.mesh.getNodes()
     order = np.argsort(node_tags)
     vertices = coords.reshape(-1, 3)[order]
     sorted_tags = node_tags[order]
     blocks, reports = [], []
     def merge(row, values):
-        angle, error, normal = values
+        angle, error, normal, evaluated, legacy = values
         row["min_angle_deg"] = min(row["min_angle_deg"], angle)
         row["max_sampled_surface_error_m"] = max(row["max_sampled_surface_error_m"], error)
         row["max_normal_angle_deg"] = max(row["max_normal_angle_deg"], normal)
+        row["evaluated_points"] += evaluated
+        row["gmsh_closest_points"] += legacy
 
     pool = (ProcessPoolExecutor(workers, mp_context=multiprocessing.get_context("spawn"),
-                                initializer=init_audit_worker, initargs=(step, cad_face_signature()))
+                                initializer=init_audit_worker, initargs=(step, cad_face_signature(), projection))
             if workers > 1 else nullcontext(None))
+    mapping = projectors(step) if workers==1 and projection=="auto" else {}
     with pool as executor:
         pending = deque()
         for _, tag in gmsh.model.getEntities(2):
@@ -124,19 +144,22 @@ def audit(step, workers):
                 raise ValueError(f"non-positive element quality on face {tag}")
             row = dict(face=tag, triangles=len(indices), min_angle_deg=180.,
                        min_sicn=float(qualities.min()), p05_sicn=float(np.quantile(qualities, .05)),
-                       max_sampled_surface_error_m=0., max_normal_angle_deg=0.)
+                       max_sampled_surface_error_m=0., max_normal_angle_deg=0.,
+                       evaluated_points=0, gmsh_closest_points=0)
             reports.append(row)
             for start in range(0, len(indices), 4096):
                 chunk = vertices[indices[start:start + 4096]]
                 if executor is None:
-                    merge(row, surface_error(tag, chunk))
+                    merge(row, surface_error(tag, chunk, mapping))
                 else:
-                    pending.append((row, executor.submit(surface_error, tag, chunk)))
+                    pending.append((row, executor.submit(audit_chunk, tag, chunk)))
                     if len(pending) >= 2 * workers:
                         earlier, future = pending.popleft()
                         merge(earlier, future.result())
         for row, future in pending:
             merge(row, future.result())
+    face_elapsed = time.perf_counter()-start_time
+    topology_start = time.perf_counter()
     faces = np.concatenate(blocks)
     check_topology(vertices, faces)
     volume_origin = vertices.mean(axis=0)
@@ -144,6 +167,8 @@ def audit(step, workers):
     volume = np.einsum("ij,ij->i", a, np.cross(b, c)).sum() / 6
     if volume <= 0:
         raise ValueError("closed boundary has non-positive signed volume")
+    topology_s = time.perf_counter()-topology_start
+    edge_start = time.perf_counter()
     curves = []
     for _, tag in gmsh.model.getEntities(1):
         _, node_ids = gmsh.model.mesh.getElementsByType(1, tag)
@@ -157,6 +182,9 @@ def audit(step, workers):
             raise ValueError(f"invalid projection on CAD edge {tag}")
         curves.append(dict(edge=tag, segments=len(segments), max_sampled_error_m=float(error.max()) * .001))
     return dict(vertices=len(vertices), triangles=len(faces), faces=reports, edges=curves,
+                face_audit_s=face_elapsed, topology_s=topology_s, edge_audit_s=time.perf_counter()-edge_start,
+                face_samples=4*len(faces), evaluated_points=sum(row["evaluated_points"] for row in reports),
+                gmsh_closest_points=sum(row["gmsh_closest_points"] for row in reports),
                 signed_volume_m3=float(volume) * 1e-9,
                 max_sampled_edge_error_m=max((row["max_sampled_error_m"] for row in curves), default=0.),
                 max_sampled_surface_error_m=max(row["max_sampled_surface_error_m"] for row in reports),
@@ -224,16 +252,23 @@ def refine_slender_faces(required_sicn, size_mm):
                 field.setNumber(threshold, "SizeMin", near)
                 field.setNumber(threshold, "SizeMax", size_mm)
                 field.setNumber(threshold, "DistMin", near)
-                field.setNumber(threshold, "DistMax", 4 * size_mm)
+                field.setNumber(threshold, "DistMax", 1.25 * size_mm)
                 fields.append(threshold)
             minimum = field.add("Min")
             field.setNumbers(minimum, "FieldsList", fields)
             field.setAsBackgroundMesh(minimum)
             gmsh.model.mesh.generate(2)
+            elements, _ = gmsh.model.mesh.getElementsByType(2)
+            if gmsh.model.mesh.getElementQualities(elements, "minSICN").min() < required_sicn:
+                gmsh.model.mesh.clear()
+                for threshold in fields:
+                    field.setNumber(threshold, "DistMax", 4 * size_mm)
+                gmsh.model.mesh.generate(2)
     return len(edge_counts)
 
 
-def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sicn=0., audit_workers=1):
+def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sicn=0., audit_workers=1,
+            projection="auto"):
     limits = (size_m, max_error_m, max_normal_deg)
     if any(v is not None and (not math.isfinite(v) or v <= 0) for v in limits):
         raise ValueError("size and requested tolerances must be positive and finite")
@@ -241,6 +276,8 @@ def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sic
         raise ValueError("expected a .msh output and min-SICN between zero and one")
     if not isinstance(audit_workers, int) or audit_workers < 1:
         raise ValueError("expected a positive integer number of audit workers")
+    if projection not in ("auto","gmsh"):
+        raise ValueError("unknown CAD projection strategy")
     start = time.perf_counter()
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=output.parent) as work:
@@ -253,6 +290,7 @@ def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sic
             gmsh.option.setNumber("Mesh.ElementOrder", 1)
             gmsh.option.setNumber("Mesh.Algorithm", 6)
             gmsh.model.mesh.generate(2)
+            initial_mesh_s = time.perf_counter() - start
             refined_edges = refine_slender_faces(min_sicn, size_m * 1000) if min_sicn > 0 else 0
             if min_sicn > 0:
                 elements, _ = gmsh.model.mesh.getElementsByType(2)
@@ -264,7 +302,7 @@ def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sic
                                      f"{qualities[worst]:.6g}, {np.count_nonzero(qualities < min_sicn)} "
                                      f"of {len(elements)} triangles below {min_sicn:.6g}")
             audit_start = time.perf_counter()
-            report = audit(step, audit_workers)
+            report = audit(step, audit_workers, projection)
             audit_s = time.perf_counter() - audit_start
             sampled_error = max(report["max_sampled_surface_error_m"], report["max_sampled_edge_error_m"])
             if ((max_error_m is not None and sampled_error > max_error_m)
@@ -284,7 +322,9 @@ def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sic
                       length_unit="m", mesh_size_m=size_m, requested_max_sampled_error_m=max_error_m,
                       requested_max_normal_angle_deg=max_normal_deg, requested_min_sicn=min_sicn,
                       locally_refined_edges=refined_edges, audit_workers=audit_workers, audit_s=audit_s,
-                      preparation_s=time.perf_counter() - start)
+                      preparation_s=time.perf_counter() - start, generation_s=audit_start-start,
+                      initial_mesh_s=initial_mesh_s, refinement_and_quality_s=audit_start-start-initial_mesh_s,
+                      projection=projection)
         metadata = Path(work) / "quality.json"
         metadata.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")
         staged.replace(output)
@@ -301,7 +341,8 @@ if __name__ == "__main__":
     parser.add_argument("--max-normal-deg", type=float)
     parser.add_argument("--min-sicn", type=float, default=0.)
     parser.add_argument("--audit-workers", type=int, default=1, help="independent processes for CAD projections")
+    parser.add_argument("--projection", choices=["auto","gmsh"], default="auto")
     args = parser.parse_args()
     result = prepare(args.step, args.output, args.size_m, args.max_error_m, args.max_normal_deg, args.min_sicn,
-                     args.audit_workers)
+                     args.audit_workers, args.projection)
     print(json.dumps({k: v for k, v in result.items() if k not in ("faces", "edges")}, allow_nan=False))

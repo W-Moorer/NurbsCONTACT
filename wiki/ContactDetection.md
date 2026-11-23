@@ -15,9 +15,18 @@ Each triangle contributes a centroid and three edge midpoints to the comparison 
 
 When a requested minSICN fails on a long narrow face, the generator measures its area and perimeter, increases edge subdivision along its length and remeshes. If neighboring triangles still miss the threshold, it applies a graded Gmsh size field around the affected curves. The final quality checks can reject this result. Each output records the number of edges refined.
 
-`--audit-workers N` distributes the face projection samples over independent Gmsh sessions. Each session reimports the STEP file and checks its face tags, surface types, areas and centroids against the meshed model. All workers use the same projection and normal evaluations. The report includes the worker count and audit time.
+`--audit-workers N` distributes face samples over independent Gmsh sessions. With the optional `cadquery-ocp` package installed, the default `--projection auto` uses the B-spline control net to bound the Hessian of squared point-to-surface distance. Where the objective is strictly convex, the kernel solves in surface parameters and evaluates the point and normal on the Gmsh CAD face. For partitioned faces it also checks distance lower bounds on all competing subpatches. Unresolved samples, unsupported surfaces and installations without OCP use Gmsh closest-point queries. Select `--projection gmsh` to use those queries throughout. Both modes check the centroid and three edge midpoints of every triangle, evaluate both incident facet normals at shared samples, and check CAD feature edges separately. These are sampled errors against the originating surfaces and curves.
 
-In the [spur pair preparation trial](../results/aes/cpu-mesh/spur-preparation.json), the 50,060-triangle pinion met its requested checks. The coarse wheel had a minSICN of 0.00429. Refinement of its 7.44 µm-wide strips reached the element quality gate of 0.2. Both the one-worker and six-worker full-wheel runs exhausted the 1,800 s budget during the remaining CAD audit. This gear pair still lacks a qualified wheel for dynamics comparisons.
+In the [spur pair preparation trial](../results/aes/cpu-mesh/spur-preparation.json), the 50,060-triangle pinion passed and the coarse wheel had a minSICN of 0.00429. The old audit timed out on the refined wheel with both one and six workers. With the original grading width, the accelerated audit checked 8,083,976 face samples on 2,020,994 triangles. Face checking took 52.34 s, topology checks took 37.24 s and the whole preparation took 367.70 s. The narrower grading field first lets the target edge size recover over 1.25 nominal element lengths. If a neighboring element fails the shape threshold, the mesher retries with the previous four-length width.
+
+The [paired projection check](../benchmarks/aes/cpu_mesh_audit_comparison.py) compares coordinates and CAD normals at the same positions. On [all 276,936 coarse-wheel samples](../results/aes/cpu-mesh/wheel-projection-coarse.json), the maximum difference in projected position was 5.84 pm. The [refined-wheel comparison](../results/aes/cpu-mesh/wheel-projection-refined.json) used 32 triangles on each of the 291 faces. The full preparation checks all triangle samples, including those outside this independent comparison.
+
+The compact wheel has 1,089,206 triangles. Its peak sampled deviation is 10.207 µm, its maximum facet-normal error is 2.029° and its minimum SICN is 0.21682. Two preparations produced the same mesh hash in 304.37 s and 637.90 s on the shared Ryzen 9 5900X machine. The latter run spent 29.89 s through the initial mesh, 441.72 s on refinement and element quality, and 131.46 s on CAD and topology checks. Reproduce the production pair with:
+
+```powershell
+python apps/prepare_contact_mesh.py results/gears/models/spur-1a.step build/cpu-contact/spur/spur-1a.msh --size-m .0015 --min-sicn .3 --max-error-m .00005 --max-normal-deg 8
+python apps/prepare_contact_mesh.py results/gears/models/spur-1b.step build/cpu-contact/spur/spur-1b.msh --size-m .001 --min-sicn .2 --max-error-m .00005 --max-normal-deg 8 --audit-workers 3
+```
 
 ## Discrete triangle contact
 

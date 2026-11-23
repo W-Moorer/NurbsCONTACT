@@ -11,7 +11,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "apps"))
-from prepare_contact_mesh import check_topology, prepare, refine_slender_faces, sha256
+from prepare_contact_mesh import check_topology, open_step, prepare, refine_slender_faces, sha256
 
 
 class ContactMeshTest(unittest.TestCase):
@@ -90,6 +90,44 @@ class ContactMeshTest(unittest.TestCase):
             self.assertLess(lowest_quality(), .01)
             self.assertGreater(refine_slender_faces(.2, 1.), 0)
             self.assertGreaterEqual(lowest_quality(), .2)
+        finally:
+            gmsh.finalize()
+
+    def test_cad_projection_matches_native_on_thin_and_curved_faces(self):
+        try:
+            from OCP.BRep import BRep_Tool
+            from OCP.STEPControl import STEPControl_Reader
+            from OCP.TopAbs import TopAbs_FACE
+            from OCP.TopExp import TopExp_Explorer
+            from OCP.TopoDS import TopoDS
+        except ImportError:
+            self.skipTest("cadquery-ocp optional spline acceleration is unavailable")
+        from cad_audit_projection import FaceProjection
+        path = ROOT / "results/gears/models/spur-1b.step"
+        reader = STEPControl_Reader()
+        reader.ReadFile(str(path))
+        reader.TransferRoots()
+        explorer = TopExp_Explorer(reader.OneShape(),TopAbs_FACE)
+        gmsh.initialize(readConfigFiles=False)
+        try:
+            open_step(path)
+            for tag in (1,2):
+                surface = BRep_Tool.Surface_s(TopoDS.Face_s(explorer.Current()))
+                explorer.Next()
+                kernel = FaceProjection(tag,surface)
+                # Straddle a subpatch boundary, offset along CAD normals and
+                # include a query outside the admissible control box.
+                uv = np.array([[0.,.5],[.124,.1],[.125,.5],[.126,.9],[.37,.25],[.8,.55],[1.,.5]])
+                xyz = gmsh.model.getValue(2,tag,uv.ravel()).reshape(-1,3)
+                normals = gmsh.model.getNormal(tag,uv.ravel()).reshape(-1,3)
+                points = np.vstack((xyz, xyz+.001*normals, xyz[0]+100.))
+                old, old_uv = gmsh.model.getClosestPoint(2,tag,points.ravel())
+                new, new_uv, fallback = kernel.project(points)
+                self.assertGreater(fallback,0)
+                self.assertLess(fallback,len(points))
+                np.testing.assert_allclose(new,old.reshape(-1,3),rtol=0,atol=2e-7)
+                np.testing.assert_allclose(gmsh.model.getNormal(tag,new_uv),gmsh.model.getNormal(tag,old_uv),
+                                           rtol=0,atol=2e-7)
         finally:
             gmsh.finalize()
 

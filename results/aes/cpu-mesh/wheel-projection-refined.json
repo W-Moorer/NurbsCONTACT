@@ -1,0 +1,19 @@
+{
+  "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d",
+  "mesh_sha256": "5e3b0456d5cd5e7a29f5e7f5eec38048177d028e7af9b7f4eef4243b372a9380",
+  "gmsh_version": "4.15.0",
+  "triangles_on_mesh": 2020994,
+  "sample_limit_triangles_per_face": 32,
+  "seed": 0,
+  "checked_points": 37248,
+  "accelerated_faces": 288,
+  "face_count": 291,
+  "legacy_path_points": 387,
+  "setup_s": 9.512298999994528,
+  "legacy_projection_s": 7.792400198872201,
+  "new_projection_s": 0.7078721005818807,
+  "max_projected_point_difference_m": 5.858247964073799e-12,
+  "max_normal_difference_deg": 2.2948513068206553e-08,
+  "max_legacy_sample_distance_m": 7.241234113675162e-06,
+  "max_new_sample_distance_m": 7.241234113678439e-06
+}
