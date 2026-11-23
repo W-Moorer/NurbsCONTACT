@@ -177,17 +177,22 @@ struct LocalCache {
         }
         if (best_fraction==.35) return nullptr;
         const double width=best.maximum(own)-best.minimum(own);
-        const double level=best.minimum(other)-.12*width;
+        const double limit=best.minimum(other);
         Vec direction{};
         for (unsigned i=0;i<3;++i) direction[i]=best.sign*pose.basis[i][best.axis];
-        const double local_level=level-best.height(pose.origin);
+        const double local_level=limit-best.height(pose.origin);
         if (last_direction && dot3(direction,*last_direction)>.995 && std::abs(local_level-last_level)<.05*width)
             return nullptr;
         last_direction=direction;
         last_level=local_level;
-        ++work.local_solid_builds;
-        part=local_solid(mesh,own,best,level);
-        return part && part->usable(own,other,pose) ? &*part : nullptr;
+        // Moving the cut farther from the overlap can join isolated strips
+        // into a single ring. Every trial still passes the same solid tests.
+        for (double margin:{.12,.18,.24,.30}) {
+            ++work.local_solid_builds;
+            part=local_solid(mesh,own,best,limit-margin*width);
+            if (part && part->usable(own,other,pose)) return &*part;
+        }
+        return nullptr;
     }
 };
 

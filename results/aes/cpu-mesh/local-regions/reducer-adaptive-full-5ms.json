@@ -1,0 +1,93 @@
+{
+  "duration_s": 0.005,
+  "dt_s": 5e-05,
+  "steps": 100,
+  "active_frames": 64,
+  "scene_sha256": "7617d79cb6a49b1e97cc5be8e0079df7d4ec9ab0a968f52bff9e1fecebba63bd",
+  "trace_sha256": "5bc0c2dfd9256a5ce0e00c2f1c602446e82cc9c0778a511d2be636c9f1d8e1e8",
+  "normal_impulse_Ns": 6.654499125661892,
+  "peak_normal_N": 4926.7902180003275,
+  "subdivisions": 8,
+  "integration_s": 167.4068195,
+  "process_s": 170.74001819995465,
+  "observed_peak_working_set_bytes": 75096064,
+  "observed_peak_commit_bytes": 90112000,
+  "monitor_interval_s": 0.025,
+  "region_scope": "full",
+  "evaluations": 1249,
+  "boolean_queries": 1873,
+  "boolean_input_faces": 68742726,
+  "local_solid_uses": 0,
+  "local_solid_builds": 0,
+  "detection_s": 4.296173899999994,
+  "placement_s": 9.89785749999998,
+  "boolean_s": 148.6277452999998,
+  "stages": [
+    {
+      "stage": 1,
+      "active_frames": 64,
+      "peak_normal_N": 4926.7902180003275,
+      "normal_impulse_Ns": 6.654499125661892
+    },
+    {
+      "stage": 2,
+      "active_frames": 40,
+      "peak_normal_N": 14554.230414772639,
+      "normal_impulse_Ns": 11.857352598252971
+    }
+  ],
+  "simultaneously_loaded_frames": 30,
+  "shaft_speed_range_rad_s": [
+    [
+      176.19365351355987,
+      200.90372538701936
+    ],
+    [
+      89.8479938864825,
+      97.16025047314321
+    ],
+    [
+      42.93019114569354,
+      51.062595243096425
+    ]
+  ],
+  "meshes": [
+    {
+      "asset": "reducer-1a.msh",
+      "triangles": 12296,
+      "step_sha256": "90a5180ba1d3cd2b6e603de00a80c94cded07bfdccdf13f26e8a693845920035",
+      "mesh_sha256": "0c79323fba8662f120fd457f806a298bb5be718021379cad63645e6d4e9ddd33",
+      "max_normal_angle_deg": 3.7672423150987244,
+      "max_sampled_surface_error_m": 1.9000232254146414e-05,
+      "min_sicn": 0.01045735078250156
+    },
+    {
+      "asset": "reducer-1b.msh",
+      "triangles": 11174,
+      "step_sha256": "f0b5c19d140b2817f00ba29a3cadcd042141df5e2700e860dff7b9aedd37bf7b",
+      "mesh_sha256": "c5e7fb1a232e200e204a73bc5b0dd3928758e93eb234eb1860c412e3dd8092ee",
+      "max_normal_angle_deg": 3.557815698676618,
+      "max_sampled_surface_error_m": 3.700439512087519e-05,
+      "min_sicn": 0.0005368108854989981
+    },
+    {
+      "asset": "reducer-2a.msh",
+      "triangles": 33322,
+      "step_sha256": "9037e0d52ca2550e2251621d46a6781b9b698722842b4178b9758858ee8f14a9",
+      "mesh_sha256": "86e8c8b42c1018cc5bd7b7e0d41290eff0c918e1f6144ae9fea2cf046bfdbcab",
+      "max_normal_angle_deg": 6.051116592670291,
+      "max_sampled_surface_error_m": 1.7311852321517855e-05,
+      "min_sicn": 0.12280293051593455
+    },
+    {
+      "asset": "reducer-2b.msh",
+      "triangles": 19900,
+      "step_sha256": "93b72d60ebd26f3e94faedd22be00aa5d80dda5936605541ae3646ace82aee01",
+      "mesh_sha256": "fbe785723e109bf7c3ed84ec1bcb24532c32f70804d92b11c0a335420cc9a812",
+      "max_normal_angle_deg": 2.547222492316511,
+      "max_sampled_surface_error_m": 2.1413271111595406e-05,
+      "min_sicn": 0.0037408528660150733
+    }
+  ],
+  "method": "mesh-obb"
+}
