@@ -57,6 +57,12 @@ Each timing is one run on a shared CPU. The two CAD histories match byte for byt
 
 The [three current STEP methods](../../results/aes/general-contact/surface-methods-impact.json) returned byte-identical traces on this impact, matching the earlier CAD trace. Their maximum displacement error was 0.831 µm and their impulse was 0.450015 N·s. The 904-triangle-per-sphere mesh gave 29.95 µm and 0.450029 N·s.
 
+On the archived eccentric cam we also replayed the first contact and release over 0.12 s, with 1 ms HHT steps and 0.2 ms event tolerance. All methods recovered the two switches of the smooth-cylinder DOP853 reference in order. RMS follower displacement error was 15.93 µm for the [1,426-triangle control](../../results/aes/general-contact/cam-contact-cycle-mesh-obb.json) and 5.72 µm for [plain STEP](../../results/aes/general-contact/cam-contact-cycle-cad-occt.json), [Chen 2024](../../results/aes/general-contact/cam-contact-cycle-chen-2024.json) and [the 2026 variant](../../results/aes/general-contact/cam-contact-cycle-chen-2026.json). Integration took 2.68, 8.29, 28.75 and 8.51 s respectively on the shared CPU. The 2026 method confirmed one patch proposal on the trimmed solids. These timings cover one loaded episode.
+
+~~~powershell
+python benchmarks/aes/cpu_mesh_cam.py run build/cpu-swept/Release/nc_contact.exe build/cpu-contact/cam/model build/cpu-contact/cam/compact-planar build/chen-scene/cam build/chen-scene/cam.json --method chen-2026 --dt .001 --duration .12 --event-tol-s .0002
+~~~
+
 ### Gear distance and event costs
 
 The [20,456-triangle gear pair](../../results/aes/general-contact/spur-step-mesh-obb.json) took 40.49 s of integration for the first seven steps of 50 µs with 25 µs event tolerance. With the original whole-solid distance kernel, [plain CAD](../../results/aes/general-contact/spur-step-cad-occt.json) and [Chen-assisted CAD](../../results/aes/general-contact/spur-step-chen-2024.json) both reached the 30-minute limit. At two fixed poses from the mesh trace, each whole-solid OCCT distance call reached its 120 s limit. The solid intersections at those poses took 3.10 and 5.26 s and reported separation and overlap, respectively. [Static queries and original poses](../../results/aes/general-contact/spur-static-cad-cost.json)
@@ -64,6 +70,8 @@ The [20,456-triangle gear pair](../../results/aes/general-contact/spur-step-mesh
 The updated STEP event path builds a bounding-box tree over the original vertices, edges and faces for pairs with more than 16 faces in total. At each trial pose it searches features within the distance the bodies can close during the step, then checks shell containment in both directions. An actual vertex outside an opposing bounding box excludes containment of that connected shell once boundary crossings have been ruled out. Identical trial poses can reuse distance and force-region results. A confirmed event and a separated prefix bound the returned event time to one quarter of the time tolerance requested by the integrator.
 
 At the initial gear pose the indexed query and independent OCCT shell query measured 0.04879230 mm. The queries took 13.32 s and 10.15 s, respectively. At 0.25 ms both measured zero, taking 0.88 s and 9.79 s. Building both indices took 0.089 s. The two poses have independently checked volume-overlap status. These single shared-host measurements cover static geometry. [Distance, timings and feature counts](../../results/aes/general-contact/spur-indexed-distances.json)
+
+The [first, separated 50 µs step](../../results/aes/general-contact/spur-separated-first-step.json) took 395.49 s with indexed CAD conservative advancement and 15.68 s with the 20,456-triangle OBB control. Both produced identical traces. HHT evaluated the force twice. A single CAD step-acceptance check made 19 distance queries that visited 132,488 box pairs and called the feature extrema kernel 9,314 times. The run also performed three solid Booleans. These counts distinguish the cost of repeatedly verifying separation along a rotating trajectory from the cost of building the index.
 
 ~~~powershell
 cmake --build build/cpu-swept --config Release --target nc_cad_distance_benchmark

@@ -23,14 +23,23 @@ Using a 10.5 mm size target on the cam gave 2,360 curved-body triangles and 12 f
 
 ## Default spur gear mesh
 
-Generate the compact CPU baseline and replay its archived poses from the repository root.
+Generate the default lightweight CPU baseline and replay its archived poses from the repository root.
 
 ```powershell
-python benchmarks/aes/prepare_spur_cpu.py build/cpu-contact/spur-edge-compact
-python benchmarks/aes/cpu_mesh_replay.py build/cpu-swept/Release/nc_mesh.exe build/cpu-contact/spur-edge-compact/spur-1a.msh build/cpu-contact/spur-edge-compact/spur-1b.msh results/aes/cpu-mesh/spur-poses.txt build/cpu-contact/spur-edge-compact/replay.json --compare-overlap
+python benchmarks/aes/prepare_spur_cpu.py build/cpu-contact/spur-light
+python benchmarks/aes/cpu_mesh_replay.py build/cpu-swept/Release/nc_mesh.exe build/cpu-contact/spur-light/spur-1a.msh build/cpu-contact/spur-light/spur-1b.msh results/aes/cpu-mesh/spur-poses.txt build/cpu-contact/spur-light/replay.json --compare-overlap
 ```
 
-The compact profile meshes the CAD boundary curves first. It uses 64 angular samples per circle on straight-gear edges and 96 on helical-gear edges, with the same mapped-face chord targets as the previous mesh. Gmsh fills the face interiors at 40 or 60 angular samples per circle, respectively. The same two meshing passes are available for other STEP solids through `--edge-curvature-samples` and `--curvature-samples`. The generator checks the finished compact assets against a 160 µm sampled CAD deviation limit and an 8° normal-angle limit.
+The default `light` profile keeps the boundary curve discretization and mapped faces of the compact controls. Gmsh fills the remaining faces at 20 angular samples per circle. Comparing triangle vertices face by face found that only the cylindrical bore on each gear changed. Every tooth triangle and CAD-edge segment matches the compact mesh. The two gear files occupy 1.28 MiB and the four reducer files occupy 3.92 MiB. Rebuilding the reducer reproduced all four mesh hashes. Both 5 ms HHT response files (101 saved frames each) match the compact controls byte for byte. All 32 prescribed gear-pair poses also match the dense mesh's overlap decisions. The largest sampled surface deviations anywhere on the pair and reducer are 376 and 414 µm. A simulation that loads the bore needs its own resolution check there. [Mesh settings, changed faces, hashes, RAM, dynamics and pose comparisons](../results/aes/cpu-mesh/memory/light-mesh-sweep.json)
+
+| Geometry | Light triangles | Peak RAM in preparation | Peak RAM in simulation | Preview triangles | Preview simulation peak |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Spur pair | 18,742 | 371.0 MiB | 30.1 MiB | 6,474 | 21.3 MiB |
+| Two-stage reducer | 58,974 | 438.6 MiB | 58.2 MiB | 22,112 | 32.5 MiB |
+
+The `preview` profile coarsens both the mapped faces and their edges. On the spur pair it missed 22 contacts in the 32 prescribed poses relative to the dense control. Across the loaded reducer run the first and second stage contact states differed from the compact control at 44 and 36 of the 101 outputs. An intermediate trial with 14,562 triangles on the spur pair agreed on all 32 prescribed poses but changed contact activity at 22 of the 101 dynamics outputs.
+
+To reproduce the previous compact controls, pass `--mesh-profile compact`. This profile uses 64 angular samples per circle on straight-gear edges and 96 on helical-gear edges. Gmsh fills the face interiors at 40 or 60 angular samples, respectively. The same two meshing passes are available for other STEP solids through `--edge-curvature-samples` and `--curvature-samples`. The finished compact assets satisfy a 160 µm sampled CAD deviation limit and an 8° normal-angle limit.
 
 | Mechanism | Reference → compact triangles | Compact `.msh` files | Peak RAM during preparation | Peak RAM in loaded CPU simulation |
 | --- | ---: | ---: | ---: | ---: |
@@ -41,7 +50,7 @@ RAM denotes Windows process peak working set. Preparation includes STEP loading,
 
 On the 5 ms, 100-step loaded runs, both compact response CSVs matched their respective reference files byte for byte. At all 101 prescribed poses per stage, the region counts, depths, normals and centroids also matched. The compact spur pair matched the dense mesh's overlap decisions on the 32-pose replay. The compact reducer spent 106.03 s of its 115.14 s integration constructing intersection solids and 3.81 s detecting overlap. [Spur pose replay](../results/aes/cpu-mesh/memory/spur-stage-1-compact-poses.json) · [Reducer stage 1](../results/aes/cpu-mesh/memory/reducer-stage-1-compact-poses.json) · [Reducer stage 2](../results/aes/cpu-mesh/memory/reducer-stage-2-compact-poses.json)
 
-A separate 32/48-sample trial also relaxed the edge discretization on unmapped faces. The 61,182-triangle reducer changed contact activity at 38 and 30 of 101 output times on its two stages, respectively. The 19,008-triangle spur pair changed at three output times. These trials motivate preserving the edge discretization in the default. [Reducer response](../results/aes/cpu-mesh/memory/coarse-edges-reducer.json) · [Spur response](../results/aes/cpu-mesh/memory/coarse-edges-spur.json)
+A separate 32/48-sample trial also relaxed the edge discretization on unmapped faces. The 61,182-triangle reducer changed contact activity at 38 and 30 of 101 output times on its two stages, respectively. The 19,008-triangle spur pair changed at three output times. [Reducer response](../results/aes/cpu-mesh/memory/coarse-edges-reducer.json) · [Spur response](../results/aes/cpu-mesh/memory/coarse-edges-spur.json)
 
 ### Previous reference mesh
 

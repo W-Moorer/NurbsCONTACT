@@ -1,0 +1,776 @@
+{
+  "measurement": "Single Windows HHT process peak working set; separate Python STEP import, Gmsh generation and topology and CAD audits. Timings were taken on a shared CPU.",
+  "method": "mesh-obb",
+  "solver": "penalty",
+  "dt_s": 5e-05,
+  "duration_s": 0.005,
+  "frames": 101,
+  "event_tol_s": 0,
+  "cases": {
+    "spur": {
+      "preview": {
+        "triangles": 6474,
+        "gmsh_files_bytes": 448990,
+        "preparation_peak_working_set_bytes": 409202688,
+        "preparation_s": 72.1180056000012,
+        "simulation_peak_working_set_bytes": 22306816,
+        "integration_s": 15.3103197,
+        "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+        "trace_sha256": "d1ad05dea2d41cbadb15d07581859046d0fce0665c6fe9d1ad69149c6876b7a8",
+        "compared_with_compact": {
+          "reference_trace_sha256": "65c9eb22ef20aa7fc522392bb92946b815067d2951e6bc457a34f7d57ecd373d",
+          "frames": 101,
+          "stages": [
+            {
+              "stage": 1,
+              "different_active_frames": 25,
+              "max_force_difference_N": 3369.2313321128995,
+              "normal_impulse_difference_Ns": -0.03366842943159476
+            }
+          ],
+          "reference_solver": "penalty",
+          "max_shaft_speed_difference_rad_s": [
+            6.819589522691643,
+            1.7679774064964704
+          ]
+        },
+        "mean_shaft_speed_difference_rad_s": [
+          0.010749523927399071,
+          -0.013063045426421286
+        ],
+        "stages": [
+          {
+            "stage": 1,
+            "active_frames": 58,
+            "peak_normal_N": 5777.9533441129715,
+            "normal_impulse_Ns": 5.039653686394106
+          }
+        ],
+        "meshes": [
+          {
+            "asset": "spur-1a.msh",
+            "file_bytes": 204750,
+            "triangles": 2958,
+            "step_sha256": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d",
+            "mesh_sha256": "fd2c9961c0420f3c656a41f5d367d936797cc1c6751cf6b3fe6f01cc76f44c4e",
+            "max_normal_angle_deg": 11.212223248136956,
+            "max_sampled_surface_error_m": 0.00019484605701845393,
+            "min_sicn": 0.04177191642030964,
+            "mesh_settings": {
+              "size_m": 0.03,
+              "mapped_edge_error_m": 2.5e-05,
+              "extend_boundary": false,
+              "max_normal_deg": 20,
+              "curvature_samples": 20,
+              "edge_curvature_samples": 32,
+              "max_error_m": 0.0008
+            }
+          },
+          {
+            "asset": "spur-1b.msh",
+            "file_bytes": 244240,
+            "triangles": 3516,
+            "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d",
+            "mesh_sha256": "7dbac11dc5eafacb54f7da5d660bc6f22f1076d5b82a133d870f209df4a8eca2",
+            "max_normal_angle_deg": 9.974814866692652,
+            "max_sampled_surface_error_m": 0.00033712642751858383,
+            "min_sicn": 0.0005368108854989981,
+            "mesh_settings": {
+              "size_m": 0.03,
+              "mapped_edge_error_m": 2.5e-05,
+              "extend_boundary": false,
+              "max_normal_deg": 20,
+              "curvature_samples": 20,
+              "edge_curvature_samples": 32,
+              "max_error_m": 0.0008
+            }
+          }
+        ],
+        "fixed_poses": {
+          "total": 32,
+          "against": "spur-detection.json",
+          "poses_sha256": "a9ff0401cb33c8803a978639bcf49c2c5a9f14d6615d4a0d874f198874cd20d7",
+          "different_indices": [
+            1,
+            3,
+            5,
+            6,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            16,
+            17,
+            19,
+            20,
+            21,
+            22,
+            23,
+            25,
+            27,
+            28,
+            30,
+            31
+          ]
+        }
+      },
+      "intermediate trial": {
+        "triangles": 14562,
+        "gmsh_files_bytes": 1035871,
+        "preparation_peak_working_set_bytes": 389423104,
+        "preparation_s": 77.5752864999813,
+        "simulation_peak_working_set_bytes": 28086272,
+        "integration_s": 38.2208087,
+        "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+        "trace_sha256": "52f15f22ea2d4cfc8ba67207ff4d9288c8b990ab1b8aeecad59991e1503e08fb",
+        "compared_with_compact": {
+          "reference_trace_sha256": "65c9eb22ef20aa7fc522392bb92946b815067d2951e6bc457a34f7d57ecd373d",
+          "frames": 101,
+          "stages": [
+            {
+              "stage": 1,
+              "different_active_frames": 22,
+              "max_force_difference_N": 3572.2825066336895,
+              "normal_impulse_difference_Ns": -0.008718976253261346
+            }
+          ],
+          "reference_solver": "penalty",
+          "max_shaft_speed_difference_rad_s": [
+            8.54598723013902,
+            2.12997358092953
+          ]
+        },
+        "mean_shaft_speed_difference_rad_s": [
+          -0.009812902813424628,
+          -0.003837522292748017
+        ],
+        "stages": [
+          {
+            "stage": 1,
+            "active_frames": 63,
+            "peak_normal_N": 5513.743581866556,
+            "normal_impulse_Ns": 5.064603139572438
+          }
+        ],
+        "meshes": [
+          {
+            "asset": "spur-1a.msh",
+            "file_bytes": 375809,
+            "triangles": 5356,
+            "step_sha256": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d",
+            "mesh_sha256": "9dda9c363578db669f84e2b99ccbd7f14da085f2a1d5f25fd0889abc42d98dea",
+            "max_normal_angle_deg": 9.920433186698364,
+            "max_sampled_surface_error_m": 0.00016870094009615325,
+            "min_sicn": 0.020906322145428063,
+            "mesh_settings": {
+              "size_m": 0.03,
+              "mapped_edge_error_m": 4e-06,
+              "edge_curvature_samples": 64,
+              "curvature_samples": 24,
+              "max_error_m": 0.0008,
+              "max_normal_deg": 20,
+              "extend_boundary": false
+            }
+          },
+          {
+            "asset": "spur-1b.msh",
+            "file_bytes": 660062,
+            "triangles": 9206,
+            "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d",
+            "mesh_sha256": "8cb926e37f437f0a21b5811af6923661010de8950ba9b1db39a857e46a00837c",
+            "max_normal_angle_deg": 8.389753917527804,
+            "max_sampled_surface_error_m": 0.0002534401742745399,
+            "min_sicn": 0.0005368108854989981,
+            "mesh_settings": {
+              "size_m": 0.03,
+              "mapped_edge_error_m": 4e-06,
+              "edge_curvature_samples": 64,
+              "curvature_samples": 24,
+              "max_error_m": 0.0008,
+              "max_normal_deg": 20,
+              "extend_boundary": false
+            }
+          }
+        ],
+        "fixed_poses": {
+          "total": 32,
+          "against": "spur-detection.json",
+          "poses_sha256": "a9ff0401cb33c8803a978639bcf49c2c5a9f14d6615d4a0d874f198874cd20d7",
+          "different_indices": []
+        }
+      },
+      "light": {
+        "triangles": 18742,
+        "gmsh_files_bytes": 1342915,
+        "preparation_peak_working_set_bytes": 389054464,
+        "preparation_s": 96.19026689999737,
+        "simulation_peak_working_set_bytes": 31551488,
+        "integration_s": 72.1555171,
+        "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+        "trace_sha256": "65c9eb22ef20aa7fc522392bb92946b815067d2951e6bc457a34f7d57ecd373d",
+        "compared_with_compact": {
+          "reference_trace_sha256": "65c9eb22ef20aa7fc522392bb92946b815067d2951e6bc457a34f7d57ecd373d",
+          "frames": 101,
+          "stages": [
+            {
+              "stage": 1,
+              "different_active_frames": 0,
+              "max_force_difference_N": 0.0,
+              "normal_impulse_difference_Ns": 0.0
+            }
+          ],
+          "reference_solver": "penalty",
+          "max_shaft_speed_difference_rad_s": [
+            0.0,
+            0.0
+          ]
+        },
+        "mean_shaft_speed_difference_rad_s": [
+          0.0,
+          0.0
+        ],
+        "stages": [
+          {
+            "stage": 1,
+            "active_frames": 73,
+            "peak_normal_N": 5263.091907935672,
+            "normal_impulse_Ns": 5.073322115825701
+          }
+        ],
+        "meshes": [
+          {
+            "asset": "spur-1a.msh",
+            "file_bytes": 652112,
+            "triangles": 9092,
+            "step_sha256": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d",
+            "mesh_sha256": "4e2aefcc0ff693e4003479797f5d58cdd3d6f8bddf1213f58ebfc31acc96765b",
+            "max_normal_angle_deg": 10.786460239450482,
+            "max_sampled_surface_error_m": 0.00024127265256581584,
+            "min_sicn": 0.01045735078250156,
+            "mesh_settings": {
+              "size_m": 0.03,
+              "mapped_edge_error_m": 2e-06,
+              "extend_boundary": false,
+              "max_normal_deg": 16,
+              "curvature_samples": 20,
+              "edge_curvature_samples": 64,
+              "max_error_m": 0.0005
+            },
+            "changed_edge_ids_from_compact": [],
+            "retessellated_faces_from_compact": [
+              {
+                "face": 147,
+                "surface": "Cylinder",
+                "local_bounds_mm": [
+                  -9.600000099999999,
+                  -9.600000099999999,
+                  -12.0000001,
+                  9.600000099999999,
+                  9.600000099999999,
+                  12.0000001
+                ]
+              }
+            ]
+          },
+          {
+            "asset": "spur-1b.msh",
+            "file_bytes": 690803,
+            "triangles": 9650,
+            "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d",
+            "mesh_sha256": "b360f1e538d71334f8c652a33e1cdbfde237fc46e29ef58cd39dbc7a5ab33bad",
+            "max_normal_angle_deg": 10.359106636826487,
+            "max_sampled_surface_error_m": 0.0003756988129308119,
+            "min_sicn": 0.0005368108854989981,
+            "mesh_settings": {
+              "size_m": 0.03,
+              "mapped_edge_error_m": 2e-06,
+              "extend_boundary": false,
+              "max_normal_deg": 16,
+              "curvature_samples": 20,
+              "edge_curvature_samples": 64,
+              "max_error_m": 0.0005
+            },
+            "changed_edge_ids_from_compact": [],
+            "retessellated_faces_from_compact": [
+              {
+                "face": 291,
+                "surface": "Cylinder",
+                "local_bounds_mm": [
+                  -19.2000001,
+                  -19.2000001,
+                  -12.0000001,
+                  19.2000001,
+                  19.2000001,
+                  12.0000001
+                ]
+              }
+            ]
+          }
+        ],
+        "fixed_poses": {
+          "total": 32,
+          "against": "spur-detection.json",
+          "poses_sha256": "a9ff0401cb33c8803a978639bcf49c2c5a9f14d6615d4a0d874f198874cd20d7",
+          "different_indices": []
+        }
+      }
+    },
+    "reducer": {
+      "preview": {
+        "triangles": 22112,
+        "gmsh_files_bytes": 1530420,
+        "preparation_peak_working_set_bytes": 473739264,
+        "preparation_s": 129.59117510000942,
+        "simulation_peak_working_set_bytes": 34050048,
+        "integration_s": 50.0414794,
+        "scene_sha256": "7617d79cb6a49b1e97cc5be8e0079df7d4ec9ab0a968f52bff9e1fecebba63bd",
+        "trace_sha256": "609ee571fc5f0496a5efa5b832785882551a9b5cb5fbef1fc609baa11aa0e31d",
+        "compared_with_compact": {
+          "reference_trace_sha256": "5bc0c2dfd9256a5ce0e00c2f1c602446e82cc9c0778a511d2be636c9f1d8e1e8",
+          "frames": 101,
+          "stages": [
+            {
+              "stage": 1,
+              "different_active_frames": 44,
+              "max_force_difference_N": 9672.607743106202,
+              "normal_impulse_difference_Ns": -0.12306052468256556
+            },
+            {
+              "stage": 2,
+              "different_active_frames": 36,
+              "max_force_difference_N": 15514.396711715895,
+              "normal_impulse_difference_Ns": 0.5808424424233181
+            }
+          ],
+          "reference_solver": "penalty",
+          "max_shaft_speed_difference_rad_s": [
+            19.15552330182757,
+            5.800860723647261,
+            5.737299148938902
+          ]
+        },
+        "mean_shaft_speed_difference_rad_s": [
+          -0.01938168194468988,
+          0.03311628473399421,
+          0.03823755471759968
+        ],
+        "stages": [
+          {
+            "stage": 1,
+            "active_frames": 48,
+            "peak_normal_N": 9672.607743106202,
+            "normal_impulse_Ns": 6.53143860097932
+          },
+          {
+            "stage": 2,
+            "active_frames": 34,
+            "peak_normal_N": 17912.622206206095,
+            "normal_impulse_Ns": 12.438195040676282
+          }
+        ],
+        "meshes": [
+          {
+            "asset": "reducer-1a.msh",
+            "file_bytes": 204750,
+            "triangles": 2958,
+            "step_sha256": "90a5180ba1d3cd2b6e603de00a80c94cded07bfdccdf13f26e8a693845920035",
+            "mesh_sha256": "fd2c9961c0420f3c656a41f5d367d936797cc1c6751cf6b3fe6f01cc76f44c4e",
+            "max_normal_angle_deg": 11.212223248136956,
+            "max_sampled_surface_error_m": 0.00019484605701845393,
+            "min_sicn": 0.04177191642030964,
+            "mesh_settings": {
+              "size_m": 0.03,
+              "mapped_edge_error_m": 2.5e-05,
+              "extend_boundary": false,
+              "max_normal_deg": 20,
+              "curvature_samples": 20,
+              "edge_curvature_samples": 32,
+              "max_error_m": 0.0008
+            }
+          },
+          {
+            "asset": "reducer-1b.msh",
+            "file_bytes": 244240,
+            "triangles": 3516,
+            "step_sha256": "f0b5c19d140b2817f00ba29a3cadcd042141df5e2700e860dff7b9aedd37bf7b",
+            "mesh_sha256": "7dbac11dc5eafacb54f7da5d660bc6f22f1076d5b82a133d870f209df4a8eca2",
+            "max_normal_angle_deg": 9.974814866692652,
+            "max_sampled_surface_error_m": 0.00033712642751858383,
+            "min_sicn": 0.0005368108854989981,
+            "mesh_settings": {
+              "size_m": 0.03,
+              "mapped_edge_error_m": 2.5e-05,
+              "extend_boundary": false,
+              "max_normal_deg": 20,
+              "curvature_samples": 20,
+              "edge_curvature_samples": 32,
+              "max_error_m": 0.0008
+            }
+          },
+          {
+            "asset": "reducer-2a.msh",
+            "file_bytes": 637092,
+            "triangles": 9346,
+            "step_sha256": "9037e0d52ca2550e2251621d46a6781b9b698722842b4178b9758858ee8f14a9",
+            "mesh_sha256": "c7f5d6228ebdef4a75bbf341f3a1fcfc08f0047bc14a37972838b8ae9c5f5673",
+            "max_normal_angle_deg": 9.852366359541683,
+            "max_sampled_surface_error_m": 0.00018992091249533257,
+            "min_sicn": 0.2642139736592637,
+            "mesh_settings": {
+              "size_m": 0.03,
+              "mapped_edge_error_m": 2.5e-05,
+              "extend_boundary": false,
+              "max_normal_deg": 20,
+              "curvature_samples": 20,
+              "edge_curvature_samples": 32,
+              "max_error_m": 0.0008
+            }
+          },
+          {
+            "asset": "reducer-2b.msh",
+            "file_bytes": 444338,
+            "triangles": 6292,
+            "step_sha256": "93b72d60ebd26f3e94faedd22be00aa5d80dda5936605541ae3646ace82aee01",
+            "mesh_sha256": "5bc00cc88d7c6cfeed7ab0fa218ffb1c9c436076d01d0ce76c52a02c838a3756",
+            "max_normal_angle_deg": 10.213154842832362,
+            "max_sampled_surface_error_m": 0.00044082520439681994,
+            "min_sicn": 0.002493877958348648,
+            "mesh_settings": {
+              "size_m": 0.03,
+              "mapped_edge_error_m": 2.5e-05,
+              "extend_boundary": false,
+              "max_normal_deg": 20,
+              "curvature_samples": 20,
+              "edge_curvature_samples": 32,
+              "max_error_m": 0.0008
+            }
+          }
+        ]
+      },
+      "intermediate trial": {
+        "triangles": 42580,
+        "gmsh_files_bytes": 2972505,
+        "preparation_peak_working_set_bytes": 461647872,
+        "preparation_s": 151.83903400000418,
+        "simulation_peak_working_set_bytes": 48689152,
+        "integration_s": 103.6947569,
+        "scene_sha256": "7617d79cb6a49b1e97cc5be8e0079df7d4ec9ab0a968f52bff9e1fecebba63bd",
+        "trace_sha256": "80db432af8edf698bc30b91067621891905bffb054780193b5782a7e71826a33",
+        "compared_with_compact": {
+          "reference_trace_sha256": "5bc0c2dfd9256a5ce0e00c2f1c602446e82cc9c0778a511d2be636c9f1d8e1e8",
+          "frames": 101,
+          "stages": [
+            {
+              "stage": 1,
+              "different_active_frames": 43,
+              "max_force_difference_N": 7407.869166917602,
+              "normal_impulse_difference_Ns": 0.05433814115221658
+            },
+            {
+              "stage": 2,
+              "different_active_frames": 42,
+              "max_force_difference_N": 14155.93478403103,
+              "normal_impulse_difference_Ns": 0.5646346116533696
+            }
+          ],
+          "reference_solver": "penalty",
+          "max_shaft_speed_difference_rad_s": [
+            16.803917969672057,
+            5.251042152611944,
+            5.461859914063773
+          ]
+        },
+        "mean_shaft_speed_difference_rad_s": [
+          0.027051918134913838,
+          0.009540767345192463,
+          0.02131892073217859
+        ],
+        "stages": [
+          {
+            "stage": 1,
+            "active_frames": 67,
+            "peak_normal_N": 7407.869166917602,
+            "normal_impulse_Ns": 6.7088372668141005
+          },
+          {
+            "stage": 2,
+            "active_frames": 32,
+            "peak_normal_N": 13988.327151490197,
+            "normal_impulse_Ns": 12.421987209906334
+          }
+        ],
+        "meshes": [
+          {
+            "asset": "reducer-1a.msh",
+            "file_bytes": 375809,
+            "triangles": 5356,
+            "step_sha256": "90a5180ba1d3cd2b6e603de00a80c94cded07bfdccdf13f26e8a693845920035",
+            "mesh_sha256": "9dda9c363578db669f84e2b99ccbd7f14da085f2a1d5f25fd0889abc42d98dea",
+            "max_normal_angle_deg": 9.920433186698364,
+            "max_sampled_surface_error_m": 0.00016870094009615325,
+            "min_sicn": 0.020906322145428063,
+            "mesh_settings": {
+              "size_m": 0.03,
+              "mapped_edge_error_m": 4e-06,
+              "edge_curvature_samples": 64,
+              "curvature_samples": 24,
+              "max_error_m": 0.0008,
+              "max_normal_deg": 20,
+              "extend_boundary": false
+            }
+          },
+          {
+            "asset": "reducer-1b.msh",
+            "file_bytes": 660062,
+            "triangles": 9206,
+            "step_sha256": "f0b5c19d140b2817f00ba29a3cadcd042141df5e2700e860dff7b9aedd37bf7b",
+            "mesh_sha256": "8cb926e37f437f0a21b5811af6923661010de8950ba9b1db39a857e46a00837c",
+            "max_normal_angle_deg": 8.389753917527804,
+            "max_sampled_surface_error_m": 0.0002534401742745399,
+            "min_sicn": 0.0005368108854989981,
+            "mesh_settings": {
+              "size_m": 0.03,
+              "mapped_edge_error_m": 4e-06,
+              "edge_curvature_samples": 64,
+              "curvature_samples": 24,
+              "max_error_m": 0.0008,
+              "max_normal_deg": 20,
+              "extend_boundary": false
+            }
+          },
+          {
+            "asset": "reducer-2a.msh",
+            "file_bytes": 707034,
+            "triangles": 10372,
+            "step_sha256": "9037e0d52ca2550e2251621d46a6781b9b698722842b4178b9758858ee8f14a9",
+            "mesh_sha256": "7b946170f1262b2f9878b1bc5cb8a96e685d2cd5e5e23fe4213c772b7d3656ed",
+            "max_normal_angle_deg": 8.675344717341849,
+            "max_sampled_surface_error_m": 0.00017280490670265025,
+            "min_sicn": 0.22051407727756772,
+            "mesh_settings": {
+              "size_m": 0.03,
+              "mapped_edge_error_m": 1.5e-05,
+              "edge_curvature_samples": 96,
+              "curvature_samples": 24,
+              "max_error_m": 0.0008,
+              "max_normal_deg": 20,
+              "extend_boundary": false
+            }
+          },
+          {
+            "asset": "reducer-2b.msh",
+            "file_bytes": 1229600,
+            "triangles": 17646,
+            "step_sha256": "93b72d60ebd26f3e94faedd22be00aa5d80dda5936605541ae3646ace82aee01",
+            "mesh_sha256": "938d28051367ef374467643eb2268f5fd1084fc2454a71cfdade62ad67e4c81c",
+            "max_normal_angle_deg": 9.2825696297037,
+            "max_sampled_surface_error_m": 0.0003993760511423031,
+            "min_sicn": 0.0049878070101576815,
+            "mesh_settings": {
+              "size_m": 0.03,
+              "mapped_edge_error_m": 1.5e-05,
+              "edge_curvature_samples": 96,
+              "curvature_samples": 24,
+              "max_error_m": 0.0008,
+              "max_normal_deg": 20,
+              "extend_boundary": false
+            }
+          }
+        ]
+      },
+      "light": {
+        "triangles": 58974,
+        "gmsh_files_bytes": 4107054,
+        "preparation_peak_working_set_bytes": 459923456,
+        "preparation_s": 220.12446510000154,
+        "simulation_peak_working_set_bytes": 61014016,
+        "integration_s": 204.5811951,
+        "scene_sha256": "7617d79cb6a49b1e97cc5be8e0079df7d4ec9ab0a968f52bff9e1fecebba63bd",
+        "trace_sha256": "5bc0c2dfd9256a5ce0e00c2f1c602446e82cc9c0778a511d2be636c9f1d8e1e8",
+        "compared_with_compact": {
+          "reference_trace_sha256": "5bc0c2dfd9256a5ce0e00c2f1c602446e82cc9c0778a511d2be636c9f1d8e1e8",
+          "frames": 101,
+          "stages": [
+            {
+              "stage": 1,
+              "different_active_frames": 0,
+              "max_force_difference_N": 0.0,
+              "normal_impulse_difference_Ns": 0.0
+            },
+            {
+              "stage": 2,
+              "different_active_frames": 0,
+              "max_force_difference_N": 0.0,
+              "normal_impulse_difference_Ns": 0.0
+            }
+          ],
+          "reference_solver": "penalty",
+          "max_shaft_speed_difference_rad_s": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "mean_shaft_speed_difference_rad_s": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "stages": [
+          {
+            "stage": 1,
+            "active_frames": 64,
+            "peak_normal_N": 4926.7902180003275,
+            "normal_impulse_Ns": 6.654499125661892
+          },
+          {
+            "stage": 2,
+            "active_frames": 40,
+            "peak_normal_N": 14554.230414772639,
+            "normal_impulse_Ns": 11.857352598252971
+          }
+        ],
+        "meshes": [
+          {
+            "asset": "reducer-1a.msh",
+            "file_bytes": 652112,
+            "triangles": 9092,
+            "step_sha256": "90a5180ba1d3cd2b6e603de00a80c94cded07bfdccdf13f26e8a693845920035",
+            "mesh_sha256": "4e2aefcc0ff693e4003479797f5d58cdd3d6f8bddf1213f58ebfc31acc96765b",
+            "max_normal_angle_deg": 10.786460239450482,
+            "max_sampled_surface_error_m": 0.00024127265256581584,
+            "min_sicn": 0.01045735078250156,
+            "mesh_settings": {
+              "size_m": 0.03,
+              "mapped_edge_error_m": 2e-06,
+              "extend_boundary": false,
+              "max_normal_deg": 16,
+              "curvature_samples": 20,
+              "edge_curvature_samples": 64,
+              "max_error_m": 0.0005
+            },
+            "changed_edge_ids_from_compact": [],
+            "retessellated_faces_from_compact": [
+              {
+                "face": 147,
+                "surface": "Cylinder",
+                "local_bounds_mm": [
+                  -9.600000099999999,
+                  -9.600000099999999,
+                  -12.0000001,
+                  9.600000099999999,
+                  9.600000099999999,
+                  12.0000001
+                ]
+              }
+            ]
+          },
+          {
+            "asset": "reducer-1b.msh",
+            "file_bytes": 690803,
+            "triangles": 9650,
+            "step_sha256": "f0b5c19d140b2817f00ba29a3cadcd042141df5e2700e860dff7b9aedd37bf7b",
+            "mesh_sha256": "b360f1e538d71334f8c652a33e1cdbfde237fc46e29ef58cd39dbc7a5ab33bad",
+            "max_normal_angle_deg": 10.359106636826487,
+            "max_sampled_surface_error_m": 0.0003756988129308119,
+            "min_sicn": 0.0005368108854989981,
+            "mesh_settings": {
+              "size_m": 0.03,
+              "mapped_edge_error_m": 2e-06,
+              "extend_boundary": false,
+              "max_normal_deg": 16,
+              "curvature_samples": 20,
+              "edge_curvature_samples": 64,
+              "max_error_m": 0.0005
+            },
+            "changed_edge_ids_from_compact": [],
+            "retessellated_faces_from_compact": [
+              {
+                "face": 291,
+                "surface": "Cylinder",
+                "local_bounds_mm": [
+                  -19.2000001,
+                  -19.2000001,
+                  -12.0000001,
+                  19.2000001,
+                  19.2000001,
+                  12.0000001
+                ]
+              }
+            ]
+          },
+          {
+            "asset": "reducer-2a.msh",
+            "file_bytes": 1680163,
+            "triangles": 24574,
+            "step_sha256": "9037e0d52ca2550e2251621d46a6781b9b698722842b4178b9758858ee8f14a9",
+            "mesh_sha256": "d8d371437db596744e9cb9f0bef847faaa13372e90ccb3da32af6fba2d70671e",
+            "max_normal_angle_deg": 11.289374966351701,
+            "max_sampled_surface_error_m": 0.0002904616279442858,
+            "min_sicn": 0.12280293051593455,
+            "mesh_settings": {
+              "size_m": 0.016,
+              "mapped_edge_error_m": 1e-05,
+              "extend_boundary": false,
+              "max_normal_deg": 16,
+              "curvature_samples": 20,
+              "edge_curvature_samples": 96,
+              "max_error_m": 0.0005
+            },
+            "changed_edge_ids_from_compact": [],
+            "retessellated_faces_from_compact": [
+              {
+                "face": 135,
+                "surface": "Cylinder",
+                "local_bounds_mm": [
+                  -11.389326982675,
+                  -11.389326982675,
+                  -16.0000001,
+                  11.389326982675,
+                  11.389326982675,
+                  16.0000001
+                ]
+              }
+            ]
+          },
+          {
+            "asset": "reducer-2b.msh",
+            "file_bytes": 1083976,
+            "triangles": 15658,
+            "step_sha256": "93b72d60ebd26f3e94faedd22be00aa5d80dda5936605541ae3646ace82aee01",
+            "mesh_sha256": "ca9a0e4bfba2bb81891d0069fd20b3504571c0a61ec42370c3a39538c0c4acfe",
+            "max_normal_angle_deg": 10.524851606096426,
+            "max_sampled_surface_error_m": 0.0004143282085789783,
+            "min_sicn": 0.0037408528660150733,
+            "mesh_settings": {
+              "size_m": 0.016,
+              "mapped_edge_error_m": 1e-05,
+              "extend_boundary": false,
+              "max_normal_deg": 16,
+              "curvature_samples": 20,
+              "edge_curvature_samples": 96,
+              "max_error_m": 0.0005
+            },
+            "changed_edge_ids_from_compact": [],
+            "retessellated_faces_from_compact": [
+              {
+                "face": 267,
+                "surface": "Cylinder",
+                "local_bounds_mm": [
+                  -22.778653865351,
+                  -22.778653865351,
+                  -16.0000001,
+                  22.778653865351,
+                  22.778653865351,
+                  16.0000001
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

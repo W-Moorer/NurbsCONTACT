@@ -1,0 +1,64 @@
+{
+  "source": "archived eccentric cam, zero skin, backed follower; DOP853 smooth-cylinder reference",
+  "method": "mesh-obb",
+  "solver": "penalty",
+  "duration_s": 0.12,
+  "step_s": 0.001,
+  "scene_sha256": "2ff53e766010c255493f3fcceccae02e6ae19406b833b68f1f17b895dc04ec77",
+  "trace_sha256": "7c04ac60be99ca292207abdc2cebb33324a5297ede29049425f36df1293ef312",
+  "frames": 121,
+  "integration_s": 2.6751721,
+  "process_s": 4.055303800036199,
+  "observed_peak_working_set_bytes": 18370560,
+  "monitor_interval_s": 0.025,
+  "observed_peak_commit_bytes": 28659712,
+  "subdivisions": 4,
+  "force_evaluations": 289,
+  "angle_rmse_rad": 2.0843035767158807e-05,
+  "follower_position_rmse_m": 1.5930188897833602e-05,
+  "follower_velocity_rmse_m_s": 0.0005800901851113328,
+  "force_rmse_N": 0.03714902402762691,
+  "reference_peak_N": 19.630557241740323,
+  "reference_event_count": 2,
+  "same_event_sequence": true,
+  "reference_event_s": [
+    0.05500501130703285,
+    0.08842550204449988
+  ],
+  "meshes": {
+    "cam": {
+      "triangles": 1414,
+      "mesh_sha256": "66ba7c9556fd1e4704bb3b968182016c3aa788b8d853b5005897f3278fee7f66",
+      "step_sha256": "137593cae42611d500d3a3156beefc4cef1673da65685f069f937b686b6c677c",
+      "min_sicn": 0.7983244909686832,
+      "max_sampled_surface_error_m": 0.00034767791926670064,
+      "max_normal_angle_deg": 4.500984393839555
+    },
+    "follower": {
+      "triangles": 12,
+      "mesh_sha256": "e9227b933196759560ef37fa6471927624549f25897cbaefb75feb4d420f4d87",
+      "step_sha256": "cb5c73bf9d29b6a000fcc50f217dd39591f76e533c68ac198529d077671fdd99",
+      "min_sicn": 0.24654303262425692,
+      "max_sampled_surface_error_m": 0.0,
+      "max_normal_angle_deg": 0.0
+    }
+  },
+  "mesh_peak_N": 19.651826690950045,
+  "mesh_event_count": 2,
+  "mesh_event_brackets_s": [
+    [
+      0.05500000000000004,
+      0.05600000000000004
+    ],
+    [
+      0.08800000000000006,
+      0.08900000000000007
+    ]
+  ],
+  "event_tolerance_s": 0.0002,
+  "saved_contact_reuses": 121,
+  "region_scope": "local",
+  "boolean_queries": 107,
+  "boolean_input_faces": 28462,
+  "max_event_time_outside_mesh_bracket_s": 0.0
+}

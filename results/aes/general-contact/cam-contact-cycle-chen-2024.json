@@ -1,0 +1,55 @@
+{
+  "source": "archived eccentric cam, zero skin, backed follower; DOP853 smooth-cylinder reference",
+  "method": "chen-2024",
+  "solver": "penalty",
+  "duration_s": 0.12,
+  "step_s": 0.001,
+  "scene_sha256": "2ff53e766010c255493f3fcceccae02e6ae19406b833b68f1f17b895dc04ec77",
+  "trace_sha256": "945790128a98aca6143b20d1f19193516e6df5f91a18e31e8dcd43ffb7597f45",
+  "frames": 121,
+  "integration_s": 28.7478046,
+  "process_s": 30.202032900007907,
+  "observed_peak_working_set_bytes": 26341376,
+  "monitor_interval_s": 0.025,
+  "observed_peak_commit_bytes": 31342592,
+  "subdivisions": 4,
+  "force_evaluations": 269,
+  "angle_rmse_rad": 8.584603153043057e-06,
+  "follower_position_rmse_m": 5.718668377397391e-06,
+  "follower_velocity_rmse_m_s": 0.00028598072569250047,
+  "force_rmse_N": 0.016112072823418828,
+  "reference_peak_N": 19.630557241740323,
+  "reference_event_count": 2,
+  "same_event_sequence": true,
+  "reference_event_s": [
+    0.05500501130703285,
+    0.08842550204449988
+  ],
+  "step_assets": {
+    "cam": {
+      "step_sha256": "137593cae42611d500d3a3156beefc4cef1673da65685f069f937b686b6c677c"
+    },
+    "follower": {
+      "step_sha256": "cb5c73bf9d29b6a000fcc50f217dd39591f76e533c68ac198529d077671fdd99"
+    }
+  },
+  "cad_peak_N": 19.630033957395412,
+  "cad_event_count": 2,
+  "cad_event_brackets_s": [
+    [
+      0.05500000000000004,
+      0.05600000000000004
+    ],
+    [
+      0.08800000000000006,
+      0.08900000000000008
+    ]
+  ],
+  "event_tolerance_s": 0.0002,
+  "cad_boolean_queries": 227,
+  "cad_event_distances": 311,
+  "chen_patch_queries": 21,
+  "chen_confirmed_candidates": 0,
+  "saved_contact_reuses": 121,
+  "max_event_time_outside_cad_bracket_s": 0.0
+}
