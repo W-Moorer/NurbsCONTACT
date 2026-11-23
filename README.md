@@ -45,6 +45,8 @@ The CLI prints JSON. Time uses the units supplied with the velocity, rotations u
 
 ## Implicit HHT multibody contact
 
+For a linear Gmsh contact mesh with CAD deviation and mesh quality measurements, see [CPU contact mesh preparation](wiki/ContactDetection.md).
+
 The `nc_hht` benchmark couples prismatic and fixed-axis rigid joints through frictionless compliant contact. It compares native STEP boundaries against an AABB hierarchy of triangle faces using the same implicit HHT-α solver and interval clearance acceptance test. The examples include analytic validation, a six-cam assembly, and a driven twelve-ball train.
 
 The `nc_contact` runner loads STEP components, generalized coordinates, material parameters and contact probes from a scene file. One signed-gap and compliance implementation serves all loaded scenes. A backend switch changes the surface query between native B-rep and an AABB hierarchy of triangles. The experimental comparisons cover rebound and sliding trajectories, electrical contact durations for steel-sphere impact on a beam, and clearance-joint slider motion. [Model interface and reproduction](results/contact_validation/README.md)
