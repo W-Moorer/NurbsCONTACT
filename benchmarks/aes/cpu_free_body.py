@@ -226,7 +226,7 @@ def run(args):
         step_checks=int(stats["ccd_checks"]),
         event_rejections=int(stats["ccd_rejected"]),
         **{k:int(stats[k]) for k in ("cad_boolean_queries","cad_event_distances","chen_patch_queries",
-                                     "chen_confirmed_candidates") if k in stats},
+                                     "chen_confirmed_candidates","tdib_cells","tdib_candidates","tdib_unresolved") if k in stats},
         **{k:float(stats[k]) for k in ("impulse_residual_m_s",) if k in stats},
         **{k:int(stats[k]) for k in ("impulse_solves","impulse_regions","impulse_iterations","ccd_refinements",
                                      "ccd_refined_clear","ccd_unresolved") if k in stats},
@@ -241,7 +241,7 @@ if __name__ == "__main__":
     for name in ("work", "output"):
         parser.add_argument(name, type=Path)
     parser.add_argument("--case", choices=["top", "head-on", "eccentric"], required=True)
-    parser.add_argument("--method", choices=["mesh-aabb", "mesh-obb", "mesh-sap","cad-occt","chen-2024"], default="mesh-obb")
+    parser.add_argument("--method", choices=["mesh-aabb", "mesh-obb", "mesh-sap","cad-occt","chen-2024","chen-2026"], default="mesh-obb")
     parser.add_argument("--dt", type=float, required=True)
     parser.add_argument("--solver", choices=("penalty","sap","lagrange","augmented-lagrange","lcp","ncp","soccp"),
                         default="penalty")

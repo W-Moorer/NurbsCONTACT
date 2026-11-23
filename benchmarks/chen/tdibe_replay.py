@@ -1,4 +1,4 @@
-"""Run the 2024 triangular-patch solver on stratified queries with exact TDIB-E labels."""
+"""Run the upstream or safeguarded TDIB solver on queries with exact TDIB-E labels."""
 
 import argparse
 from collections import Counter
@@ -65,13 +65,16 @@ def replay(args):
                             error, abs(start - points[j][k]), abs(start + delta - points[j + 12][k])
                         )
                 payload = "".join(" ".join(format(x, ".17g") for x in p) + "\n" for p in values)
+                if args.method == "chen-2026" and any(Fraction.from_float(y) != x
+                        for p, q in zip(points, values) for x, y in zip(p, q)):
+                    raise ValueError("the binary64 endpoints changed the rational query")
                 entry = dict(file=key, index=index, label=truth, max_coordinate_perturbation=float(error))
                 remaining = 1800 - (time.monotonic() - started)
                 if remaining <= 0:
                     raise TimeoutError("dataset replay reached the 30-minute budget")
                 try:
                     run = subprocess.run(
-                        [args.exe, str(args.width)],
+                        [args.exe, str(args.width), *(["--robust"] if args.method == "chen-2026" else [])],
                         input=payload,
                         text=True,
                         capture_output=True,
@@ -84,14 +87,16 @@ def replay(args):
                         raise RuntimeError(f"{key} query {index}: {run.stderr.strip()}")
                     reply = json.loads(run.stdout)
                     entry.update(reply)
-                    entry["outcome"] = "candidate" if reply["candidate"] else "clear"
+                    if "outcome" not in reply:
+                        entry["outcome"] = "candidate" if reply["candidate"] else "clear"
                 outcomes[entry["outcome"]] += 1
                 results.append(entry)
             files[key] = dict(
                 available=total, tested=len(indices), sha256=hasher.hexdigest(), outcomes=dict(outcomes)
             )
     return dict(
-        solver="Chen et al. 2024 official TDIB-OBB",
+        solver=("Chen et al. 2024 official TDIB-OBB" if args.method == "chen-2024"
+                else "Independent TDIB-E variant with outward-rounded line envelopes"),
         dataset="Chen et al. 2026 TDIB-E",
         width=args.width,
         query_timeout_s=args.query_timeout,
@@ -107,6 +112,7 @@ if __name__ == "__main__":
     for arg in ("exe", "dataset", "output"):
         parser.add_argument(arg, type=Path)
     parser.add_argument("--per-file", type=int, default=16)
+    parser.add_argument("--method", choices=["chen-2024", "chen-2026"], default="chen-2024")
     parser.add_argument("--width", type=float, default=0.0005)
     parser.add_argument("--query-timeout", type=float, default=10.0)
     parser.add_argument(

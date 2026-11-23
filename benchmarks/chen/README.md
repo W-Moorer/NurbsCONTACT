@@ -59,6 +59,8 @@ On the 24/48-tooth gear pair, the [20,456-triangle mesh](../../results/aes/gener
 
 ## 2026 labeled triangular-patch queries
 
+For the separately implemented 2026 variant and its results see [Safeguarded envelopes](#safeguarded-envelopes).
+
 The authors' [TDIB-E data release](https://github.com/xw-c/TDIB-E/tree/5012314ca15c01b1e368a102141af845fdf6add3) provides face–face and vertex–vertex cases with rational control points and exact binary labels. Both subsets encode pairs of quadratic triangular Bézier patches with linearly moving control points. The [2026 paper](https://doi.org/10.1145/3811310) introduces floating-point error analysis for its CCD solver. The executable here calls the official **2024** TDIB-OBB solver on the released **2026 data**.
 
 ```powershell
@@ -69,3 +71,26 @@ python benchmarks/chen/tdibe_replay.py build/chen-common/Release/nc_chen_triangl
 ```
 
 The driver selects 16 indices at equal index intervals in each of eight published files. It preserves rational coordinates up to conversion to binary64, constructs velocity from the rounded endpoints and records the resulting maximum coordinate perturbation of each affine trajectory. This perturbation was zero for all 128 selected queries. At a parameter/time cell width of 0.0005 all 64 positive examples returned a candidate, 60 of 64 negative examples returned clear and all queries completed. The four extra candidates were in the face–face near-miss subset. Those four returned candidates again at width 0.00005. A candidate is an inclusion test result. The published labels concern geometric intersection in the entire time interval. The runs do not supply a contact force or a CAD trimming classifier. [Per-query results](../../results/aes/general-contact/chen-2024-on-tdibe-2026.json) · [Tighter-width rerun](../../results/aes/general-contact/tdibe-close-negatives-width-5e-5.json)
+
+## Safeguarded envelopes
+
+`--method chen-2026` selects an independent implementation of the error separation in Section 4 of Chen et al. The OCCT build includes this method. All seven surface response laws use the same scene. The authors' public release supplies the labeled data. Our implementation encloses the projected line coefficients and rounds the time intersection of each pair of lines outward. This changes the paper's sorted-envelope traversal and predicate-specific error estimates. [Paper](https://doi.org/10.1145/3811310) · [Authors' release](https://github.com/xw-c/TDIB-E)
+
+With constant positive weights, a moving Bézier patch projects between the lower and upper envelopes of its moving poles. For the upper envelope of A to reach the lower envelope of B, at least one pair of lines must satisfy that inequality. The solver bounds each pair's possible times, takes their hull and tests both directions on coordinate and locally chosen axes. It uses outward rounding for projected endpoint ordinates, differences and roots. It retains endpoint equality and subdivides the patch in homogeneous space. Exhausting the budget gives an unresolved query. A terminal cell indicates possible contact. The rigid STEP adapter bounds rotation relative to the pole chords, then checks proposals on the actual trimmed solids. CAD conversion, pose construction and OCCT verification remain numerical.
+
+| Normalized cell width | Solver | Candidates on 64 positives | Clear on 64 negatives | Extra candidates | Timed out |
+| ---: | --- | ---: | ---: | ---: | ---: |
+| 0.0005 | Upstream 2024 | 64 | 60 | 4 | 0 |
+| 0.0005 | Safeguarded envelopes | 64 | 59 | 5 | 0 |
+| 0.00005 | Safeguarded envelopes | 64 | 59 | 5 | 0 |
+| 0.0000001 | Upstream 2024 | 63 | 60 | 4 | 1 positive |
+| 0.0000001 | Safeguarded envelopes | 64 | 60 | 4 | 0 |
+
+All runs used the same indices, binary64-exact input and eight-second per-query budget. The upstream timeout has no classification. [Default width](../../results/aes/general-contact/tdib-envelopes-on-tdibe-2026.json) · [Intermediate width](../../results/aes/general-contact/tdib-envelopes-width-5e-5.json) · [Fine safeguarded run](../../results/aes/general-contact/tdib-envelopes-width-1e-7.json) · [Fine upstream run](../../results/aes/general-contact/tdib-2024-width-1e-7.json)
+
+~~~powershell
+python benchmarks/chen/tdibe_replay.py build/chen-common/Release/nc_chen_triangles.exe build/deps/tdib-e build/chen26/labeled.json --method chen-2026 --per-file 16 --width .0005 --query-timeout 8
+python benchmarks/aes/solver_impact.py build/cpu-swept/Release/nc_contact.exe build/chen26/spheres build/chen26/impact.json --method chen-2026
+~~~
+
+The [head-on impact](../../results/aes/cpu-solvers/impact-chen-2026.json) exercises all seven laws on one scene. The [eccentric impact](../../results/aes/general-contact/chen26-free-eccentric.json) adds free rotation, friction and offset centers of mass. Patch proposals preceded verified contact in both impacts, so the trimmed-solid search continued. The planar-crossing regression also exercises an accepted CAD proposal. Statistics distinguish visited cells, terminal candidates, unresolved patch searches and confirmed proposals.

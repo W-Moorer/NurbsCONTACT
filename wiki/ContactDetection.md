@@ -189,7 +189,7 @@ The two-sphere comparison defaults to 904 triangles per sphere (8 mm target, 17.
 
 ## Surface contact solvers
 
-All five named surface methods return connected contact regions. Choose a geometry method and response on the same scene, for example `--method mesh-obb --solver ncp` or `--method chen-2024 --solver sap`. Sweep and prune (`--method mesh-sap`) selects broad-phase geometry. The discrete compliant solver (`--solver sap`) selects the contact law. Chen support is a build option.
+All six named surface methods return connected contact regions. Choose a geometry method and response on the same scene, for example `--method mesh-obb --solver ncp` or `--method chen-2024 --solver sap`. Sweep and prune (`--method mesh-sap`) selects broad-phase geometry. The discrete compliant solver (`--solver sap`) selects the contact law. The 2024 option uses the upstream source checkout. The OCCT build includes the independent 2026 variant. [Implementation and labeled comparison](../benchmarks/chen/README.md#safeguarded-envelopes)
 
 | Solver | Normal and friction model |
 | --- | --- |

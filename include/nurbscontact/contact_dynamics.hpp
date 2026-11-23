@@ -100,6 +100,7 @@ struct SurfaceTransition {
     bool end_in_contact{};
     std::size_t nodes{};
     std::size_t cad_distances{}, chen_queries{}, chen_confirmed{};
+    std::size_t tdib_cells{}, tdib_candidates{}, tdib_unresolved{};
 };
 
 class PairRegionQuery {

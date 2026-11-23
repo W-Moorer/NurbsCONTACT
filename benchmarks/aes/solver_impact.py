@@ -42,8 +42,10 @@ def run(args, scene, law):
         raise ValueError("incomplete or nonfinite collision")
     if f.min()<0 or not np.any(f>0) or stats["solver"]!=law:
         raise ValueError("unexpected solver or contact impulse")
-    if args.method=="chen-2024" and int(stats["chen_patch_queries"])==0:
+    if args.method.startswith("chen-") and int(stats["chen_patch_queries"])==0:
         raise ValueError("Chen sweep did not run")
+    if args.method=="chen-2026" and int(stats["tdib_cells"])==0:
+        raise ValueError("safeguarded envelope search did not run")
     # Two unit masses, zero initial speed on the first, -0.45 m/s on the second.
     if law in ("penalty","sap"):
         reference, _ = exact("spheres", t, LEGACY)
@@ -60,14 +62,15 @@ def run(args, scene, law):
                 peak_normal_N=float(f.max()), integration_s=float(stats["wall_s"]),
                 impulse_residual_m_s=float(stats["impulse_residual_m_s"]),
                 iterations=int(stats["impulse_iterations"]), ccd_checks=int(stats["ccd_checks"]),
-                chen_patch_queries=int(stats["chen_patch_queries"]), trace_sha256=digest(prefix.with_suffix(".csv")))
+                chen_patch_queries=int(stats["chen_patch_queries"]), trace_sha256=digest(prefix.with_suffix(".csv")),
+                **{k:int(stats[k]) for k in ("tdib_cells","tdib_candidates","tdib_unresolved") if k in stats})
 
 
 if __name__=="__main__":
     parser=argparse.ArgumentParser(description=__doc__)
     for key in ("exe","work","output"):
         parser.add_argument(key,type=Path)
-    parser.add_argument("--method",choices=("mesh-aabb","mesh-obb","mesh-sap","cad-occt","chen-2024"),required=True)
+    parser.add_argument("--method",choices=("mesh-aabb","mesh-obb","mesh-sap","cad-occt","chen-2024","chen-2026"),required=True)
     parser.add_argument("--mesh-dir",type=Path)
     parser.add_argument("--solvers",nargs="+",choices=LAWS,default=LAWS)
     parser.add_argument("--dt",type=float,default=.00025)

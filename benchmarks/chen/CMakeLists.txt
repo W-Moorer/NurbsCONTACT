@@ -16,6 +16,7 @@ target_include_directories(nc_chen_common SYSTEM PRIVATE "${TDIB_SOURCE_DIR}/cor
 target_link_libraries(nc_chen_common PRIVATE nurbscontact)
 
 add_executable(nc_chen_triangles triangles.cpp)
+target_link_libraries(nc_chen_triangles PRIVATE nurbscontact)
 target_compile_features(nc_chen_triangles PRIVATE cxx_std_20)
 target_include_directories(nc_chen_triangles SYSTEM PRIVATE "${TDIB_SOURCE_DIR}/core" "${EIGEN_INCLUDE_DIR}")
 if(MSVC)

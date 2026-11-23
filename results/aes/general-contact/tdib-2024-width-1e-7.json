@@ -1,0 +1,1831 @@
+{
+  "solver": "Chen et al. 2024 official TDIB-OBB",
+  "dataset": "Chen et al. 2026 TDIB-E",
+  "width": 1e-07,
+  "query_timeout_s": 8.0,
+  "exe_sha256": "65f313908d5d3d6edf810dfd2025e60dd679f7e549d56b89412d5824dade3e24",
+  "elapsed_s": 63.03200000000652,
+  "files": {
+    "face-face/rp": {
+      "available": 6003,
+      "tested": 16,
+      "sha256": "d7ef2ab12b1d43c6c63a36c85a3ad26b82f5d5995d67509f8abf54dc64391adf",
+      "outcomes": {
+        "candidate": 15,
+        "timeout": 1
+      }
+    },
+    "face-face/rn": {
+      "available": 6003,
+      "tested": 16,
+      "sha256": "8c6d6413b839ca7feb504915221cf00504564ec73ac015d96bccb6ffd6d1afa2",
+      "outcomes": {
+        "clear": 16
+      }
+    },
+    "face-face/nhp": {
+      "available": 600,
+      "tested": 16,
+      "sha256": "77626c36a92adb0ffdad0d8dc0d4f694c915c84bdd7cc0b5a41ea7361a59765f",
+      "outcomes": {
+        "candidate": 16
+      }
+    },
+    "face-face/nmn": {
+      "available": 600,
+      "tested": 16,
+      "sha256": "e21982b4a28fa4803a371f9344ba88d48dcad46ff15344094bab2e19867e8813",
+      "outcomes": {
+        "candidate": 4,
+        "clear": 12
+      }
+    },
+    "vertex-vertex/rp": {
+      "available": 1000,
+      "tested": 16,
+      "sha256": "a913849e028be7a87c15a13ce7d981f8ca397b20a4949cc0e75b0d0dbaebf0d1",
+      "outcomes": {
+        "candidate": 16
+      }
+    },
+    "vertex-vertex/rn": {
+      "available": 1000,
+      "tested": 16,
+      "sha256": "86de5bcb5efebb50b187f8466ec58a850021aae281be45e392445c28ae39e3d9",
+      "outcomes": {
+        "clear": 16
+      }
+    },
+    "vertex-vertex/nhp": {
+      "available": 100,
+      "tested": 16,
+      "sha256": "9c7a7aea6f5963bba6d6e61341797f79b05c434d7f19ca3e6fd251e5d67e1686",
+      "outcomes": {
+        "candidate": 16
+      }
+    },
+    "vertex-vertex/nmn": {
+      "available": 591,
+      "tested": 16,
+      "sha256": "960a5b93490b406bf9758fc840d37c7bd3ec6f5b8882a816f456ea3e5b23a368",
+      "outcomes": {
+        "clear": 16
+      }
+    }
+  },
+  "queries": [
+    {
+      "file": "face-face/rp",
+      "index": 187,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 1.8530036,
+      "fraction": 0.9999999999836066,
+      "uv_a": [
+        0.25000003973642987,
+        0.24999998013178507
+      ],
+      "uv_b": [
+        0.2500000794728597,
+        0.24999996026357016
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 562,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 1.3717907,
+      "fraction": 0.9999999999975119,
+      "uv_a": [
+        0.24999996026357016,
+        0.2500000198682149
+      ],
+      "uv_b": [
+        0.24999998013178507,
+        0.25000003973642987
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 937,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 3.6756543,
+      "fraction": 0.9999999999952356,
+      "uv_a": [
+        0.2499996026357015,
+        0.250000258286794
+      ],
+      "uv_b": [
+        0.25000009934107464,
+        0.24999998013178507
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 1313,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.9530955,
+      "fraction": 0.9999999999972574,
+      "uv_a": [
+        0.25000003973642987,
+        0.25000003973642987
+      ],
+      "uv_b": [
+        0.24999996026357016,
+        0.2500000198682149
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 1688,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.9371793,
+      "fraction": 0.9999999999960383,
+      "uv_a": [
+        0.25000003973642987,
+        0.24999998013178507
+      ],
+      "uv_b": [
+        0.25000003973642987,
+        0.24999998013178507
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 2063,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 1.2673572,
+      "fraction": 0.9999999999934119,
+      "uv_a": [
+        0.2499994436899821,
+        0.2500008742014567
+      ],
+      "uv_b": [
+        0.24999990065892538,
+        0.2500000794728597
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 2438,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.743108,
+      "fraction": 0.999999999998683,
+      "uv_a": [
+        0.4285713831583659,
+        0.4285714427630107
+      ],
+      "uv_b": [
+        0.4285714228947957,
+        0.4285714824994405
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 2813,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 4.6818671,
+      "fraction": 0.999999999993625,
+      "uv_a": [
+        0.25000019868214923,
+        0.24999996026357016
+      ],
+      "uv_b": [
+        0.24999996026357016,
+        0.2500000198682149
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 3189,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 3.9486739,
+      "fraction": 0.9999999999980567,
+      "uv_a": [
+        0.42857132355372113,
+        0.4285714427630107
+      ],
+      "uv_b": [
+        0.2500000794728597,
+        0.2500000198682149
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 3564,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 2.2750534,
+      "fraction": 0.9999999999968765,
+      "uv_a": [
+        0.24999998013178507,
+        0.24999998013178507
+      ],
+      "uv_b": [
+        0.24999998013178507,
+        0.24999998013178507
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 3939,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.6536703,
+      "fraction": 0.9999999999939336,
+      "uv_a": [
+        0.2500000198682149,
+        0.24999996026357016
+      ],
+      "uv_b": [
+        0.24999998013178507,
+        0.24999998013178507
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 4314,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.6955605,
+      "fraction": 0.9999999999842842,
+      "uv_a": [
+        0.2500000198682149,
+        0.2500000198682149
+      ],
+      "uv_b": [
+        0.24999986092249551,
+        0.25000009934107464
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 4689,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 1.3343816,
+      "fraction": 0.9999999999983327,
+      "uv_a": [
+        0.4285714427630107,
+        0.4285714427630107
+      ],
+      "uv_b": [
+        0.2499999205271403,
+        0.2500001589457194
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 5065,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "timeout"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 5440,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 2.6546638,
+      "fraction": 0.9999999999977701,
+      "uv_a": [
+        0.2499996225039164,
+        0.2500002185503642
+      ],
+      "uv_b": [
+        0.24999996026357016,
+        0.2500000198682149
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 5815,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 3.670133,
+      "fraction": 0.9999999998761396,
+      "uv_a": [
+        0.2500002185503642,
+        0.2499999205271403
+      ],
+      "uv_b": [
+        0.25000013907750446,
+        0.24999990065892538
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 187,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.4602192,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 562,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.2633277,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 937,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.4252437,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 1313,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.2235119,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 1688,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.318787,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 2063,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.3304446,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 2438,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.2620844,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 2813,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.2843166,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 3189,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.7719459,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 3564,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.3275271,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 3939,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.2833455,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 4314,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.2734621,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 4689,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.1960384,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 5065,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.3494235,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 5440,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.4295073,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 5815,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.098693,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 18,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.5189354,
+      "fraction": 0.9999999999989998,
+      "uv_a": [
+        0.25000013907750446,
+        0.24999996026357016
+      ],
+      "uv_b": [
+        0.25000019868214923,
+        0.24999978144963583
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 56,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0505089,
+      "fraction": 0.9995883509026167,
+      "uv_a": [
+        0.6186901529630026,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        0.28478415807088214
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 93,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.5073756,
+      "fraction": 0.9734409009956172,
+      "uv_a": [
+        0.2585708101590474,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        0.30389360586802167,
+        0.1279215614000956
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 131,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0439074,
+      "fraction": 0.9997564374361673,
+      "uv_a": [
+        0.6354302565256754,
+        0.01676831642786662
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 168,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.1489684,
+      "fraction": 0.9998205897440194,
+      "uv_a": [
+        1.9868214925130207e-08,
+        0.6710933049519857
+      ],
+      "uv_b": [
+        0.7393026749293009,
+        9.934107462565105e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 206,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0753037,
+      "fraction": 0.9998197945288644,
+      "uv_a": [
+        0.4917914072672526,
+        3.9736429850260414e-08
+      ],
+      "uv_b": [
+        0.7690664728482565,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 243,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0402458,
+      "fraction": 0.9979024890824272,
+      "uv_a": [
+        0.241340438524882,
+        3.9736429850260414e-08
+      ],
+      "uv_b": [
+        0.27712883551915485,
+        0.7228711446126302
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 281,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0447148,
+      "fraction": 0.9996852787043663,
+      "uv_a": [
+        0.0119208296140035,
+        0.9880791505177816
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        0.45070483287175495
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 318,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0500848,
+      "fraction": 0.9906794350644142,
+      "uv_a": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "uv_b": [
+        0.3172962466875712,
+        0.02896175781885783
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 356,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0367606,
+      "fraction": 0.998661841480601,
+      "uv_a": [
+        0.03845242659250895,
+        0.38864115873972577
+      ],
+      "uv_b": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 393,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 1.1743244,
+      "fraction": 0.9999999999956743,
+      "uv_a": [
+        0.25000013907750446,
+        0.24999978144963583
+      ],
+      "uv_b": [
+        0.2500000198682149,
+        0.24999996026357016
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 431,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.3100511,
+      "fraction": 0.9964186278993752,
+      "uv_a": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "uv_b": [
+        0.059106250603993736,
+        0.4786270459493001
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 468,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.8671092,
+      "fraction": 0.9866840457687298,
+      "uv_a": [
+        0.4342262347539266,
+        0.3534076412518819
+      ],
+      "uv_b": [
+        0.27745429674784344,
+        0.48810742298762005
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 506,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 2.0170121,
+      "fraction": 0.9999999999989997,
+      "uv_a": [
+        0.2500004967053731,
+        0.24999954303105673
+      ],
+      "uv_b": [
+        0.24999978144963583,
+        0.250000258286794
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 543,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 4.1053146,
+      "fraction": 0.9999999999974636,
+      "uv_a": [
+        0.2500008742014567,
+        0.2499989072481791
+      ],
+      "uv_b": [
+        0.24999986092249551,
+        0.2499999205271403
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 581,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0490032,
+      "fraction": 0.9967227587597709,
+      "uv_a": [
+        0.23186572392781576,
+        0.7681342562039694
+      ],
+      "uv_b": [
+        0.7520421544710795,
+        3.9736429850260414e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 18,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0248573,
+      "fraction": 0.39432569937730105,
+      "uv_a": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "uv_b": [
+        0.4469205339749654,
+        0.10356940825780232
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 56,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.2148803,
+      "fraction": 0.45844197068418,
+      "uv_a": [
+        0.31967278321584064,
+        0.6803271969159445
+      ],
+      "uv_b": [
+        0.30161116520563763,
+        0.5679994622866312
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 93,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.172739,
+      "fraction": 0.32910432492894165,
+      "uv_a": [
+        0.4977133472760518,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        0.39201172192891437,
+        0.521472175916036
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 131,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.5993076,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 168,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.3517093,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 206,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.2541597,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 243,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.2573516,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 281,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.5071592,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 318,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.4524038,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 356,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.2365175,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 393,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.129378,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 431,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.7296291,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 468,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0415343,
+      "fraction": 0.35245856667982317,
+      "uv_a": [
+        1.9868214925130207e-08,
+        0.14899714787801108
+      ],
+      "uv_b": [
+        0.9570788343747457,
+        0.04292114575703939
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 506,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.5076571,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 543,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.3506675,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 581,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.5303102,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 31,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0178552,
+      "fraction": 0.9999999999990002,
+      "uv_a": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 93,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0155412,
+      "fraction": 0.9999999999990004,
+      "uv_a": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 156,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0159076,
+      "fraction": 0.9999999999990002,
+      "uv_a": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 218,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.2717242,
+      "fraction": 0,
+      "uv_a": [
+        0.4074670871098836,
+        0.04830851157506307
+      ],
+      "uv_b": [
+        0.10822614034016927,
+        0.12548025449117026
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 281,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.2968348,
+      "fraction": 0,
+      "uv_a": [
+        0.038405974706014,
+        0.6700403292973837
+      ],
+      "uv_b": [
+        0.04898764689763387,
+        0.7741612394650778
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 343,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0161076,
+      "fraction": 0.9999999999990004,
+      "uv_a": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 406,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.016023,
+      "fraction": 0.9999999999990002,
+      "uv_a": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 468,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0331919,
+      "fraction": 0.9999999999987785,
+      "uv_a": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 531,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0152491,
+      "fraction": 0.9999999999990004,
+      "uv_a": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 593,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0162279,
+      "fraction": 0.9999999999989997,
+      "uv_a": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "uv_b": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 656,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0149019,
+      "fraction": 0.9999999999990001,
+      "uv_a": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 718,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.014924,
+      "fraction": 0.9999999999990002,
+      "uv_a": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 781,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.015203,
+      "fraction": 0.9999999999990004,
+      "uv_a": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 843,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0147808,
+      "fraction": 0.9999999999990002,
+      "uv_a": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 906,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0147186,
+      "fraction": 0.9999999999990002,
+      "uv_a": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 968,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0153585,
+      "fraction": 0.9999999999990002,
+      "uv_a": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 31,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 6.9e-05,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 93,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.000759,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 156,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.003932,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 218,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.009242,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 281,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0007637,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 343,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 7.67e-05,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 406,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 7.94e-05,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 468,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0007231,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 531,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 6.7e-05,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 593,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.000109,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 656,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0001148,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 718,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0006683,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 781,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 6.93e-05,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 843,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0033325,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 906,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0006797,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 968,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0019454,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 3,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0142628,
+      "fraction": 0.4999999999995001,
+      "uv_a": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 9,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0149016,
+      "fraction": 0.49999999999949996,
+      "uv_a": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 15,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0145962,
+      "fraction": 0.49999999999920797,
+      "uv_a": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 21,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0140265,
+      "fraction": 0.4999999999995002,
+      "uv_a": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "uv_b": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 28,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0141018,
+      "fraction": 0.49999999999806355,
+      "uv_a": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 34,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0137265,
+      "fraction": 0.4999999999989456,
+      "uv_a": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 40,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.012966,
+      "fraction": 0.4999999999995002,
+      "uv_a": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 46,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0137383,
+      "fraction": 0.49999999999949984,
+      "uv_a": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 53,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0132463,
+      "fraction": 0.49999999999922945,
+      "uv_a": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 59,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0134029,
+      "fraction": 0.4999999999995001,
+      "uv_a": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 65,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0158904,
+      "fraction": 0.49999999999949984,
+      "uv_a": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 71,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0137896,
+      "fraction": 0.49999999688572366,
+      "uv_a": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 78,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0134822,
+      "fraction": 0.4999999999993798,
+      "uv_a": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "uv_b": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 84,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0139492,
+      "fraction": 0.4999999999995001,
+      "uv_a": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 90,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.014533,
+      "fraction": 0.49999999999950007,
+      "uv_a": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        0.9999999602635702,
+        1.9868214925130207e-08
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 96,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0159762,
+      "fraction": 0.499999999999224,
+      "uv_a": [
+        1.9868214925130207e-08,
+        1.9868214925130207e-08
+      ],
+      "uv_b": [
+        1.9868214925130207e-08,
+        0.9999999602635702
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 18,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0006647,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 55,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0012281,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 92,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0006675,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 129,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.000611,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 166,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0006497,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 203,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0006344,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 240,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0011658,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 277,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 5.8e-05,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 313,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0052467,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 350,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0011204,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 387,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0006289,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 424,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0011488,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 461,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 5.81e-05,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 498,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0049875,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 535,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0006604,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 572,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 5.45e-05,
+      "outcome": "clear"
+    }
+  ]
+}

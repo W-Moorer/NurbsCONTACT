@@ -1,0 +1,62 @@
+{
+  "case": "eccentric",
+  "method": "chen-2026",
+  "solver": "sap",
+  "dt_s": 0.00025,
+  "duration_s": 0.16,
+  "event_tolerance_s": 5e-05,
+  "step_sha256": "b1b75a633d5f5de9267246c3faa9457f22615bc8b742d4cc9f297e9df2e81d2c",
+  "scene_sha256": "8820b94ae5014d6ac18c861e8928253b968963e67a8e41f7ef8ec455c21dcf27",
+  "trace_sha256": "3811d5adffa547f896e9a5eb458166a4e90c9b5ae04f1eeb134c591705723e41",
+  "frames": 641,
+  "process_s": 18.584052100020926,
+  "integration_s": 18.2459684,
+  "subdivisions": 9,
+  "evaluations": 2219,
+  "step_checks": 791,
+  "event_rejections": 9,
+  "cad_boolean_queries": 395,
+  "cad_event_distances": 1173,
+  "chen_patch_queries": 255,
+  "chen_confirmed_candidates": 0,
+  "tdib_cells": 20287,
+  "tdib_candidates": 34,
+  "tdib_unresolved": 3,
+  "impulse_residual_m_s": 5.6337249456837936e-08,
+  "impulse_solves": 649,
+  "impulse_regions": 133,
+  "impulse_iterations": 2094,
+  "ccd_refinements": 0,
+  "ccd_refined_clear": 0,
+  "ccd_unresolved": 0,
+  "max_linear_momentum_drift_kg_m_s": 1.6653345369377348e-16,
+  "max_angular_momentum_drift_kg_m2_s": 2.671150286561938e-06,
+  "initial_kinetic_energy_J": 0.10125,
+  "final_kinetic_energy_J": 0.09708441442630071,
+  "final_velocities_m_s": [
+    [
+      -0.04248516304464567,
+      4.59097924447416e-13,
+      -0.43358891135578603
+    ],
+    [
+      0.04248516304464567,
+      -4.59097924447416e-13,
+      -0.016411088644213995
+    ]
+  ],
+  "final_angular_velocities_rad_s": [
+    [
+      -7.306012309343341e-09,
+      -1.0897373827648293,
+      7.149616752311905e-10
+    ],
+    [
+      7.254651367926803e-09,
+      1.4894479531461924,
+      -7.095093456045454e-10
+    ]
+  ],
+  "peak_normal_force_N": 21.82238550436044,
+  "normal_impulse_Ns": 0.43498148165054284
+}

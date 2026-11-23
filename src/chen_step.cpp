@@ -1,15 +1,6 @@
 #include "cad_rigid_path.hpp"
-#include <BRepTools.hxx>
+#include "chen_patches.hpp"
 #include <Bnd_Box.hxx>
-#include <BRep_Tool.hxx>
-#include <GeomConvert.hxx>
-#include <GeomConvert_BSplineSurfaceToBezierSurface.hxx>
-#include <Geom_BezierSurface.hxx>
-#include <Geom_BSplineSurface.hxx>
-#include <Geom_RectangularTrimmedSurface.hxx>
-#include <TopExp_Explorer.hxx>
-#include <TopoDS.hxx>
-#include <TopoDS_Face.hxx>
 #include "config.h"
 #include "recRatBezier.h"
 #include "solverTD_margin.h"
@@ -25,26 +16,17 @@ struct Net {
 
 std::vector<Net> nets(const TopoDS_Shape& shape) {
     std::vector<Net> result;
-    for (TopExp_Explorer it(shape,TopAbs_FACE);it.More();it.Next()) {
-        const auto face=TopoDS::Face(it.Current());
-        double u0,u1,v0,v1;
-        BRepTools::UVBounds(face,u0,u1,v0,v1);
+    for (const auto& patch:bezier_charts(shape)) {
         try {
-            Handle(Geom_Surface) bounded=new Geom_RectangularTrimmedSurface(BRep_Tool::Surface(face),u0,u1,v0,v1);
-            auto spline=GeomConvert::SurfaceToBSplineSurface(bounded);
-            if (spline->UDegree()>3 || spline->VDegree()>3) continue;
-            GeomConvert_BSplineSurfaceToBezierSurface pieces(spline);
-            for (int u=1;u<=pieces.NbUPatches();++u) for (int v=1;v<=pieces.NbVPatches();++v) {
-                const auto patch=pieces.Patch(u,v);
-                patch->Increase(3,3);
-                Net net;
-                for (int i=0;i<4;++i) for (int j=0;j<4;++j) {
-                    net.points[4*i+j]=patch->Pole(i+1,j+1);
-                    net.weights[4*i+j]=patch->Weight(i+1,j+1);
-                }
-                if (std::all_of(net.weights.begin(),net.weights.end(),[](double w){return w>0 && std::isfinite(w);}))
-                    result.push_back(std::move(net));
+            if (patch->UDegree()>3 || patch->VDegree()>3) continue;
+            patch->Increase(3,3);
+            Net net;
+            for (int i=0;i<4;++i) for (int j=0;j<4;++j) {
+                net.points[4*i+j]=patch->Pole(i+1,j+1);
+                net.weights[4*i+j]=patch->Weight(i+1,j+1);
             }
+            if (std::all_of(net.weights.begin(),net.weights.end(),[](double w){return w>0 && std::isfinite(w);}))
+                result.push_back(std::move(net));
         } catch (const Standard_Failure&) {
             // Every trimmed face, including unsupported charts, remains in the CAD sweep.
         }

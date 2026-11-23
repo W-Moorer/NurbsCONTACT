@@ -126,7 +126,8 @@ struct SurfaceOptions {
     Path mesh_directory;
     double distance_tolerance{1e-7};
     bool localize{true};
-    bool cad() const { return method=="cad-occt" || method=="chen-2024"; }
+    bool chen() const { return method=="chen-2024" || method=="chen-2026"; }
+    bool cad() const { return method=="cad-occt" || chen(); }
 };
 
 Input read_scene(const Path& path,double deflection,std::optional<PairBackend> pair_backend,
@@ -407,7 +408,8 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
             const std::array centers{center(pair.a),center(pair.b)};
             if (surface_options.cad()) {
                 pair.regions=cad_solid_region_query(shapes.at(files[pair.a]),shapes.at(files[pair.b]),centers,
-                                                    surface_options.method=="chen-2024");
+                    surface_options.method=="chen-2026" ? CadEventMethod::chen_2026 :
+                    surface_options.method=="chen-2024" ? CadEventMethod::chen_2024 : CadEventMethod::conservative_advancement);
             } else {
 #ifdef NC_WITH_CPU_MESH
                 pair.regions=cpu::mesh_region_query(meshes[pair.a],meshes[pair.b],cpu::mesh_method(surface_options.method),
@@ -1017,6 +1019,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     HhtStats stats;
     std::size_t event_nodes=0, unresolved_events=0, spatial_refinements=0, refined_clear=0;
     std::size_t cad_distances=0,chen_queries=0,chen_confirmed=0;
+    std::size_t tdib_cells=0,tdib_candidates=0,tdib_unresolved=0;
     StepAcceptanceFunction accept_step;
     if (event_tolerance>0) {
         accept_step=[&](const State& start,const State& end) -> std::optional<double> {
@@ -1045,6 +1048,9 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                             cad_distances+=hit.cad_distances;
                             chen_queries+=hit.chen_queries;
                             chen_confirmed+=hit.chen_confirmed;
+                            tdib_cells+=hit.tdib_cells;
+                            tdib_candidates+=hit.tdib_candidates;
+                            tdib_unresolved+=hit.tdib_unresolved;
                             event_nodes+=hit.nodes;
                         };
                         sweep(surface.distance_tolerance);
@@ -1256,7 +1262,8 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             "closest_queries,unresolved_queries,native_nodes,ccd_checks,ccd_rejected,ccd_nodes,ccd_unresolved,saved_contact_reuses,"
             "mesh_boolean_queries,mesh_boolean_input_faces,mesh_local_solid_uses,mesh_local_solid_builds,"
             "mesh_detection_s,mesh_placement_s,mesh_boolean_s,cad_boolean_queries,cad_event_distances,chen_patch_queries,chen_confirmed_candidates,event_tolerance_s,"
-            "solver,impulse_solves,impulse_regions,impulse_iterations,impulse_residual_m_s,ccd_refinements,ccd_refined_clear\n"
+            "solver,impulse_solves,impulse_regions,impulse_iterations,impulse_residual_m_s,ccd_refinements,ccd_refined_clear,"
+            "tdib_cells,tdib_candidates,tdib_unresolved\n"
         <<(n || surface.impulse_law ? wall : replay_s)<<','<<setup_s<<','<<steps<<','<<stats.accepted_steps<<','<<stats.subdivisions<<','<<stats.evaluations
         <<','<<stats.maximum_residual<<','<<work.pairs<<','<<work.culled<<','<<work.rays<<','<<work.missing
         <<','<<work.mesh.triangles<<','<<work.closest_queries<<','<<work.unresolved_queries<<','<<work.native_nodes
@@ -1266,7 +1273,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         <<','<<work.cad_boolean_queries<<','<<cad_distances<<','<<chen_queries<<','<<chen_confirmed<<','<<event_tolerance
         <<','<<(surface.impulse_law ? impulse_law_name(*surface.impulse_law) : "penalty")
         <<','<<impulse_solves<<','<<impulse_regions<<','<<impulse_iterations<<','<<impulse_residual
-        <<','<<spatial_refinements<<','<<refined_clear<<'\n';
+        <<','<<spatial_refinements<<','<<refined_clear<<','<<tdib_cells<<','<<tdib_candidates<<','<<tdib_unresolved<<'\n';
     if (!trace || !report) throw std::runtime_error("failed to write contact run");
 }
 
@@ -1341,7 +1348,7 @@ int main(int argc,char** argv) {
                         "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
                         "  or append --method mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
                         "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full]\n"
-                        "  or append --method cad-occt|chen-2024 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
+                        "  or append --method cad-occt|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
                         "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp\n";
             return 2;
         }
@@ -1373,8 +1380,8 @@ int main(int argc,char** argv) {
             }
             if (!surface.cad() && surface.method!="mesh-aabb" && surface.method!="mesh-obb" && surface.method!="mesh-sap")
                 throw std::invalid_argument("unknown surface contact method");
-            if (surface.method=="chen-2024" && !event_specified) event_tolerance=.2*std::stod(argv[3]);
-            if (surface.method=="chen-2024" && !(event_tolerance>0))
+            if (surface.chen() && !event_specified) event_tolerance=.2*std::stod(argv[3]);
+            if (surface.chen() && !(event_tolerance>0))
                 throw std::invalid_argument("Chen CCD requires positive --event-tol-s");
             if (!(std::isfinite(surface.distance_tolerance) && surface.distance_tolerance>0))
                 throw std::invalid_argument("expected a positive finite CCD spatial tolerance in metres");

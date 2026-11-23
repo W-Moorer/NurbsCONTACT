@@ -1,0 +1,1506 @@
+{
+  "solver": "Independent TDIB-E variant with outward-rounded line envelopes",
+  "dataset": "Chen et al. 2026 TDIB-E",
+  "width": 0.0005,
+  "query_timeout_s": 8.0,
+  "exe_sha256": "65f313908d5d3d6edf810dfd2025e60dd679f7e549d56b89412d5824dade3e24",
+  "elapsed_s": 17.219000000040978,
+  "files": {
+    "face-face/rp": {
+      "available": 6003,
+      "tested": 16,
+      "sha256": "d7ef2ab12b1d43c6c63a36c85a3ad26b82f5d5995d67509f8abf54dc64391adf",
+      "outcomes": {
+        "candidate": 16
+      }
+    },
+    "face-face/rn": {
+      "available": 6003,
+      "tested": 16,
+      "sha256": "8c6d6413b839ca7feb504915221cf00504564ec73ac015d96bccb6ffd6d1afa2",
+      "outcomes": {
+        "clear": 16
+      }
+    },
+    "face-face/nhp": {
+      "available": 600,
+      "tested": 16,
+      "sha256": "77626c36a92adb0ffdad0d8dc0d4f694c915c84bdd7cc0b5a41ea7361a59765f",
+      "outcomes": {
+        "candidate": 16
+      }
+    },
+    "face-face/nmn": {
+      "available": 600,
+      "tested": 16,
+      "sha256": "e21982b4a28fa4803a371f9344ba88d48dcad46ff15344094bab2e19867e8813",
+      "outcomes": {
+        "candidate": 4,
+        "clear": 12
+      }
+    },
+    "vertex-vertex/rp": {
+      "available": 1000,
+      "tested": 16,
+      "sha256": "a913849e028be7a87c15a13ce7d981f8ca397b20a4949cc0e75b0d0dbaebf0d1",
+      "outcomes": {
+        "candidate": 16
+      }
+    },
+    "vertex-vertex/rn": {
+      "available": 1000,
+      "tested": 16,
+      "sha256": "86de5bcb5efebb50b187f8466ec58a850021aae281be45e392445c28ae39e3d9",
+      "outcomes": {
+        "clear": 16
+      }
+    },
+    "vertex-vertex/nhp": {
+      "available": 100,
+      "tested": 16,
+      "sha256": "9c7a7aea6f5963bba6d6e61341797f79b05c434d7f19ca3e6fd251e5d67e1686",
+      "outcomes": {
+        "candidate": 16
+      }
+    },
+    "vertex-vertex/nmn": {
+      "available": 591,
+      "tested": 16,
+      "sha256": "960a5b93490b406bf9758fc840d37c7bd3ec6f5b8882a816f456ea3e5b23a368",
+      "outcomes": {
+        "clear": 15,
+        "candidate": 1
+      }
+    }
+  },
+  "queries": [
+    {
+      "file": "face-face/rp",
+      "index": 187,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 6173,
+      "query_s": 0.3720573,
+      "time": [
+        0.9999998081512675,
+        1
+      ]
+    },
+    {
+      "file": "face-face/rp",
+      "index": 562,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 4073,
+      "query_s": 0.2161116,
+      "time": [
+        0.9999999883274544,
+        1
+      ]
+    },
+    {
+      "file": "face-face/rp",
+      "index": 937,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 6417,
+      "query_s": 0.3545304,
+      "time": [
+        0.999999767085766,
+        1
+      ]
+    },
+    {
+      "file": "face-face/rp",
+      "index": 1313,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 3213,
+      "query_s": 0.1791131,
+      "time": [
+        0.9999998826071639,
+        1
+      ]
+    },
+    {
+      "file": "face-face/rp",
+      "index": 1688,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 3653,
+      "query_s": 0.1846957,
+      "time": [
+        0.9999999424322912,
+        1
+      ]
+    },
+    {
+      "file": "face-face/rp",
+      "index": 2063,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 6049,
+      "query_s": 0.3061775,
+      "time": [
+        0.9999998721799771,
+        1
+      ]
+    },
+    {
+      "file": "face-face/rp",
+      "index": 2438,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 2905,
+      "query_s": 0.1588846,
+      "time": [
+        0.9999966217512677,
+        0.999999775194003
+      ]
+    },
+    {
+      "file": "face-face/rp",
+      "index": 2813,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 3229,
+      "query_s": 0.1878432,
+      "time": [
+        0.9999999400814347,
+        1
+      ]
+    },
+    {
+      "file": "face-face/rp",
+      "index": 3189,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 2733,
+      "query_s": 0.1836034,
+      "time": [
+        0.9999998857829663,
+        1
+      ]
+    },
+    {
+      "file": "face-face/rp",
+      "index": 3564,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 3225,
+      "query_s": 0.1878412,
+      "time": [
+        0.9999999671775364,
+        1
+      ]
+    },
+    {
+      "file": "face-face/rp",
+      "index": 3939,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 3669,
+      "query_s": 0.2178636,
+      "time": [
+        0.9999998786793757,
+        1
+      ]
+    },
+    {
+      "file": "face-face/rp",
+      "index": 4314,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 3425,
+      "query_s": 0.2171659,
+      "time": [
+        0.9999999269484616,
+        1
+      ]
+    },
+    {
+      "file": "face-face/rp",
+      "index": 4689,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 3805,
+      "query_s": 0.176074,
+      "time": [
+        0.9999996895126656,
+        1
+      ]
+    },
+    {
+      "file": "face-face/rp",
+      "index": 5065,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 2349,
+      "query_s": 0.1416383,
+      "time": [
+        0.9999999609542668,
+        1
+      ]
+    },
+    {
+      "file": "face-face/rp",
+      "index": 5440,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 9157,
+      "query_s": 0.3959944,
+      "time": [
+        0.9999995642674757,
+        1
+      ]
+    },
+    {
+      "file": "face-face/rp",
+      "index": 5815,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 2561,
+      "query_s": 0.1261474,
+      "time": [
+        0.9999985654747856,
+        1
+      ]
+    },
+    {
+      "file": "face-face/rn",
+      "index": 187,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 4669,
+      "query_s": 0.203795
+    },
+    {
+      "file": "face-face/rn",
+      "index": 562,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 1261,
+      "query_s": 0.0557692
+    },
+    {
+      "file": "face-face/rn",
+      "index": 937,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 1685,
+      "query_s": 0.0676278
+    },
+    {
+      "file": "face-face/rn",
+      "index": 1313,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 1449,
+      "query_s": 0.0611579
+    },
+    {
+      "file": "face-face/rn",
+      "index": 1688,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 3761,
+      "query_s": 0.1417013
+    },
+    {
+      "file": "face-face/rn",
+      "index": 2063,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 3621,
+      "query_s": 0.2205935
+    },
+    {
+      "file": "face-face/rn",
+      "index": 2438,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 1269,
+      "query_s": 0.0461623
+    },
+    {
+      "file": "face-face/rn",
+      "index": 2813,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 2053,
+      "query_s": 0.0900787
+    },
+    {
+      "file": "face-face/rn",
+      "index": 3189,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 2509,
+      "query_s": 0.1086748
+    },
+    {
+      "file": "face-face/rn",
+      "index": 3564,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 3849,
+      "query_s": 0.1399084
+    },
+    {
+      "file": "face-face/rn",
+      "index": 3939,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 1245,
+      "query_s": 0.0498275
+    },
+    {
+      "file": "face-face/rn",
+      "index": 4314,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 3249,
+      "query_s": 0.1126924
+    },
+    {
+      "file": "face-face/rn",
+      "index": 4689,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 1253,
+      "query_s": 0.063303
+    },
+    {
+      "file": "face-face/rn",
+      "index": 5065,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 3865,
+      "query_s": 0.14588
+    },
+    {
+      "file": "face-face/rn",
+      "index": 5440,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 4697,
+      "query_s": 0.1599638
+    },
+    {
+      "file": "face-face/rn",
+      "index": 5815,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 2629,
+      "query_s": 0.1061382
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 18,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 4585,
+      "query_s": 0.1958847,
+      "time": [
+        0.9999999996220864,
+        1
+      ]
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 56,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 165,
+      "query_s": 0.0152482,
+      "time": [
+        0.9995883506349826,
+        0.9995884831168881
+      ]
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 93,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 569,
+      "query_s": 0.0543091,
+      "time": [
+        0.9734408706253651,
+        0.9734582020590683
+      ]
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 131,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 129,
+      "query_s": 0.0124809,
+      "time": [
+        0.9997564373720402,
+        0.9997567134187045
+      ]
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 168,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 445,
+      "query_s": 0.0331158,
+      "time": [
+        0.9998205892864127,
+        0.9998207012199651
+      ]
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 206,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 365,
+      "query_s": 0.0264021,
+      "time": [
+        0.9998197940102914,
+        0.9998198310739753
+      ]
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 243,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 133,
+      "query_s": 0.0094446,
+      "time": [
+        0.9979018861523312,
+        0.9979035348761094
+      ]
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 281,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 133,
+      "query_s": 0.0113215,
+      "time": [
+        0.9996851159584395,
+        0.9996855148071698
+      ]
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 318,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 161,
+      "query_s": 0.0123783,
+      "time": [
+        0.9906794344717095,
+        0.9906886439884218
+      ]
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 356,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 161,
+      "query_s": 0.0157474,
+      "time": [
+        0.998661840566393,
+        0.9986643913941191
+      ]
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 393,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 5745,
+      "query_s": 0.2686044,
+      "time": [
+        0.9999999977032832,
+        0.9999999996164544
+      ]
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 431,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 209,
+      "query_s": 0.0179238,
+      "time": [
+        0.9964186259515152,
+        0.9964271591562996
+      ]
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 468,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 2477,
+      "query_s": 0.1827565,
+      "time": [
+        0.9866839518416717,
+        0.9866840070544503
+      ]
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 506,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 6423,
+      "query_s": 0.2701907,
+      "time": [
+        0.9999999988958239,
+        1
+      ]
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 543,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 6085,
+      "query_s": 0.2349765,
+      "time": [
+        0.9999999971400805,
+        0.9999999974696719
+      ]
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 581,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 261,
+      "query_s": 0.0159806,
+      "time": [
+        0.9967214169413464,
+        0.9967243377102507
+      ]
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 18,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 141,
+      "query_s": 0.0143138,
+      "time": [
+        0.3943256753200219,
+        0.39437401103067943
+      ]
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 56,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 1501,
+      "query_s": 0.1115933,
+      "time": [
+        0.4584418555159142,
+        0.45846584755142394
+      ]
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 93,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 665,
+      "query_s": 0.0629608,
+      "time": [
+        0.3291041415583406,
+        0.32911907423936493
+      ]
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 131,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 17673,
+      "query_s": 1.1010299
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 168,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 3349,
+      "query_s": 0.3049736
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 206,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 4093,
+      "query_s": 0.3223453
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 243,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 2729,
+      "query_s": 0.217298
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 281,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 12377,
+      "query_s": 0.9459117
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 318,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 8605,
+      "query_s": 0.6238502
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 356,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 4493,
+      "query_s": 0.3020255
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 393,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 2237,
+      "query_s": 0.1292502
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 431,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 5125,
+      "query_s": 0.3808781
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 468,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 219,
+      "query_s": 0.0251662,
+      "time": [
+        0.35245356713508313,
+        0.35256744144981805
+      ]
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 506,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 7013,
+      "query_s": 0.502005
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 543,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 7993,
+      "query_s": 0.4587619
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 581,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 7257,
+      "query_s": 0.3465894
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 31,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 39,
+      "query_s": 0.0032489,
+      "time": [
+        0.9999999999999998,
+        1
+      ]
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 93,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 89,
+      "query_s": 0.0043361,
+      "time": [
+        0.9999999956582131,
+        1
+      ]
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 156,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 23,
+      "query_s": 0.002747,
+      "time": [
+        0.9999999999999998,
+        1
+      ]
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 218,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 96,
+      "query_s": 0.0057527,
+      "time": [
+        0,
+        0.00040954287421839867
+      ]
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 281,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 63,
+      "query_s": 0.006005,
+      "time": [
+        0,
+        0.0004245882172617037
+      ]
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 343,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 45,
+      "query_s": 0.0027183,
+      "time": [
+        0.9999999999999997,
+        1
+      ]
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 406,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 49,
+      "query_s": 0.0028347,
+      "time": [
+        0.9999999999999998,
+        1
+      ]
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 468,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 29,
+      "query_s": 0.0024781,
+      "time": [
+        0.9999999999999996,
+        1
+      ]
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 531,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 50,
+      "query_s": 0.002802,
+      "time": [
+        0.9999999999999998,
+        1
+      ]
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 593,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 78,
+      "query_s": 0.0034833,
+      "time": [
+        0.9999999999999998,
+        1
+      ]
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 656,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 42,
+      "query_s": 0.0022503,
+      "time": [
+        0.9999999999999998,
+        1
+      ]
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 718,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 86,
+      "query_s": 0.002467,
+      "time": [
+        0.9999999999999998,
+        1
+      ]
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 781,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 23,
+      "query_s": 0.0019459,
+      "time": [
+        0.9999999999999998,
+        1
+      ]
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 843,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 86,
+      "query_s": 0.0030488,
+      "time": [
+        0.9999999999999998,
+        1
+      ]
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 906,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 37,
+      "query_s": 0.0021764,
+      "time": [
+        0.9999999999999998,
+        1
+      ]
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 968,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 26,
+      "query_s": 0.0020445,
+      "time": [
+        0.9999999999999998,
+        1
+      ]
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 31,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 17,
+      "query_s": 0.0008621
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 93,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 9,
+      "query_s": 0.0004913
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 156,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 57,
+      "query_s": 0.0029374
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 218,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 193,
+      "query_s": 0.0078375
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 281,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 1,
+      "query_s": 0.000109
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 343,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 1,
+      "query_s": 6.74e-05
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 406,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 1,
+      "query_s": 6.21e-05
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 468,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 17,
+      "query_s": 0.0007124
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 531,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 1,
+      "query_s": 9.47e-05
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 593,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 77,
+      "query_s": 0.0028881
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 656,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 1,
+      "query_s": 7.81e-05
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 718,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 1,
+      "query_s": 0.0001212
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 781,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 5,
+      "query_s": 0.0002435
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 843,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 13,
+      "query_s": 0.0005506
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 906,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 9,
+      "query_s": 0.0004059
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 968,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 13,
+      "query_s": 0.000751
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 3,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 58,
+      "query_s": 0.0038723,
+      "time": [
+        0.49999999999999967,
+        0.5000891971729932
+      ]
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 9,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 45,
+      "query_s": 0.0027616,
+      "time": [
+        0.4999999999999997,
+        0.5000000000000003
+      ]
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 15,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 50,
+      "query_s": 0.0028657,
+      "time": [
+        0.4999999999999987,
+        0.5000000000000003
+      ]
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 21,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 88,
+      "query_s": 0.003178,
+      "time": [
+        0.49999997881943675,
+        0.5000000000000004
+      ]
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 28,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 75,
+      "query_s": 0.0032152,
+      "time": [
+        0.49999999999999784,
+        0.5000000000000003
+      ]
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 34,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 43,
+      "query_s": 0.0024989,
+      "time": [
+        0.4999999999999998,
+        0.5000000000000016
+      ]
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 40,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 88,
+      "query_s": 0.0039737,
+      "time": [
+        0.4999530240123,
+        0.5000000000000007
+      ]
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 46,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 44,
+      "query_s": 0.0027769,
+      "time": [
+        0.4999999999999907,
+        0.5000000000000003
+      ]
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 53,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 57,
+      "query_s": 0.0032109,
+      "time": [
+        0.4999999999999996,
+        0.5000001502129685
+      ]
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 59,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 57,
+      "query_s": 0.0033095,
+      "time": [
+        0.4999999999999996,
+        0.5000000024434961
+      ]
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 65,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 49,
+      "query_s": 0.0031923,
+      "time": [
+        0.4999999999999998,
+        0.5000000012714151
+      ]
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 71,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 89,
+      "query_s": 0.0042162,
+      "time": [
+        0.4999999947513431,
+        0.5000000021499242
+      ]
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 78,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 58,
+      "query_s": 0.0034998,
+      "time": [
+        0.49999999999999883,
+        0.5000000000000003
+      ]
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 84,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 60,
+      "query_s": 0.0034626,
+      "time": [
+        0.4999999999999997,
+        0.5000000000000373
+      ]
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 90,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 86,
+      "query_s": 0.0037175,
+      "time": [
+        0.4999999999999997,
+        0.5000000000000026
+      ]
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 96,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 87,
+      "query_s": 0.0042103,
+      "time": [
+        0.49999998962216946,
+        0.5000000000000003
+      ]
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 18,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 5,
+      "query_s": 0.0002971
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 55,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 17,
+      "query_s": 0.0008275
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 92,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 9,
+      "query_s": 0.0004162
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 129,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 17,
+      "query_s": 0.0009993
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 166,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 9,
+      "query_s": 0.000538
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 203,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "candidate",
+      "nodes": 89,
+      "query_s": 0.004138,
+      "time": [
+        0.49999849819909215,
+        0.5000018141550556
+      ]
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 240,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 81,
+      "query_s": 0.0040405
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 277,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 1,
+      "query_s": 9.81e-05
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 313,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 85,
+      "query_s": 0.0044873
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 350,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 9,
+      "query_s": 0.0005662
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 387,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 9,
+      "query_s": 0.0004124
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 424,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 65,
+      "query_s": 0.0028219
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 461,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 81,
+      "query_s": 0.0027795
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 498,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 77,
+      "query_s": 0.0027949
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 535,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 17,
+      "query_s": 0.0006484
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 572,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "outcome": "clear",
+      "nodes": 69,
+      "query_s": 0.0023127
+    }
+  ]
+}

@@ -39,7 +39,8 @@ struct RigidPath {
         return pose;
     }
 };
-using CandidateQuery=std::function<std::optional<double>(const RigidPath&,const RigidPath&,dynamics::SurfaceTransition&)>;
+using CandidateQuery=std::function<std::optional<Interval>(const RigidPath&,const RigidPath&,dynamics::SurfaceTransition&)>;
+CandidateQuery chen_2026_candidates(const TopoDS_Shape&,const TopoDS_Shape&);
 #ifdef NC_WITH_CHEN
 CandidateQuery chen_candidates(const TopoDS_Shape&,const TopoDS_Shape&);
 #endif

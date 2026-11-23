@@ -97,9 +97,10 @@ TopTools_IndexedMapOfShape source_faces(const TopoDS_Shape& shape,BRepAlgoAPI_Co
 
 class CadSolidPair final : public PairRegionQuery {
 public:
-    CadSolidPair(const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,bool chen)
+    CadSolidPair(const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,CadEventMethod method)
         : a_(a,centers[0]),b_(b,centers[1]),centers_(centers) {
-        if (chen) {
+        if (method==CadEventMethod::chen_2026) candidate_=chen_2026_candidates(a,b);
+        if (method==CadEventMethod::chen_2024) {
 #ifdef NC_WITH_CHEN
             candidate_=chen_candidates(a,b);
 #else
@@ -189,17 +190,23 @@ public:
         // The distance at a rejected proposal can also exclude a time interval.
         if (candidate_) {
             const auto hint=candidate_(a,b,result);
-            if (hint) {
-                const double d=distance(a.at(*hint),b.at(*hint));
+            const auto probe=[&](double t) {
+                const double d=t==0. ? d0 : t==1. ? d1 : distance(a.at(t),b.at(t));
                 if (d<=tol) {
-                    horizon=*hint;
+                    horizon=t;
                     known_hit=true;
                     ++result.chen_confirmed;
                 } else {
                     const double radius=(d-tol)/speed;
-                    safe_left=*hint-radius;
-                    safe_right=*hint+radius;
+                    safe_left=t-radius;
+                    safe_right=t+radius;
                 }
+            };
+            if (hint) {
+                // The inclusion cell can begin before physical contact. A
+                // loaded right end bounds the subsequent trimmed-solid sweep.
+                probe(hint->hi);
+                if (hint->lo<hint->hi && hint->lo<horizon && hint->lo<safe_left) probe(hint->lo);
             }
         }
         double t=0.,d=d0;
@@ -230,7 +237,7 @@ private:
 }
 
 std::shared_ptr<const dynamics::PairRegionQuery> cad_solid_region_query(
-    const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,bool chen_events) {
+    const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,CadEventMethod chen_events) {
     return std::make_shared<CadSolidPair>(a,b,centers,chen_events);
 }
 }

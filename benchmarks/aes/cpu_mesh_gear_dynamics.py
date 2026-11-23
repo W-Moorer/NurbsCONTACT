@@ -52,7 +52,7 @@ def run(args):
     with args.scene.with_suffix(".csv").open(newline="") as stream:
         parts = list(csv.DictReader(stream))
     meshes = []
-    cad = args.method in ("cad-occt","chen-2024")
+    cad = args.method in ("cad-occt","chen-2024","chen-2026")
     step_assets = []
     for part in parts:
         step = root / part["step"]
@@ -82,7 +82,7 @@ def run(args):
     except TimeoutError:
         stopped = dict(completed=False, stop_reason="timeout", time_limit_s=1800,
                        process_s=time.perf_counter() - start, duration_s=args.duration, dt_s=args.dt,
-                       event_tolerance_s=args.event_tol_s or (.2 * args.dt if args.method == "chen-2024" else 0.),
+                       event_tolerance_s=args.event_tol_s or (.2 * args.dt if args.method.startswith("chen-") else 0.),
                        method=args.method, solver=args.solver, scene_sha256=hashlib.sha256(args.scene.read_bytes()).hexdigest())
         stopped["step_assets" if cad else "meshes"] = step_assets if cad else meshes
         args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("exe", "scene", "work", "output"):
         parser.add_argument(name, type=Path)
-    parser.add_argument("--method", choices=["mesh-aabb", "mesh-obb", "mesh-sap", "cad-occt", "chen-2024"], default="mesh-obb")
+    parser.add_argument("--method", choices=["mesh-aabb", "mesh-obb", "mesh-sap", "cad-occt", "chen-2024", "chen-2026"], default="mesh-obb")
     parser.add_argument("--event-tol-s", type=float, default=0.)
     parser.add_argument("--solver", choices=("penalty","sap","lagrange","augmented-lagrange","lcp","ncp","soccp"),
                         default="penalty")

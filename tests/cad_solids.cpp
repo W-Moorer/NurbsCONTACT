@@ -19,7 +19,7 @@ void close(double actual,double expected,double tol,const char* what) {
     throw std::runtime_error(what);
 }
 
-void check(bool chen) {
+void check(CadEventMethod chen) {
     const auto ball=BRepPrimAPI_MakeSphere(10.).Shape();
     auto balls=cad_solid_region_query(ball,ball,{},chen);
     ContactWork work;
@@ -35,13 +35,19 @@ void check(bool chen) {
     const auto sweep=balls->transition(origin,start,origin,end,1e-8);
     require(!sweep.start_in_contact && !sweep.end_in_contact && sweep.fraction,"step-interior sphere hit");
     close(*sweep.fraction,15./70.,5e-7,"sphere entry time");
-    require(!chen || sweep.chen_queries>0,"expected calls to Chen patch CCD");
+    require(chen==CadEventMethod::conservative_advancement || sweep.chen_queries>0,"expected calls to Chen patch CCD");
+    require(chen!=CadEventMethod::chen_2026 || sweep.tdib_cells>0,"expected safeguarded envelope search");
     const auto release=balls->transition(origin,positive,origin,end,1e-8);
     require(release.start_in_contact && !release.end_in_contact && release.fraction,"sphere release");
     close(*release.fraction,1./16.,1e-6,"sphere release time");
 
     const auto box=BRepPrimAPI_MakeBox(10.,10.,10.).Shape();
     const auto blocks=cad_solid_region_query(box,box,{},chen);
+    if (chen==CadEventMethod::chen_2026) {
+        const auto crossing=blocks->transition(origin,ContactPose{{-.020,0,0}},origin,ContactPose{{.020,0,0}},1e-8);
+        require(crossing.fraction && crossing.chen_confirmed>0,"expected a trimmed-solid-confirmed planar candidate");
+        close(*crossing.fraction,.25,1e-6,"planar CCD proposal");
+    }
     const auto overlap=blocks->regions(origin,ContactPose{{.009,0,0}},work);
     require(overlap.size()==1,"coplanar box boundaries");
     close(overlap[0].normal[0],1.,1e-8,"box normal");
@@ -85,8 +91,9 @@ void check(bool chen) {
     close(*hit.fraction,.5-2*std::asin(.1)/std::acos(-1.),2e-6,"rotating sphere entry time");
 }
 }
-int main(int argc,char**) {
-    try { check(argc>1); }
+int main(int argc,char** argv) {
+    try { check(argc==1 ? CadEventMethod::conservative_advancement :
+                std::string_view(argv[1])=="--chen-2026" ? CadEventMethod::chen_2026 : CadEventMethod::chen_2024); }
     catch (const Standard_Failure& e) { std::cerr<<e.GetMessageString()<<'\n'; return 1; }
     catch (const std::exception& e) { std::cerr<<e.what()<<'\n'; return 1; }
 }
