@@ -38,6 +38,10 @@ struct IntersectionResult {
     struct Contour {
         std::size_t body_a, body_b;
         std::vector<std::array<std::size_t,2>> triangles;
+        // Oriented vector area of one closed transverse loop, following body A's
+        // boundary winding. Physical outward normals require an outward solid
+        // boundary (cavity faces point into their cavities).
+        std::optional<Vec> vector_area_a_m2;
     };
     // Connected sets of boundary intersections (points, curves or coplanar areas).
     std::vector<Contour> contours;

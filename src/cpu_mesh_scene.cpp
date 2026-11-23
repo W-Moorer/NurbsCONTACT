@@ -331,15 +331,19 @@ void sweep_triangles(const Triangle& a,const Triangle& b,const SweepBody& ma,con
         }
         const double chord=ma.motion.chord_error(ma.radius,hi-lo)+mb.motion.chord_error(mb.radius,hi-lo);
         const double margin=chord+ma.padding+mb.padding;
-        if (margin <= tolerance*.25) {
+        if (margin <= tolerance*.125) {
             ++out.linear_tests;
             const auto candidate=linear_triangle_ccd(world_triangle(a,ma.motion.at(lo)),world_triangle(a,ma.motion.at(hi)),
-                world_triangle(b,mb.motion.at(lo)),world_triangle(b,mb.motion.at(hi)),margin,tolerance*.5);
+                world_triangle(b,mb.motion.at(lo)),world_triangle(b,mb.motion.at(hi)),margin,tolerance*.25);
             if (!std::isfinite(candidate.time)) continue;
-            if (candidate.output_tolerance+margin<=tolerance) {
+            // The linear solver measures Cartesian box widths. Convert its
+            // tolerance and minimum-separation padding to a Euclidean bound,
+            // then allow the displacement from the chord to the rigid motion.
+            const double proximity=nc::up(std::sqrt(3.)*(candidate.output_tolerance+margin)+margin);
+            if (proximity<=tolerance) {
                 const double fraction=lo+(hi-lo)*candidate.time;
                 if (!out.first || fraction < out.first->fraction)
-                    out.first=ImpactCandidate{ia,ib,fa,fb,fraction,candidate.output_tolerance+margin};
+                    out.first=ImpactCandidate{ia,ib,fa,fb,fraction,proximity};
                 return;
             }
         }

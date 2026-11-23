@@ -15,6 +15,8 @@ Each triangle contributes a centroid and three edge midpoints to the comparison 
 
 When a requested minSICN fails on a long narrow face, the generator measures its area and perimeter, increases edge subdivision along its length and remeshes. If neighboring triangles still miss the threshold, it applies a graded Gmsh size field around the affected curves. The final quality checks can reject this result. Each output records the number of edges refined.
 
+`--audit-workers N` distributes the face projection samples over independent Gmsh sessions. Each session reimports the STEP file and checks its face tags, surface types, areas and centroids against the meshed model. All workers use the same projection and normal evaluations. The report includes the worker count and audit time.
+
 ## Discrete triangle contact
 
 Build the optional CPU mesh target with FCL 0.7 and CGAL 6. In a vcpkg environment on Windows:
@@ -37,6 +39,8 @@ ctest --test-dir build/cpu-mesh -C Release --output-on-failure
 The leaf predicate and intersection construction use the same CGAL exact kernel on the binary64 world vertices in every branch. The public witnesses are rounded to binary64. The mesh input is a closed triangular boundary. Initial containment uses an inside test for each connected boundary component without a crossing. Output triangle pairs describe geometry; individual triangle hits carry no individual spring.
 
 Add `--contours` to a discrete query to group connected triangle intersections within each body pair. Groups meet at exact world-space witnesses on triangle boundaries. A group can contain a point, a curve, or coplanar polygons. A contact region with holes can have several boundary curves. Force integration and penetration depth require further geometry.
+
+For a closed transverse loop, `vector_area_a_m2` is half the directed sum of cross products of consecutive boundary vertices. Segment orientation follows the cross product of the two outward face normals. This gives the oriented area vector of the bounded surface on body A, and reverses on exchanging the bodies. Tangencies, coplanar regions, and branching boundaries can lack a unique oriented loop. The field is null for these cases. The magnitude is a projected area for a planar patch.
 
 ## Continuous surface detection
 
@@ -62,3 +66,5 @@ The [two-sphere replay](../benchmarks/aes/cpu_mesh_spheres.py) uses all 641 pose
 | [1.5 mm](../results/aes/cpu-mesh/spheres-1p5mm.json) | 22,482 | 40.040 ms | 71.378 ms |
 
 At the frames with the most intersecting triangle pairs, the coarse mesh has 128 pairs and the fine mesh has 250. Grouping the exact boundary witnesses gives one connected intersection in both cases. These comparisons measure event timing and connectivity on prescribed poses. A mesh-driven force response requires a separate simulation.
+
+At the same maximum-compression pose, the sphere intersection projects to a disk of area `π(R² − d²/4)`, where `d` is center spacing. The geometric reference area is 563.708 mm². The 3 mm mesh gives 556.942 mm² and the 1.5 mm mesh gives 561.967 mm². The angles between the loop area vector and the line of centers are 0.00640° and 0.000255°, respectively. Both bodies use the same triangulation at the same orientation for this translational trajectory.

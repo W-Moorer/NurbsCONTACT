@@ -64,17 +64,27 @@ def compare(exe, mesh, trace):
         entry = swept_time(exe, method, mesh, t, z, i, i + 1)
         release = swept_time(exe, method, mesh, t, z, j + 1, j)
         peak = counts.argmax()
-        sample = f"0 0 0 1 0 0 0 0 0 {z[peak]:.17g} 1 0 0 0\n"
+        compressed = int(np.argmin(z))
+        sample = "".join(f"0 0 0 1 0 0 0 0 0 {z[k]:.17g} 1 0 0 0\n" for k in (peak,compressed))
         run = subprocess.run([exe, "--method", method, "--contours", mesh, mesh], text=True,
                              input=sample, capture_output=True, check=True, timeout=1800)
-        contours = json.loads(run.stdout)["contours"]
-        if len(contours) != 1 or len(contours[0]["triangle_pairs"]) != counts[peak]:
+        peak_contours, contours = [json.loads(line)["contours"] for line in run.stdout.splitlines()]
+        if (len(peak_contours) != 1 or len(peak_contours[0]["triangle_pairs"]) != counts[peak]
+                or len(contours) != 1 or len(contours[0]["triangle_pairs"]) != counts[compressed]):
             raise ValueError("expected one connected boundary where the two spheres intersect")
-        if reference_contours is not None and contours != reference_contours:
+        members = (peak_contours[0]["triangle_pairs"], contours[0]["triangle_pairs"])
+        if reference_contours is not None and members != reference_contours:
             raise ValueError("inconsistent contour membership across broad phases")
-        reference_contours = contours
+        reference_contours = members
+        area = np.asarray(contours[0]["vector_area_a_m2"], dtype=float)
+        if area.shape != (3,) or not np.isfinite(area).all() or area[2] <= 0:
+            raise ValueError("expected a closed loop oriented toward the upper sphere")
+        smooth_area = np.pi * ((LEGACY.radius + LAYER / 2)**2 - (z[compressed] / 2)**2)
         methods[method] = dict(mesh_event_times_s=[entry, release], peak_intersecting_triangle_pairs=int(max(counts)),
-                               peak_frame_contours=len(contours), peak_frame_time_s=float(t[peak]),
+                               peak_frame_contours=len(peak_contours), peak_frame_time_s=float(t[peak]),
+                               max_compression_time_s=float(t[compressed]), projected_area_at_max_compression_m2=float(area[2]),
+                               sphere_projected_area_same_pose_m2=float(smooth_area),
+                               max_compression_normal_error_deg=float(np.degrees(np.arctan2(np.linalg.norm(area[:2]),area[2]))),
                                active_frames=int(np.count_nonzero(counts)))
         if len(methods) > 1 and not np.allclose([entry, release], next(iter(methods.values()))["mesh_event_times_s"],
                                                 rtol=0, atol=1e-12):

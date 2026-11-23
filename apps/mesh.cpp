@@ -116,7 +116,12 @@ int main(int argc, char** argv) {
                         if (j) std::cout << ',';
                         std::cout << '[' << group.triangles[j][0] << ',' << group.triangles[j][1] << ']';
                     }
-                    std::cout << "]}";
+                    std::cout << "],\"vector_area_a_m2\":";
+                    if (group.vector_area_a_m2) {
+                        const auto& v=*group.vector_area_a_m2;
+                        std::cout << '[' << v[0] << ',' << v[1] << ',' << v[2] << ']';
+                    } else std::cout << "null";
+                    std::cout << '}';
                 }
                 std::cout << ']';
             }

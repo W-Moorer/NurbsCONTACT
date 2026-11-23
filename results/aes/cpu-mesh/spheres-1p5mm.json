@@ -21,6 +21,10 @@
       "peak_intersecting_triangle_pairs": 250,
       "peak_frame_contours": 1,
       "peak_frame_time_s": 0.05425,
+      "max_compression_time_s": 0.05575,
+      "projected_area_at_max_compression_m2": 0.0005619666561921332,
+      "sphere_projected_area_same_pose_m2": 0.0005637075163589007,
+      "max_compression_normal_error_deg": 0.0002549758979197295,
       "active_frames": 125
     },
     "mesh-obb": {
@@ -31,6 +35,10 @@
       "peak_intersecting_triangle_pairs": 250,
       "peak_frame_contours": 1,
       "peak_frame_time_s": 0.05425,
+      "max_compression_time_s": 0.05575,
+      "projected_area_at_max_compression_m2": 0.0005619666561921335,
+      "sphere_projected_area_same_pose_m2": 0.0005637075163589007,
+      "max_compression_normal_error_deg": 0.0002549758979197306,
       "active_frames": 125
     },
     "mesh-sap": {
@@ -41,6 +49,10 @@
       "peak_intersecting_triangle_pairs": 250,
       "peak_frame_contours": 1,
       "peak_frame_time_s": 0.05425,
+      "max_compression_time_s": 0.05575,
+      "projected_area_at_max_compression_m2": 0.0005619666561921332,
+      "sphere_projected_area_same_pose_m2": 0.0005637075163589007,
+      "max_compression_normal_error_deg": 0.0002549758979197295,
       "active_frames": 125
     }
   }

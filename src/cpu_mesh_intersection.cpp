@@ -102,14 +102,38 @@ std::vector<Vec> intersect_triangles(const Triangle& a, const Triangle& b) {
 }
 
 struct TriangleContours::Data {
+    struct Piece {
+        std::optional<Kernel::Segment_3> edge;
+        bool transverse{true};
+    };
     std::map<Point,std::size_t,Kernel::Less_xyz_3> owner;
     std::vector<std::size_t> parent;
+    std::vector<Piece> pieces;
     std::size_t root(std::size_t i) {
         while (parent[i]!=i) {
             parent[i]=parent[parent[i]];
             i=parent[i];
         }
         return i;
+    }
+    std::optional<Vec> vector_area(const std::vector<std::size_t>& group) const {
+        std::map<Point,std::pair<unsigned,unsigned>,Kernel::Less_xyz_3> degree;
+        std::optional<Point> origin;
+        Kernel::Vector_3 area=CGAL::NULL_VECTOR;
+        for (const auto i : group) {
+            const auto& piece=pieces[i];
+            if (!piece.transverse) return {};
+            if (!piece.edge) continue;
+            const auto& p=piece.edge->source();
+            const auto& q=piece.edge->target();
+            if (++degree[p].first>1 || ++degree[q].second>1) return {};
+            if (!origin) origin=p;
+            area=area+CGAL::cross_product(p-*origin,q-*origin);
+        }
+        if (degree.size()<3) return {};
+        for (const auto& [point,counts] : degree)
+            if (counts.first!=1 || counts.second!=1) return {};
+        return Vec{CGAL::to_double(area.x()/2),CGAL::to_double(area.y()/2),CGAL::to_double(area.z()/2)};
     }
 };
 
@@ -121,6 +145,18 @@ std::vector<Vec> TriangleContours::intersect(const Triangle& a, const Triangle& 
     if (points.empty()) return {};
     const auto id=data_->parent.size();
     data_->parent.push_back(id);
+    Data::Piece piece;
+    if (points.size()==2) {
+        const auto na=triangle<Kernel>(a).supporting_plane().orthogonal_vector();
+        const auto nb=triangle<Kernel>(b).supporting_plane().orthogonal_vector();
+        // For the portion of A inside B, the outward co-normal points toward
+        // the exterior of B. The positive boundary tangent is n_A cross n_B.
+        const auto sign=(points[1]-points[0])*CGAL::cross_product(na,nb);
+        piece.transverse=sign!=0;
+        if (piece.transverse)
+            piece.edge=sign>0 ? Kernel::Segment_3(points[0],points[1]) : Kernel::Segment_3(points[1],points[0]);
+    } else if (points.size()>2) piece.transverse=false;
+    data_->pieces.push_back(std::move(piece));
     for (const auto& point : points) {
         const auto [it,fresh]=data_->owner.emplace(point,id);
         if (!fresh) data_->parent[data_->root(it->second)]=data_->root(id);
@@ -130,13 +166,14 @@ std::vector<Vec> TriangleContours::intersect(const Triangle& a, const Triangle& 
 
 std::vector<IntersectionResult::Contour> TriangleContours::finish(std::span<const Intersection> hits) {
     if (hits.size()!=data_->parent.size()) throw std::logic_error("inconsistent triangle contour hits");
-    std::map<std::size_t,std::vector<std::array<std::size_t,2>>> groups;
-    for (std::size_t i=0;i<hits.size();++i)
-        groups[data_->root(i)].push_back({hits[i].triangle_a,hits[i].triangle_b});
+    std::map<std::size_t,std::vector<std::size_t>> groups;
+    for (std::size_t i=0;i<hits.size();++i) groups[data_->root(i)].push_back(i);
     std::vector<IntersectionResult::Contour> result;
     for (auto& [root,group] : groups) {
-        std::sort(group.begin(),group.end());
-        result.push_back({hits[0].body_a,hits[0].body_b,std::move(group)});
+        std::vector<std::array<std::size_t,2>> pairs;
+        for (const auto i : group) pairs.push_back({hits[i].triangle_a,hits[i].triangle_b});
+        std::sort(pairs.begin(),pairs.end());
+        result.push_back({hits[0].body_a,hits[0].body_b,std::move(pairs),data_->vector_area(group)});
     }
     std::sort(result.begin(),result.end(),[](const auto& a,const auto& b) { return a.triangles.front()<b.triangles.front(); });
     return result;

@@ -88,6 +88,27 @@ int main() {
                 require(patches.contours.size()==1 && patches.contours[0].triangles.size()==patches.intersections.size(),
                         "artificial face split divided a connected intersection");
             }
+            auto split_loaded=std::make_shared<MeshData>(*data);
+            split_loaded->vertices.push_back({.25,.25,.5});
+            split_loaded->faces[3]={1,2,4};
+            split_loaded->faces.push_back({2,3,4});
+            split_loaded->faces.push_back({3,1,4});
+            for (auto surface : {data,split_loaded}) {
+                std::array<std::shared_ptr<const MeshData>,2> pair{surface,data};
+                MeshScene scene(pair,m);
+                std::array<RigidPlacement,2> pose{};
+                pose[1].origin={.125,.125,.25};
+                // The exposed portion of A is on x+y+z=1 and projects to
+                // a triangle of area (1-.125-.125-.25)^2/2 on each axis plane.
+                for (const auto sign : {1.,-1.}) {
+                    const auto geometry=scene.intersect(pose,true);
+                    require(geometry.contours.size()==1 && geometry.contours[0].vector_area_a_m2.has_value(),
+                            "missing closed transverse loop");
+                    for (double component : *geometry.contours[0].vector_area_a_m2)
+                        require(std::abs(component-sign*.125)<1e-12,"incorrect oriented vector area");
+                    std::swap(pose[0],pose[1]);
+                }
+            }
             auto islands=std::make_shared<MeshData>(*data);
             for (auto p : data->vertices) {
                 p[0]+=3.;
