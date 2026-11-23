@@ -1,0 +1,1682 @@
+{
+  "times_s": [
+    0.0,
+    0.06450000000000106,
+    0.12899999999999395,
+    0.19349999999998685,
+    0.25804999999997974,
+    0.32254999999997264,
+    0.38704999999996553,
+    0.4515999999999584,
+    0.5160999999999514,
+    0.5805999999999443,
+    0.6451499999999372,
+    0.7096499999999301,
+    0.774149999999923,
+    0.8386999999999158,
+    0.9031999999999087,
+    0.9676999999999016,
+    1.0322499999999661,
+    1.0967500000001023,
+    1.1612500000002384,
+    1.2258000000003746,
+    1.2903000000005107,
+    1.3548000000006468,
+    1.419350000000783,
+    1.4838500000009192,
+    1.5483500000010553,
+    1.6129000000011915,
+    1.6774000000013276,
+    1.7419000000014637,
+    1.8064500000016,
+    1.870950000001736,
+    1.9354500000018722,
+    2.000000000002008
+  ],
+  "pose_sha256": "a9ff0401cb33c8803a978639bcf49c2c5a9f14d6615d4a0d874f198874cd20d7",
+  "mesh_sha256": [
+    "0c79323fba8662f120fd457f806a298bb5be718021379cad63645e6d4e9ddd33",
+    "c5e7fb1a232e200e204a73bc5b0dd3928758e93eb234eb1860c412e3dd8092ee"
+  ],
+  "matching_boundary_witnesses": true,
+  "methods": {
+    "mesh-aabb": [
+      {
+        "body_pairs": 1,
+        "node_pairs": 123433,
+        "triangle_tests": 991,
+        "query_s": 0.029195,
+        "intersection_pairs": 0,
+        "enclosed_components": 0,
+        "witness_sha256": "643d5437104296e21d906ecb15b2c96ad278f20cfc4af53b12bb6069bd853726",
+        "decision": {
+          "overlap": false,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 123433,
+          "triangle_tests": 991,
+          "query_s": 0.0361536
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 232419,
+        "triangle_tests": 2864,
+        "query_s": 0.079689,
+        "intersection_pairs": 40,
+        "enclosed_components": 0,
+        "witness_sha256": "2734af5fd668501f22eeff016cac8ebdc44e888c7411cf7438a24e35b1fbdc4a",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 22475,
+          "triangle_tests": 95,
+          "query_s": 0.0065322
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 265053,
+        "triangle_tests": 3799,
+        "query_s": 0.1065545,
+        "intersection_pairs": 56,
+        "enclosed_components": 0,
+        "witness_sha256": "54e074a029105d43f5d489f842267dc9b97f6ad6b9287f8d551c400119ec4b50",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 20497,
+          "triangle_tests": 238,
+          "query_s": 0.005688
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 278385,
+        "triangle_tests": 3843,
+        "query_s": 0.108319,
+        "intersection_pairs": 42,
+        "enclosed_components": 0,
+        "witness_sha256": "bbd341743f172d6642b1ed504d4c097a9a8231e7dd7758f08430619557b5e912",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 79417,
+          "triangle_tests": 614,
+          "query_s": 0.0232194
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 286055,
+        "triangle_tests": 3925,
+        "query_s": 0.1190685,
+        "intersection_pairs": 62,
+        "enclosed_components": 0,
+        "witness_sha256": "34210c7e26f3e69dfc0ba6f4112428db13befee08bed05cdfc08c39400c5ef62",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 104996,
+          "triangle_tests": 766,
+          "query_s": 0.0311593
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 356927,
+        "triangle_tests": 5204,
+        "query_s": 0.107852,
+        "intersection_pairs": 33,
+        "enclosed_components": 0,
+        "witness_sha256": "2fbbc3880bc01343a431b9e4f02852736d0ca9169386acea88870e2b8ede4919",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 37391,
+          "triangle_tests": 398,
+          "query_s": 0.0104731
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 296679,
+        "triangle_tests": 4098,
+        "query_s": 0.1177625,
+        "intersection_pairs": 43,
+        "enclosed_components": 0,
+        "witness_sha256": "93ecc7942cc653c1430136b9cf7c3f4f9507a97b5deecd81ed3369244bc54122",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 23747,
+          "triangle_tests": 246,
+          "query_s": 0.0074189
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 194243,
+        "triangle_tests": 2491,
+        "query_s": 0.1031705,
+        "intersection_pairs": 54,
+        "enclosed_components": 0,
+        "witness_sha256": "a06be4db04907c79231301aef70bf3297d17aeaf7587a1efca067f2bf8368543",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 84698,
+          "triangle_tests": 241,
+          "query_s": 0.0223561
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 123135,
+        "triangle_tests": 1363,
+        "query_s": 0.0618932,
+        "intersection_pairs": 44,
+        "enclosed_components": 0,
+        "witness_sha256": "ab83b6cfafb62da1a25d249c150e621e1394a5b370a81cb94cdf58ee89c7e06e",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 28366,
+          "triangle_tests": 59,
+          "query_s": 0.0071897
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 213859,
+        "triangle_tests": 3086,
+        "query_s": 0.0833329,
+        "intersection_pairs": 56,
+        "enclosed_components": 0,
+        "witness_sha256": "eec6d01d075516e96bb54563c7aa84593c897aeb8da32b8297eca19f70aa69a2",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 82573,
+          "triangle_tests": 996,
+          "query_s": 0.0226677
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 234449,
+        "triangle_tests": 5123,
+        "query_s": 0.102041,
+        "intersection_pairs": 42,
+        "enclosed_components": 0,
+        "witness_sha256": "054865e71d975f0f2d6ebfe7b4b6db49840e797311c2e3dc0d00645dc6595308",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 44234,
+          "triangle_tests": 1164,
+          "query_s": 0.0138919
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 225483,
+        "triangle_tests": 6419,
+        "query_s": 0.0821863,
+        "intersection_pairs": 40,
+        "enclosed_components": 0,
+        "witness_sha256": "46fbc9f0afd3ff1abb6a17f139c882e615b2a6fe5da11290cee56cdca8de5c20",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 103853,
+          "triangle_tests": 3472,
+          "query_s": 0.0372962
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 269201,
+        "triangle_tests": 6750,
+        "query_s": 0.1056282,
+        "intersection_pairs": 46,
+        "enclosed_components": 0,
+        "witness_sha256": "cf2d86153acc863544438f5bbdd88d1f6b65f2fe42fcf17d232c3d2413644527",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 111040,
+          "triangle_tests": 2724,
+          "query_s": 0.0319947
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 338879,
+        "triangle_tests": 7511,
+        "query_s": 0.1610261,
+        "intersection_pairs": 58,
+        "enclosed_components": 0,
+        "witness_sha256": "259b7a864fe09caaf934182b227e5b21e2a366fd6ca245a371252efe64a2a324",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 37693,
+          "triangle_tests": 1004,
+          "query_s": 0.0102371
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 315529,
+        "triangle_tests": 5279,
+        "query_s": 0.1244227,
+        "intersection_pairs": 38,
+        "enclosed_components": 0,
+        "witness_sha256": "863445db5b870a47267fb920a75246facd219c4de8910edef9a85dee5086b6b8",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 8456,
+          "triangle_tests": 466,
+          "query_s": 0.0025166
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 183755,
+        "triangle_tests": 1621,
+        "query_s": 0.0842631,
+        "intersection_pairs": 48,
+        "enclosed_components": 0,
+        "witness_sha256": "9c72f1ca3b1b93ad0d0171d63999da30179dfa08a578d1175b0acc0d3127a981",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 23676,
+          "triangle_tests": 20,
+          "query_s": 0.0059141
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 201241,
+        "triangle_tests": 1835,
+        "query_s": 0.0856449,
+        "intersection_pairs": 34,
+        "enclosed_components": 0,
+        "witness_sha256": "c9aeec2afe6dc2e636109dac2510079e0a3b2ea4553dee44ff31cbbb913cb084",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 77758,
+          "triangle_tests": 237,
+          "query_s": 0.0189851
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 279377,
+        "triangle_tests": 3459,
+        "query_s": 0.1073256,
+        "intersection_pairs": 42,
+        "enclosed_components": 0,
+        "witness_sha256": "13076ea622e10c6a9ba8439225b60948a8f759e6028cd54223a0dc1439f41f9d",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 15359,
+          "triangle_tests": 30,
+          "query_s": 0.0035782
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 353839,
+        "triangle_tests": 4806,
+        "query_s": 0.1572662,
+        "intersection_pairs": 68,
+        "enclosed_components": 0,
+        "witness_sha256": "9ae15609c43a3ad429605f1a1302fb9a31276106d05400deafd99e4ea4b25489",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 95534,
+          "triangle_tests": 1228,
+          "query_s": 0.0230694
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 433563,
+        "triangle_tests": 4205,
+        "query_s": 0.1377562,
+        "intersection_pairs": 44,
+        "enclosed_components": 0,
+        "witness_sha256": "4128fbdfc59c90db7fd1e01f334d59713370f41975aa99a37d0ba41c14399ce6",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 2808,
+          "triangle_tests": 325,
+          "query_s": 0.0010071
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 485767,
+        "triangle_tests": 5323,
+        "query_s": 0.1758302,
+        "intersection_pairs": 52,
+        "enclosed_components": 0,
+        "witness_sha256": "ef6dfb00c93e38882a035fed2e84ab2a3c658cd2818d64563a7ef96b105afb44",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 83338,
+          "triangle_tests": 479,
+          "query_s": 0.0187883
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 432603,
+        "triangle_tests": 6296,
+        "query_s": 0.1401177,
+        "intersection_pairs": 32,
+        "enclosed_components": 0,
+        "witness_sha256": "a8a8e98e36ce4adf4c19e07433f94e73b8870896ca10521382bead379e91ba8b",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 217956,
+          "triangle_tests": 1222,
+          "query_s": 0.0476806
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 241681,
+        "triangle_tests": 4022,
+        "query_s": 0.0928549,
+        "intersection_pairs": 44,
+        "enclosed_components": 0,
+        "witness_sha256": "be8571a5bf49192716eced37f4873129767450b805994c45f2724127ebe31370",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 166866,
+          "triangle_tests": 1804,
+          "query_s": 0.0383734
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 115919,
+        "triangle_tests": 1131,
+        "query_s": 0.0601541,
+        "intersection_pairs": 45,
+        "enclosed_components": 0,
+        "witness_sha256": "410899724a7c06a2137903fae30d8445b7f834700a78191742f531fda0ffe2a0",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 49203,
+          "triangle_tests": 216,
+          "query_s": 0.0114123
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 187773,
+        "triangle_tests": 2726,
+        "query_s": 0.0833088,
+        "intersection_pairs": 61,
+        "enclosed_components": 0,
+        "witness_sha256": "9682854eb1d8c53fe76acdcd1a2e006e8944fe368fe845ec4c3f1411b321e9d0",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 5217,
+          "triangle_tests": 189,
+          "query_s": 0.0015674
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 221491,
+        "triangle_tests": 6622,
+        "query_s": 0.0727069,
+        "intersection_pairs": 34,
+        "enclosed_components": 0,
+        "witness_sha256": "642a86233f4685a780a9571e0385ba9dbba8d82faac79ec725d988288fcd3e83",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 87008,
+          "triangle_tests": 747,
+          "query_s": 0.0213505
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 275583,
+        "triangle_tests": 6183,
+        "query_s": 0.1016424,
+        "intersection_pairs": 43,
+        "enclosed_components": 0,
+        "witness_sha256": "6be5c720e7d441194889af8f23c6707b9c404f57d670caa51e5b56e363804823",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 35952,
+          "triangle_tests": 511,
+          "query_s": 0.0090156
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 270943,
+        "triangle_tests": 5188,
+        "query_s": 0.1119453,
+        "intersection_pairs": 58,
+        "enclosed_components": 0,
+        "witness_sha256": "af1b83766caf09df989b7ab72413ef9a207b96b41145d466e5a8e71ffaf89eef",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 6855,
+          "triangle_tests": 180,
+          "query_s": 0.0017999
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 360349,
+        "triangle_tests": 6247,
+        "query_s": 0.1122473,
+        "intersection_pairs": 37,
+        "enclosed_components": 0,
+        "witness_sha256": "6a918fda7572b2acc481aee75696e522f90da6c3b8ca8ca52a1c3a2abdd0c1ca",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 10624,
+          "triangle_tests": 186,
+          "query_s": 0.0027436
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 342919,
+        "triangle_tests": 4779,
+        "query_s": 0.1221169,
+        "intersection_pairs": 66,
+        "enclosed_components": 0,
+        "witness_sha256": "fa9094e10fb0beb667d846797fe9f3066d5240134bb4c4d6dce4c1f7d947c05f",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 110637,
+          "triangle_tests": 493,
+          "query_s": 0.0258131
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 245741,
+        "triangle_tests": 3146,
+        "query_s": 0.0795211,
+        "intersection_pairs": 42,
+        "enclosed_components": 0,
+        "witness_sha256": "652726fce217f0989820e367c5d46310db1f16acd96c588dc7fcf7056d59d8af",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 10975,
+          "triangle_tests": 6,
+          "query_s": 0.0026467
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 123173,
+        "triangle_tests": 1117,
+        "query_s": 0.0435874,
+        "intersection_pairs": 40,
+        "enclosed_components": 0,
+        "witness_sha256": "0afcfd902cd88c19a36f59ab8d3b38e90e96c6fb268f61de696a1d6e6f67243a",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 1977,
+          "triangle_tests": 10,
+          "query_s": 0.0004808
+        }
+      }
+    ],
+    "mesh-obb": [
+      {
+        "body_pairs": 1,
+        "node_pairs": 12027,
+        "triangle_tests": 65,
+        "query_s": 0.0036007,
+        "intersection_pairs": 0,
+        "enclosed_components": 0,
+        "witness_sha256": "643d5437104296e21d906ecb15b2c96ad278f20cfc4af53b12bb6069bd853726",
+        "decision": {
+          "overlap": false,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 12027,
+          "triangle_tests": 65,
+          "query_s": 0.0031436
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 13367,
+        "triangle_tests": 393,
+        "query_s": 0.0484178,
+        "intersection_pairs": 40,
+        "enclosed_components": 0,
+        "witness_sha256": "2734af5fd668501f22eeff016cac8ebdc44e888c7411cf7438a24e35b1fbdc4a",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 187,
+          "triangle_tests": 15,
+          "query_s": 7.61e-05
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 11777,
+        "triangle_tests": 282,
+        "query_s": 0.0459775,
+        "intersection_pairs": 56,
+        "enclosed_components": 0,
+        "witness_sha256": "54e074a029105d43f5d489f842267dc9b97f6ad6b9287f8d551c400119ec4b50",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 474,
+          "triangle_tests": 15,
+          "query_s": 0.0001482
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 12595,
+        "triangle_tests": 421,
+        "query_s": 0.0440824,
+        "intersection_pairs": 42,
+        "enclosed_components": 0,
+        "witness_sha256": "bbd341743f172d6642b1ed504d4c097a9a8231e7dd7758f08430619557b5e912",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 428,
+          "triangle_tests": 19,
+          "query_s": 0.0001366
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 13473,
+        "triangle_tests": 340,
+        "query_s": 0.0500454,
+        "intersection_pairs": 62,
+        "enclosed_components": 0,
+        "witness_sha256": "34210c7e26f3e69dfc0ba6f4112428db13befee08bed05cdfc08c39400c5ef62",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 1453,
+          "triangle_tests": 16,
+          "query_s": 0.0004195
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 15781,
+        "triangle_tests": 281,
+        "query_s": 0.03279,
+        "intersection_pairs": 33,
+        "enclosed_components": 0,
+        "witness_sha256": "2fbbc3880bc01343a431b9e4f02852736d0ca9169386acea88870e2b8ede4919",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 520,
+          "triangle_tests": 23,
+          "query_s": 0.0001579
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 16549,
+        "triangle_tests": 360,
+        "query_s": 0.0323587,
+        "intersection_pairs": 43,
+        "enclosed_components": 0,
+        "witness_sha256": "93ecc7942cc653c1430136b9cf7c3f4f9507a97b5deecd81ed3369244bc54122",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 1691,
+          "triangle_tests": 9,
+          "query_s": 0.0004567
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 15033,
+        "triangle_tests": 360,
+        "query_s": 0.0348173,
+        "intersection_pairs": 54,
+        "enclosed_components": 0,
+        "witness_sha256": "a06be4db04907c79231301aef70bf3297d17aeaf7587a1efca067f2bf8368543",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 585,
+          "triangle_tests": 21,
+          "query_s": 0.000234
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 16545,
+        "triangle_tests": 384,
+        "query_s": 0.0332344,
+        "intersection_pairs": 44,
+        "enclosed_components": 0,
+        "witness_sha256": "ab83b6cfafb62da1a25d249c150e621e1394a5b370a81cb94cdf58ee89c7e06e",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 1260,
+          "triangle_tests": 5,
+          "query_s": 0.0003174
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 15821,
+        "triangle_tests": 241,
+        "query_s": 0.0372965,
+        "intersection_pairs": 56,
+        "enclosed_components": 0,
+        "witness_sha256": "eec6d01d075516e96bb54563c7aa84593c897aeb8da32b8297eca19f70aa69a2",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 3573,
+          "triangle_tests": 40,
+          "query_s": 0.0009324
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 15613,
+        "triangle_tests": 388,
+        "query_s": 0.032623,
+        "intersection_pairs": 42,
+        "enclosed_components": 0,
+        "witness_sha256": "054865e71d975f0f2d6ebfe7b4b6db49840e797311c2e3dc0d00645dc6595308",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 623,
+          "triangle_tests": 5,
+          "query_s": 0.0001664
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 17673,
+        "triangle_tests": 332,
+        "query_s": 0.0254994,
+        "intersection_pairs": 40,
+        "enclosed_components": 0,
+        "witness_sha256": "46fbc9f0afd3ff1abb6a17f139c882e615b2a6fe5da11290cee56cdca8de5c20",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 8563,
+          "triangle_tests": 96,
+          "query_s": 0.0024447
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 16047,
+        "triangle_tests": 443,
+        "query_s": 0.0323093,
+        "intersection_pairs": 46,
+        "enclosed_components": 0,
+        "witness_sha256": "cf2d86153acc863544438f5bbdd88d1f6b65f2fe42fcf17d232c3d2413644527",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 3078,
+          "triangle_tests": 5,
+          "query_s": 0.0007801
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 14399,
+        "triangle_tests": 286,
+        "query_s": 0.0328533,
+        "intersection_pairs": 58,
+        "enclosed_components": 0,
+        "witness_sha256": "259b7a864fe09caaf934182b227e5b21e2a366fd6ca245a371252efe64a2a324",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 280,
+          "triangle_tests": 9,
+          "query_s": 9.07e-05
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 15887,
+        "triangle_tests": 431,
+        "query_s": 0.030543,
+        "intersection_pairs": 38,
+        "enclosed_components": 0,
+        "witness_sha256": "863445db5b870a47267fb920a75246facd219c4de8910edef9a85dee5086b6b8",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 1119,
+          "triangle_tests": 17,
+          "query_s": 0.0002943
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 14395,
+        "triangle_tests": 379,
+        "query_s": 0.0278837,
+        "intersection_pairs": 48,
+        "enclosed_components": 0,
+        "witness_sha256": "9c72f1ca3b1b93ad0d0171d63999da30179dfa08a578d1175b0acc0d3127a981",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 277,
+          "triangle_tests": 16,
+          "query_s": 9.34e-05
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 12879,
+        "triangle_tests": 378,
+        "query_s": 0.0210294,
+        "intersection_pairs": 34,
+        "enclosed_components": 0,
+        "witness_sha256": "c9aeec2afe6dc2e636109dac2510079e0a3b2ea4553dee44ff31cbbb913cb084",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 2985,
+          "triangle_tests": 39,
+          "query_s": 0.0007779
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 12165,
+        "triangle_tests": 420,
+        "query_s": 0.0252099,
+        "intersection_pairs": 42,
+        "enclosed_components": 0,
+        "witness_sha256": "13076ea622e10c6a9ba8439225b60948a8f759e6028cd54223a0dc1439f41f9d",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 479,
+          "triangle_tests": 17,
+          "query_s": 0.0001433
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 16667,
+        "triangle_tests": 288,
+        "query_s": 0.0329298,
+        "intersection_pairs": 68,
+        "enclosed_components": 0,
+        "witness_sha256": "9ae15609c43a3ad429605f1a1302fb9a31276106d05400deafd99e4ea4b25489",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 4053,
+          "triangle_tests": 9,
+          "query_s": 0.000959
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 28439,
+        "triangle_tests": 428,
+        "query_s": 0.0299288,
+        "intersection_pairs": 44,
+        "enclosed_components": 0,
+        "witness_sha256": "4128fbdfc59c90db7fd1e01f334d59713370f41975aa99a37d0ba41c14399ce6",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 713,
+          "triangle_tests": 32,
+          "query_s": 0.0003007
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 27539,
+        "triangle_tests": 223,
+        "query_s": 0.0278204,
+        "intersection_pairs": 52,
+        "enclosed_components": 0,
+        "witness_sha256": "ef6dfb00c93e38882a035fed2e84ab2a3c658cd2818d64563a7ef96b105afb44",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 7789,
+          "triangle_tests": 53,
+          "query_s": 0.0025097
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 28345,
+        "triangle_tests": 331,
+        "query_s": 0.0251361,
+        "intersection_pairs": 32,
+        "enclosed_components": 0,
+        "witness_sha256": "a8a8e98e36ce4adf4c19e07433f94e73b8870896ca10521382bead379e91ba8b",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 737,
+          "triangle_tests": 16,
+          "query_s": 0.0002435
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 21931,
+        "triangle_tests": 310,
+        "query_s": 0.0296092,
+        "intersection_pairs": 44,
+        "enclosed_components": 0,
+        "witness_sha256": "be8571a5bf49192716eced37f4873129767450b805994c45f2724127ebe31370",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 2020,
+          "triangle_tests": 29,
+          "query_s": 0.00053
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 12141,
+        "triangle_tests": 351,
+        "query_s": 0.0348517,
+        "intersection_pairs": 45,
+        "enclosed_components": 0,
+        "witness_sha256": "410899724a7c06a2137903fae30d8445b7f834700a78191742f531fda0ffe2a0",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 533,
+          "triangle_tests": 46,
+          "query_s": 0.0002142
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 12023,
+        "triangle_tests": 424,
+        "query_s": 0.0401117,
+        "intersection_pairs": 61,
+        "enclosed_components": 0,
+        "witness_sha256": "9682854eb1d8c53fe76acdcd1a2e006e8944fe368fe845ec4c3f1411b321e9d0",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 450,
+          "triangle_tests": 26,
+          "query_s": 0.0001466
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 10811,
+        "triangle_tests": 321,
+        "query_s": 0.0292887,
+        "intersection_pairs": 34,
+        "enclosed_components": 0,
+        "witness_sha256": "642a86233f4685a780a9571e0385ba9dbba8d82faac79ec725d988288fcd3e83",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 149,
+          "triangle_tests": 14,
+          "query_s": 5.46e-05
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 18461,
+        "triangle_tests": 384,
+        "query_s": 0.0271228,
+        "intersection_pairs": 43,
+        "enclosed_components": 0,
+        "witness_sha256": "6be5c720e7d441194889af8f23c6707b9c404f57d670caa51e5b56e363804823",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 5379,
+          "triangle_tests": 14,
+          "query_s": 0.0011883
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 26611,
+        "triangle_tests": 436,
+        "query_s": 0.0348183,
+        "intersection_pairs": 58,
+        "enclosed_components": 0,
+        "witness_sha256": "af1b83766caf09df989b7ab72413ef9a207b96b41145d466e5a8e71ffaf89eef",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 444,
+          "triangle_tests": 18,
+          "query_s": 0.000144
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 25187,
+        "triangle_tests": 392,
+        "query_s": 0.024727,
+        "intersection_pairs": 37,
+        "enclosed_components": 0,
+        "witness_sha256": "6a918fda7572b2acc481aee75696e522f90da6c3b8ca8ca52a1c3a2abdd0c1ca",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 658,
+          "triangle_tests": 43,
+          "query_s": 0.0002506
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 26401,
+        "triangle_tests": 329,
+        "query_s": 0.0351091,
+        "intersection_pairs": 66,
+        "enclosed_components": 0,
+        "witness_sha256": "fa9094e10fb0beb667d846797fe9f3066d5240134bb4c4d6dce4c1f7d947c05f",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 820,
+          "triangle_tests": 17,
+          "query_s": 0.0002293
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 18425,
+        "triangle_tests": 397,
+        "query_s": 0.0303357,
+        "intersection_pairs": 42,
+        "enclosed_components": 0,
+        "witness_sha256": "652726fce217f0989820e367c5d46310db1f16acd96c588dc7fcf7056d59d8af",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 1883,
+          "triangle_tests": 19,
+          "query_s": 0.0005342
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 12637,
+        "triangle_tests": 221,
+        "query_s": 0.0250315,
+        "intersection_pairs": 40,
+        "enclosed_components": 0,
+        "witness_sha256": "0afcfd902cd88c19a36f59ab8d3b38e90e96c6fb268f61de696a1d6e6f67243a",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 512,
+          "triangle_tests": 23,
+          "query_s": 0.0001599
+        }
+      }
+    ],
+    "mesh-sap": [
+      {
+        "body_pairs": 1,
+        "node_pairs": 123433,
+        "triangle_tests": 991,
+        "query_s": 0.0328124,
+        "intersection_pairs": 0,
+        "enclosed_components": 0,
+        "witness_sha256": "643d5437104296e21d906ecb15b2c96ad278f20cfc4af53b12bb6069bd853726",
+        "decision": {
+          "overlap": false,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 123433,
+          "triangle_tests": 991,
+          "query_s": 0.0344769
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 232419,
+        "triangle_tests": 2864,
+        "query_s": 0.0943611,
+        "intersection_pairs": 40,
+        "enclosed_components": 0,
+        "witness_sha256": "2734af5fd668501f22eeff016cac8ebdc44e888c7411cf7438a24e35b1fbdc4a",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 22475,
+          "triangle_tests": 95,
+          "query_s": 0.006047
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 265053,
+        "triangle_tests": 3799,
+        "query_s": 0.0971255,
+        "intersection_pairs": 56,
+        "enclosed_components": 0,
+        "witness_sha256": "54e074a029105d43f5d489f842267dc9b97f6ad6b9287f8d551c400119ec4b50",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 20497,
+          "triangle_tests": 238,
+          "query_s": 0.0056633
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 278385,
+        "triangle_tests": 3843,
+        "query_s": 0.0923976,
+        "intersection_pairs": 42,
+        "enclosed_components": 0,
+        "witness_sha256": "bbd341743f172d6642b1ed504d4c097a9a8231e7dd7758f08430619557b5e912",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 79417,
+          "triangle_tests": 614,
+          "query_s": 0.0227262
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 286055,
+        "triangle_tests": 3925,
+        "query_s": 0.1018734,
+        "intersection_pairs": 62,
+        "enclosed_components": 0,
+        "witness_sha256": "34210c7e26f3e69dfc0ba6f4112428db13befee08bed05cdfc08c39400c5ef62",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 104996,
+          "triangle_tests": 766,
+          "query_s": 0.0290308
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 356927,
+        "triangle_tests": 5204,
+        "query_s": 0.1140543,
+        "intersection_pairs": 33,
+        "enclosed_components": 0,
+        "witness_sha256": "2fbbc3880bc01343a431b9e4f02852736d0ca9169386acea88870e2b8ede4919",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 37391,
+          "triangle_tests": 398,
+          "query_s": 0.0099583
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 296679,
+        "triangle_tests": 4098,
+        "query_s": 0.117225,
+        "intersection_pairs": 43,
+        "enclosed_components": 0,
+        "witness_sha256": "93ecc7942cc653c1430136b9cf7c3f4f9507a97b5deecd81ed3369244bc54122",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 23747,
+          "triangle_tests": 246,
+          "query_s": 0.006423
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 194243,
+        "triangle_tests": 2491,
+        "query_s": 0.0820987,
+        "intersection_pairs": 54,
+        "enclosed_components": 0,
+        "witness_sha256": "a06be4db04907c79231301aef70bf3297d17aeaf7587a1efca067f2bf8368543",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 84698,
+          "triangle_tests": 241,
+          "query_s": 0.0218472
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 123135,
+        "triangle_tests": 1363,
+        "query_s": 0.052704,
+        "intersection_pairs": 44,
+        "enclosed_components": 0,
+        "witness_sha256": "ab83b6cfafb62da1a25d249c150e621e1394a5b370a81cb94cdf58ee89c7e06e",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 28366,
+          "triangle_tests": 59,
+          "query_s": 0.0075682
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 213859,
+        "triangle_tests": 3086,
+        "query_s": 0.0781761,
+        "intersection_pairs": 56,
+        "enclosed_components": 0,
+        "witness_sha256": "eec6d01d075516e96bb54563c7aa84593c897aeb8da32b8297eca19f70aa69a2",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 82573,
+          "triangle_tests": 996,
+          "query_s": 0.0226632
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 234449,
+        "triangle_tests": 5123,
+        "query_s": 0.0811028,
+        "intersection_pairs": 42,
+        "enclosed_components": 0,
+        "witness_sha256": "054865e71d975f0f2d6ebfe7b4b6db49840e797311c2e3dc0d00645dc6595308",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 44234,
+          "triangle_tests": 1164,
+          "query_s": 0.0139869
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 225483,
+        "triangle_tests": 6419,
+        "query_s": 0.0746876,
+        "intersection_pairs": 40,
+        "enclosed_components": 0,
+        "witness_sha256": "46fbc9f0afd3ff1abb6a17f139c882e615b2a6fe5da11290cee56cdca8de5c20",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 103853,
+          "triangle_tests": 3472,
+          "query_s": 0.0326213
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 269201,
+        "triangle_tests": 6750,
+        "query_s": 0.0946031,
+        "intersection_pairs": 46,
+        "enclosed_components": 0,
+        "witness_sha256": "cf2d86153acc863544438f5bbdd88d1f6b65f2fe42fcf17d232c3d2413644527",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 111040,
+          "triangle_tests": 2724,
+          "query_s": 0.0303022
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 338879,
+        "triangle_tests": 7511,
+        "query_s": 0.1099224,
+        "intersection_pairs": 58,
+        "enclosed_components": 0,
+        "witness_sha256": "259b7a864fe09caaf934182b227e5b21e2a366fd6ca245a371252efe64a2a324",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 37693,
+          "triangle_tests": 1004,
+          "query_s": 0.009855
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 315529,
+        "triangle_tests": 5279,
+        "query_s": 0.0912825,
+        "intersection_pairs": 38,
+        "enclosed_components": 0,
+        "witness_sha256": "863445db5b870a47267fb920a75246facd219c4de8910edef9a85dee5086b6b8",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 8456,
+          "triangle_tests": 466,
+          "query_s": 0.0024176
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 183755,
+        "triangle_tests": 1621,
+        "query_s": 0.0738176,
+        "intersection_pairs": 48,
+        "enclosed_components": 0,
+        "witness_sha256": "9c72f1ca3b1b93ad0d0171d63999da30179dfa08a578d1175b0acc0d3127a981",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 23676,
+          "triangle_tests": 20,
+          "query_s": 0.0054921
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 201241,
+        "triangle_tests": 1835,
+        "query_s": 0.0711596,
+        "intersection_pairs": 34,
+        "enclosed_components": 0,
+        "witness_sha256": "c9aeec2afe6dc2e636109dac2510079e0a3b2ea4553dee44ff31cbbb913cb084",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 77758,
+          "triangle_tests": 237,
+          "query_s": 0.0183949
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 279377,
+        "triangle_tests": 3459,
+        "query_s": 0.1004046,
+        "intersection_pairs": 42,
+        "enclosed_components": 0,
+        "witness_sha256": "13076ea622e10c6a9ba8439225b60948a8f759e6028cd54223a0dc1439f41f9d",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 15359,
+          "triangle_tests": 30,
+          "query_s": 0.0036223
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 353839,
+        "triangle_tests": 4806,
+        "query_s": 0.1323821,
+        "intersection_pairs": 68,
+        "enclosed_components": 0,
+        "witness_sha256": "9ae15609c43a3ad429605f1a1302fb9a31276106d05400deafd99e4ea4b25489",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 95534,
+          "triangle_tests": 1228,
+          "query_s": 0.0229131
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 433563,
+        "triangle_tests": 4205,
+        "query_s": 0.1557753,
+        "intersection_pairs": 44,
+        "enclosed_components": 0,
+        "witness_sha256": "4128fbdfc59c90db7fd1e01f334d59713370f41975aa99a37d0ba41c14399ce6",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 2808,
+          "triangle_tests": 325,
+          "query_s": 0.0009907
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 485767,
+        "triangle_tests": 5323,
+        "query_s": 0.1650262,
+        "intersection_pairs": 52,
+        "enclosed_components": 0,
+        "witness_sha256": "ef6dfb00c93e38882a035fed2e84ab2a3c658cd2818d64563a7ef96b105afb44",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 83338,
+          "triangle_tests": 479,
+          "query_s": 0.0193157
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 432603,
+        "triangle_tests": 6296,
+        "query_s": 0.1329555,
+        "intersection_pairs": 32,
+        "enclosed_components": 0,
+        "witness_sha256": "a8a8e98e36ce4adf4c19e07433f94e73b8870896ca10521382bead379e91ba8b",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 217956,
+          "triangle_tests": 1222,
+          "query_s": 0.053011
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 241681,
+        "triangle_tests": 4022,
+        "query_s": 0.0810298,
+        "intersection_pairs": 44,
+        "enclosed_components": 0,
+        "witness_sha256": "be8571a5bf49192716eced37f4873129767450b805994c45f2724127ebe31370",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 166866,
+          "triangle_tests": 1804,
+          "query_s": 0.0449101
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 115919,
+        "triangle_tests": 1131,
+        "query_s": 0.0489955,
+        "intersection_pairs": 45,
+        "enclosed_components": 0,
+        "witness_sha256": "410899724a7c06a2137903fae30d8445b7f834700a78191742f531fda0ffe2a0",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 49203,
+          "triangle_tests": 216,
+          "query_s": 0.0125543
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 187773,
+        "triangle_tests": 2726,
+        "query_s": 0.075367,
+        "intersection_pairs": 61,
+        "enclosed_components": 0,
+        "witness_sha256": "9682854eb1d8c53fe76acdcd1a2e006e8944fe368fe845ec4c3f1411b321e9d0",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 5217,
+          "triangle_tests": 189,
+          "query_s": 0.001513
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 221491,
+        "triangle_tests": 6622,
+        "query_s": 0.0743733,
+        "intersection_pairs": 34,
+        "enclosed_components": 0,
+        "witness_sha256": "642a86233f4685a780a9571e0385ba9dbba8d82faac79ec725d988288fcd3e83",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 87008,
+          "triangle_tests": 747,
+          "query_s": 0.0233344
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 275583,
+        "triangle_tests": 6183,
+        "query_s": 0.0832241,
+        "intersection_pairs": 43,
+        "enclosed_components": 0,
+        "witness_sha256": "6be5c720e7d441194889af8f23c6707b9c404f57d670caa51e5b56e363804823",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 35952,
+          "triangle_tests": 511,
+          "query_s": 0.0112835
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 270943,
+        "triangle_tests": 5188,
+        "query_s": 0.0874699,
+        "intersection_pairs": 58,
+        "enclosed_components": 0,
+        "witness_sha256": "af1b83766caf09df989b7ab72413ef9a207b96b41145d466e5a8e71ffaf89eef",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 6855,
+          "triangle_tests": 180,
+          "query_s": 0.0019211
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 360349,
+        "triangle_tests": 6247,
+        "query_s": 0.097625,
+        "intersection_pairs": 37,
+        "enclosed_components": 0,
+        "witness_sha256": "6a918fda7572b2acc481aee75696e522f90da6c3b8ca8ca52a1c3a2abdd0c1ca",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 10624,
+          "triangle_tests": 186,
+          "query_s": 0.0029197
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 342919,
+        "triangle_tests": 4779,
+        "query_s": 0.1028698,
+        "intersection_pairs": 66,
+        "enclosed_components": 0,
+        "witness_sha256": "fa9094e10fb0beb667d846797fe9f3066d5240134bb4c4d6dce4c1f7d947c05f",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 110637,
+          "triangle_tests": 493,
+          "query_s": 0.027773
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 245741,
+        "triangle_tests": 3146,
+        "query_s": 0.0755038,
+        "intersection_pairs": 42,
+        "enclosed_components": 0,
+        "witness_sha256": "652726fce217f0989820e367c5d46310db1f16acd96c588dc7fcf7056d59d8af",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 10975,
+          "triangle_tests": 6,
+          "query_s": 0.0026394
+        }
+      },
+      {
+        "body_pairs": 1,
+        "node_pairs": 123173,
+        "triangle_tests": 1117,
+        "query_s": 0.0424278,
+        "intersection_pairs": 40,
+        "enclosed_components": 0,
+        "witness_sha256": "0afcfd902cd88c19a36f59ab8d3b38e90e96c6fb268f61de696a1d6e6f67243a",
+        "decision": {
+          "overlap": true,
+          "reused_triangle_pair": false,
+          "body_pairs": 1,
+          "node_pairs": 1977,
+          "triangle_tests": 10,
+          "query_s": 0.0004798
+        }
+      }
+    ]
+  }
+}

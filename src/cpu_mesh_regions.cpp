@@ -122,10 +122,10 @@ public:
     }
     std::vector<ContactRegion> regions(ContactPose a,ContactPose b,ContactWork& work) const override {
         const auto poses=placements(a,b);
-        const auto hit=scene_.intersect(poses);
+        const auto hit=scene_.overlaps(poses);
         work.mesh.triangles+=hit.triangle_tests;
         work.mesh.nodes+=hit.node_pairs;
-        if (hit.intersections.empty() && hit.enclosed.empty()) return {};
+        if (!hit.overlap) return {};
         auto first=placed(*solids_[0],*meshes_[0],poses[0]);
         auto second=placed(*solids_[1],*meshes_[1],poses[1]);
         return overlap_regions(first,second);
@@ -134,11 +134,11 @@ public:
                              double tolerance) const override {
 #ifdef NC_WITH_MESH_CCD
         const auto start=placements(a0,b0),end=placements(a1,b1);
-        const auto initial=scene_.intersect(start);
-        const auto last=scene_.intersect(end);
+        const auto initial=scene_.overlaps(start);
+        const auto last=scene_.overlaps(end);
         SurfaceTransition result;
-        result.start_in_contact=!initial.intersections.empty() || !initial.enclosed.empty();
-        result.end_in_contact=!last.intersections.empty() || !last.enclosed.empty();
+        result.start_in_contact=initial.overlap;
+        result.end_in_contact=last.overlap;
         result.nodes=initial.node_pairs+last.node_pairs;
         if (result.start_in_contact && result.end_in_contact) return result;
         const auto sweep=result.start_in_contact ? scene_.sweep(end,start,tolerance) : scene_.sweep(start,end,tolerance);

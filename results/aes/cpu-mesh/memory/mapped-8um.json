@@ -1,0 +1,72 @@
+{
+  "method": "mesh-obb",
+  "triangles": [
+    8964,
+    9770
+  ],
+  "mesh_sha256": [
+    "68aa273fec24a63254ae6b832f2b8e1f6278f72f29d52b1e2d04d437740f3e79",
+    "a589f47c11695973d7b7501c7d269f9db3d4698bf9366a73829db711017a2555"
+  ],
+  "sampled_surface_error_um": [
+    135.03699822439182,
+    225.61627271274182
+  ],
+  "min_sicn": [
+    0.06264593997974716,
+    0.0016104314195840958
+  ],
+  "file_bytes": 1292275,
+  "first_frame_working_set_bytes": 13688832,
+  "final_working_set_bytes": 13701120,
+  "peak_working_set_bytes": 13701120,
+  "final_private_bytes": 10584064,
+  "elapsed_s": 0.47663859999738634,
+  "frames": 32,
+  "positive_frames": 25,
+  "differing_from_dense_frame_indices": [
+    5,
+    6,
+    10,
+    17,
+    25,
+    28
+  ],
+  "mesh_positive": [
+    false,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    true,
+    true,
+    true,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    true,
+    true,
+    false,
+    true,
+    true,
+    true
+  ],
+  "median_decision_ms": 1.2209,
+  "measurement": "One native nc_mesh process, two complete solids, resident OBB/AABB trees, discrete predicates and containment; Windows working set includes DLLs and temporary allocations.",
+  "pose_sha256": "a9ff0401cb33c8803a978639bcf49c2c5a9f14d6615d4a0d874f198874cd20d7"
+}

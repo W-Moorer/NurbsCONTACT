@@ -1,0 +1,81 @@
+{
+  "method": "mesh-obb",
+  "pose_sha256": "a9ff0401cb33c8803a978639bcf49c2c5a9f14d6615d4a0d874f198874cd20d7",
+  "triangles": [
+    34804,
+    34340
+  ],
+  "mesh_sha256": [
+    "da952af93c0b2a0333d7e9f8db50b9384c15d99385afc682c9b9bf0afc1b3403",
+    "dfe66837ad79924888b2de581c147d5a971d68fac003a185718f4a225439c03b"
+  ],
+  "sampled_surface_error_um": [
+    19.000232254146415,
+    37.00439512087519
+  ],
+  "min_sicn": [
+    0.01568110103460692,
+    0.0016104314195840958
+  ],
+  "file_bytes": 4923192,
+  "first_frame_working_set_bytes": 34910208,
+  "final_working_set_bytes": 34910208,
+  "peak_working_set_bytes": 35336192,
+  "final_private_bytes": 33366016,
+  "elapsed_s": 2.5020600999705493,
+  "frames": 32,
+  "positive_frames": 31,
+  "differing_from_dense_frame_indices": [],
+  "mesh_positive": [
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
+  "median_decision_ms": 1.4336499999999999,
+  "measurement": "One native nc_mesh process, two complete solids, resident OBB/AABB trees, discrete predicates and containment; Windows working set includes DLLs and temporary allocations.",
+  "dynamics": {
+    "duration_s": 0.005,
+    "dt_s": 5e-05,
+    "steps": 100,
+    "active_frames": 63,
+    "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+    "trace_sha256": "0be7d17abfd6ad19f557da2a2f632aecf032bb2abbeda4a9dac64fffcec47f6e",
+    "normal_impulse_Ns": 4.999871675445885,
+    "peak_normal_N": 5108.85753817888,
+    "subdivisions": 4,
+    "integration_s": 109.4012401,
+    "process_s": 115.69588690000819,
+    "observed_peak_working_set_bytes": 70148096,
+    "observed_peak_commit_bytes": 86831104,
+    "monitor_interval_s": 0.025
+  }
+}

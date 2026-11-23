@@ -1,0 +1,31 @@
+{
+  "frames": 101,
+  "duration_s": 0.004999999999999997,
+  "trace_sha256": [
+    "69a86278a95af0dcdbdfac4c3dce17e143ded3149266386398256e7c9f0fde47",
+    "0be7d17abfd6ad19f557da2a2f632aecf032bb2abbeda4a9dac64fffcec47f6e"
+  ],
+  "peak_normal_N": [
+    5263.091907935661,
+    5108.85753817888
+  ],
+  "normal_impulse_Ns": [
+    5.040532762320808,
+    4.999871675445885
+  ],
+  "normal_force_rms_difference_N": 873.0468526944422,
+  "different_active_frames": 16,
+  "max_shaft_angle_difference_rad": [
+    0.0001851225409457702,
+    6.960703604919072e-05
+  ],
+  "max_shaft_speed_difference_rad_s": [
+    3.676641910812549,
+    0.9550653193055609
+  ],
+  "meshes": [
+    "standard",
+    "refined"
+  ],
+  "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38"
+}

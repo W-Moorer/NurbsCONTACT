@@ -13,7 +13,7 @@ def step_path(path, folder):
     return Path(os.path.relpath(path, folder)).as_posix()
 
 
-def cam(models, output, duration):
+def cam(models, output, duration, *, surface=False):
     follower = step_path(models / "follower.step", output.parent)
     cam = step_path(models / "cam.step", output.parent)
     output.write_text(
@@ -23,12 +23,12 @@ def cam(models, output, duration):
         f'coordinate .48 0 .096 70 .65 0 -3.2\n'
         f'body "{follower}" 0 0 .115 0 0 0 1 0 0 0 0 -1 0 0 0 1 1 0 1 0\n'
         f'body "{cam}" 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n'
-        f'closest 0 1 .012 5000 1 0 0 .0005 .012\n'
+        f'{"surface 0 1" if surface else "closest 0 1 .012"} 5000 1 0 0 .0005 .012\n'
         f'drives 0\nloads 1\nload 0 2\n0 .4\n{duration:.17g} {.4 + 7.2 * duration:.17g}\n',
         encoding="ascii")
 
 
-def gears(models, output, duration, brake):
+def gears(models, output, duration, brake, *, surface=False):
     with (models / f"{output.stem}.csv").open(newline="", encoding="utf-8") as stream:
         parts = list(csv.DictReader(stream))
     stages = list(zip(parts[::2], parts[1::2], strict=True))
@@ -70,7 +70,8 @@ def gears(models, output, duration, brake):
         deck.append(f'body "{path}" 0 {x:.17g} 0 {z:.17g} 0 0 {sign} {angle:.17g} '
                     f'0 0 0 {part["shaft"]} {x:.17g} 0 {z:.17g} 0')
     for i in range(len(stages)):
-        deck.append(f"closest {2*i} {2*i+1} .000055 1.6e8 1 0 0 .0005 .000053")
+        pair = f"surface {2*i} {2*i+1}" if surface else f"closest {2*i} {2*i+1} .000055"
+        deck.append(f"{pair} 1.6e8 1 0 0 .0005 .000053")
     count = math.ceil(duration / .0005)
     times = [duration * i / count for i in range(count + 1)]
     deck.extend(("drives 0", "loads 2", f"load 0 {len(times)}"))
@@ -93,13 +94,14 @@ def main():
     parser.add_argument("output", type=Path)
     parser.add_argument("--cam-duration", type=float, default=20)
     parser.add_argument("--gear-duration", type=float, default=.36)
+    parser.add_argument("--surface",action="store_true",help="use contact on the modeled solid boundaries")
     args = parser.parse_args()
     if not all(math.isfinite(t) and t > 0 for t in (args.cam_duration, args.gear_duration)):
         parser.error("durations must be positive and finite")
     args.output.mkdir(parents=True, exist_ok=True)
-    cam(args.cam_models, args.output / "cam.scene", args.cam_duration)
+    cam(args.cam_models, args.output / "cam.scene", args.cam_duration,surface=args.surface)
     for case, torque in (("spur", 56), ("reducer", 148)):
-        gears(args.gear_models, args.output / f"{case}.scene", args.gear_duration, torque)
+        gears(args.gear_models, args.output / f"{case}.scene", args.gear_duration, torque,surface=args.surface)
 
 
 if __name__ == "__main__":

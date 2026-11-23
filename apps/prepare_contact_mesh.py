@@ -267,9 +267,77 @@ def refine_slender_faces(required_sicn, size_mm):
     return len(edge_counts)
 
 
+def map_four_sided_faces(size_mm, chord_mm):
+    """Use compatible opposite edge counts on simply bounded quadrilateral CAD faces."""
+    groups = {}
+    ends = {}
+    quads = []
+
+    def root(tag):
+        groups.setdefault(tag, tag)
+        while groups[tag] != tag:
+            groups[tag] = groups[groups[tag]]
+            tag = groups[tag]
+        return tag
+
+    for _, face in gmsh.model.getEntities(2):
+        edges = [tag for _, tag in gmsh.model.getBoundary([(2, face)], combined=False, oriented=False)]
+        if len(edges) != 4 or len(set(edges)) != 4:
+            continue
+        for tag in edges:
+            if tag not in ends:
+                ends[tag] = {
+                    v for _, v in gmsh.model.getBoundary([(1, tag)], combined=False, oriented=False)
+                }
+        endpoint_sets = [ends[tag] for tag in edges]
+        corners = set.union(*endpoint_sets)
+        if (
+            len(corners) != 4
+            or any(len(s) != 2 for s in endpoint_sets)
+            or len({frozenset(s) for s in endpoint_sets}) != 4
+        ):
+            continue
+        if any(sum(v in s for s in endpoint_sets) != 2 for v in corners):
+            continue
+        for tag in edges:
+            opposite = next(k for k in edges if ends[tag].isdisjoint(ends[k]))
+            groups[root(tag)] = root(opposite)
+        quads.append(face)
+    subdivisions = {}
+    for tag in groups:
+        length = gmsh.model.occ.getMass(1, tag)
+        lo, hi = gmsh.model.getParametrizationBounds(1, tag)
+        count = max(1, math.ceil(length / size_mm))
+        # Midpoint and quarter-point distances to each chord control refinement
+        # of the boundary curve. The final audit samples the actual Gmsh mesh.
+        while True:
+            t = np.linspace(lo[0], hi[0], 4 * count + 1)
+            xyz = gmsh.model.getValue(1, tag, t).reshape(-1, 3)
+            a, b = xyz[:-1:4], xyz[4::4]
+            chord = b - a
+            denom = np.einsum("ij,ij->i", chord, chord)
+            worst = 0.0
+            for k in (1, 2, 3):
+                delta = xyz[k::4] - a
+                along = np.clip(np.einsum("ij,ij->i", delta, chord) / np.maximum(denom, 1e-300), 0.0, 1.0)
+                worst = max(worst, np.linalg.norm(delta - along[:, None] * chord, axis=1).max())
+            if worst <= chord_mm:
+                break
+            if count >= 32768:
+                raise ValueError(f"failed to resolve the requested chord deviation on curve {tag}")
+            count *= 2
+        key = root(tag)
+        subdivisions[key] = max(subdivisions.get(key, 1), count)
+    for tag in groups:
+        gmsh.model.mesh.setTransfiniteCurve(tag, subdivisions[root(tag)] + 1)
+    for tag in quads:
+        gmsh.model.mesh.setTransfiniteSurface(tag, "AlternateLeft")
+    return len(quads)
+
+
 def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sicn=0., audit_workers=1,
-            projection="auto"):
-    limits = (size_m, max_error_m, max_normal_deg)
+            projection="auto", extend_boundary=True, mapped_edge_error_m=None, curvature_samples=24):
+    limits = (size_m, max_error_m, max_normal_deg, mapped_edge_error_m)
     if any(v is not None and (not math.isfinite(v) or v <= 0) for v in limits):
         raise ValueError("size and requested tolerances must be positive and finite")
     if not 0 <= min_sicn <= 1 or output.suffix.lower() != ".msh":
@@ -278,6 +346,8 @@ def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sic
         raise ValueError("expected a positive integer number of audit workers")
     if projection not in ("auto","gmsh"):
         raise ValueError("unknown CAD projection strategy")
+    if not isinstance(curvature_samples,int) or curvature_samples<3:
+        raise ValueError("expected at least three angular samples per full circle")
     start = time.perf_counter()
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=output.parent) as work:
@@ -286,11 +356,21 @@ def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sic
         try:
             open_step(step)
             gmsh.option.setNumber("Mesh.MeshSizeMax", size_m * 1000)
-            gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", 24)
+            gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", curvature_samples)
+            gmsh.option.setNumber("Mesh.MeshSizeExtendFromBoundary", int(extend_boundary))
             gmsh.option.setNumber("Mesh.ElementOrder", 1)
             gmsh.option.setNumber("Mesh.Algorithm", 6)
+            mapped_faces = (map_four_sided_faces(size_m*1000,mapped_edge_error_m*1000)
+                            if mapped_edge_error_m is not None else 0)
             gmsh.model.mesh.generate(2)
             initial_mesh_s = time.perf_counter() - start
+            if mapped_faces and min_sicn>0:
+                elements,_=gmsh.model.mesh.getElementsByType(2)
+                if gmsh.model.mesh.getElementQualities(elements,"minSICN").min()<min_sicn:
+                    gmsh.model.mesh.clear()
+                    gmsh.model.mesh.removeConstraints()
+                    gmsh.model.mesh.generate(2)
+                    mapped_faces=0
             refined_edges = refine_slender_faces(min_sicn, size_m * 1000) if min_sicn > 0 else 0
             if min_sicn > 0:
                 elements, _ = gmsh.model.mesh.getElementsByType(2)
@@ -324,7 +404,8 @@ def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sic
                       locally_refined_edges=refined_edges, audit_workers=audit_workers, audit_s=audit_s,
                       preparation_s=time.perf_counter() - start, generation_s=audit_start-start,
                       initial_mesh_s=initial_mesh_s, refinement_and_quality_s=audit_start-start-initial_mesh_s,
-                      projection=projection)
+                      projection=projection, extend_boundary=extend_boundary, mapped_faces=mapped_faces,
+                      mapped_edge_error_m=mapped_edge_error_m, curvature_samples=curvature_samples)
         metadata = Path(work) / "quality.json"
         metadata.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")
         staged.replace(output)
@@ -342,7 +423,13 @@ if __name__ == "__main__":
     parser.add_argument("--min-sicn", type=float, default=0.)
     parser.add_argument("--audit-workers", type=int, default=1, help="independent processes for CAD projections")
     parser.add_argument("--projection", choices=["auto","gmsh"], default="auto")
+    parser.add_argument("--no-extend-boundary", action="store_true",
+                        help="keep short trim edges from prescribing the mesh size across neighboring faces")
+    parser.add_argument("--mapped-edge-error-m",type=float,
+                        help="map four-sided CAD faces with edge counts adapted to curvature")
+    parser.add_argument("--curvature-samples",type=int,default=24,help="Gmsh curvature sampling per full circle")
     args = parser.parse_args()
     result = prepare(args.step, args.output, args.size_m, args.max_error_m, args.max_normal_deg, args.min_sicn,
-                     args.audit_workers, args.projection)
+                     args.audit_workers,args.projection,not args.no_extend_boundary,args.mapped_edge_error_m,
+                     args.curvature_samples)
     print(json.dumps({k: v for k, v in result.items() if k not in ("faces", "edges")}, allow_nan=False))

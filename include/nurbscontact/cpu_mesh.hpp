@@ -62,6 +62,11 @@ struct MeshSweepResult {
 };
 #endif
 
+struct OverlapResult {
+    bool overlap{}, reused_triangle_pair{};
+    std::size_t body_pairs{}, node_pairs{}, triangle_tests{};
+};
+
 // Surface intersections and complete containment for closed, consistently wound solid boundaries.
 class MeshScene {
 public:
@@ -70,6 +75,7 @@ public:
     MeshScene(MeshScene&&) noexcept;
     MeshScene& operator=(MeshScene&&) noexcept;
     IntersectionResult intersect(std::span<const RigidPlacement> poses, bool collect_contours = false);
+    OverlapResult overlaps(std::span<const RigidPlacement> poses);
 #ifdef NC_WITH_MESH_CCD
     // Straight translation and shortest-arc orientation per body.
     MeshSweepResult sweep(std::span<const RigidPlacement> start, std::span<const RigidPlacement> end,

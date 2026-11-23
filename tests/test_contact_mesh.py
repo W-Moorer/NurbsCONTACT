@@ -68,6 +68,11 @@ class ContactMeshTest(unittest.TestCase):
             report = prepare(path, output, .001, min_sicn=.2)
             self.assertGreater(report["locally_refined_edges"], 0)
             self.assertGreaterEqual(report["min_sicn"], .2)
+            mapped=prepare(path,Path(work)/"mapped.msh",.005,extend_boundary=False,mapped_edge_error_m=.000002)
+            self.assertEqual(mapped["mapped_faces"],6)
+            self.assertLess(mapped["triangles"],report["triangles"])
+            self.assertAlmostEqual(mapped["signed_volume_m3"],report["signed_volume_m3"],places=16)
+            self.assertLess(mapped["max_sampled_surface_error_m"],1e-12)
 
     def test_wheel_trim_end_elements(self):
         # The full wheel has a 24 mm long face bounded by 7.44 µm trims.

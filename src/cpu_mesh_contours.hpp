@@ -3,6 +3,7 @@
 #include "nurbscontact/cpu_mesh.hpp"
 
 namespace nc::cpu {
+bool triangle_overlap(const Triangle& a,const Triangle& b);
 
 // One instance per body pair. Exact witness coordinates join triangle hits
 // across mesh edges without a user-selected spatial merging distance.

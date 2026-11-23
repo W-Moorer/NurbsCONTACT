@@ -11,15 +11,17 @@ using namespace nc::cpu;
 int main(int argc, char** argv) {
     try {
         if (argc < 5 || std::string_view(argv[1]) != "--method")
-            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--contours] [--tolerance-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz per body");
+            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--contours|--any] [--tolerance-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz per body");
         const auto method = mesh_method(argv[2]);
         int first_mesh=3;
         bool continuous=false;
         bool contours=false;
+        bool any=false;
         double tolerance=1e-7;
         while (first_mesh < argc && std::string_view(argv[first_mesh]).starts_with("--")) {
             const std::string_view option=argv[first_mesh++];
             if (option=="--contours") { contours=true; continue; }
+            if (option=="--any") { any=true; continue; }
             if (first_mesh==argc) throw std::invalid_argument("missing option value");
             const std::string value=argv[first_mesh++];
             if (option=="--detection") {
@@ -34,6 +36,7 @@ int main(int argc, char** argv) {
         }
         if (argc-first_mesh<2) throw std::invalid_argument("expected at least two contact meshes");
         if (continuous && contours) throw std::invalid_argument("contours require a discrete query");
+        if (any && (continuous || contours)) throw std::invalid_argument("--any requires discrete overlap detection");
 #ifndef NC_WITH_MESH_CCD
         if (continuous) throw std::invalid_argument("build with NC_WITH_MESH_CCD for continuous detection");
 #endif
@@ -83,6 +86,14 @@ int main(int argc, char** argv) {
                 continue;
             }
 #endif
+            if (any) {
+                const auto hit=scene.overlaps(poses);
+                const double seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
+                std::cout<<std::boolalpha<<"{\"overlap\":"<<hit.overlap<<",\"reused_triangle_pair\":"
+                         <<hit.reused_triangle_pair<<",\"body_pairs\":"<<hit.body_pairs<<",\"node_pairs\":"
+                         <<hit.node_pairs<<",\"triangle_tests\":"<<hit.triangle_tests<<",\"query_s\":"<<seconds<<"}"<<std::endl;
+                continue;
+            }
             auto result = scene.intersect(poses,contours);
             const double seconds = std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
             std::cout << "{\"body_pairs\":" << result.body_pairs << ",\"node_pairs\":" << result.node_pairs

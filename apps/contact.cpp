@@ -859,6 +859,11 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     }
     ContactWork work;
     std::vector<Vec> base_acceleration;
+    const bool reuse_mesh_samples=!surface.method.empty() && !has_history;
+    bool record_sample=reuse_mesh_samples;
+    double last_sample_time{};
+    Vector last_sample_q,last_sample_v;
+    std::vector<ContactSample> last_contacts;
     const auto evaluate_force=[&](const Vector& q_,const Vector& v_,double time,const Vector& previous) {
         const auto state=kinematics(input,q_,time,&base_acceleration);
         Forces out{Vector(n),Vector(n*n),Vector(n*n)};
@@ -878,7 +883,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         if (!input.resistances.empty()) add_point_resistances(out,state,input.resistances,v_);
         if (!input.bushings.empty()) add_translational_bushings(out,state,input.bushings,v_);
         std::vector<ContactSample> contacts;
-        if (!add_contact_forces(&out,state,input.pairs,v_,work,has_history ? &contacts : nullptr,
+        if (!add_contact_forces(&out,state,input.pairs,v_,work,has_history || record_sample ? &contacts : nullptr,
                                 impact_history(previous))) {
             out.value[0]=std::numeric_limits<double>::quiet_NaN();
         } else if (has_history) {
@@ -888,6 +893,11 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                 out.history.push_back(contact.gap_rate);
                 out.history.push_back(contact.impact_speed);
             }
+        } else if (record_sample) {
+            last_sample_time=time;
+            last_sample_q=q_;
+            last_sample_v=v_;
+            last_contacts=std::move(contacts);
         }
         for (const auto& body:input.bodies)
             if (body.free) body.free->apply_euler_equations(q_,v_,out);
@@ -954,6 +964,15 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     }
     std::vector<State> samples;
     samples.reserve(steps/stride+2);
+    std::vector<std::vector<ContactSample>> observed_contacts;
+    const auto save_state=[&](const State& state) {
+        samples.push_back(state);
+        if (reuse_mesh_samples) {
+            if (state.time==last_sample_time && state.q==last_sample_q && state.v==last_sample_v)
+                observed_contacts.push_back(std::move(last_contacts));
+            else observed_contacts.emplace_back();
+        }
+    };
     const auto start=Clock::now();
     if (n>0) {
         ForceFunction force;
@@ -965,11 +984,13 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         Hht solver(mass,std::move(force),options,{},std::move(historical_force),{},std::move(accept_step));
         try {
             auto state=solver.initialize(q,v);
-            samples.push_back(state);
+            save_state(state);
             for (std::size_t s=1;s<=steps;++s) {
+                const bool save=s%stride==0 || s==steps;
+                record_sample=reuse_mesh_samples && save;
                 solver.step(state,dt,stats);
                 for (const auto& body:input.bodies) if (body.free) body.free->normalize(state);
-                if (s%stride==0 || s==steps) samples.push_back(state);
+                if (save) save_state(state);
             }
         } catch (const std::exception& error) {
             if (!work.unresolved_queries && !unresolved_events) throw;
@@ -1011,7 +1032,9 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     ContactWork audit;
     std::vector<ContactSample> values;
     double replay_s=0;
-    for (const auto& item:samples) {
+    std::size_t reused=0;
+    for (std::size_t index=0;index<samples.size();++index) {
+        const auto& item=samples[index];
         trace<<item.time;
         for (std::size_t i=0;i<n;++i) trace<<','<<item.q[i]<<','<<item.v[i]<<','<<item.a[i];
         const auto poses=kinematics(input,item.q,item.time,
@@ -1025,7 +1048,10 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                 for (double component:omega) trace<<','<<component;
             }
         }
-        if (n) {
+        if (index<observed_contacts.size() && !observed_contacts[index].empty()) {
+            values=std::move(observed_contacts[index]);
+            ++reused;
+        } else if (n) {
             if (!add_contact_forces(nullptr,poses,input.pairs,item.v,audit,&values,impact_history(item.history)))
                 throw std::runtime_error("invalid saved contact state");
         } else {
@@ -1051,11 +1077,11 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     }
     auto report=open_output(output.string()+".stats.csv");
     report<<"wall_s,setup_s,steps,accepted,subdivisions,force_evaluations,max_residual,pairs,culled,rays,missing,triangle_tests,"
-            "closest_queries,unresolved_queries,native_nodes,ccd_checks,ccd_rejected,ccd_nodes,ccd_unresolved\n"
+            "closest_queries,unresolved_queries,native_nodes,ccd_checks,ccd_rejected,ccd_nodes,ccd_unresolved,saved_contact_reuses\n"
         <<(n ? wall : replay_s)<<','<<setup_s<<','<<steps<<','<<stats.accepted_steps<<','<<stats.subdivisions<<','<<stats.evaluations
         <<','<<stats.maximum_residual<<','<<work.pairs<<','<<work.culled<<','<<work.rays<<','<<work.missing
         <<','<<work.mesh.triangles<<','<<work.closest_queries<<','<<work.unresolved_queries<<','<<work.native_nodes
-        <<','<<stats.step_checks<<','<<stats.rejected_steps<<','<<event_nodes<<','<<unresolved_events<<'\n';
+        <<','<<stats.step_checks<<','<<stats.rejected_steps<<','<<event_nodes<<','<<unresolved_events<<','<<reused<<'\n';
     if (!trace || !report) throw std::runtime_error("failed to write contact run");
 }
 

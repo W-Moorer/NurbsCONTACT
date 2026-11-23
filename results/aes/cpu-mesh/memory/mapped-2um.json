@@ -1,0 +1,65 @@
+{
+  "method": "mesh-obb",
+  "triangles": [
+    16456,
+    17608
+  ],
+  "mesh_sha256": [
+    "ccb94ef9965d2dcc730893d15c6546e56e33846dc024d9cd98a111b14f6cac9b",
+    "3453cf4df98360d89841d30f5f47af235c671835b797891d6d87889bed9e3f9b"
+  ],
+  "sampled_surface_error_um": [
+    135.03699822439182,
+    225.61627271274182
+  ],
+  "min_sicn": [
+    0.031362906072535016,
+    0.0016104314195840958
+  ],
+  "file_bytes": 2362313,
+  "first_frame_working_set_bytes": 19648512,
+  "final_working_set_bytes": 19660800,
+  "peak_working_set_bytes": 19660800,
+  "final_private_bytes": 17313792,
+  "elapsed_s": 0.6834449000307359,
+  "frames": 32,
+  "positive_frames": 31,
+  "differing_from_dense_frame_indices": [],
+  "mesh_positive": [
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
+  "median_decision_ms": 0.4396,
+  "measurement": "One native nc_mesh process, two complete solids, resident OBB/AABB trees, discrete predicates and containment; Windows working set includes DLLs and temporary allocations.",
+  "pose_sha256": "a9ff0401cb33c8803a978639bcf49c2c5a9f14d6615d4a0d874f198874cd20d7"
+}

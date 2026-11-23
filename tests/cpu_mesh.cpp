@@ -120,6 +120,14 @@ int main() {
                         if (!intersect_triangles(ta,tb).empty()) expected.insert({i,j,f,g});
                     }
                 auto result=scene.intersect(poses);
+                const auto any=scene.overlaps(poses);
+                require(any.overlap==(!expected.empty() || !result.enclosed.empty()),
+                        "overlap decision disagrees with exhaustive surface intersections and containment");
+                if (!expected.empty()) {
+                    const auto repeated=scene.overlaps(poses);
+                    require(repeated.overlap && repeated.reused_triangle_pair,
+                            "a repeated surface overlap should reuse its verified triangle pair");
+                }
                 for (const auto& h: result.intersections) actual.insert({h.body_a,h.body_b,h.triangle_a,h.triangle_b});
                 require(actual==expected && result.intersections.size()==actual.size(),"accelerated vs exhaustive triangle pairs");
             }
@@ -128,6 +136,8 @@ int main() {
             std::array<std::shared_ptr<const MeshData>,2> nested{data,tiny};
             MeshScene nested_scene(nested,m);
             const auto contained = nested_scene.intersect(std::array<RigidPlacement,2>{});
+            require(nested_scene.overlaps(std::array<RigidPlacement,2>{}).overlap,
+                    "predicate-only query lost a completely enclosed body");
             require(contained.intersections.empty() && contained.enclosed.size()==1 &&
                     contained.enclosed[0].body==1 && contained.enclosed[0].enclosing_body==0,
                     "solid containment without a boundary crossing");

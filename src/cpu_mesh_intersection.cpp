@@ -73,12 +73,16 @@ TriangleTime translated_triangle_ccd(const Triangle& a, const Triangle& b,
 }
 #endif
 
-namespace {
-std::vector<Point> exact_intersection(const Triangle& a, const Triangle& b) {
+bool triangle_overlap(const Triangle& a,const Triangle& b) {
     using Predicate = CGAL::Exact_predicates_inexact_constructions_kernel;
     const auto left = triangle<Predicate>(a), right = triangle<Predicate>(b);
     if (left.is_degenerate() || right.is_degenerate()) throw std::invalid_argument("degenerate triangle");
-    if (!CGAL::do_intersect(left, right)) return {};
+    return CGAL::do_intersect(left,right);
+}
+
+namespace {
+std::vector<Point> exact_intersection(const Triangle& a, const Triangle& b) {
+    if (!triangle_overlap(a,b)) return {};
     const auto hit = CGAL::intersection(triangle<Kernel>(a), triangle<Kernel>(b));
     if (!hit) throw std::runtime_error("inconsistent triangle intersection");
     if (const auto* p = std::get_if<Point>(&*hit)) return {*p};

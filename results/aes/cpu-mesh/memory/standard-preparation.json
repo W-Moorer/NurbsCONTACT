@@ -1,0 +1,20 @@
+{
+  "measurement": "Single Windows Python process, sequential STEP import, Gmsh meshing, CAD deviation and topology audit of both solids, then scene generation.",
+  "mesh_sha256": [
+    "0c79323fba8662f120fd457f806a298bb5be718021379cad63645e6d4e9ddd33",
+    "c5e7fb1a232e200e204a73bc5b0dd3928758e93eb234eb1860c412e3dd8092ee"
+  ],
+  "triangles": [
+    12296,
+    11174
+  ],
+  "gmsh_version": "4.15.0",
+  "preparation_s": [
+    20.641088800039142,
+    19.384494600002654
+  ],
+  "process_s": 44.49650320003275,
+  "observed_peak_working_set_bytes": 387383296,
+  "observed_peak_commit_bytes": 1288015872,
+  "monitor_interval_s": 0.025
+}

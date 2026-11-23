@@ -15,13 +15,39 @@ Each triangle contributes a centroid and three edge midpoints to the comparison 
 
 When a requested minSICN fails on a long narrow face, the generator measures its area and perimeter, increases edge subdivision along its length and remeshes. If neighboring triangles still miss the threshold, it applies a graded Gmsh size field around the affected curves. The final quality checks can reject this result. Each output records the number of edges refined.
 
+## Default spur gear mesh
+
+Generate the routine CPU baseline and replay its archived poses from the repository root.
+
+```powershell
+python benchmarks/aes/prepare_spur_cpu.py build/cpu-contact/spur-standard
+python benchmarks/aes/cpu_mesh_replay.py build/cpu-swept/Release/nc_mesh.exe build/cpu-contact/spur-standard/spur-1a.msh build/cpu-contact/spur-standard/spur-1b.msh results/aes/cpu-mesh/spur-poses.txt build/cpu-contact/spur-standard/replay.json --compare-overlap
+```
+
+Both gears are closed solids. Gmsh uses compatible edge subdivisions on four-sided CAD faces, set by the lengths and sampled curvature of opposite edges. The routine mesh spends triangles along curved profiles and allows long triangles in straight directions. Other faces use the Gmsh surface mesher with 64 curvature samples per full circle. The recipe uses a 2 µm sampled chord target on mapped edges. Across the finished solids the largest sampled surface deviations were 19 and 37 µm at the bores. The CAD trim on the wheel permits some very slender contact triangles. The quality report retains their measured shape and the checks for watertightness, orientation and self-intersection.
+
+The two ASCII mesh files occupy 1.58 MiB. One sequential preparation of both meshes, including the CAD and topology audits, took 44.5 s and reached a peak working set of 369.4 MiB in the Python process. The runtime loads the resulting meshes. [One-time preparation measurement](../results/aes/cpu-mesh/memory/standard-preparation.json)
+
+| Mesh for the complete pair | Triangles | OBB detection peak | Loaded HHT peak | Poses matching the dense mesh |
+| --- | ---: | ---: | ---: | ---: |
+| [Routine](../results/aes/cpu-mesh/memory/standard.json) | 23,470 | 14.4 MiB | 36.1 MiB | 32/32 |
+| [Refined](../results/aes/cpu-mesh/memory/refined.json) | 69,144 | 33.7 MiB | 66.9 MiB | 32/32 |
+| [Uniform 6 mm target](../results/aes/cpu-mesh/memory/6mm.json) | 25,544 | 16.0 MiB | — | 10/32 |
+| [Historical dense pair](../results/aes/cpu-mesh/memory/dense.json) | 1,139,266 | 485.0 MiB | — | Reference |
+
+These are Windows working-set measurements of the entire native process, including mesh loading and acceleration structures. Detection replays 32 archived poses, with 31 intersections on the dense pair. HHT integrates 5 ms in 100 steps at 50 µs with the same scene and penalty law. On the routine and refined meshes the peak normal loads were 5.263 and 5.109 kN and the impulses were 5.041 and 5.000 N·s. Contact activity differed at 16 of 101 output times and the force RMS difference was 873 N. Use the routine pair for detection and development. The results leave the pointwise tooth load unresolved. [Comparison of the two time histories](../results/aes/cpu-mesh/memory/refinement-check.json)
+
+The three CPU broad phases also produced identical triangle witnesses and enclosure decisions on the routine mesh at all 32 poses. The archive includes the [per-frame replay](../results/aes/cpu-mesh/memory/standard-replay.json), the [routine force history](../results/aes/cpu-mesh/memory/standard-response.csv) and the [refined force history](../results/aes/cpu-mesh/memory/refined-response.csv).
+
+## Historical dense geometry audit
+
 `--audit-workers N` distributes face samples over independent Gmsh sessions. With the optional `cadquery-ocp` package installed, the default `--projection auto` uses the B-spline control net to bound the Hessian of squared point-to-surface distance. Where the objective is strictly convex, the kernel solves in surface parameters and evaluates the point and normal on the Gmsh CAD face. For partitioned faces it also checks distance lower bounds on all competing subpatches. Unresolved samples, unsupported surfaces and installations without OCP use Gmsh closest-point queries. Select `--projection gmsh` to use those queries throughout. Both modes check the centroid and three edge midpoints of every triangle, evaluate both incident facet normals at shared samples, and check CAD feature edges separately. These are sampled errors against the originating surfaces and curves.
 
 In the [spur pair preparation trial](../results/aes/cpu-mesh/spur-preparation.json), the 50,060-triangle pinion passed and the coarse wheel had a minSICN of 0.00429. The old audit timed out on the refined wheel with both one and six workers. With the original grading width, the accelerated audit checked 8,083,976 face samples on 2,020,994 triangles. Face checking took 52.34 s, topology checks took 37.24 s and the whole preparation took 367.70 s. The narrower grading field first lets the target edge size recover over 1.25 nominal element lengths. If a neighboring element fails the shape threshold, the mesher retries with the previous four-length width.
 
 The [paired projection check](../benchmarks/aes/cpu_mesh_audit_comparison.py) compares coordinates and CAD normals at the same positions. On [all 276,936 coarse-wheel samples](../results/aes/cpu-mesh/wheel-projection-coarse.json), the maximum difference in projected position was 5.84 pm. The [refined-wheel comparison](../results/aes/cpu-mesh/wheel-projection-refined.json) used 32 triangles on each of the 291 faces. The full preparation checks all triangle samples, including those outside this independent comparison.
 
-The compact wheel has 1,089,206 triangles. Its peak sampled deviation is 10.207 µm, its maximum facet-normal error is 2.029° and its minimum SICN is 0.21682. Two preparations produced the same mesh hash in 304.37 s and 637.90 s on the shared Ryzen 9 5900X machine. The latter run spent 29.89 s through the initial mesh, 441.72 s on refinement and element quality, and 131.46 s on CAD and topology checks. Reproduce the production pair with:
+The dense wheel has 1,089,206 triangles. Its peak sampled deviation is 10.207 µm, its maximum facet-normal error is 2.029° and its minimum SICN is 0.21682. Two preparations produced the same mesh hash in 304.37 s and 637.90 s on the shared Ryzen 9 5900X machine. The latter run spent 29.89 s through the initial mesh, 441.72 s on refinement and element quality, and 131.46 s on CAD and topology checks. The following commands reproduce the historical dense reference pair.
 
 ```powershell
 python apps/prepare_contact_mesh.py results/gears/models/spur-1a.step build/cpu-contact/spur/spur-1a.msh --size-m .0015 --min-sicn .3 --max-error-m .00005 --max-normal-deg 8
@@ -56,6 +82,8 @@ python benchmarks/aes/cpu_mesh_replay.py build/cpu-swept/Release/nc_mesh.exe bui
 ```
 
 Add `--contours` to a discrete query to group connected triangle intersections within each body pair. Groups meet at exact world-space witnesses on triangle boundaries. A group can contain a point, a curve, or coplanar polygons. A contact region with holes can have several boundary curves. Force integration and penetration depth require further geometry.
+
+Add `--any` for a Boolean overlap query. The detector retests the previous intersecting triangle pair at the new poses, then searches the hierarchy until an intersection is found. When the boundaries are disjoint it still tests for enclosure. Penalty dynamics uses this query before constructing the overlap volume. The solver reuses computed force-output data only at an identical time, position and velocity for compatible force laws. On the 3.2 s [coarse eccentric cam](../results/aes/cpu-mesh/cam/current-coarse-mesh-obb-0.001-3.2.json), the two executables produced byte-identical 3,201-frame histories over 71 contact switches. The [original run](../results/aes/cpu-mesh/cam/reference-coarse-mesh-obb-0.001-3.2.json) took 145.0 s of integration and the updated run took 96.8 s.
 
 For a closed transverse loop, `vector_area_a_m2` is half the directed sum of cross products of consecutive boundary vertices. Segment orientation follows the cross product of the two outward face normals. This gives the oriented area vector of the bounded surface on body A, and reverses on exchanging the bodies. Tangencies, coplanar regions, and branching boundaries can lack a unique oriented loop. The field is null for these cases. The magnitude is a projected area for a planar patch.
 
