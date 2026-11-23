@@ -11,12 +11,13 @@ using namespace nc::cpu;
 int main(int argc, char** argv) {
     try {
         if (argc < 5 || std::string_view(argv[1]) != "--method")
-            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--contours|--any] [--tolerance-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz per body");
+            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--contours|--any|--regions local|full] [--tolerance-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz per body");
         const auto method = mesh_method(argv[2]);
         int first_mesh=3;
         bool continuous=false;
         bool contours=false;
         bool any=false;
+        std::optional<bool> local_regions;
         double tolerance=1e-7;
         while (first_mesh < argc && std::string_view(argv[first_mesh]).starts_with("--")) {
             const std::string_view option=argv[first_mesh++];
@@ -27,6 +28,9 @@ int main(int argc, char** argv) {
             if (option=="--detection") {
                 if (value!="continuous" && value!="discrete") throw std::invalid_argument("unknown detection mode");
                 continuous=value=="continuous";
+            } else if (option=="--regions") {
+                if (value!="local" && value!="full") throw std::invalid_argument("expected local or full region scope");
+                local_regions=value=="local";
             } else if (option=="--tolerance-m") {
                 std::size_t used{};
                 tolerance=std::stod(value,&used);
@@ -37,6 +41,8 @@ int main(int argc, char** argv) {
         if (argc-first_mesh<2) throw std::invalid_argument("expected at least two contact meshes");
         if (continuous && contours) throw std::invalid_argument("contours require a discrete query");
         if (any && (continuous || contours)) throw std::invalid_argument("--any requires discrete overlap detection");
+        if (local_regions && (any || continuous || contours || argc-first_mesh!=2))
+            throw std::invalid_argument("--regions takes two closed meshes for a discrete volume query");
 #ifndef NC_WITH_MESH_CCD
         if (continuous) throw std::invalid_argument("build with NC_WITH_MESH_CCD for continuous detection");
 #endif
@@ -48,28 +54,53 @@ int main(int argc, char** argv) {
             if (!mesh) mesh = std::make_shared<MeshData>(read_gmsh(path));
             bodies.push_back(mesh);
         }
-        MeshScene scene(bodies, method);
+        std::optional<MeshScene> scene;
+        std::shared_ptr<const nc::dynamics::PairRegionQuery> regions;
+        if (local_regions) regions=mesh_region_query(bodies[0],bodies[1],method,{},*local_regions);
+        else scene.emplace(bodies,method);
         std::string line;
         std::vector<RigidPlacement> previous;
         std::cout << std::setprecision(17);
         while (std::getline(std::cin, line)) {
             std::istringstream row(line);
             std::vector<RigidPlacement> poses(bodies.size());
-            for (auto& pose : poses) {
+            std::array<nc::dynamics::ContactPose,2> contact_poses;
+            for (std::size_t i=0;i<poses.size();++i) {
+                auto& pose=poses[i];
                 double w, x, y, z;
                 if (!(row >> pose.origin[0] >> pose.origin[1] >> pose.origin[2] >> w >> x >> y >> z) ||
                     !(std::abs(w*w+x*x+y*y+z*z-1) <= 1e-12)) throw std::runtime_error("expected a pose and unit quaternion per body");
                 pose.basis = {{{1-2*(y*y+z*z),2*(x*y+w*z),2*(x*z-w*y)},
                                {2*(x*y-w*z),1-2*(x*x+z*z),2*(y*z+w*x)},
                                {2*(x*z+w*y),2*(y*z-w*x),1-2*(x*x+y*y)}}};
+                if (regions) {
+                    const double sine=std::hypot(x,y,z);
+                    contact_poses[i]={pose.origin,sine>0 ? Vec{x/sine,y/sine,z/sine} : Vec{0,0,1},2*std::atan2(sine,w)};
+                }
             }
             std::string extra;
             if (row >> extra) throw std::runtime_error("extra pose fields");
             const auto start = std::chrono::steady_clock::now();
+            if (regions) {
+                nc::dynamics::ContactWork work;
+                const auto found=regions->regions(contact_poses[0],contact_poses[1],work);
+                std::cout<<"{\"input_faces\":"<<work.boolean_input_faces<<",\"local_solids\":"<<work.local_solid_uses
+                         <<",\"regions\":[";
+                for (std::size_t i=0;i<found.size();++i) {
+                    if (i) std::cout<<',';
+                    const auto& r=found[i];
+                    std::cout<<"[";
+                    for (double x:r.point) std::cout<<x<<',';
+                    for (double x:r.normal) std::cout<<x<<',';
+                    std::cout<<r.depth_m<<']';
+                }
+                std::cout<<"]}"<<std::endl;
+                continue;
+            }
 #ifdef NC_WITH_MESH_CCD
             if (continuous) {
                 if (!previous.empty()) {
-                    const auto swept=scene.sweep(previous,poses,tolerance);
+                    const auto swept=scene->sweep(previous,poses,tolerance);
                     std::cout << "{\"candidate\":";
                     if (swept.first) {
                         const auto& hit=*swept.first;
@@ -87,14 +118,14 @@ int main(int argc, char** argv) {
             }
 #endif
             if (any) {
-                const auto hit=scene.overlaps(poses);
+                const auto hit=scene->overlaps(poses);
                 const double seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
                 std::cout<<std::boolalpha<<"{\"overlap\":"<<hit.overlap<<",\"reused_triangle_pair\":"
                          <<hit.reused_triangle_pair<<",\"body_pairs\":"<<hit.body_pairs<<",\"node_pairs\":"
                          <<hit.node_pairs<<",\"triangle_tests\":"<<hit.triangle_tests<<",\"query_s\":"<<seconds<<"}"<<std::endl;
                 continue;
             }
-            auto result = scene.intersect(poses,contours);
+            auto result = scene->intersect(poses,contours);
             const double seconds = std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
             std::cout << "{\"body_pairs\":" << result.body_pairs << ",\"node_pairs\":" << result.node_pairs
                       << ",\"triangle_tests\":" << result.triangle_tests << ",\"query_s\":" << seconds << ",\"hits\":[";

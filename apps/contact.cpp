@@ -122,6 +122,7 @@ struct SurfaceOptions {
     std::string method;
     Path mesh_directory;
     double distance_tolerance{1e-7};
+    bool localize{true};
 };
 
 Input read_scene(const Path& path,double deflection,std::optional<PairBackend> pair_backend,
@@ -397,7 +398,7 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         };
         for (auto& pair:input.pairs)
             pair.regions=cpu::mesh_region_query(meshes[pair.a],meshes[pair.b],method,
-                                                {center(pair.a),center(pair.b)});
+                                                  {center(pair.a),center(pair.b)},surface_options.localize);
     }
 #endif
     for (std::size_t i=0;i<input.event_geometry.size();++i) {
@@ -1077,11 +1078,15 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     }
     auto report=open_output(output.string()+".stats.csv");
     report<<"wall_s,setup_s,steps,accepted,subdivisions,force_evaluations,max_residual,pairs,culled,rays,missing,triangle_tests,"
-            "closest_queries,unresolved_queries,native_nodes,ccd_checks,ccd_rejected,ccd_nodes,ccd_unresolved,saved_contact_reuses\n"
+            "closest_queries,unresolved_queries,native_nodes,ccd_checks,ccd_rejected,ccd_nodes,ccd_unresolved,saved_contact_reuses,"
+            "mesh_boolean_queries,mesh_boolean_input_faces,mesh_local_solid_uses,mesh_local_solid_builds,"
+            "mesh_detection_s,mesh_placement_s,mesh_boolean_s\n"
         <<(n ? wall : replay_s)<<','<<setup_s<<','<<steps<<','<<stats.accepted_steps<<','<<stats.subdivisions<<','<<stats.evaluations
         <<','<<stats.maximum_residual<<','<<work.pairs<<','<<work.culled<<','<<work.rays<<','<<work.missing
         <<','<<work.mesh.triangles<<','<<work.closest_queries<<','<<work.unresolved_queries<<','<<work.native_nodes
-        <<','<<stats.step_checks<<','<<stats.rejected_steps<<','<<event_nodes<<','<<unresolved_events<<','<<reused<<'\n';
+        <<','<<stats.step_checks<<','<<stats.rejected_steps<<','<<event_nodes<<','<<unresolved_events<<','<<reused
+        <<','<<work.boolean_queries<<','<<work.boolean_input_faces<<','<<work.local_solid_uses<<','<<work.local_solid_builds
+        <<','<<work.mesh_detection_s<<','<<work.mesh_placement_s<<','<<work.mesh_boolean_s<<'\n';
     if (!trace || !report) throw std::runtime_error("failed to write contact run");
 }
 
@@ -1155,7 +1160,7 @@ int main(int argc,char** argv) {
             std::cerr<<"nc_contact SCENE DEFLECTION_M DT_S DURATION_S OUTPUT_STRIDE OUTPUT_PREFIX "
                         "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
                         "  or append --method mesh-aabb|mesh-obb|mesh-sap --mesh-dir DIR [--solver penalty] "
-                        "[--event-tol-s SECONDS --ccd-tol-m METRES]\n";
+                        "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full]\n";
             return 2;
         }
         std::optional<PairBackend> pair_backend;
@@ -1168,6 +1173,10 @@ int main(int argc,char** argv) {
                 const std::string_view key=argv[i], value=argv[i+1];
                 if (key=="--method") surface.method=value;
                 else if (key=="--mesh-dir") surface.mesh_directory=argv[i+1];
+                else if (key=="--mesh-region-scope") {
+                    if (value!="local" && value!="full") throw std::invalid_argument("expected local or full mesh region scope");
+                    surface.localize=value=="local";
+                }
                 else if (key=="--event-tol-s") event_tolerance=std::stod(argv[i+1]);
                 else if (key=="--ccd-tol-m") surface.distance_tolerance=std::stod(argv[i+1]);
                 else if (key=="--solver") {

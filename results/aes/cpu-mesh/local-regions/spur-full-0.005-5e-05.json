@@ -1,0 +1,29 @@
+{
+  "duration_s": 0.005,
+  "dt_s": 5e-05,
+  "steps": 100,
+  "active_frames": 73,
+  "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+  "trace_sha256": "65c9eb22ef20aa7fc522392bb92946b815067d2951e6bc457a34f7d57ecd373d",
+  "normal_impulse_Ns": 5.073322115825701,
+  "peak_normal_N": 5263.091907935672,
+  "subdivisions": 8,
+  "integration_s": 50.6530445,
+  "process_s": 52.05514780001249,
+  "observed_peak_working_set_bytes": 37834752,
+  "observed_peak_commit_bytes": 50442240,
+  "monitor_interval_s": 0.025,
+  "region_scope": "full",
+  "evaluations": 1064,
+  "boolean_queries": 1002,
+  "boolean_input_faces": 23516940,
+  "local_solid_uses": 0,
+  "local_solid_builds": 0,
+  "detection_s": 0.29443440000000043,
+  "placement_s": 3.5251520000000016,
+  "boolean_s": 45.4293913,
+  "mesh_sha256": [
+    "0c79323fba8662f120fd457f806a298bb5be718021379cad63645e6d4e9ddd33",
+    "c5e7fb1a232e200e204a73bc5b0dd3928758e93eb234eb1860c412e3dd8092ee"
+  ]
+}

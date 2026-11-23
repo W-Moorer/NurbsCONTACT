@@ -88,7 +88,7 @@ def measure(exe, meshes, poses, reference, method):
     )
 
 
-def dynamics(exe, meshes, scene, method, dt, duration, work):
+def dynamics(exe, meshes, scene, method, dt, duration, work, region_scope=None):
     work.mkdir(parents=True, exist_ok=True)
     prefix = work / "response"
     started = time.perf_counter()
@@ -108,6 +108,7 @@ def dynamics(exe, meshes, scene, method, dt, duration, work):
             meshes,
             "--solver",
             "penalty",
+            *(["--mesh-region-scope", region_scope] if region_scope else []),
         ],
         stdout=subprocess.DEVNULL,
         stderr=errors,
@@ -136,7 +137,7 @@ def dynamics(exe, meshes, scene, method, dt, duration, work):
         stats = next(csv.DictReader(f))
     if abs(data["time_s"][-1] - duration) > 1e-9 or not np.max(data["p0_normal_N"]) > 0:
         raise ValueError("expected a completed loaded gear run")
-    return dict(
+    result = dict(
         duration_s=duration,
         dt_s=dt,
         steps=int(stats["steps"]),
@@ -152,6 +153,19 @@ def dynamics(exe, meshes, scene, method, dt, duration, work):
         observed_peak_commit_bytes=peak_commit,
         monitor_interval_s=0.025,
     )
+    if "mesh_boolean_queries" in stats:
+        result.update(
+            region_scope=region_scope or "local",
+            evaluations=int(stats["force_evaluations"]),
+            boolean_queries=int(stats["mesh_boolean_queries"]),
+            boolean_input_faces=int(stats["mesh_boolean_input_faces"]),
+            local_solid_uses=int(stats["mesh_local_solid_uses"]),
+            local_solid_builds=int(stats["mesh_local_solid_builds"]),
+            detection_s=float(stats["mesh_detection_s"]),
+            placement_s=float(stats["mesh_placement_s"]),
+            boolean_s=float(stats["mesh_boolean_s"]),
+        )
+    return result
 
 
 def compare_gear_traces(first, second):
@@ -180,6 +194,7 @@ if __name__ == "__main__":
     for name in ("exe", "meshes", "poses", "reference", "output"):
         parser.add_argument(name, type=Path)
     parser.add_argument("--method", choices=["mesh-aabb", "mesh-obb", "mesh-sap"], default="mesh-obb")
+    parser.add_argument("--mesh-region-scope", choices=["local", "full"])
     parser.add_argument("--dynamics-exe", type=Path)
     parser.add_argument("--scene", type=Path)
     parser.add_argument("--work", type=Path)
@@ -201,6 +216,7 @@ if __name__ == "__main__":
             args.dt,
             args.duration,
             args.work,
+            args.mesh_region_scope,
         )
         if args.compare_trace:
             result["compared_with_previous_run"] = compare_gear_traces(

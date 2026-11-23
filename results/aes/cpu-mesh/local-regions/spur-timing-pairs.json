@@ -1,0 +1,46 @@
+{
+  "run_orders": [
+    [
+      "full",
+      "local"
+    ],
+    [
+      "local",
+      "full"
+    ]
+  ],
+  "pairs": [
+    {
+      "full": {
+        "integration_s": 70.8616374,
+        "process_s": 72.90006790001644,
+        "evaluations": 1064,
+        "boolean_input_faces": 23516940,
+        "trace_sha256": "65c9eb22ef20aa7fc522392bb92946b815067d2951e6bc457a34f7d57ecd373d"
+      },
+      "local": {
+        "integration_s": 41.2002936,
+        "process_s": 42.90596080000978,
+        "evaluations": 1064,
+        "boolean_input_faces": 5931554,
+        "trace_sha256": "65c9eb22ef20aa7fc522392bb92946b815067d2951e6bc457a34f7d57ecd373d"
+      }
+    },
+    {
+      "local": {
+        "integration_s": 34.7747952,
+        "process_s": 36.14869300002465,
+        "evaluations": 1064,
+        "boolean_input_faces": 5931554,
+        "trace_sha256": "65c9eb22ef20aa7fc522392bb92946b815067d2951e6bc457a34f7d57ecd373d"
+      },
+      "full": {
+        "integration_s": 50.6530445,
+        "process_s": 52.05514780001249,
+        "evaluations": 1064,
+        "boolean_input_faces": 23516940,
+        "trace_sha256": "65c9eb22ef20aa7fc522392bb92946b815067d2951e6bc457a34f7d57ecd373d"
+      }
+    }
+  ]
+}

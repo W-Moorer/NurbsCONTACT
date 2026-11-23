@@ -1,6 +1,8 @@
 #include "nurbscontact/cpu_mesh.hpp"
 
+#include <algorithm>
 #include <iostream>
+#include <map>
 #include <set>
 
 using namespace nc::cpu;
@@ -80,9 +82,46 @@ void check_penalty_regions() {
             "two disconnected overlap volumes must carry separate loads");
 }
 
+void check_local_regions() {
+    using namespace nc::dynamics;
+    auto mesh=std::make_shared<MeshData>();
+    append_box(*mesh,0,1);
+    for (int level=0;level<3;++level) {
+        const auto previous=std::move(mesh->faces);
+        mesh->faces.clear();
+        std::map<std::pair<std::size_t,std::size_t>,std::size_t> midpoints;
+        const auto midpoint=[&](std::size_t a,std::size_t b) {
+            const auto [it,new_edge]=midpoints.emplace(std::minmax(a,b),mesh->vertices.size());
+            if (new_edge) mesh->vertices.push_back(scale(add(mesh->vertices[a],mesh->vertices[b]),.5));
+            return it->second;
+        };
+        for (const auto [a,b,c]:previous) {
+            const auto ab=midpoint(a,b),bc=midpoint(b,c),ca=midpoint(c,a);
+            mesh->faces.insert(mesh->faces.end(),{{a,ab,ca},{ab,b,bc},{ca,bc,c},{ab,bc,ca}});
+        }
+    }
+    auto local=mesh_region_query(mesh,mesh,MeshMethod::obb);
+    auto full=mesh_region_query(mesh,mesh,MeshMethod::obb,{},false);
+    ContactWork work,reference;
+    for (Vec offset:std::vector<Vec>{{.96,.031,.048},{.95,.032,.047},{-.96,.031,.048},
+                                     {.021,.97,-.024},{2.,0,0},{.035,.012,.017}}) {
+        ContactPose a,b;
+        b.origin=offset;
+        b.angle=.013;
+        const auto result=local->regions(a,b,work),expected=full->regions(a,b,reference);
+        require(result.size()==expected.size(),"local solid changed overlap connectivity on changing sides");
+        if (!expected.empty()) require(length(sub(result[0].point,expected[0].point))<1e-10 &&
+            length(sub(result[0].normal,expected[0].normal))<1e-10 &&
+            std::abs(result[0].depth_m-expected[0].depth_m)<1e-10,"local solid changed contact geometry");
+    }
+    require(work.local_solid_uses>=4 && work.boolean_input_faces<reference.boolean_input_faces,
+            "localized box queries never reduced the constructive geometry");
+}
+
 int main() {
     try {
         check_penalty_regions();
+        check_local_regions();
         Triangle a{{{0,0,0},{1,0,0},{0,1,0}}};
         Triangle cross{{{.25,.25,-1},{.25,.25,1},{.75,.25,0}}};
         require(intersect_triangles(a,cross).size()==2,"transverse crossing");

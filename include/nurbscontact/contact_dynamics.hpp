@@ -40,6 +40,8 @@ struct ContactWork {
     std::size_t unresolved_queries{};
     std::size_t native_nodes{};
     std::optional<Interval> last_unresolved_distance;
+    std::size_t boolean_queries{}, boolean_input_faces{}, local_solid_uses{}, local_solid_builds{};
+    double mesh_detection_s{}, mesh_placement_s{}, mesh_boolean_s{};
 };
 
 struct ContactLineSample {

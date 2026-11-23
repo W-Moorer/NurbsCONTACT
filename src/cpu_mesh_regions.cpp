@@ -2,9 +2,11 @@
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
+#include <CGAL/Polygon_mesh_processing/manifoldness.h>
 #include <CGAL/Polygon_mesh_processing/orientation.h>
 #include <CGAL/Polygon_mesh_processing/self_intersections.h>
 #include <CGAL/Surface_mesh.h>
+#include <chrono>
 
 namespace nc::cpu {
 namespace {
@@ -36,14 +38,158 @@ RigidPlacement placement(ContactPose pose) {
     return result;
 }
 
-Surface placed(const Surface& source,const MeshData& mesh,const RigidPlacement& pose) {
+Surface placed(const Surface& source,std::span<const Vec> world,std::span<const std::size_t> ids={}) {
     Surface result=source;
     for (auto v : result.vertices()) {
-        const Vec p=pose.point(mesh.vertices[v.idx()]);
+        const Vec p=world[ids.empty() ? v.idx() : ids[v.idx()]];
         result.point(v)={p[0],p[1],p[2]};
     }
     return result;
 }
+
+struct WorldMesh {
+    std::vector<Vec> points;
+    Vec lo{},hi{};
+    void place(const MeshData& mesh,const RigidPlacement& pose) {
+        points.resize(mesh.vertices.size());
+        lo={infinity,infinity,infinity}; hi={-infinity,-infinity,-infinity};
+        for (std::size_t i=0;i<points.size();++i) {
+            points[i]=pose.point(mesh.vertices[i]);
+            for (std::size_t j=0;j<3;++j) {
+                lo[j]=std::min(lo[j],points[i][j]);
+                hi[j]=std::max(hi[j],points[i][j]);
+            }
+        }
+    }
+};
+
+struct Cut {
+    unsigned axis{};
+    int sign{1};
+    double height(Vec p) const { return sign*p[axis]; }
+    double minimum(const WorldMesh& w) const { return sign>0 ? w.lo[axis] : -w.hi[axis]; }
+    double maximum(const WorldMesh& w) const { return sign>0 ? w.hi[axis] : -w.lo[axis]; }
+};
+
+// Original triangles on the contact side are kept whole. The replacement faces
+// use a single vertex from inside the far-side bounding box to close one loop.
+struct LocalSolid {
+    Surface topology;
+    std::vector<std::size_t> retained,discarded;
+    Cut cut;
+    std::optional<Vec> cap;
+
+    bool usable(const WorldMesh& own,const WorldMesh& other,const RigidPlacement& pose) const {
+        const double limit=cut.minimum(other);
+        for (auto i:discarded) if (!(cut.height(own.points[i])<limit)) return false;
+        if (cap) {
+            const Vec tip=pose.point(*cap);
+            // All other vertices are original. Keeping the cap inside the original
+            // world AABB makes two independently localized bodies compatible.
+            for (unsigned j=0;j<3;++j) if (!(own.lo[j]<=tip[j] && tip[j]<=own.hi[j])) return false;
+            if (!(cut.height(tip)<limit)) return false;
+        }
+        return true;
+    }
+
+    Surface placed_mesh(WorldMesh& world,const RigidPlacement& pose) const {
+        if (cap) world.points.push_back(pose.point(*cap));
+        auto result=placed(topology,world.points,retained);
+        if (cap) world.points.pop_back();
+        return result;
+    }
+};
+
+std::optional<LocalSolid> local_solid(const MeshData& mesh,const WorldMesh& world,Cut cut,double level) {
+    using Index=Surface::Vertex_index;
+    LocalSolid part;
+    part.cut=cut;
+    std::vector<Index> indices(mesh.vertices.size(),Surface::null_vertex());
+    std::vector<bool> discarded(mesh.vertices.size());
+    for (const auto& f:mesh.faces) {
+        if (std::all_of(f.begin(),f.end(),[&](auto i){return cut.height(world.points[i])<level;})) {
+            for (auto i:f) discarded[i]=true;
+            continue;
+        }
+        for (auto i:f) if (indices[i]==Surface::null_vertex()) {
+            const auto& p=mesh.vertices[i];
+            indices[i]=part.topology.add_vertex({p[0],p[1],p[2]});
+            part.retained.push_back(i);
+        }
+        if (part.topology.add_face(indices[f[0]],indices[f[1]],indices[f[2]])==Surface::null_face()) return {};
+    }
+    if (part.topology.is_empty() || part.topology.number_of_faces()>.8*mesh.faces.size()) return {};
+    for (std::size_t i=0;i<discarded.size();++i) if (discarded[i]) part.discarded.push_back(i);
+    std::vector<Surface::Halfedge_index> border;
+    for (auto h:part.topology.halfedges()) if (part.topology.is_border(h)) border.push_back(h);
+    if (!border.empty()) {
+        std::vector<std::pair<Index,Index>> edges;
+        std::vector<bool> used(part.retained.size());
+        for (auto h:CGAL::halfedges_around_face(border.front(),part.topology)) {
+            Index a=part.topology.source(h),b=part.topology.target(h);
+            if (used[a.idx()] || !discarded[part.retained[a.idx()]]) return {};
+            used[a.idx()]=true;
+            edges.emplace_back(a,b);
+        }
+        if (edges.size()!=border.size()) return {};
+        // Average far-side source vertices to avoid a cap tip in an end face.
+        Vec tip{};
+        std::size_t count=0;
+        const double far=cut.minimum(world)+.15*(level-cut.minimum(world));
+        for (auto i:part.discarded) if (cut.height(world.points[i])<=far) {
+            ++count;
+            tip=add(tip,scale(sub(mesh.vertices[i],tip),1./count));
+        }
+        if (!count) return {};
+        part.cap=tip;
+        const Index apex=part.topology.add_vertex({tip[0],tip[1],tip[2]});
+        part.retained.push_back(mesh.vertices.size());
+        for (const auto [a,b]:edges)
+            if (part.topology.add_face(a,b,apex)==Surface::null_face()) return {};
+    }
+    if (!CGAL::is_valid_polygon_mesh(part.topology) || !CGAL::is_closed(part.topology)) return {};
+    std::vector<Surface::Halfedge_index> pinches;
+    pmp::non_manifold_vertices(part.topology,std::back_inserter(pinches));
+    if (!pinches.empty()) return {};
+    for (auto f:part.topology.faces()) if (pmp::is_degenerate_triangle_face(f,part.topology)) return {};
+    if (pmp::does_self_intersect(part.topology) || !pmp::does_bound_a_volume(part.topology) ||
+        !pmp::is_outward_oriented(part.topology)) return {};
+    return part;
+}
+
+struct LocalCache {
+    std::optional<LocalSolid> part;
+    std::optional<Vec> last_direction;
+    double last_level{};
+
+    const LocalSolid* select(const MeshData& mesh,const WorldMesh& own,const WorldMesh& other,
+                             const RigidPlacement& pose,ContactWork& work) {
+        if (mesh.faces.size()<128) return nullptr;
+        if (part && part->usable(own,other,pose)) return &*part;
+        Cut best;
+        double best_fraction=.35;
+        for (unsigned j=0;j<3;++j) for (int sign:{1,-1}) {
+            Cut candidate{j,sign};
+            const double width=candidate.maximum(own)-candidate.minimum(own);
+            if (width<=0) continue;
+            const double fraction=(candidate.minimum(other)-candidate.minimum(own))/width;
+            if (fraction>best_fraction) { best_fraction=fraction; best=candidate; }
+        }
+        if (best_fraction==.35) return nullptr;
+        const double width=best.maximum(own)-best.minimum(own);
+        const double level=best.minimum(other)-.12*width;
+        Vec direction{};
+        for (unsigned i=0;i<3;++i) direction[i]=best.sign*pose.basis[i][best.axis];
+        const double local_level=level-best.height(pose.origin);
+        if (last_direction && dot3(direction,*last_direction)>.995 && std::abs(local_level-last_level)<.05*width)
+            return nullptr;
+        last_direction=direction;
+        last_level=local_level;
+        ++work.local_solid_builds;
+        part=local_solid(mesh,own,best,level);
+        return part && part->usable(own,other,pose) ? &*part : nullptr;
+    }
+};
 
 // Track which solid contributes each piece of the overlap boundary.
 // Coincident, equally oriented faces carry half ownership on each side;
@@ -61,7 +207,8 @@ struct SourceFaces : pmp::Corefinement::Default_visitor<Surface> {
 
 Vec point(const Surface& surface,Surface::Vertex_index v) {
     const auto& p=surface.point(v);
-    return {CGAL::to_double(p.x()),CGAL::to_double(p.y()),CGAL::to_double(p.z())};
+    return {CGAL::to_double(CGAL::exact(p.x())),CGAL::to_double(CGAL::exact(p.y())),
+            CGAL::to_double(CGAL::exact(p.z()))};
 }
 
 std::vector<ContactRegion> overlap_regions(Surface& a,Surface& b) {
@@ -74,22 +221,32 @@ std::vector<ContactRegion> overlap_regions(Surface& a,Surface& b) {
     if (overlap.is_empty()) return {};
     auto id=overlap.add_property_map<Face,std::size_t>("f:volume",0).first;
     const auto count=pmp::volume_connected_components(overlap,id);
-    std::vector<std::vector<Face>> components(count);
-    for (Face f : overlap.faces()) components.at(id[f]).push_back(f);
+    // The Boolean may enumerate the same faces and vertices in different orders.
+    // Convert each exact witness once and integrate with a geometry-based origin
+    // and order, so repeated rigid dynamics trials see consistent moments.
+    auto coordinates=overlap.add_property_map<Surface::Vertex_index,Vec>("v:coordinates").first;
+    for (auto v:overlap.vertices()) coordinates[v]=point(overlap,v);
+    using Facet=std::pair<std::array<Vec,3>,int>;
+    std::vector<std::vector<Facet>> components(count);
+    for (Face f : overlap.faces()) {
+        const auto h=overlap.halfedge(f);
+        std::array<Vec,3> corners{coordinates[overlap.source(h)],coordinates[overlap.target(h)],
+                                  coordinates[overlap.target(overlap.next(h))]};
+        std::rotate(corners.begin(),std::min_element(corners.begin(),corners.end()),corners.end());
+        components.at(id[f]).emplace_back(corners,owner[f]);
+    }
 
     std::vector<ContactRegion> regions;
-    for (const auto& faces : components) {
+    for (auto& faces : components) {
         if (faces.empty()) continue;
-        const Vec origin=point(overlap,overlap.target(overlap.halfedge(faces.front())));
+        std::sort(faces.begin(),faces.end());
+        const Vec origin=faces.front().first.front();
         Vec area{},moment{};
         double volume6=0,area_sum=0;
-        for (const Face f : faces) {
-            const auto h=overlap.halfedge(f);
-            const Vec x=sub(point(overlap,overlap.source(h)),origin);
-            const Vec y=sub(point(overlap,overlap.target(h)),origin);
-            const Vec z=sub(point(overlap,overlap.target(overlap.next(h))),origin);
+        for (const auto& [corners,side] : faces) {
+            const Vec x=sub(corners[0],origin), y=sub(corners[1],origin), z=sub(corners[2],origin);
             const Vec cross=cross3(sub(y,x),sub(z,x));
-            area=add(area,scale(cross,owner[f]));
+            area=add(area,scale(cross,side));
             area_sum+=length(cross);
             const double v=dot3(x,cross3(y,z));
             volume6+=v;
@@ -100,35 +257,68 @@ std::vector<ContactRegion> overlap_regions(Surface& a,Surface& b) {
             throw UnresolvedContact("overlap has no resolved separation normal (enclosure or degenerate volume)");
         const Vec normal=scale(area,1/magnitude);
         double lo=infinity,hi=-infinity;
-        for (Face f : faces) {
-            for (auto v : CGAL::vertices_around_face(overlap.halfedge(f),overlap)) {
-                const double height=dot3(sub(point(overlap,v),origin),normal);
+        for (const auto& f : faces) {
+            for (Vec v : f.first) {
+                const double height=dot3(sub(v,origin),normal);
                 lo=std::min(lo,height);
                 hi=std::max(hi,height);
             }
         }
         regions.push_back({add(origin,scale(moment,.25/volume6)),normal,hi-lo});
     }
+    std::sort(regions.begin(),regions.end(),[](const auto& a,const auto& b) {
+        return std::tie(a.point,a.normal,a.depth_m)<std::tie(b.point,b.normal,b.depth_m);
+    });
     return regions;
 }
 
 class MeshRegions final : public PairRegionQuery {
 public:
     MeshRegions(std::shared_ptr<const MeshData> a,std::shared_ptr<const MeshData> b,MeshMethod method,
-                std::array<Vec,2> centers)
-        : meshes_{std::move(a),std::move(b)},centers_(centers),scene_(meshes_,method),
+                std::array<Vec,2> centers,bool localize)
+        : meshes_{std::move(a),std::move(b)},centers_(centers),localize_(localize),scene_(meshes_,method),
           solids_{std::make_shared<Surface>(solid(*meshes_[0])),nullptr} {
         solids_[1]=meshes_[0]==meshes_[1] ? solids_[0] : std::make_shared<Surface>(solid(*meshes_[1]));
     }
     std::vector<ContactRegion> regions(ContactPose a,ContactPose b,ContactWork& work) const override {
+        using Clock=std::chrono::steady_clock;
+        const auto start=Clock::now();
         const auto poses=placements(a,b);
         const auto hit=scene_.overlaps(poses);
+        const auto detected=Clock::now();
+        work.mesh_detection_s+=std::chrono::duration<double>(detected-start).count();
         work.mesh.triangles+=hit.triangle_tests;
         work.mesh.nodes+=hit.node_pairs;
         if (!hit.overlap) return {};
-        auto first=placed(*solids_[0],*meshes_[0],poses[0]);
-        auto second=placed(*solids_[1],*meshes_[1],poses[1]);
-        return overlap_regions(first,second);
+        for (unsigned i=0;i<2;++i) world_[i].place(*meshes_[i],poses[i]);
+        bool shortened=false;
+        const auto select=[&](unsigned i) {
+            if (localize_)
+                if (const auto* part=cache_[i].select(*meshes_[i],world_[i],world_[1-i],poses[i],work)) {
+                    ++work.local_solid_uses;
+                    shortened=true;
+                    return part->placed_mesh(world_[i],poses[i]);
+                }
+            return placed(*solids_[i],world_[i].points);
+        };
+        auto first=select(0),second=select(1);
+        ++work.boolean_queries;
+        work.boolean_input_faces+=first.number_of_faces()+second.number_of_faces();
+        const auto positioned=Clock::now();
+        work.mesh_placement_s+=std::chrono::duration<double>(positioned-detected).count();
+        std::vector<ContactRegion> result;
+        try {
+            result=overlap_regions(first,second);
+        } catch (const UnresolvedContact&) {
+            if (!shortened) throw;
+            first=placed(*solids_[0],world_[0].points);
+            second=placed(*solids_[1],world_[1].points);
+            ++work.boolean_queries;
+            work.boolean_input_faces+=first.number_of_faces()+second.number_of_faces();
+            result=overlap_regions(first,second);
+        }
+        work.mesh_boolean_s+=std::chrono::duration<double>(Clock::now()-positioned).count();
+        return result;
     }
     SurfaceTransition transition(ContactPose a0,ContactPose b0,ContactPose a1,ContactPose b1,
                              double tolerance) const override {
@@ -159,13 +349,16 @@ private:
     }
     std::array<std::shared_ptr<const MeshData>,2> meshes_;
     std::array<Vec,2> centers_;
+    bool localize_;
+    mutable std::array<WorldMesh,2> world_;
+    mutable std::array<LocalCache,2> cache_;
     mutable MeshScene scene_;
     std::array<std::shared_ptr<const Surface>,2> solids_;
 };
 }
 
 std::shared_ptr<const dynamics::PairRegionQuery> mesh_region_query(std::shared_ptr<const MeshData> a,
-    std::shared_ptr<const MeshData> b,MeshMethod method,std::array<Vec,2> centers) {
+    std::shared_ptr<const MeshData> b,MeshMethod method,std::array<Vec,2> centers,bool localize) {
     const auto recenter=[](std::shared_ptr<const MeshData> mesh,Vec center) -> std::shared_ptr<const MeshData> {
         if (center==Vec{}) return mesh;
         auto local=std::make_shared<MeshData>(*mesh);
@@ -174,6 +367,6 @@ std::shared_ptr<const dynamics::PairRegionQuery> mesh_region_query(std::shared_p
     };
     auto first=recenter(a,centers[0]);
     auto second=(a==b && centers[0]==centers[1]) ? first : recenter(b,centers[1]);
-    return std::make_shared<MeshRegions>(std::move(first),std::move(second),method,centers);
+    return std::make_shared<MeshRegions>(std::move(first),std::move(second),method,centers,localize);
 }
 } // namespace nc::cpu

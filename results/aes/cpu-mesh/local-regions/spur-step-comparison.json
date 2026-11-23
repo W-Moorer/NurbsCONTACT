@@ -1,0 +1,24 @@
+{
+  "common_output_frames": 21,
+  "dt_s": [
+    5e-05,
+    0.00025
+  ],
+  "trace_sha256": [
+    "65c9eb22ef20aa7fc522392bb92946b815067d2951e6bc457a34f7d57ecd373d",
+    "d1e4cd175399c5902f9644d6a32e92778c5969daf3a7686b6a82803dd3c5caa7"
+  ],
+  "impulse_on_common_output_grid_Ns": [
+    5.120597862460229,
+    1.9093872301308839
+  ],
+  "impulse_at_native_output_rate_Ns": [
+    5.073322115825701,
+    1.9093872301308839
+  ],
+  "maximum_speed_difference_rad_s": [
+    16.236678829989415,
+    3.838160483598685
+  ],
+  "differing_contact_states_on_common_grid": 15
+}

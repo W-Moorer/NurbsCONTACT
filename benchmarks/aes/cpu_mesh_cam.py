@@ -88,6 +88,7 @@ def run(args):
             args.meshes,
             "--solver",
             "penalty",
+            *(["--mesh-region-scope", args.mesh_region_scope] if args.mesh_region_scope else []),
         ],
         check=True,
         timeout=1800,
@@ -139,6 +140,10 @@ def run(args):
     )
     if "saved_contact_reuses" in stats:
         result["saved_contact_reuses"] = int(stats["saved_contact_reuses"])
+    if "mesh_boolean_queries" in stats:
+        result["region_scope"] = args.mesh_region_scope or "local"
+        result["boolean_queries"] = int(stats["mesh_boolean_queries"])
+        result["boolean_input_faces"] = int(stats["mesh_boolean_input_faces"])
     if same_types and len(expected):
         result["max_event_time_outside_mesh_bracket_s"] = float(
             np.maximum.reduce(
@@ -163,6 +168,7 @@ if __name__ == "__main__":
     for name in ("exe", "model", "meshes", "work", "output"):
         simulate.add_argument(name, type=Path)
     simulate.add_argument("--method", choices=["mesh-aabb", "mesh-obb", "mesh-sap"], required=True)
+    simulate.add_argument("--mesh-region-scope", choices=["local", "full"])
     simulate.add_argument("--dt", type=float, required=True)
     simulate.add_argument("--duration", type=float, default=20.0)
     args = parser.parse_args()
