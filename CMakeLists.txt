@@ -14,7 +14,7 @@ option(NC_WITH_MESH_CCD "Include swept triangle CCD when building the CPU mesh b
 set(NC_CHEN_SOURCE_DIR "" CACHE PATH "Optional Chen 2024 TDIB-CCD source checkout for STEP events")
 
 add_library(nurbscontact STATIC src/geometry.cpp src/axial.cpp src/query.cpp src/hht.cpp src/triangle_bvh.cpp
-    src/contact_dynamics.cpp src/free_rigid.cpp)
+    src/contact_dynamics.cpp src/surface_impulse.cpp src/free_rigid.cpp)
 target_compile_features(nurbscontact PUBLIC cxx_std_20)
 target_include_directories(nurbscontact PUBLIC include)
 if(MSVC)
@@ -106,6 +106,9 @@ if(NC_WITH_OCCT)
 endif()
 
 if(BUILD_TESTING)
+    add_executable(nc_surface_impulse_tests tests/surface_impulse.cpp)
+    target_link_libraries(nc_surface_impulse_tests PRIVATE nurbscontact)
+    add_test(NAME surface_impulse_laws COMMAND nc_surface_impulse_tests)
     add_executable(nc_tests tests/queries.cpp)
     target_link_libraries(nc_tests PRIVATE nurbscontact)
     add_test(NAME geometry_and_queries COMMAND nc_tests)

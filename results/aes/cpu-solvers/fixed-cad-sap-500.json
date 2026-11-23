@@ -1,0 +1,34 @@
+{
+  "method": "cad-occt",
+  "dt_s": 0.0005,
+  "event_tolerance_s": 0.0,
+  "duration_s": 0.16,
+  "scene_sha256": "05767980630c319532fdc8d251f54915c306c1fe2470f6b6b117081e743f9428",
+  "step_sha256": "b1b75a633d5f5de9267246c3faa9457f22615bc8b742d4cc9f297e9df2e81d2c",
+  "runs": [
+    {
+      "solver": "sap",
+      "completed": true,
+      "frames": 321,
+      "final_velocity_m_s": [
+        -0.4330380947118099,
+        -0.016961905288190016
+      ],
+      "reference_final_velocity_m_s": [
+        -0.45,
+        0.0
+      ],
+      "normal_impulse_Ns": 0.4330380947118102,
+      "reference_impulse_Ns": 0.45,
+      "max_momentum_drift_kg_m_s": 1.1102230246251565e-16,
+      "max_displacement_error_m": 0.0015079807488298652,
+      "peak_normal_N": 21.640569038045985,
+      "integration_s": 11.0848593,
+      "impulse_residual_m_s": 1.3912482277333993e-15,
+      "iterations": 62,
+      "ccd_checks": 0,
+      "chen_patch_queries": 0,
+      "trace_sha256": "7ebe0a2963502bf52c7d8920be97873c3e93e190a12e38fe0966a8c16887376c"
+    }
+  ]
+}

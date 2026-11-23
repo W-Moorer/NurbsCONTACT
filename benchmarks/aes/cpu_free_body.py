@@ -100,7 +100,7 @@ def top():
     return scene, 2.4, compare
 
 
-def collision(eccentric):
+def collision(eccentric, solver="penalty"):
     moment = 0.4 * MASS * RADIUS**2
     inertia = moment * np.eye(3)
     offset = (0.004, 0, 0) if eccentric else (0, 0, 0)
@@ -119,7 +119,8 @@ def collision(eccentric):
 
     def compare(trace):
         t, force = trace["time_s"], trace["p0_normal_N"]
-        if force[0] or force[-1] or not force.max() > 0:
+        compliant = solver in ("penalty", "sap")
+        if force[0] or (compliant and force[-1]) or not force.max() > 0:
             raise ValueError("expected a completed impact")
         p, l, energy = np.zeros((len(t), 3)), np.zeros((len(t), 3)), np.zeros(len(t))
         spin, vel = [], []
@@ -140,9 +141,12 @@ def collision(eccentric):
             final_velocities_m_s=vel,
             final_angular_velocities_rad_s=spin,
             peak_normal_force_N=float(force.max()),
-            normal_impulse_Ns=float(np.trapezoid(force, t)),
+            normal_impulse_Ns=float(np.trapezoid(force, t) if solver=="penalty" else np.diff(t) @ force[1:]),
         )
-        if not eccentric:
+        if not eccentric and not compliant:
+            result.update(reference_impulse_Ns=MASS*SPEED/2,
+                          reference_final_axial_velocities_m_s=[-SPEED/2, -SPEED/2])
+        if not eccentric and compliant:
             omega = np.sqrt(STIFFNESS / (MASS / 2))
             entry = (0.1 - 2 * RADIUS) / SPEED
             phase = np.clip(omega * (t - entry), 0.0, np.pi)
@@ -160,7 +164,7 @@ def collision(eccentric):
 
 
 def run(args):
-    scene, duration, compare = top() if args.case == "top" else collision(args.case == "eccentric")
+    scene, duration, compare = top() if args.case == "top" else collision(args.case == "eccentric", args.solver)
     args.work.mkdir(parents=True, exist_ok=True)
     geometry = {"step_sha256": hashlib.sha256(SPHERE.read_bytes()).hexdigest()}
     mesh_args = []
@@ -192,7 +196,7 @@ def run(args):
         args.method,
         *mesh_args,
         "--solver",
-        "penalty",
+        args.solver,
     ]
     if args.event_tol:
         cmd.extend(["--event-tol-s", str(args.event_tol)])
@@ -207,7 +211,7 @@ def run(args):
     return dict(
         case=args.case,
         method=args.method,
-        solver="penalty",
+        solver=args.solver,
         dt_s=args.dt,
         duration_s=duration,
         event_tolerance_s=float(stats.get("event_tolerance_s",args.event_tol)),
@@ -223,6 +227,9 @@ def run(args):
         event_rejections=int(stats["ccd_rejected"]),
         **{k:int(stats[k]) for k in ("cad_boolean_queries","cad_event_distances","chen_patch_queries",
                                      "chen_confirmed_candidates") if k in stats},
+        **{k:float(stats[k]) for k in ("impulse_residual_m_s",) if k in stats},
+        **{k:int(stats[k]) for k in ("impulse_solves","impulse_regions","impulse_iterations","ccd_refinements",
+                                     "ccd_refined_clear","ccd_unresolved") if k in stats},
         **compare(trace),
     )
 
@@ -236,6 +243,8 @@ if __name__ == "__main__":
     parser.add_argument("--case", choices=["top", "head-on", "eccentric"], required=True)
     parser.add_argument("--method", choices=["mesh-aabb", "mesh-obb", "mesh-sap","cad-occt","chen-2024"], default="mesh-obb")
     parser.add_argument("--dt", type=float, required=True)
+    parser.add_argument("--solver", choices=("penalty","sap","lagrange","augmented-lagrange","lcp","ncp","soccp"),
+                        default="penalty")
     parser.add_argument("--event-tol", type=float, default=0.0)
     args = parser.parse_args()
     report = run(args)

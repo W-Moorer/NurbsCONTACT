@@ -1,6 +1,7 @@
 #include "nurbscontact/cad_contact_regions.hpp"
 #include "nurbscontact/cad_solid_contact.hpp"
 #include "nurbscontact/free_rigid.hpp"
+#include "nurbscontact/surface_impulse.hpp"
 #include "nurbscontact/occt_contact.hpp"
 #ifdef NC_WITH_CPU_MESH
 #include "nurbscontact/cpu_mesh.hpp"
@@ -121,6 +122,7 @@ void expect(std::istream& in,std::string_view expected) {
 
 struct SurfaceOptions {
     std::string method;
+    std::optional<ImpulseLaw> impulse_law;
     Path mesh_directory;
     double distance_tolerance{1e-7};
     bool localize{true};
@@ -842,6 +844,96 @@ double sampled_load(const std::vector<LoadSample>& table,double time) {
     return std::lerp(left.force,right->force,fraction);
 }
 
+struct ImpulseSteps {
+    ImpulseLaw law;
+    const Input& input;
+    const Vector& mass;
+    const Hht* smooth;
+    const StepAcceptanceFunction& guard;
+    ContactWork& work;
+    HhtStats& stats;
+    HhtStats smooth_stats{};
+    std::size_t solves{},regions{},iterations{};
+    double residual{};
+    bool checking_correction{};
+
+    std::optional<double> check(const State& start,const State& end) {
+        if (!guard) return {};
+        ++stats.step_checks;
+        return guard(start,end);
+    }
+
+    std::optional<double> attempt(State& state,std::vector<ContactSample>& previous,double h,
+                                 Vector& normal,std::vector<Vec>& friction) {
+        State trial=state;
+        if (smooth) {
+            // The previous contact impulse has already changed the starting
+            // velocity. Only external and gyroscopic loads enter this predictor.
+            trial=smooth->initialize(state.q,state.v,state.time);
+            smooth->step(trial,h,smooth_stats);
+        } else trial.time+=h;
+        checking_correction=false;
+        if (auto split=check(state,trial)) return split;
+        const auto inverse=[&](const Vector& row) {
+            Vector dv(row.size());
+            for (std::size_t j=0;j<dv.size();++j) dv[j]=row[j]/mass[j];
+            for (const auto& body:input.bodies)
+                if (body.free) body.free->angular_impulse_response(trial.q,row,dv);
+            return dv;
+        };
+        auto answer=surface_impulses(law,kinematics(input,trial.q,trial.time),input.pairs,
+                                     trial.v,h,inverse,work,previous);
+        ++solves;
+        regions+=answer.regions;
+        iterations+=answer.iterations;
+        residual=std::max(residual,answer.residual_m_s);
+        for (std::size_t j=0;j<mass.size();++j) {
+            const double dv=answer.velocity_change[j];
+            trial.v[j]+=dv;
+            trial.q[j]+=h*dv;
+            trial.a[j]+=dv/h;
+            trial.force[j]=mass[j]*trial.a[j];
+        }
+        for (const auto& body:input.bodies) if (body.free) body.free->normalize(trial);
+        if (answer.regions) {
+            checking_correction=true;
+            if (auto split=check(state,trial)) return split;
+        }
+        state=std::move(trial);
+        previous=std::move(answer.contacts);
+        for (std::size_t i=0;i<previous.size();++i) {
+            normal[i]+=h*previous[i].normal_force;
+            friction[i]=add(friction[i],scale(previous[i].friction,h));
+        }
+        ++stats.accepted_steps;
+        return {};
+    }
+
+    void advance(State& state,std::vector<ContactSample>& previous,double h,Vector& normal,
+                 std::vector<Vec>& friction,unsigned remaining) {
+        double fraction=.5;
+        try {
+            const auto split=attempt(state,previous,h,normal,friction);
+            if (!split) return;
+            fraction=std::clamp(*split,.125,.875);
+            ++stats.rejected_steps;
+        } catch (const UnresolvedContact&) {
+            ++work.unresolved_queries;
+            if (!remaining) throw;
+        }
+        if (!remaining) {
+            std::ostringstream message;
+            message<<std::setprecision(12)<<"impulse step subdivision limit during "
+                   <<(checking_correction ? "corrected" : "free")<<" motion at "<<state.time<<" s, h="<<h;
+            throw std::runtime_error(message.str());
+        }
+        ++stats.subdivisions;
+        const double first=h*fraction;
+        advance(state,previous,first,normal,friction,remaining-1);
+        advance(state,previous,h-first,normal,friction,remaining-1);
+    }
+};
+
 void simulate(const Path& scene,double deflection,double dt,double duration,unsigned stride,const Path& output,
               std::optional<PairBackend> pair_backend,PairSearchOptions pair_options,double event_tolerance,
               const SurfaceOptions& surface={}) {
@@ -897,17 +989,17 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         if (!input.resistances.empty()) add_point_resistances(out,state,input.resistances,v_);
         if (!input.bushings.empty()) add_translational_bushings(out,state,input.bushings,v_);
         std::vector<ContactSample> contacts;
-        if (!add_contact_forces(&out,state,input.pairs,v_,work,has_history || record_sample ? &contacts : nullptr,
+        if (!surface.impulse_law && !add_contact_forces(&out,state,input.pairs,v_,work,has_history || record_sample ? &contacts : nullptr,
                                 impact_history(previous))) {
             out.value[0]=std::numeric_limits<double>::quiet_NaN();
-        } else if (has_history) {
+        } else if (!surface.impulse_law && has_history) {
             out.history.reserve(3*contacts.size());
             for (const auto& contact:contacts) {
                 out.history.push_back(contact.gap);
                 out.history.push_back(contact.gap_rate);
                 out.history.push_back(contact.impact_speed);
             }
-        } else if (record_sample) {
+        } else if (!surface.impulse_law && record_sample) {
             last_sample_time=time;
             last_sample_q=q_;
             last_sample_v=v_;
@@ -923,7 +1015,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     options.absolute_tolerance=1e-9;
     options.relative_tolerance=1e-8;
     HhtStats stats;
-    std::size_t event_nodes=0, unresolved_events=0;
+    std::size_t event_nodes=0, unresolved_events=0, spatial_refinements=0, refined_clear=0;
     std::size_t cad_distances=0,chen_queries=0,chen_confirmed=0;
     StepAcceptanceFunction accept_step;
     if (event_tolerance>0) {
@@ -948,15 +1040,31 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                     if (large_turn(pair.a) || large_turn(pair.b)) return .5;
                     SurfaceTransition hit;
                     try {
-                        hit=pair.regions->transition(a0,b0,a1,b1,surface.distance_tolerance);
+                        const auto sweep=[&](double tolerance) {
+                            hit=pair.regions->transition(a0,b0,a1,b1,tolerance);
+                            cad_distances+=hit.cad_distances;
+                            chen_queries+=hit.chen_queries;
+                            chen_confirmed+=hit.chen_confirmed;
+                            event_nodes+=hit.nodes;
+                        };
+                        sweep(surface.distance_tolerance);
+                        // Hard contacts can leave two separated endpoints extremely close
+                        // to touch. A tighter spatial sweep can resolve a near miss before
+                        // bisecting time again. A surviving candidate still requires a split.
+                        if (surface.impulse_law && dt_trial<=event_tolerance) {
+                            double tolerance=surface.distance_tolerance;
+                            for (int k=0;k<2 && hit.fraction && !hit.start_in_contact && !hit.end_in_contact;++k) {
+                                tolerance/=32.;
+                                if (tolerance<1e-11) break;
+                                ++spatial_refinements;
+                                sweep(tolerance);
+                                if (!hit.fraction) ++refined_clear;
+                            }
+                        }
                     } catch (const UnresolvedContact&) {
                         ++unresolved_events;
                         return .5;
                     }
-                    cad_distances+=hit.cad_distances;
-                    chen_queries+=hit.chen_queries;
-                    chen_confirmed+=hit.chen_confirmed;
-                    event_nodes+=hit.nodes;
                     if (!hit.fraction) continue;
                     if (dt_trial>event_tolerance)
                         return *hit.fraction+(hit.start_in_contact ? -.5 : .5)*event_tolerance/dt_trial;
@@ -998,7 +1106,51 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         }
     };
     const auto start=Clock::now();
-    if (n>0) {
+    std::size_t impulse_solves=0,impulse_regions=0,impulse_iterations=0;
+    double impulse_residual=0.;
+    if (surface.impulse_law) {
+        std::optional<Hht> smooth;
+        std::size_t smooth_evaluations=0;
+        if (n) smooth.emplace(mass,[&](const Vector& x,const Vector& u,double t) {
+            ++smooth_evaluations;
+            return evaluate_force(x,u,t,{});
+        },options);
+        State state{0,q,v,Vector(n),Vector(n)};
+        if (smooth) state=smooth->initialize(q,v);
+        std::vector<ContactSample> previous(input.pairs.size());
+        const auto initial=kinematics(input,q,0);
+        for (std::size_t i=0;i<input.pairs.size();++i) {
+            const auto& pair=input.pairs[i];
+            if (!pair.regions) throw std::invalid_argument("impulse solver requires surface geometry");
+            for (const auto& region:pair.regions->regions(initial[pair.a].pose,initial[pair.b].pose,work)) {
+                previous[i].gap=previous[i].resolved ? std::min(previous[i].gap,-region.depth_m) : -region.depth_m;
+                previous[i].resolved=true;
+            }
+        }
+        samples.push_back(state);
+        observed_contacts.push_back(previous);
+        ImpulseSteps integrator{*surface.impulse_law,input,mass,smooth ? &*smooth : nullptr,accept_step,work,stats};
+        for (std::size_t s=1;s<=steps;++s) {
+            Vector normal(input.pairs.size());
+            std::vector<Vec> friction(input.pairs.size());
+            integrator.advance(state,previous,dt,normal,friction,options.max_subdivisions);
+            if (s%stride==0 || s==steps) {
+                samples.push_back(state);
+                auto observations=previous;
+                for (std::size_t i=0;i<observations.size();++i) {
+                    observations[i].normal_force=normal[i]/dt;
+                    observations[i].friction=scale(friction[i],1/dt);
+                }
+                observed_contacts.push_back(std::move(observations));
+            }
+        }
+        stats.evaluations=smooth_evaluations;
+        stats.maximum_residual=integrator.smooth_stats.maximum_residual;
+        impulse_solves=integrator.solves;
+        impulse_regions=integrator.regions;
+        impulse_iterations=integrator.iterations;
+        impulse_residual=integrator.residual;
+    } else if (n>0) {
         ForceFunction force;
         HistoryForceFunction historical_force;
         if (has_history) historical_force=evaluate_force;
@@ -1103,14 +1255,18 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     report<<"wall_s,setup_s,steps,accepted,subdivisions,force_evaluations,max_residual,pairs,culled,rays,missing,triangle_tests,"
             "closest_queries,unresolved_queries,native_nodes,ccd_checks,ccd_rejected,ccd_nodes,ccd_unresolved,saved_contact_reuses,"
             "mesh_boolean_queries,mesh_boolean_input_faces,mesh_local_solid_uses,mesh_local_solid_builds,"
-            "mesh_detection_s,mesh_placement_s,mesh_boolean_s,cad_boolean_queries,cad_event_distances,chen_patch_queries,chen_confirmed_candidates,event_tolerance_s\n"
-        <<(n ? wall : replay_s)<<','<<setup_s<<','<<steps<<','<<stats.accepted_steps<<','<<stats.subdivisions<<','<<stats.evaluations
+            "mesh_detection_s,mesh_placement_s,mesh_boolean_s,cad_boolean_queries,cad_event_distances,chen_patch_queries,chen_confirmed_candidates,event_tolerance_s,"
+            "solver,impulse_solves,impulse_regions,impulse_iterations,impulse_residual_m_s,ccd_refinements,ccd_refined_clear\n"
+        <<(n || surface.impulse_law ? wall : replay_s)<<','<<setup_s<<','<<steps<<','<<stats.accepted_steps<<','<<stats.subdivisions<<','<<stats.evaluations
         <<','<<stats.maximum_residual<<','<<work.pairs<<','<<work.culled<<','<<work.rays<<','<<work.missing
         <<','<<work.mesh.triangles<<','<<work.closest_queries<<','<<work.unresolved_queries<<','<<work.native_nodes
         <<','<<stats.step_checks<<','<<stats.rejected_steps<<','<<event_nodes<<','<<unresolved_events<<','<<reused
         <<','<<work.boolean_queries<<','<<work.boolean_input_faces<<','<<work.local_solid_uses<<','<<work.local_solid_builds
         <<','<<work.mesh_detection_s<<','<<work.mesh_placement_s<<','<<work.mesh_boolean_s
-        <<','<<work.cad_boolean_queries<<','<<cad_distances<<','<<chen_queries<<','<<chen_confirmed<<','<<event_tolerance<<'\n';
+        <<','<<work.cad_boolean_queries<<','<<cad_distances<<','<<chen_queries<<','<<chen_confirmed<<','<<event_tolerance
+        <<','<<(surface.impulse_law ? impulse_law_name(*surface.impulse_law) : "penalty")
+        <<','<<impulse_solves<<','<<impulse_regions<<','<<impulse_iterations<<','<<impulse_residual
+        <<','<<spatial_refinements<<','<<refined_clear<<'\n';
     if (!trace || !report) throw std::runtime_error("failed to write contact run");
 }
 
@@ -1183,9 +1339,10 @@ int main(int argc,char** argv) {
         if (argc<7 || (!named && argc>11)) {
             std::cerr<<"nc_contact SCENE DEFLECTION_M DT_S DURATION_S OUTPUT_STRIDE OUTPUT_PREFIX "
                         "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
-                        "  or append --method mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver penalty] "
+                        "  or append --method mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
                         "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full]\n"
-                        "  or append --method cad-occt|chen-2024 [--solver penalty] [--event-tol-s SECONDS --ccd-tol-m METRES]\n";
+                        "  or append --method cad-occt|chen-2024 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
+                        "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp\n";
             return 2;
         }
         std::optional<PairBackend> pair_backend;
@@ -1209,7 +1366,8 @@ int main(int argc,char** argv) {
                 }
                 else if (key=="--ccd-tol-m") surface.distance_tolerance=std::stod(argv[i+1]);
                 else if (key=="--solver") {
-                    if (value!="penalty") throw std::invalid_argument("unsupported surface contact solver");
+                    if (value=="penalty") surface.impulse_law.reset();
+                    else surface.impulse_law=parse_impulse_law(value);
                 }
                 else throw std::invalid_argument("unsupported surface option or solver");
             }

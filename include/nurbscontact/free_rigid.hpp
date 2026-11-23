@@ -14,6 +14,7 @@ struct FreeRigidBody {
     FreeRigidBody(std::size_t first_coordinate,Vec diagonal,Vec products_xy_xz_yz);
     Quaternion initial_attitude(const ContactPose& pose) const;
     Quaternion initial_rate(const Quaternion& attitude,Vec body_omega) const;
+    void angular_impulse_response(const Vector& q,const Vector& generalized,Vector& delta_velocity) const;
     void kinematics(const Vector& q,Vec local_com,ContactBodyState& state) const;
     void apply_euler_equations(const Vector& q,const Vector& v,Forces& forces) const;
     Vec body_angular_velocity(const Vector& q,const Vector& v) const;

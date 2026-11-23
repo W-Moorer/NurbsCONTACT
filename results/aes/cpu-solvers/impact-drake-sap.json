@@ -1,0 +1,80 @@
+{
+  "drake_version": "1.58.0",
+  "duration_s": 0.16,
+  "sphere_radius_m": 0.041,
+  "mass_per_body_kg": 1.0,
+  "pair_stiffness_N_m": 5000.0,
+  "relaxation_s": 0.0,
+  "friction": 0.0,
+  "geometry": [
+    "Drake Sphere",
+    "STEP solid overlap"
+  ],
+  "native_method": "cad-occt",
+  "solver": "sap",
+  "runs": [
+    {
+      "step_s": 0.0005,
+      "updates": 320,
+      "final_drake_velocity_m_s": [
+        -0.4330380947118111,
+        -0.016961905288188854
+      ],
+      "final_native_velocity_m_s": [
+        -0.4330380947118099,
+        -0.016961905288190016
+      ],
+      "drake_contact_impulse_Ns": 0.4330380947118111,
+      "native_contact_impulse_Ns": 0.43303809471181004,
+      "drake_peak_force_N": 21.64056903804612,
+      "native_peak_force_N": 21.640569038045985,
+      "drake_max_displacement_error_m": 0.00150798074882956,
+      "native_max_displacement_error_m": 0.0015079807488298236,
+      "max_interengine_displacement_difference_m": 2.636779683484747e-16,
+      "max_interengine_velocity_difference_m_s": 1.2490009027033011e-14,
+      "native_trace_sha256": "7ebe0a2963502bf52c7d8920be97873c3e93e190a12e38fe0966a8c16887376c"
+    },
+    {
+      "step_s": 0.00025,
+      "updates": 640,
+      "final_drake_velocity_m_s": [
+        -0.44135085713882105,
+        -0.008649142861178622
+      ],
+      "final_native_velocity_m_s": [
+        -0.44135085713882055,
+        -0.008649142861179387
+      ],
+      "drake_contact_impulse_Ns": 0.44135085713882105,
+      "native_contact_impulse_Ns": 0.44135085713882066,
+      "drake_peak_force_N": 22.06347080306714,
+      "native_peak_force_N": 22.063470803067094,
+      "drake_max_displacement_error_m": 0.0007675880108339375,
+      "native_max_displacement_error_m": 0.0007675880108327371,
+      "max_interengine_displacement_difference_m": 1.2455314557513475e-15,
+      "max_interengine_velocity_difference_m_s": 9.908740494779522e-15,
+      "native_trace_sha256": "547d384ea09f69c484e074ff26f5bb10c39c359ace30716c3298f35db6e3109a"
+    },
+    {
+      "step_s": 0.000125,
+      "updates": 1280,
+      "final_drake_velocity_m_s": [
+        -0.44566368162859,
+        -0.0043363183714100265
+      ],
+      "final_native_velocity_m_s": [
+        -0.4456292083147928,
+        -0.004370791685206914
+      ],
+      "drake_contact_impulse_Ns": 0.44566368162859,
+      "native_contact_impulse_Ns": 0.445629208314793,
+      "drake_peak_force_N": 22.284059261526988,
+      "native_peak_force_N": 22.28057792122684,
+      "drake_max_displacement_error_m": 0.00038448935782418175,
+      "native_max_displacement_error_m": 0.0003875430880462896,
+      "max_interengine_displacement_difference_m": 3.053730226614676e-06,
+      "max_interengine_velocity_difference_m_s": 3.515075769418489e-05,
+      "native_trace_sha256": "14ebb356a8e22e46062b82682e97646871d8924b7c223c4d13f30ffbdaee3e31"
+    }
+  ]
+}

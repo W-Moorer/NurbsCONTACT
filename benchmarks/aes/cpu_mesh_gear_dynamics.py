@@ -12,8 +12,19 @@ import numpy as np
 from cpu_mesh_memory import dynamics
 
 
-def compare_trace(reference, data, stages, shafts):
+def normal_impulse(force, time, solver):
+    if solver == "penalty":
+        return float(np.trapezoid(force, time))
+    return float(np.diff(time) @ force[1:])
+
+
+def compare_trace(reference, data, stages, shafts, solver):
     previous = np.genfromtxt(reference, names=True, delimiter=",")
+    previous_solver = solver
+    metadata = reference.with_suffix(".stats.csv")
+    if metadata.is_file():
+        with metadata.open(newline="") as stream:
+            previous_solver = next(csv.DictReader(stream)).get("solver", "penalty")
     t = data["time_s"]
     tolerance = 8 * np.finfo(float).eps * max(abs(t[-1]), abs(previous["time_s"][-1]))
     if previous.shape != data.shape or not np.allclose(previous["time_s"], t, rtol=0, atol=tolerance):
@@ -26,11 +37,11 @@ def compare_trace(reference, data, stages, shafts):
             stage=stage,
             different_active_frames=int(np.count_nonzero((before > 0) != (after > 0))),
             max_force_difference_N=float(np.max(np.abs(after - before))),
-            normal_impulse_difference_Ns=float(np.trapezoid(after - before, t)),
+            normal_impulse_difference_Ns=normal_impulse(after, t, solver) - normal_impulse(before, t, previous_solver),
         ))
     return dict(
         reference_trace_sha256=hashlib.sha256(reference.read_bytes()).hexdigest(),
-        frames=len(t), stages=loads,
+        frames=len(t), stages=loads, reference_solver=previous_solver,
         max_shaft_speed_difference_rad_s=[float(np.max(np.abs(data[f"v{i}"] - previous[f"v{i}"])))
                                           for i in shafts],
     )
@@ -66,13 +77,13 @@ def run(args):
     try:
         report = dynamics(
             args.exe.resolve(), None if cad else root, args.scene, args.method, args.dt, args.duration, args.work,
-            None if cad else args.scope, args.event_tol_s
+            None if cad else args.scope, args.event_tol_s, args.solver
         )
     except TimeoutError:
         stopped = dict(completed=False, stop_reason="timeout", time_limit_s=1800,
                        process_s=time.perf_counter() - start, duration_s=args.duration, dt_s=args.dt,
                        event_tolerance_s=args.event_tol_s or (.2 * args.dt if args.method == "chen-2024" else 0.),
-                       method=args.method, solver="penalty", scene_sha256=hashlib.sha256(args.scene.read_bytes()).hexdigest())
+                       method=args.method, solver=args.solver, scene_sha256=hashlib.sha256(args.scene.read_bytes()).hexdigest())
         stopped["step_assets" if cad else "meshes"] = step_assets if cad else meshes
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(stopped, indent=2, allow_nan=False) + "\n", encoding="utf-8")
@@ -92,7 +103,7 @@ def run(args):
                 stage=stage,
                 active_frames=int(activity[-1].sum()),
                 peak_normal_N=float(force.max()),
-                normal_impulse_Ns=float(np.trapezoid(force, data["time_s"])),
+                normal_impulse_Ns=normal_impulse(force, data["time_s"], args.solver),
             )
         )
     report["simultaneously_loaded_frames"] = int(np.logical_and.reduce(activity).sum())
@@ -104,8 +115,9 @@ def run(args):
     else:
         report["meshes"] = meshes
     report["method"] = args.method
+    report["solver"] = args.solver
     if args.compare_trace:
-        report["compared_with_previous_run"] = compare_trace(args.compare_trace, data, stages, shafts)
+        report["compared_with_previous_run"] = compare_trace(args.compare_trace, data, stages, shafts, args.solver)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")
 
@@ -116,6 +128,8 @@ if __name__ == "__main__":
         parser.add_argument(name, type=Path)
     parser.add_argument("--method", choices=["mesh-aabb", "mesh-obb", "mesh-sap", "cad-occt", "chen-2024"], default="mesh-obb")
     parser.add_argument("--event-tol-s", type=float, default=0.)
+    parser.add_argument("--solver", choices=("penalty","sap","lagrange","augmented-lagrange","lcp","ncp","soccp"),
+                        default="penalty")
     parser.add_argument("--scope", choices=["local", "full"], default="local")
     parser.add_argument("--dt", type=float, default=50e-6)
     parser.add_argument("--duration", type=float, required=True)

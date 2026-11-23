@@ -123,12 +123,12 @@ def measured_run(command):
     return result
 
 
-def dynamics(exe, meshes, scene, method, dt, duration, work, region_scope=None, event_tolerance=0.):
+def dynamics(exe, meshes, scene, method, dt, duration, work, region_scope=None, event_tolerance=0., solver="penalty"):
     work.mkdir(parents=True, exist_ok=True)
     prefix = work / "response"
     process = measured_run([
         exe, scene, "0", str(dt), str(duration), "1", prefix,
-        "--method", method, "--solver", "penalty",
+        "--method", method, "--solver", solver,
         *([] if meshes is None else ["--mesh-dir", meshes]),
         *(["--mesh-region-scope", region_scope] if region_scope else []),
         *(["--event-tol-s", str(event_tolerance)] if event_tolerance else []),
@@ -145,7 +145,8 @@ def dynamics(exe, meshes, scene, method, dt, duration, work, region_scope=None, 
         active_frames=int((data["p0_normal_N"] > 0).sum()),
         scene_sha256=hashlib.sha256(scene.read_bytes()).hexdigest(),
         trace_sha256=hashlib.sha256(prefix.with_suffix(".csv").read_bytes()).hexdigest(),
-        normal_impulse_Ns=float(np.trapezoid(data["p0_normal_N"], data["time_s"])),
+        normal_impulse_Ns=float(np.trapezoid(data["p0_normal_N"], data["time_s"]) if solver=="penalty"
+                                else np.diff(data["time_s"]) @ data["p0_normal_N"][1:]),
         peak_normal_N=float(data["p0_normal_N"].max()),
         subdivisions=int(stats["subdivisions"]),
         integration_s=float(stats["wall_s"]),

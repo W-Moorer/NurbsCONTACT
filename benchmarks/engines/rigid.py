@@ -110,23 +110,25 @@ def mujoco_runner(case,step,record,integrator,fixtures):
     return positions,forces
 
 
-def drake_runner(case,step,record,integrator,fixtures):
+def drake_model(case,step,fixtures):
     from pydrake.geometry import AddContactMaterial, HalfSpace, ProximityProperties, Sphere
     from pydrake.math import RigidTransform
-    from pydrake.multibody.plant import AddMultibodyPlantSceneGraph, ContactModel, CoulombFriction
+    from pydrake.multibody.plant import AddMultibodyPlantSceneGraph, ContactModel, CoulombFriction, DiscreteContactApproximation
     from pydrake.multibody.tree import PrismaticJoint, SpatialInertia, UnitInertia
-    from pydrake.systems.analysis import ResetIntegratorFromFlags, Simulator
+    from pydrake.systems.analysis import Simulator
     from pydrake.systems.framework import DiagramBuilder
 
-    setup_start = perf_counter()
     z,_,count = case_values(case,fixtures)
     padding = LAYER/2 if count==2 else 0.
     builder = DiagramBuilder()
-    plant,_ = AddMultibodyPlantSceneGraph(builder,0.)
+    plant,_ = AddMultibodyPlantSceneGraph(builder,step)
     plant.mutable_gravity_field().set_gravity_vector([0,0,0])
     plant.set_contact_model(ContactModel.kPoint)
     props = ProximityProperties()
     AddContactMaterial(dissipation=0.,point_stiffness=2*STIFFNESS,friction=CoulombFriction(0.,0.),properties=props)
+    if step > 0:
+        plant.set_discrete_contact_approximation(DiscreteContactApproximation.kSap)
+        props.AddProperty("material", "relaxation_time", 0.)
 
     def add_ball(name):
         body = plant.AddRigidBody(name,SpatialInertia(1.,[0,0,0],UnitInertia.SolidSphere(fixtures.radius)))
@@ -148,6 +150,15 @@ def drake_runner(case,step,record,integrator,fixtures):
     reference_position[-1] = z
     plant.SetPositions(pc,reference_position)
     plant.SetVelocities(pc,initial_velocity(count, fixtures))
+    return plant, sim, pc, reference_position
+
+
+def drake_runner(case,step,record,integrator,fixtures):
+    from pydrake.systems.analysis import ResetIntegratorFromFlags
+
+    setup_start = perf_counter()
+    plant,sim,pc,reference_position = drake_model(case,0.,fixtures)
+    count = len(reference_position)
     solver = ResetIntegratorFromFlags(sim,integrator,step)
     solver.set_fixed_step_mode(True)
     sim.Initialize()

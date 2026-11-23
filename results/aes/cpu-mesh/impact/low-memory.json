@@ -1,0 +1,105 @@
+{
+  "duration_s": 0.16,
+  "step_s": 0.00025,
+  "event_tol_s": 5e-05,
+  "reference": {
+    "onset_s": 0.039999999999999994,
+    "release_s": 0.07141592653589793,
+    "peak_force_N": 22.5,
+    "impulse_Ns": 0.45
+  },
+  "asset_sha256": {
+    "spheres.scene": "05767980630c319532fdc8d251f54915c306c1fe2470f6b6b117081e743f9428",
+    "offset-sphere.step": "b1b75a633d5f5de9267246c3faa9457f22615bc8b742d4cc9f297e9df2e81d2c"
+  },
+  "runs": [
+    {
+      "method": "mesh-obb",
+      "onset_bracket_s": [
+        0.04100000000000003,
+        0.04125000000000003
+      ],
+      "release_bracket_s": [
+        0.07225000000000005,
+        0.07250000000000005
+      ],
+      "peak_force_N": 22.524928086442216,
+      "normal_impulse_Ns": 0.4500492584016302,
+      "max_force_error_N": 2.567468622148408,
+      "max_displacement_error_m": 0.0004744205323731522,
+      "final_velocity_m_s": [
+        -0.44999771209596673,
+        -2.2879040332362047e-06
+      ],
+      "integration_s": 3.788474,
+      "setup_s": 0.0489047,
+      "trace_sha256": "ccac9f9197f9136fa341646c4f92718cb0d3fa9f1a388a887d5a581f6a9683e8",
+      "process_s": 4.648217100009788,
+      "observed_peak_working_set_bytes": 17989632,
+      "monitor_interval_s": 0.025,
+      "observed_peak_commit_bytes": 28254208,
+      "mesh_per_sphere": {
+        "mesh_size_m": 0.012,
+        "mesh_sha256": "02207aa66e14506e6a08665d0a085988d3642780a8f98b98c2d75508ff3908af",
+        "triangles": 462,
+        "max_normal_angle_deg": 7.681155178491947,
+        "max_sampled_surface_error_m": 0.0006751738998722694,
+        "min_sicn": 0.8256314003985566,
+        "file_bytes": 26604
+      },
+      "ccd_checks": 652,
+      "ccd_rejected": 6,
+      "ccd_unresolved": 0,
+      "ccd_nodes": 8494,
+      "cad_boolean_queries": 0,
+      "cad_event_distances": 0,
+      "chen_patch_queries": 0,
+      "chen_confirmed_candidates": 0,
+      "mesh_boolean_queries": 363
+    },
+    {
+      "method": "mesh-obb",
+      "onset_bracket_s": [
+        0.04025000000000003,
+        0.040500000000000036
+      ],
+      "release_bracket_s": [
+        0.07100000000000006,
+        0.07125000000000006
+      ],
+      "peak_force_N": 22.532496724944913,
+      "normal_impulse_Ns": 0.4500292433843316,
+      "max_force_error_N": 0.5662394131711084,
+      "max_displacement_error_m": 2.99487097722706e-05,
+      "final_velocity_m_s": [
+        -0.449998214835777,
+        -1.78516422291344e-06
+      ],
+      "integration_s": 5.0306293,
+      "setup_s": 0.0682896,
+      "trace_sha256": "4b0118af1e7efd788cefa07d9d1e22754d103d10382e2ba01eb1a47583a9b917",
+      "process_s": 5.802377499989234,
+      "observed_peak_working_set_bytes": 18321408,
+      "monitor_interval_s": 0.025,
+      "observed_peak_commit_bytes": 28696576,
+      "mesh_per_sphere": {
+        "mesh_size_m": 0.008,
+        "mesh_sha256": "21a2e8ee10a9e3fd583e3f32246857c629de21ebd82f6e6386f34d242eb5dc5d",
+        "triangles": 904,
+        "max_normal_angle_deg": 7.4870751583100725,
+        "max_sampled_surface_error_m": 0.0003931723341165931,
+        "min_sicn": 0.5609419756321852,
+        "file_bytes": 52566
+      },
+      "ccd_checks": 650,
+      "ccd_rejected": 5,
+      "ccd_unresolved": 0,
+      "ccd_nodes": 17264,
+      "cad_boolean_queries": 0,
+      "cad_event_distances": 0,
+      "chen_patch_queries": 0,
+      "chen_confirmed_candidates": 0,
+      "mesh_boolean_queries": 308
+    }
+  ]
+}

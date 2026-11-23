@@ -1,0 +1,108 @@
+{
+  "duration_s": 0.005,
+  "dt_s": 5e-05,
+  "steps": 100,
+  "active_frames": 96,
+  "scene_sha256": "7617d79cb6a49b1e97cc5be8e0079df7d4ec9ab0a968f52bff9e1fecebba63bd",
+  "trace_sha256": "46c643eb49330681a4f13710bbe473c87e5cdc4623c8e096d331911b4d6db31b",
+  "normal_impulse_Ns": 6.710125792160685,
+  "peak_normal_N": 2641.932897525561,
+  "subdivisions": 0,
+  "integration_s": 44.5132764,
+  "process_s": 56.1537965000025,
+  "observed_peak_working_set_bytes": 60432384,
+  "monitor_interval_s": 0.025,
+  "observed_peak_commit_bytes": 74846208,
+  "ccd_checks": 0,
+  "ccd_rejected": 0,
+  "ccd_unresolved": 0,
+  "ccd_nodes": 0,
+  "cad_boolean_queries": 0,
+  "cad_event_distances": 0,
+  "chen_patch_queries": 0,
+  "chen_confirmed_candidates": 0,
+  "event_tolerance_s": 0.0,
+  "setup_s": 9.9315366,
+  "evaluations": 301,
+  "region_scope": "local",
+  "boolean_queries": 189,
+  "boolean_input_faces": 2089592,
+  "local_solid_uses": 337,
+  "local_solid_builds": 12,
+  "detection_s": 0.3433719999999999,
+  "placement_s": 3.1775688999999985,
+  "boolean_s": 40.23103280000002,
+  "stages": [
+    {
+      "stage": 1,
+      "active_frames": 96,
+      "peak_normal_N": 2641.932897525561,
+      "normal_impulse_Ns": 6.710125792160685
+    },
+    {
+      "stage": 2,
+      "active_frames": 93,
+      "peak_normal_N": 8318.109831382124,
+      "normal_impulse_Ns": 12.07495806792881
+    }
+  ],
+  "simultaneously_loaded_frames": 93,
+  "shaft_speed_range_rad_s": [
+    [
+      185.8204137367241,
+      200.85527561228673
+    ],
+    [
+      92.47826481553741,
+      96.02392614706048
+    ],
+    [
+      43.02756318697708,
+      47.920376131929515
+    ]
+  ],
+  "meshes": [
+    {
+      "asset": "reducer-1a.msh",
+      "file_bytes": 668258,
+      "triangles": 9344,
+      "step_sha256": "90a5180ba1d3cd2b6e603de00a80c94cded07bfdccdf13f26e8a693845920035",
+      "mesh_sha256": "8af5b4b9422af5daad333ba812da8d4be8b0c3ab5a5134408a11fe32a07e1e4c",
+      "max_normal_angle_deg": 7.057830821048942,
+      "max_sampled_surface_error_m": 7.274266858444784e-05,
+      "min_sicn": 0.01045735078250156
+    },
+    {
+      "asset": "reducer-1b.msh",
+      "file_bytes": 691315,
+      "triangles": 9664,
+      "step_sha256": "f0b5c19d140b2817f00ba29a3cadcd042141df5e2700e860dff7b9aedd37bf7b",
+      "mesh_sha256": "ad02225ac3bdff9919cd64969974e0a59502f994c0518e82f7377e2a8b4594c1",
+      "max_normal_angle_deg": 6.113913373818607,
+      "max_sampled_surface_error_m": 0.00010920748286950188,
+      "min_sicn": 0.0005368108854989981
+    },
+    {
+      "asset": "reducer-2a.msh",
+      "file_bytes": 1781677,
+      "triangles": 26042,
+      "step_sha256": "9037e0d52ca2550e2251621d46a6781b9b698722842b4178b9758858ee8f14a9",
+      "mesh_sha256": "54f433908bef58723e409a4e9a4b392e17c3378bfd98fa6de5c64b0de6fbd3ab",
+      "max_normal_angle_deg": 6.051116592670291,
+      "max_sampled_surface_error_m": 3.249036766065176e-05,
+      "min_sicn": 0.12280293051585442
+    },
+    {
+      "asset": "reducer-2b.msh",
+      "file_bytes": 1114748,
+      "triangles": 16132,
+      "step_sha256": "93b72d60ebd26f3e94faedd22be00aa5d80dda5936605541ae3646ace82aee01",
+      "mesh_sha256": "404e5dfb30b1d62030ab54963d689d5723d5e69607a8494aa4c0992fcdf27cd8",
+      "max_normal_angle_deg": 4.378595683276618,
+      "max_sampled_surface_error_m": 8.925903090951107e-05,
+      "min_sicn": 0.0037408528660150733
+    }
+  ],
+  "method": "mesh-obb",
+  "solver": "sap"
+}

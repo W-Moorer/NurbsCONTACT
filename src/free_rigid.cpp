@@ -34,6 +34,14 @@ Quaternion FreeRigidBody::initial_rate(const Quaternion& q,Vec omega) const {
     return multiply(q,quat(0,scale(omega,.5)));
 }
 
+void FreeRigidBody::angular_impulse_response(const Vector& q,const Vector& generalized,Vector& dv) const {
+    const auto i=first+3;
+    const auto rot=read4(q,i);
+    const auto moment=scale(imag(multiply(inverse(rot),read4(generalized,i))),.5*norm2(rot));
+    const auto rate=initial_rate(rot,matvec(inverse_inertia,moment));
+    for (std::size_t j=0;j<4;++j) dv[i+j]=rate[j];
+}
+
 Vec FreeRigidBody::body_angular_velocity(const Vector& q,const Vector& v) const {
     return scale(imag(multiply(inverse(read4(q,first+3)),read4(v,first+3))),2.);
 }

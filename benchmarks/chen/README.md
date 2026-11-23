@@ -41,10 +41,12 @@ python benchmarks/chen/rigid_impact.py build/cpu-swept/Release/nc_contact.exe bu
 
 This replays the existing two-slider sphere impact with identical material, time step and event tolerance. The independent solution gives entry at 0.040 s, release at 0.07141593 s, peak load 22.5 N and impulse 0.45 N·s. The time brackets in the report are adjacent saved frames surrounding each change of load. CTest also checks step-interior collisions, separation at a circular trim, reverse-time release and rotation around an offset pivot. [Comparison against the analytical dynamics](../../results/aes/general-contact/chen-step-impact.json)
 
-The default mesh is generated from the 41 mm radius STEP sphere with a 4.5 mm Gmsh target, giving 2,610 triangles per sphere. Pass one or more existing directories to `--mesh-dir` for a refinement study, or use `--cad-only` in a build without the mesh backend. At 250 µs steps and 50 µs event tolerance the following figures cover the same 641 output frames. The peak working set covers the full native process. Mesh generation and initialization are outside the integration timer.
+The default Gmsh target is 8 mm on the 41 mm radius sphere, giving 904 triangles per sphere. Pass existing directories to `--mesh-dir` for a refinement study, `--mesh-only` to run only the mesh controls or `--cad-only` for the STEP controls. At 250 µs steps and 50 µs event tolerance the following figures cover the same 641 output frames. The peak working set covers the full native process. Mesh generation and initialization are outside the integration timer. [462- and 904-triangle runs](../../results/aes/cpu-mesh/impact/low-memory.json)
 
 | Contact method | Triangles per sphere | Peak working set (MiB) | Integration (s) | Max displacement error (µm) | Max force error (N) |
 | --- | ---: | ---: | ---: | ---: | ---: |
+| Mesh OBB, 12 mm | 462 | 17.2 | 3.79 | 474.42 | 2.56747 |
+| Mesh OBB, 8 mm (default) | 904 | 17.5 | 5.03 | 29.95 | 0.56624 |
 | Mesh OBB, 4.5 mm | 2,610 | 18.2 | 3.09 | 65.04 | 0.53548 |
 | Mesh OBB, 3 mm | 5,708 | 20.4 | 4.42 | 51.26 | 0.26360 |
 | Mesh OBB, 1.5 mm | 22,482 | 32.2 | 10.35 | 12.61 | 0.06366 |

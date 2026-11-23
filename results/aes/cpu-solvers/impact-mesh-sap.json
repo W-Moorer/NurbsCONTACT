@@ -1,0 +1,180 @@
+{
+  "method": "mesh-sap",
+  "dt_s": 0.00025,
+  "event_tolerance_s": 5e-05,
+  "duration_s": 0.16,
+  "scene_sha256": "05767980630c319532fdc8d251f54915c306c1fe2470f6b6b117081e743f9428",
+  "step_sha256": "b1b75a633d5f5de9267246c3faa9457f22615bc8b742d4cc9f297e9df2e81d2c",
+  "triangles_per_sphere": 904,
+  "mesh_sha256": "21a2e8ee10a9e3fd583e3f32246857c629de21ebd82f6e6386f34d242eb5dc5d",
+  "runs": [
+    {
+      "solver": "penalty",
+      "completed": true,
+      "frames": 641,
+      "final_velocity_m_s": [
+        -0.449998214835777,
+        -1.78516422291344e-06
+      ],
+      "reference_final_velocity_m_s": [
+        -0.45,
+        0.0
+      ],
+      "normal_impulse_Ns": 0.4500292433843316,
+      "reference_impulse_Ns": 0.45,
+      "max_momentum_drift_kg_m_s": 2.7755575615628914e-16,
+      "max_displacement_error_m": 2.99487097722706e-05,
+      "peak_normal_N": 22.532496724944913,
+      "integration_s": 4.4443359,
+      "impulse_residual_m_s": 0.0,
+      "iterations": 0,
+      "ccd_checks": 650,
+      "chen_patch_queries": 0,
+      "trace_sha256": "4b0118af1e7efd788cefa07d9d1e22754d103d10382e2ba01eb1a47583a9b917"
+    },
+    {
+      "solver": "sap",
+      "completed": true,
+      "frames": 641,
+      "final_velocity_m_s": [
+        -0.4413592023270568,
+        -0.008640797672943634
+      ],
+      "reference_final_velocity_m_s": [
+        -0.45,
+        0.0
+      ],
+      "normal_impulse_Ns": 0.4413607492636998,
+      "reference_impulse_Ns": 0.45,
+      "max_momentum_drift_kg_m_s": 3.885780586188048e-16,
+      "max_displacement_error_m": 0.000795661468869821,
+      "peak_normal_N": 22.09742285739576,
+      "integration_s": 1.6490488,
+      "impulse_residual_m_s": 1.7183965550851554e-08,
+      "iterations": 211,
+      "ccd_checks": 777,
+      "chen_patch_queries": 0,
+      "trace_sha256": "85642e9137bb5c3fd75b66a91b041a4b67813bba9eb5c5a95cd4af0c18e0ed2c"
+    },
+    {
+      "solver": "lagrange",
+      "completed": true,
+      "frames": 641,
+      "final_velocity_m_s": [
+        -0.2250000000016435,
+        -0.22499999999835651
+      ],
+      "reference_final_velocity_m_s": [
+        -0.225,
+        -0.225
+      ],
+      "normal_impulse_Ns": 0.22578713324549224,
+      "reference_impulse_Ns": 0.225,
+      "max_momentum_drift_kg_m_s": 0.0,
+      "max_displacement_error_m": 6.910499014829014e-05,
+      "peak_normal_N": 903.1485329819682,
+      "integration_s": 10.3532732,
+      "impulse_residual_m_s": 2.7755575615628914e-17,
+      "iterations": 4,
+      "ccd_checks": 656,
+      "chen_patch_queries": 0,
+      "trace_sha256": "fe0bab01b59eb3f6e66bc9ad07f43f493e9866a1c865e54e3fffe341364bcb45"
+    },
+    {
+      "solver": "augmented-lagrange",
+      "completed": true,
+      "frames": 641,
+      "final_velocity_m_s": [
+        -0.22500000016244906,
+        -0.22499999983755095
+      ],
+      "reference_final_velocity_m_s": [
+        -0.225,
+        -0.225
+      ],
+      "normal_impulse_Ns": 0.225787133406854,
+      "reference_impulse_Ns": 0.225,
+      "max_momentum_drift_kg_m_s": 0.0,
+      "max_displacement_error_m": 6.910499012214025e-05,
+      "peak_normal_N": 903.1485336274402,
+      "integration_s": 12.3257559,
+      "impulse_residual_m_s": 5.511102546540414e-10,
+      "iterations": 70,
+      "ccd_checks": 653,
+      "chen_patch_queries": 0,
+      "trace_sha256": "0e4e2ff4452934efc6e19b45553ca3b270eecfa41c99d69942f6693df03b8f8c"
+    },
+    {
+      "solver": "lcp",
+      "completed": true,
+      "frames": 641,
+      "final_velocity_m_s": [
+        -0.2250000001960331,
+        -0.22499999980396693
+      ],
+      "reference_final_velocity_m_s": [
+        -0.225,
+        -0.225
+      ],
+      "normal_impulse_Ns": 0.22578713344056175,
+      "reference_impulse_Ns": 0.225,
+      "max_momentum_drift_kg_m_s": 5.551115123125783e-17,
+      "max_displacement_error_m": 6.910499011495916e-05,
+      "peak_normal_N": 903.1485337622462,
+      "integration_s": 9.2063822,
+      "impulse_residual_m_s": 7.698474080441996e-10,
+      "iterations": 8,
+      "ccd_checks": 650,
+      "chen_patch_queries": 0,
+      "trace_sha256": "0be089fc7fdd775f8b21fe7d0af69bf7fad444c60c5be6f8a1f79efcbf384cb8"
+    },
+    {
+      "solver": "ncp",
+      "completed": true,
+      "frames": 641,
+      "final_velocity_m_s": [
+        -0.2250000001960331,
+        -0.22499999980396693
+      ],
+      "reference_final_velocity_m_s": [
+        -0.225,
+        -0.225
+      ],
+      "normal_impulse_Ns": 0.22578713344056175,
+      "reference_impulse_Ns": 0.225,
+      "max_momentum_drift_kg_m_s": 5.551115123125783e-17,
+      "max_displacement_error_m": 6.910499011495916e-05,
+      "peak_normal_N": 903.1485337622462,
+      "integration_s": 9.3722963,
+      "impulse_residual_m_s": 7.698474080441996e-10,
+      "iterations": 8,
+      "ccd_checks": 650,
+      "chen_patch_queries": 0,
+      "trace_sha256": "0be089fc7fdd775f8b21fe7d0af69bf7fad444c60c5be6f8a1f79efcbf384cb8"
+    },
+    {
+      "solver": "soccp",
+      "completed": true,
+      "frames": 641,
+      "final_velocity_m_s": [
+        -0.2250000001960331,
+        -0.22499999980396693
+      ],
+      "reference_final_velocity_m_s": [
+        -0.225,
+        -0.225
+      ],
+      "normal_impulse_Ns": 0.22578713344056175,
+      "reference_impulse_Ns": 0.225,
+      "max_momentum_drift_kg_m_s": 5.551115123125783e-17,
+      "max_displacement_error_m": 6.910499011495916e-05,
+      "peak_normal_N": 903.1485337622462,
+      "integration_s": 9.502604,
+      "impulse_residual_m_s": 7.698474080441996e-10,
+      "iterations": 8,
+      "ccd_checks": 650,
+      "chen_patch_queries": 0,
+      "trace_sha256": "0be089fc7fdd775f8b21fe7d0af69bf7fad444c60c5be6f8a1f79efcbf384cb8"
+    }
+  ]
+}

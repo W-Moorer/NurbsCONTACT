@@ -74,18 +74,21 @@ if __name__ == "__main__":
     parser.add_argument("--event-tol-s", type=float, default=.00005)
     control = parser.add_mutually_exclusive_group()
     control.add_argument("--mesh-dir", type=Path, nargs="+", default=[],
-                         help="use these meshes in place of the default 4.5 mm Gmsh sphere")
+                         help="use these meshes in place of the default 8 mm Gmsh sphere")
     control.add_argument("--cad-only", action="store_true", help="run only the two STEP methods")
+    parser.add_argument("--mesh-only", action="store_true", help="measure only the Gmsh controls")
     args = parser.parse_args()
+    if args.cad_only and args.mesh_only:
+        parser.error("choose one of --cad-only and --mesh-only")
     args.work.mkdir(parents=True, exist_ok=True)
     scene = ROOT / "results/engine-comparison/nurbs/spheres.scene"
     if not args.cad_only and not args.mesh_dir:
-        directory = args.work / "mesh-4p5mm"
+        directory = args.work / "mesh-8mm"
         subprocess.run([sys.executable, ROOT / "apps/prepare_contact_mesh.py", scene.with_name("offset-sphere.step"),
-                        directory / "offset-sphere.msh", "--size-m", ".0045", "--max-error-m", ".0002",
+                        directory / "offset-sphere.msh", "--size-m", ".008", "--max-error-m", ".0005",
                         "--max-normal-deg", "8", "--min-sicn", ".3"], check=True, timeout=1800)
         args.mesh_dir = [directory]
-    methods = [("cad-occt", None), ("chen-2024", None)]
+    methods = [] if args.mesh_only else [("cad-occt", None), ("chen-2024", None)]
     methods.extend(("mesh-obb", mesh_dir) for mesh_dir in args.mesh_dir)
     runs = [run(args.exe.resolve(), args.work, method, args.step, args.event_tol_s, mesh_dir)
             for method, mesh_dir in methods]

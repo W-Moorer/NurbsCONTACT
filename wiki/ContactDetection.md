@@ -185,7 +185,27 @@ Each run spans 0.16 s. The timings are single measurements on the local CPU. The
 
 For surface contact on the original STEP solids, `nc_contact --method cad-occt` selects CAD intersection regions and `--method chen-2024` adds the Chen 2024 patch event search. Its default event time tolerance is one fifth of the time step. On the same scene `--method mesh-obb` reads Gmsh files alongside the STEP parts or under `--mesh-dir`. All three use the scene's material and HHT penalty equations. The named options follow the scene, deflection, step, duration, stride and output arguments. The Chen variant requires `NC_CHEN_SOURCE_DIR` at build time. [Algorithm, supported motions and reproduction](../benchmarks/chen/README.md#rigid-step-scenes)
 
-The two-sphere comparison now defaults to 2,610 triangles per sphere. The mesh solver's peak working set was 18.2 MiB, compared with 32.2 MiB at 22,482 triangles per sphere. Over the same 0.16 s collision the maximum displacement errors relative to the analytical solution were 65.0 µm and 12.6 µm. [Mesh sizes, timings and force errors](../results/aes/general-contact/chen-step-impact.json)
+The two-sphere comparison defaults to 904 triangles per sphere (8 mm target, 17.5 MiB solver peak). In the 0.16 s collision, maximum displacement error against the closed-form motion was 29.95 µm. With 462 triangles the peak fell to 17.2 MiB, displacement error rose to 474.42 µm and first load fell between 41.00 and 41.25 ms against the analytical 40.00 ms. The 904-triangle mesh first loaded between 40.25 and 40.50 ms. The two resolutions gave peak loads of 22.52 and 22.53 N against 22.50 N. [Low-memory impact measurements](../results/aes/cpu-mesh/impact/low-memory.json) · [Refinement controls](../results/aes/general-contact/chen-step-impact.json)
+
+## Surface contact solvers
+
+All five named surface methods return connected contact regions. Choose a geometry method and response on the same scene, for example `--method mesh-obb --solver ncp` or `--method chen-2024 --solver sap`. Sweep and prune (`--method mesh-sap`) selects broad-phase geometry. The discrete compliant solver (`--solver sap`) selects the contact law. Chen support is a build option.
+
+| Solver | Normal and friction model |
+| --- | --- |
+| `penalty` (default) | Scene penalty force and regularized sliding friction, coupled to HHT. |
+| `sap` | Convex compliant friction cone with normal stiffness and relaxation time, solved by projected block iterations. The scene's power-law stiffness is linearized at the predicted depth. |
+| `lagrange` | Unilateral normal multiplier with a local mass-weighted circular friction-disk solve. |
+| `augmented-lagrange` | Proximal multiplier updates with a circular friction disk and a final check of the unregularized constraints. |
+| `lcp` | Inelastic normal complementarity and four tangential friction generators. The friction pyramid depends on the tangent basis. |
+| `ncp` | Inelastic normal complementarity and maximum dissipation on a circular friction disk. |
+| `soccp` | The same circular Coulomb law expressed using a friction cone and the de Saxcé correction to normal velocity. |
+
+The impulse path predicts free motion under the external and gyroscopic loads, obtains the surface geometry at the predicted end pose and couples all active regions using the generalized inverse mass. The resulting impulses correct velocity and position. The contact correction is first order. Saved loads give impulse divided by main-step duration, summed over its accepted substeps. Use output stride one to integrate each impulse. The saved gap on this path is the linearly corrected predicted gap. The hard laws assume perfectly inelastic normal impact. A prescribed penetration with zero normal mobility is incompatible with a hard constraint. SAP with incidence-dependent damping currently supports one loaded region per pair. A step-interior event search checks both the free and corrected trajectories when enabled.
+
+The [two-slider driver](../benchmarks/aes/solver_impact.py) checks the compliant runs against the elastic oscillator (0.45 N·s) and hard runs against the inelastic impact (0.225 N·s). The [mesh](../results/aes/cpu-solvers/impact-mesh-obb.json) and [CAD](../results/aes/cpu-solvers/impact-cad-occt.json) results include final velocities and displacement errors. The [eccentric collision](../results/aes/cpu-solvers/free-eccentric-ncp.json) also checks angular momentum. The [reducer SAP](../results/aes/cpu-solvers/reducer-sap.json) and [NCP](../results/aes/cpu-solvers/reducer-ncp.json) runs exercise coupled constraints on a shared intermediate shaft over 100 steps.
+
+An independent fixed-step control used discrete Drake 1.58.0 SAP with analytic spheres, 1 kg per body, pair stiffness 5,000 N/m, zero friction and zero relaxation time. Across 0.16 s the STEP and Drake displacement histories agreed within 1.3 × 10⁻¹⁵ m at 500 and 250 µs and within 3.06 µm at 125 µs. At 250 µs their common maximum displacement error relative to the continuous oscillator was 0.768 mm. [Drake comparison driver](../benchmarks/engines/drake_sap_impact.py) · [All three step sizes](../results/aes/cpu-solvers/impact-drake-sap.json) · [Drake contact parameters](https://drake.mit.edu/doxygen_cxx/group__contact__defaults.html)
 
 ## Free rigid bodies
 
