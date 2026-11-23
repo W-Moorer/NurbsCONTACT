@@ -1,4 +1,8 @@
 #include "nurbscontact/cpu_mesh.hpp"
+#ifdef NC_WITH_MESH_CCD
+#include "cpu_mesh_ccd.hpp"
+#include <CGAL/squared_distance_3.h>
+#endif
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -19,6 +23,53 @@ Vec as_vec(const Point& p) {
     return {CGAL::to_double(p.x()), CGAL::to_double(p.y()), CGAL::to_double(p.z())};
 }
 }
+
+#ifdef NC_WITH_MESH_CCD
+std::pair<double,double> squared_distance_bounds(const Triangle& a, const Triangle& b) {
+    return CGAL::to_interval(CGAL::squared_distance(triangle<Kernel>(a),triangle<Kernel>(b)));
+}
+
+TriangleTime translated_triangle_ccd(const Triangle& a, const Triangle& b,
+                                     Vec a0, Vec a1, Vec b0, Vec b1) {
+    using Number = Kernel::FT;
+    using Vector = Kernel::Vector_3;
+    const auto left = triangle<Kernel>(a), right = triangle<Kernel>(b);
+    const auto origin = [](Vec v) { return Point(v[0], v[1], v[2]); };
+    const auto velocity = (origin(b1) - origin(b0)) - (origin(a1) - origin(a0));
+    Number enter(0), leave(1);
+    const auto overlaps = [&](const Vector& axis) {
+        if (axis == CGAL::NULL_VECTOR) return true;
+        const auto project = [&](const auto& tri) {
+            const Number p = (tri[0] - CGAL::ORIGIN) * axis, q = (tri[1] - CGAL::ORIGIN) * axis,
+                         r = (tri[2] - CGAL::ORIGIN) * axis;
+            return std::pair{std::min({p,q,r}),std::max({p,q,r})};
+        };
+        const auto [amin,amax] = project(left);
+        const auto [bmin,bmax] = project(right);
+        const Number rate = velocity * axis;
+        if (rate == 0) return amin <= bmax && bmin <= amax;
+        const Number t0 = (amin-bmax)/rate, t1 = (amax-bmin)/rate;
+        enter = std::max(enter,std::min(t0,t1));
+        leave = std::min(leave,std::max(t0,t1));
+        return enter <= leave;
+    };
+    std::array<Vector,3> ea, eb;
+    for (int k = 0; k < 3; ++k) {
+        ea[k] = left[(k+1)%3] - left[k];
+        eb[k] = right[(k+1)%3] - right[k];
+    }
+    const auto na = CGAL::cross_product(ea[0],ea[1]), nb = CGAL::cross_product(eb[0],eb[1]);
+    if (!overlaps(na) || !overlaps(nb)) return {};
+    for (int k = 0; k < 3; ++k) {
+        // In-plane edge normals also separate disjoint coplanar triangles.
+        if (!overlaps(CGAL::cross_product(na,ea[k])) || !overlaps(CGAL::cross_product(nb,eb[k]))) return {};
+        for (const auto& e : eb) if (!overlaps(CGAL::cross_product(ea[k],e))) return {};
+    }
+    const auto [low, high] = CGAL::to_interval(enter);
+    const double speed = std::sqrt(CGAL::to_interval(velocity.squared_length()).second);
+    return {std::max(0.,low),nc::up((high-low)*speed)};
+}
+#endif
 
 std::vector<Vec> intersect_triangles(const Triangle& a, const Triangle& b) {
     using Predicate = CGAL::Exact_predicates_inexact_constructions_kernel;

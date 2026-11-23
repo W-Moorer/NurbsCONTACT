@@ -73,6 +73,53 @@ int main() {
             const auto mixed=mixed_scene.intersect(std::array<RigidPlacement,2>{});
             require(!mixed.intersections.empty() && mixed.enclosed.size()==1 && mixed.enclosed[0].body==1,
                     "enclosure and crossing in different components of one body");
+#ifdef NC_WITH_MESH_CCD
+            std::array<std::shared_ptr<const MeshData>,2> moving{data,data};
+            MeshScene swept(moving,m);
+            std::array<RigidPlacement,2> start{},end{};
+            start[1].origin={-2,0,0};
+            end[1].origin={2,0,0};
+            require(swept.intersect(start).intersections.empty() && swept.intersect(end).intersections.empty(),
+                    "swept fixture endpoints must be clear");
+            auto crossing=swept.sweep(start,end,1e-7);
+            require(crossing.first && std::abs(crossing.first->fraction-.25)<1e-12 &&
+                    crossing.translation_tests>0 && crossing.first->geometric_tolerance_m<1e-12,"translation TOI");
+            end[1].origin={-3,0,0};
+            require(!swept.sweep(start,end,1e-7).first,"separating motion");
+            end=start;
+            for (auto& pose : end) pose.origin[1]+=3.;
+            require(!swept.sweep(start,end,1e-7).first,"common translation must preserve separation");
+            start[1].origin={.2,.2,.2};
+            end=start;
+            end[1].origin={3.,0.,0.};
+            const auto initial=swept.sweep(start,end,1e-7);
+            require(initial.first && initial.first->fraction==0.,"initial boundary intersection");
+            auto off_axis=std::make_shared<MeshData>(*data);
+            for (auto& p : off_axis->vertices) {
+                for (auto& x : p) x *= .05;
+                p[0] += 1.;
+            }
+            moving={off_axis,off_axis};
+            MeshScene rotating(moving,m);
+            start={}; end={};
+            const auto spin=[](double angle) {
+                RigidPlacement pose;
+                const auto c=std::cos(angle), s=std::sin(angle);
+                pose.basis={{{c,s,0},{-s,c,0},{0,0,1}}};
+                return pose;
+            };
+            start[1]=spin(-1.);
+            end[1]=spin(1.);
+            require(rotating.intersect(start).intersections.empty() && rotating.intersect(end).intersections.empty(),
+                    "arc fixture endpoints must be clear");
+            auto arc=rotating.sweep(start,end,1e-5);
+            // The rotating vertex (1,.05,0) first meets the fixed edge y=z=0.
+            const double expected_fraction=(1.-std::atan(.05))/2.;
+            require(arc.first && std::abs(arc.first->fraction-expected_fraction)<2e-5 &&
+                    arc.first->geometric_tolerance_m<=1e-5,"interior rotation event");
+            start[1].origin[2]=end[1].origin[2]=.052;
+            require(!rotating.sweep(start,end,1e-5).first,"rotation past a separated parallel face");
+#endif
         }
         std::cout << "CPU triangle intersections passed\n";
     } catch (const std::exception& error) {

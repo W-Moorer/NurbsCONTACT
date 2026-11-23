@@ -1,5 +1,9 @@
 #include "nurbscontact/cpu_mesh.hpp"
 #include "cpu_mesh_solid.hpp"
+#ifdef NC_WITH_MESH_CCD
+#include "cpu_mesh_ccd.hpp"
+#include "cpu_mesh_motion.hpp"
+#endif
 
 #include <fcl/broadphase/broadphase_dynamic_AABB_tree.h>
 #include <fcl/geometry/bvh/BVH_model.h>
@@ -124,6 +128,7 @@ Pairs sweep_and_prune(const std::vector<Body>& bodies, std::vector<std::size_t>&
             if (a.overlap(b)) candidates.emplace_back(std::min(order[i],order[j]),std::max(order[i],order[j]));
         }
     }
+    std::sort(candidates.begin(),candidates.end());
     return candidates;
 }
 
@@ -179,6 +184,21 @@ struct MeshScene::Impl {
     std::vector<std::size_t> order;
     bool registered{};
     MeshMethod method;
+
+    Pairs candidates() {
+        if (!manager) return sweep_and_prune(bodies,order);
+        if (!registered) {
+            for (const auto& body : bodies) manager->registerObject(body.proxy.get());
+            manager->setup();
+            registered = true;
+        } else {
+            manager->update();
+        }
+        Pairs pairs;
+        manager->collide(&pairs,collect);
+        std::sort(pairs.begin(),pairs.end());
+        return pairs;
+    }
 };
 
 MeshScene::MeshScene(std::span<const std::shared_ptr<const MeshData>> inputs, MeshMethod method)
@@ -218,18 +238,7 @@ IntersectionResult MeshScene::intersect(std::span<const RigidPlacement> poses) {
         body.padding = roundoff(body.local, body.world);
         body.proxy->bounds(placed(body.local,body.world,body.padding));
     }
-    Pairs candidates;
-    if (!state.manager) {
-        candidates=sweep_and_prune(state.bodies,state.order);
-    } else if (!state.registered) {
-        for (const auto& body : state.bodies) state.manager->registerObject(body.proxy.get());
-        state.manager->setup();
-        state.registered = true;
-    } else {
-        state.manager->update();
-    }
-    if (state.manager) state.manager->collide(&candidates, collect);
-    std::sort(candidates.begin(), candidates.end());
+    const auto candidates=state.candidates();
     IntersectionResult result;
     result.body_pairs = candidates.size();
     for (const auto& [a,b] : candidates) {
@@ -245,4 +254,147 @@ IntersectionResult MeshScene::intersect(std::span<const RigidPlacement> poses) {
     });
     return result;
 }
+
+#ifdef NC_WITH_MESH_CCD
+namespace {
+struct SweepBody {
+    MeshMotion motion;
+    X start, end;
+    double radius, padding, sagitta;
+
+    Bounds envelope(const Bounds& box) const {
+        const double buffer=padding+sagitta;
+        return placed(box,start,buffer)+placed(box,end,buffer);
+    }
+
+    Oriented envelope(const Oriented& box) const {
+        // Accumulate both end boxes in a fixed frame aligned with the initial OBB.
+        const Eigen::Matrix3d axes=start.linear()*box.axis;
+        Bounds enclosure;
+        for (const X* pose : {&start,&end}) {
+            const V center=axes.transpose()*((*pose)*box.To);
+            const V radius_in_frame=(axes.transpose()*pose->linear()*box.axis).cwiseAbs()*box.extent;
+            enclosure+=center-radius_in_frame;
+            enclosure+=center+radius_in_frame;
+        }
+        return {axes,axes*enclosure.center(),(enclosure.max_-enclosure.min_)*.5+V::Constant(sagitta+padding)};
+    }
+};
+
+Triangle world_triangle(const Triangle& local,const X& pose) {
+    Triangle world;
+    for (std::size_t k=0;k<3;++k) {
+        const V p=pose*vector(local[k]);
+        world[k]={p.x(),p.y(),p.z()};
+    }
+    return world;
+}
+
+void sweep_triangles(const Triangle& a,const Triangle& b,const SweepBody& ma,const SweepBody& mb,
+                     std::size_t ia,std::size_t ib,std::size_t fa,std::size_t fb,double tolerance,
+                     MeshSweepResult& out) {
+    const auto array = [](const V& v) -> Vec { return {v.x(),v.y(),v.z()}; };
+    if ((ma.start.linear().array()==ma.end.linear().array()).all() &&
+        (mb.start.linear().array()==mb.end.linear().array()).all()) {
+        ++out.translation_tests;
+        const auto hit = translated_triangle_ccd(world_triangle(a,ma.start),world_triangle(b,mb.start),
+            array(ma.start.translation()),array(ma.end.translation()),array(mb.start.translation()),array(mb.end.translation()));
+        if (std::isfinite(hit.time) && (!out.first || hit.time < out.first->fraction))
+            out.first=ImpactCandidate{ia,ib,fa,fb,hit.time,hit.output_tolerance};
+        return;
+    }
+    struct TimeRange { double lo,hi; };
+    std::vector<TimeRange> pending{{0.,out.first ? out.first->fraction : 1.}};
+    while (!pending.empty()) {
+        const auto [lo,hi]=pending.back();
+        pending.pop_back();
+        if (out.first && lo >= out.first->fraction) continue;
+        const double mid=std::midpoint(lo,hi);
+        const auto distance=squared_distance_bounds(world_triangle(a,ma.motion.at(mid)),world_triangle(b,mb.motion.at(mid)));
+        const auto excursion=[&](const SweepBody& body) {
+            return (body.end.translation()-body.start.translation()).norm()*(hi-lo)*.5 +
+                   2*body.radius*std::sin(body.motion.angle*(hi-lo)*.25)+body.padding;
+        };
+        const double movement=nc::up(excursion(ma)+excursion(mb));
+        if (distance.first>nc::up(movement*movement)) continue;
+        const double at_start_bound=nc::up(std::sqrt(std::max(0.,distance.second))+movement);
+        if (at_start_bound<=tolerance) {
+            out.first=ImpactCandidate{ia,ib,fa,fb,lo,at_start_bound};
+            return;
+        }
+        const double chord=ma.motion.chord_error(ma.radius,hi-lo)+mb.motion.chord_error(mb.radius,hi-lo);
+        const double margin=chord+ma.padding+mb.padding;
+        if (margin <= tolerance*.25) {
+            ++out.linear_tests;
+            const auto candidate=linear_triangle_ccd(world_triangle(a,ma.motion.at(lo)),world_triangle(a,ma.motion.at(hi)),
+                world_triangle(b,mb.motion.at(lo)),world_triangle(b,mb.motion.at(hi)),margin,tolerance*.5);
+            if (!std::isfinite(candidate.time)) continue;
+            if (candidate.output_tolerance+margin<=tolerance) {
+                const double fraction=lo+(hi-lo)*candidate.time;
+                if (!out.first || fraction < out.first->fraction)
+                    out.first=ImpactCandidate{ia,ib,fa,fb,fraction,candidate.output_tolerance+margin};
+                return;
+            }
+        }
+        if (mid==lo || mid==hi || ma.padding+mb.padding>=tolerance)
+            throw std::runtime_error("insufficient spatial or temporal precision for rigid mesh CCD");
+        pending.push_back({mid,hi});
+        pending.push_back({lo,mid});
+    }
+}
+
+template<class Box>
+void sweep_pair(const Body& a,const Body& b,const SweepBody& ma,const SweepBody& mb,double tolerance,MeshSweepResult& out) {
+    const auto& ta=*std::get<std::shared_ptr<Tree<Box>>>(a.tree);
+    const auto& tb=*std::get<std::shared_ptr<Tree<Box>>>(b.tree);
+    std::vector<std::pair<int,int>> pending{{0,0}};
+    while (!pending.empty() && (!out.first || out.first->fraction>0.)) {
+        const auto [ia,ib]=pending.back();
+        pending.pop_back();
+        const auto& na=ta.getBV(ia);
+        const auto& nb=tb.getBV(ib);
+        ++out.node_pairs;
+        if (!ma.envelope(na.bv).overlap(mb.envelope(nb.bv))) continue;
+        if (na.isLeaf() && nb.isLeaf()) {
+            ++out.triangle_pairs;
+            const auto fa=static_cast<std::size_t>(na.primitiveId()), fb=static_cast<std::size_t>(nb.primitiveId());
+            sweep_triangles(triangle(*a.mesh,fa,{}),triangle(*b.mesh,fb,{}),ma,mb,
+                            a.proxy->index,b.proxy->index,fa,fb,tolerance,out);
+        } else if (nb.isLeaf() || (!na.isLeaf() && na.num_primitives >= nb.num_primitives)) {
+            pending.emplace_back(na.leftChild(),ib);
+            pending.emplace_back(na.rightChild(),ib);
+        } else {
+            pending.emplace_back(ia,nb.leftChild());
+            pending.emplace_back(ia,nb.rightChild());
+        }
+    }
+}
+}
+
+MeshSweepResult MeshScene::sweep(std::span<const RigidPlacement> start,std::span<const RigidPlacement> end,
+                                 double tolerance) {
+    auto& state=*impl_;
+    if (!(tolerance>0 && std::isfinite(tolerance)) || start.size()!=state.bodies.size() || end.size()!=start.size())
+        throw std::invalid_argument("expected one start and end pose per body and a positive CCD tolerance");
+    std::vector<SweepBody> motion;
+    for (std::size_t i=0;i<start.size();++i) {
+        auto& body=state.bodies[i];
+        const auto from=transform(start[i]), to=transform(end[i]);
+        const double radius=body.local.min_.cwiseAbs().cwiseMax(body.local.max_.cwiseAbs()).norm();
+        const double padding=std::max(roundoff(body.local,from),roundoff(body.local,to));
+        MeshMotion path(from,to);
+        motion.push_back({path,from,to,radius,padding,path.chord_error(radius,1.)});
+        body.proxy->bounds(motion.back().envelope(body.local));
+    }
+    MeshSweepResult result;
+    auto pairs=state.candidates();
+    result.body_pairs=pairs.size();
+    for (const auto& [i,j] : pairs) {
+        if (state.method==MeshMethod::obb)
+            sweep_pair<Oriented>(state.bodies[i],state.bodies[j],motion[i],motion[j],tolerance,result);
+        else sweep_pair<Bounds>(state.bodies[i],state.bodies[j],motion[i],motion[j],tolerance,result);
+    }
+    return result;
+}
+#endif
 } // namespace nc::cpu

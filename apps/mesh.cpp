@@ -11,11 +11,32 @@ using namespace nc::cpu;
 int main(int argc, char** argv) {
     try {
         if (argc < 5 || std::string_view(argv[1]) != "--method")
-            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap A.msh B.msh [C.msh ...]; stdin: one row per frame with xyz qw qx qy qz per body");
+            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--tolerance-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz per body");
         const auto method = mesh_method(argv[2]);
+        int first_mesh=3;
+        bool continuous=false;
+        double tolerance=1e-7;
+        while (first_mesh < argc && std::string_view(argv[first_mesh]).starts_with("--")) {
+            const std::string_view option=argv[first_mesh++];
+            if (first_mesh==argc) throw std::invalid_argument("missing option value");
+            const std::string value=argv[first_mesh++];
+            if (option=="--detection") {
+                if (value!="continuous" && value!="discrete") throw std::invalid_argument("unknown detection mode");
+                continuous=value=="continuous";
+            } else if (option=="--tolerance-m") {
+                std::size_t used{};
+                tolerance=std::stod(value,&used);
+                if (used!=value.size() || !std::isfinite(tolerance) || tolerance<=0)
+                    throw std::invalid_argument("expected a positive finite tolerance in metres");
+            } else throw std::invalid_argument("unknown mesh option");
+        }
+        if (argc-first_mesh<2) throw std::invalid_argument("expected at least two contact meshes");
+#ifndef NC_WITH_MESH_CCD
+        if (continuous) throw std::invalid_argument("build with NC_WITH_MESH_CCD for continuous detection");
+#endif
         std::vector<std::shared_ptr<const MeshData>> bodies;
         std::map<std::filesystem::path,std::shared_ptr<MeshData>> cached;
-        for (int i = 3; i < argc; ++i) {
+        for (int i = first_mesh; i < argc; ++i) {
             const auto path = std::filesystem::canonical(argv[i]);
             auto& mesh = cached[path];
             if (!mesh) mesh = std::make_shared<MeshData>(read_gmsh(path));
@@ -23,6 +44,7 @@ int main(int argc, char** argv) {
         }
         MeshScene scene(bodies, method);
         std::string line;
+        std::vector<RigidPlacement> previous;
         std::cout << std::setprecision(17);
         while (std::getline(std::cin, line)) {
             std::istringstream row(line);
@@ -38,6 +60,26 @@ int main(int argc, char** argv) {
             std::string extra;
             if (row >> extra) throw std::runtime_error("extra pose fields");
             const auto start = std::chrono::steady_clock::now();
+#ifdef NC_WITH_MESH_CCD
+            if (continuous) {
+                if (!previous.empty()) {
+                    const auto swept=scene.sweep(previous,poses,tolerance);
+                    std::cout << "{\"candidate\":";
+                    if (swept.first) {
+                        const auto& hit=*swept.first;
+                        std::cout << "{\"fraction\":" << hit.fraction << ",\"tolerance_m\":" << hit.geometric_tolerance_m
+                                  << ",\"bodies\":[" << hit.body_a << ',' << hit.body_b << "],\"triangles\":["
+                                  << hit.triangle_a << ',' << hit.triangle_b << "]}";
+                    } else std::cout << "null";
+                    const double seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
+                    std::cout << ",\"body_pairs\":" << swept.body_pairs << ",\"node_pairs\":" << swept.node_pairs
+                              << ",\"triangle_pairs\":" << swept.triangle_pairs << ",\"linear_tests\":" << swept.linear_tests
+                              << ",\"translation_tests\":" << swept.translation_tests << ",\"query_s\":" << seconds << "}" << std::endl;
+                }
+                previous=std::move(poses);
+                continue;
+            }
+#endif
             auto result = scene.intersect(poses);
             const double seconds = std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
             std::cout << "{\"body_pairs\":" << result.body_pairs << ",\"node_pairs\":" << result.node_pairs

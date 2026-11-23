@@ -38,6 +38,19 @@ struct IntersectionResult {
     std::size_t body_pairs{}, node_pairs{}, triangle_tests{};
 };
 
+#ifdef NC_WITH_MESH_CCD
+struct ImpactCandidate {
+    std::size_t body_a, body_b, triangle_a, triangle_b;
+    double fraction; // Earliest retained candidate on the normalized motion.
+    double geometric_tolerance_m; // Includes both bodies' chord error.
+};
+
+struct MeshSweepResult {
+    std::optional<ImpactCandidate> first;
+    std::size_t body_pairs{}, node_pairs{}, triangle_pairs{}, linear_tests{}, translation_tests{};
+};
+#endif
+
 // Surface intersections and complete containment for closed, consistently wound solid boundaries.
 class MeshScene {
 public:
@@ -46,6 +59,11 @@ public:
     MeshScene(MeshScene&&) noexcept;
     MeshScene& operator=(MeshScene&&) noexcept;
     IntersectionResult intersect(std::span<const RigidPlacement> poses);
+#ifdef NC_WITH_MESH_CCD
+    // Straight translation and shortest-arc orientation per body.
+    MeshSweepResult sweep(std::span<const RigidPlacement> start, std::span<const RigidPlacement> end,
+                          double distance_tolerance_m);
+#endif
 
 private:
     struct Impl;

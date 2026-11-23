@@ -10,6 +10,7 @@ endif()
 include(CTest)
 option(NC_WITH_OCCT "Build STEP import and CAD benchmarks with Open CASCADE" ON)
 option(NC_WITH_CPU_MESH "Build the FCL / CGAL triangle contact backend" OFF)
+option(NC_WITH_MESH_CCD "Include swept triangle CCD when building the CPU mesh backend" ON)
 
 add_library(nurbscontact STATIC src/geometry.cpp src/axial.cpp src/query.cpp src/hht.cpp src/triangle_bvh.cpp
     src/contact_dynamics.cpp)
@@ -27,6 +28,22 @@ if(NC_WITH_CPU_MESH)
     add_library(nurbscontact_mesh STATIC src/cpu_mesh_io.cpp src/cpu_mesh_intersection.cpp src/cpu_mesh_scene.cpp
         src/cpu_mesh_solid.cpp)
     target_link_libraries(nurbscontact_mesh PUBLIC nurbscontact PRIVATE fcl CGAL::CGAL)
+    if(NC_WITH_MESH_CCD)
+        find_package(Eigen3 CONFIG REQUIRED)
+        include(FetchContent)
+        # The pinned CCD logger includes spdlog's bundled fmt headers directly.
+        FetchContent_Declare(nc_spdlog
+            GIT_REPOSITORY https://github.com/gabime/spdlog.git
+            GIT_TAG ad0e89cbfb4d0c1ce4d097e134eb7be67baebb36)
+        FetchContent_MakeAvailable(nc_spdlog)
+        FetchContent_Declare(tight_inclusion
+            GIT_REPOSITORY https://github.com/Continuous-Collision-Detection/Tight-Inclusion.git
+            GIT_TAG 6f84001a790a9d3362b7c13d410037140d83fa2c)
+        FetchContent_MakeAvailable(tight_inclusion)
+        target_sources(nurbscontact_mesh PRIVATE src/cpu_mesh_ccd.cpp)
+        target_compile_definitions(nurbscontact_mesh PUBLIC NC_WITH_MESH_CCD)
+        target_link_libraries(nurbscontact_mesh PRIVATE tight_inclusion::tight_inclusion)
+    endif()
     if(MSVC)
         target_compile_options(nurbscontact_mesh PRIVATE /bigobj)
     endif()

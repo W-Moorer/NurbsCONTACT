@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 
 import meshio
+import gmsh
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -46,6 +47,23 @@ class ContactMeshTest(unittest.TestCase):
         faces[0] = faces[0, ::-1]
         with self.assertRaisesRegex(ValueError, "winding"):
             check_topology(vertices, faces)
+
+    def test_refine_slender_cad_faces(self):
+        with tempfile.TemporaryDirectory() as work:
+            path = Path(work) / "strip.step"
+            gmsh.initialize(readConfigFiles=False)
+            try:
+                gmsh.option.setNumber("General.Terminal", 0)
+                gmsh.model.add("strip")
+                gmsh.model.occ.addBox(0, 0, 0, 8, .04, 2)
+                gmsh.model.occ.synchronize()
+                gmsh.write(str(path))
+            finally:
+                gmsh.finalize()
+            output = path.with_suffix(".msh")
+            report = prepare(path, output, .001, min_sicn=.2)
+            self.assertGreater(report["locally_refined_edges"], 0)
+            self.assertGreaterEqual(report["min_sicn"], .2)
 
 
 if __name__ == "__main__":

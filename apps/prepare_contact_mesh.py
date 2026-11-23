@@ -115,6 +115,72 @@ def audit():
                 min_sicn=min(row["min_sicn"] for row in reports))
 
 
+def refine_slender_faces(required_sicn, size_mm):
+    """Resolve narrow CAD strips by dividing their long edges in proportion to local width."""
+    edge_counts = {}
+    spacing_by_edge = {}
+    for _, face in gmsh.model.getEntities(2):
+        element_ids, _ = gmsh.model.mesh.getElementsByType(2, face)
+        if min(gmsh.model.mesh.getElementQualities(element_ids, "minSICN")) >= required_sicn:
+            continue
+        edges = {tag: gmsh.model.occ.getMass(1, tag)
+                 for _, tag in gmsh.model.getBoundary([(2, face)], oriented=False)}
+        perimeter = sum(edges.values())
+        if perimeter <= 0:
+            continue
+        width = 2 * gmsh.model.occ.getMass(2, face) / perimeter
+        if width <= 0 or max(edges.values()) < 8 * width:
+            continue
+        spacing = min(size_mm, width / required_sicn)
+        for tag, length in edges.items():
+            # A short trim can have several Gmsh segments even on a straight
+            # CAD edge. Match the adjacent face size to the actual segments.
+            _, nodes = gmsh.model.mesh.getElementsByType(1, tag)
+            count = max(1, len(nodes) // 2)
+            neighbor_size = min(spacing, length / (count * 2 * required_sicn))
+            if neighbor_size > 0:
+                spacing_by_edge[tag] = min(spacing_by_edge.get(tag, neighbor_size), neighbor_size)
+            if length < 8 * width:
+                continue
+            count = math.ceil(length / spacing) + 1
+            edge_counts[tag] = max(edge_counts.get(tag, 0), count)
+    if edge_counts:
+        gmsh.model.mesh.clear()
+        for tag, count in edge_counts.items():
+            gmsh.model.mesh.setTransfiniteCurve(tag, count)
+        gmsh.option.setNumber("Mesh.MeshSizeExtendFromBoundary", 0)
+        gmsh.model.mesh.generate(2)
+        _, tri_tags, _ = gmsh.model.mesh.getElements(2)
+        if gmsh.model.mesh.getElementQualities(tri_tags[0], "minSICN").min() < required_sicn:
+            # Adjacent faces can inherit a very short boundary edge. Grade their
+            # interior sizes away from it as well, keeping the CAD seam intact.
+            gmsh.model.mesh.clear()
+            bands = {}
+            for tag, spacing in spacing_by_edge.items():
+                level = math.floor(math.log2(spacing / size_mm))
+                bands.setdefault(level, []).append(tag)
+            field = gmsh.model.mesh.field
+            fields = []
+            for level, tags in sorted(bands.items()):
+                near = size_mm * 2.**level
+                distance = field.add("Distance")
+                field.setNumbers(distance, "CurvesList", tags)
+                longest = max(gmsh.model.occ.getMass(1, tag) for tag in tags)
+                field.setNumber(distance, "Sampling", max(10, math.ceil(longest / near)))
+                threshold = field.add("Threshold")
+                field.setNumber(threshold, "InField", distance)
+                field.setNumber(threshold, "SizeMin", near)
+                field.setNumber(threshold, "SizeMax", size_mm)
+                field.setNumber(threshold, "DistMin", near)
+                field.setNumber(threshold, "DistMax", 4 * size_mm)
+                fields.append(threshold)
+            minimum = field.add("Min")
+            field.setNumbers(minimum, "FieldsList", fields)
+            field.setAsBackgroundMesh(minimum)
+            gmsh.model.mesh.generate(2)
+    return len(edge_counts)
+
+
 def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sicn=0.):
     limits = (size_m, max_error_m, max_normal_deg)
     if any(v is not None and (not math.isfinite(v) or v <= 0) for v in limits):
@@ -140,6 +206,16 @@ def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sic
             gmsh.option.setNumber("Mesh.ElementOrder", 1)
             gmsh.option.setNumber("Mesh.Algorithm", 6)
             gmsh.model.mesh.generate(2)
+            refined_edges = refine_slender_faces(min_sicn, size_m * 1000) if min_sicn > 0 else 0
+            if min_sicn > 0:
+                elements, _ = gmsh.model.mesh.getElementsByType(2)
+                qualities = gmsh.model.mesh.getElementQualities(elements, "minSICN")
+                worst = int(np.argmin(qualities))
+                if qualities[worst] < min_sicn:
+                    _, _, _, tag = gmsh.model.mesh.getElement(int(elements[worst]))
+                    raise ValueError(f"mesh exceeds quality limits on face {tag}: minSICN "
+                                     f"{qualities[worst]:.6g}, {np.count_nonzero(qualities < min_sicn)} "
+                                     f"of {len(elements)} triangles below {min_sicn:.6g}")
             report = audit()
             sampled_error = max(report["max_sampled_surface_error_m"], report["max_sampled_edge_error_m"])
             if ((max_error_m is not None and sampled_error > max_error_m)
@@ -158,6 +234,7 @@ def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sic
         report.update(step_sha256=sha256(step), mesh_sha256=sha256(staged), gmsh_version=gmsh.__version__,
                       length_unit="m", mesh_size_m=size_m, requested_max_sampled_error_m=max_error_m,
                       requested_max_normal_angle_deg=max_normal_deg, requested_min_sicn=min_sicn,
+                      locally_refined_edges=refined_edges,
                       preparation_s=time.perf_counter() - start)
         metadata = Path(work) / "quality.json"
         metadata.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")

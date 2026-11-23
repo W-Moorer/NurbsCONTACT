@@ -1,0 +1,41 @@
+{
+  "trace": "spheres-HHT-250us.csv",
+  "trace_sha256": "786a18ce4c1e5cd327f03da31afe463a49c08457e0542f035ed049a463e453a8",
+  "frames": 641,
+  "mesh_sha256": "3795e94baf6025aef289fe17a3294fff6abd98c9cbfc53f8f842307b618c0161",
+  "step_sha256": "b1b75a633d5f5de9267246c3faa9457f22615bc8b742d4cc9f297e9df2e81d2c",
+  "mesh_size_m": 0.003,
+  "triangles": 5708,
+  "sphere_radius_m": 0.041,
+  "sphere_event_times_same_trajectory_s": [
+    0.03999999999999997,
+    0.07141796535633053
+  ],
+  "matching_boundary_witnesses": true,
+  "methods": {
+    "mesh-aabb": {
+      "mesh_event_times_s": [
+        0.04012888453634801,
+        0.071289095198608
+      ],
+      "peak_intersecting_triangle_pairs": 128,
+      "active_frames": 125
+    },
+    "mesh-obb": {
+      "mesh_event_times_s": [
+        0.04012888453634801,
+        0.071289095198608
+      ],
+      "peak_intersecting_triangle_pairs": 128,
+      "active_frames": 125
+    },
+    "mesh-sap": {
+      "mesh_event_times_s": [
+        0.04012888453634801,
+        0.071289095198608
+      ],
+      "peak_intersecting_triangle_pairs": 128,
+      "active_frames": 125
+    }
+  }
+}

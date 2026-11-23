@@ -13,6 +13,8 @@ The sibling `.quality.json` contains hashes of the STEP and mesh files, the Gmsh
 
 Each triangle contributes a centroid and three edge midpoints to the comparison with its supporting CAD surface. Each segment on a CAD edge also contributes its midpoint to a curve-distance check. These measurements are samples. The normal error is the angle between tangent planes, measured per CAD face. Topological checks cover duplicate or degenerate triangles, edge incidence, consistent winding, vertex manifoldness and self-intersection. Mesh refinement and an independent dynamics reference are needed to relate these measurements to a required response accuracy.
 
+When a requested minSICN fails on a long narrow face, the generator measures its area and perimeter, increases edge subdivision along its length and remeshes. If neighboring triangles still miss the threshold, it applies a graded Gmsh size field around the affected curves. The final quality checks can reject this result. Each output records the number of edges refined.
+
 ## Discrete triangle contact
 
 Build the optional CPU mesh target with FCL 0.7 and CGAL 6. In a vcpkg environment on Windows:
@@ -33,6 +35,18 @@ ctest --test-dir build/cpu-mesh -C Release --output-on-failure
 | `mesh-sap` | Sweep and prune on the axis of greatest body-center spread, followed by overlap on all three axes | Same local AABB tree as `mesh-aabb` |
 
 The leaf predicate and intersection construction use the same CGAL exact kernel on the binary64 world vertices in every branch. The public witnesses are rounded to binary64. The mesh input is a closed triangular boundary. Initial containment uses an inside test for each connected boundary component without a crossing. Output triangle pairs describe geometry; individual triangle hits carry no individual spring.
+
+## Continuous surface detection
+
+In the CPU mesh build, `NC_WITH_MESH_CCD` enables continuous queries and fetches the pinned Tight Inclusion and spdlog sources. Use `-DNC_WITH_MESH_CCD=OFF` for a discrete-only build.
+
+```text
+nc_mesh --method mesh-obb --detection continuous --tolerance-m 1e-7 A.msh B.msh
+```
+
+Each pair of consecutive input frames defines one motion interval. Body origins interpolate linearly and orientations follow the shortest quaternion arc. Supply intermediate poses for larger rotations or curved origin paths. The output identifies the earliest retained surface candidate by its time fraction and triangle pair. Run the discrete query at the first pose to identify components already entirely inside a solid.
+
+For a pair with constant orientations, exact rational separating-axis projections give the triangle intersection time for the specified translations. Coplanar pairs include the in-plane edge normals. Rotating pairs use swept boxes expanded by a circular-arc deviation bound. Subintervals can be discarded using midpoint triangle distance and maximum rigid displacement. Small arcs use Tight Inclusion vertex–face and edge–edge tests with both bodies' chord deviations. A candidate that exhausts the primitive solver's accuracy budget is subdivided further. Spatial tolerance can admit a close pass. It describes the mesh query and does not bound the deviation from the original STEP surface.
 
 ## Last verified against
 
