@@ -49,6 +49,12 @@ ctest --test-dir build/cpu-mesh -C Release --output-on-failure
 
 The leaf predicate and intersection construction use the same CGAL exact kernel on the binary64 world vertices in every branch. The public witnesses are rounded to binary64. The mesh input is a closed triangular boundary. Initial containment uses an inside test for each connected boundary component without a crossing. Output triangle pairs describe geometry; individual triangle hits carry no individual spring.
 
+Before invoking the point-in-solid test, the detector checks six actual extreme vertices of the candidate component against the other solid's local bounds. A single exterior vertex excludes enclosure of the connected boundary when the surfaces have no crossing. On the [32 recorded gear poses](../results/aes/cpu-mesh/spur-poses.txt), this removed an expensive first query on a separated pair. With the 2,020,994-triangle wheel, the OBB first-pose time fell from 6.97 s to 22.46 ms. Every per-frame intersection witness and enclosure agreed with the previous build for all three methods. With the compact wheel the median OBB query was 123.66 ms and 31 of 32 poses contained surface intersections. The [timing report](../results/aes/cpu-mesh/spur-detection.json) records single per-frame measurements on the shared host. These times exclude mesh loading and cover discrete detection through witness construction.
+
+```powershell
+python benchmarks/aes/cpu_mesh_replay.py build/cpu-swept/Release/nc_mesh.exe build/cpu-contact/spur/spur-1a.msh build/cpu-contact/spur/spur-1b.msh results/aes/cpu-mesh/spur-poses.txt build/cpu-contact/spur/replay.json
+```
+
 Add `--contours` to a discrete query to group connected triangle intersections within each body pair. Groups meet at exact world-space witnesses on triangle boundaries. A group can contain a point, a curve, or coplanar polygons. A contact region with holes can have several boundary curves. Force integration and penetration depth require further geometry.
 
 For a closed transverse loop, `vector_area_a_m2` is half the directed sum of cross products of consecutive boundary vertices. Segment orientation follows the cross product of the two outward face normals. This gives the oriented area vector of the bounded surface on body A, and reverses on exchanging the bodies. Tangencies, coplanar regions, and branching boundaries can lack a unique oriented loop. The field is null for these cases. The magnitude is a projected area for a planar patch.

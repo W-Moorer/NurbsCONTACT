@@ -141,6 +141,16 @@ void enclosed(const Body& a, const Body& b, std::span<const Intersection> hits, 
     for (const auto& hit : hits) crossing[a.boundary->component(first ? hit.triangle_a : hit.triangle_b)] = true;
     for (std::size_t component = 0; component < representatives.size(); ++component) {
         if (crossing[component]) continue;
+        // Without a crossing the entire connected boundary is on the same
+        // side. One actual exterior vertex rules out enclosure.
+        const auto& extremes=a.boundary->extreme_vertices(component);
+        const double slack=a.padding+b.padding;
+        const auto outside=[&](std::size_t vertex) {
+            const V p=relative*vector(a.mesh->vertices[vertex]);
+            return (p.array()<b.local.min_.array()-slack).any() ||
+                   (p.array()>b.local.max_.array()+slack).any();
+        };
+        if (std::any_of(extremes.begin(),extremes.end(),outside)) continue;
         const auto id = representatives[component];
         const V p = relative * vector(a.mesh->vertices[id]);
         if (b.local.contain(p) && b.boundary->contains({p.x(),p.y(),p.z()}))

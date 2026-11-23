@@ -15,6 +15,7 @@ struct SolidBoundary::Data {
     std::unique_ptr<Side> side;
     std::vector<std::size_t> representatives;
     std::vector<std::size_t> face_components;
+    std::vector<std::array<std::size_t,6>> extremes;
 };
 
 SolidBoundary::SolidBoundary(const MeshData& mesh) : data_(std::make_unique<Data>()) {
@@ -42,8 +43,19 @@ SolidBoundary::SolidBoundary(const MeshData& mesh) : data_(std::make_unique<Data
         if (components[component] == mesh.faces.size()) {
             components[component] = data_->representatives.size();
             data_->representatives.push_back(face[0]);
+            data_->extremes.push_back({});
+            data_->extremes.back().fill(face[0]);
         }
         data_->face_components.push_back(components[component]);
+    }
+    for (std::size_t i=0;i<parent.size();++i) {
+        const auto component=components[root(i)];
+        if (component==mesh.faces.size()) continue;
+        auto& ends=data_->extremes[component];
+        for (std::size_t axis=0;axis<3;++axis) {
+            if (mesh.vertices[i][axis]<mesh.vertices[ends[2*axis]][axis]) ends[2*axis]=i;
+            if (mesh.vertices[i][axis]>mesh.vertices[ends[2*axis+1]][axis]) ends[2*axis+1]=i;
+        }
     }
     data_->side = std::make_unique<Side>(data_->surface);
 }
@@ -52,5 +64,8 @@ bool SolidBoundary::contains(Vec p) const {
     return (*data_->side)(K::Point_3{p[0],p[1],p[2]}) == CGAL::ON_BOUNDED_SIDE;
 }
 std::span<const std::size_t> SolidBoundary::representatives() const { return data_->representatives; }
+const std::array<std::size_t,6>& SolidBoundary::extreme_vertices(std::size_t component) const {
+    return data_->extremes.at(component);
+}
 std::size_t SolidBoundary::component(std::size_t face) const { return data_->face_components.at(face); }
 }

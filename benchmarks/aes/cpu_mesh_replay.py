@@ -13,7 +13,14 @@ import numpy as np
 def replay(executable, paths, poses):
     rows = []
     times = []
-    for t, x, y, z, ax, ay, az, angle in np.loadtxt(poses, ndmin=2):
+    for t, *values in np.loadtxt(poses, ndmin=2):
+        if len(values)==14:
+            rows.append(" ".join(format(value,".17g") for value in values))
+            times.append(t)
+            continue
+        if len(values)!=7:
+            raise ValueError("expected a relative axis-angle pose or two world quaternion poses per time")
+        x, y, z, ax, ay, az, angle = values
         axis = np.asarray([ax, ay, az])
         if np.linalg.norm(axis) == 0:
             raise ValueError("pose file contains a zero rotation axis")
@@ -38,7 +45,9 @@ def replay(executable, paths, poses):
         elif reference != surfaces:
             raise ValueError(f"{method} changed a triangle intersection or enclosure result")
         summaries[method] = [{**{k: v for k, v in f.items() if k not in ("hits", "enclosed")},
-                              "intersection_pairs": len(f["hits"]), "enclosed_components": len(f["enclosed"])}
+                              "intersection_pairs": len(f["hits"]), "enclosed_components": len(f["enclosed"]),
+                              "witness_sha256": hashlib.sha256(json.dumps([f["hits"],f["enclosed"]],
+                                  separators=(",",":")).encode()).hexdigest()}
                              for f in frames]
     return dict(times_s=times, pose_sha256=hashlib.sha256(poses.read_bytes()).hexdigest(),
                 mesh_sha256=[hashlib.sha256(path.read_bytes()).hexdigest() for path in paths],
