@@ -15,6 +15,9 @@
 #include <TopoDS.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS_Face.hxx>
+#include <gp_Ax3.hxx>
+#include <limits>
+#include <mutex>
 #include <queue>
 
 namespace nc::cad {
@@ -94,6 +97,10 @@ struct Node {
     bool leaf() const {return !right;}
 };
 struct Component { TopoDS_Shape solid; Bnd_Box box; };
+struct DirectionalBoxes {
+    gp_Trsf frame;
+    std::vector<Bnd_Box> features,nodes;
+};
 }
 
 class BoundaryIndex {
@@ -102,6 +109,36 @@ public:
     std::vector<Node> nodes;
     std::vector<Component> solids;
     std::vector<std::array<gp_Pnt,6>> shell_points;
+
+    // A second set of enclosures in a body-fixed frame aligned with the
+    // separating direction at the first successful reuse of a near feature.
+    const DirectionalBoxes* directional(const gp_Trsf& frame) const {
+        std::call_once(frame_once_,[&] {
+            try {
+                DirectionalBoxes result{frame};
+                const TopLoc_Location location(frame);
+                result.features.reserve(features.size());
+                for (const auto& feature:features)
+                    result.features.push_back(box_of(feature.shape.Moved(location)));
+                result.nodes.resize(nodes.size());
+                for (auto i=nodes.size();i-- > 0;) {
+                    const auto& node=nodes[i];
+                    if (node.leaf()) {
+                        for (auto f=node.begin;f<node.end;++f) result.nodes[i].Add(result.features[f]);
+                    } else {
+                        result.nodes[i].Add(result.nodes[node.left]);
+                        result.nodes[i].Add(result.nodes[node.right]);
+                    }
+                }
+                directional_.emplace(std::move(result));
+            } catch (const Standard_Failure&) {
+                // The ordinary BVH remains available if OCCT rejects this frame.
+            } catch (const dynamics::UnresolvedContact&) {
+                // A valid bound is required on every child of the second tree.
+            }
+        });
+        return directional_ ? &*directional_ : nullptr;
+    }
 
     explicit BoundaryIndex(const TopoDS_Shape& shape) {
         // The extrema kernel tests interiors of individual features. All
@@ -137,6 +174,8 @@ public:
         }
     }
 private:
+    mutable std::once_flag frame_once_;
+    mutable std::optional<DirectionalBoxes> directional_;
     std::size_t build(std::size_t begin,std::size_t end) {
         const auto id=nodes.size();
         nodes.push_back({});
@@ -195,6 +234,8 @@ double bounded_distance(const std::shared_ptr<const BoundaryIndex>& first,const 
     std::priority_queue<Pair> queue;
     const double eps=std::min(.05*tol,Precision::Confusion());
     double best=cap;
+    const bool reusable=witness && witness->first.lock()==first && witness->second.lock()==second;
+    gp_XYZ normal=reusable ? witness->direction : gp_XYZ{};
     const auto evaluate=[&](std::size_t x,std::size_t y,const TopoDS_Shape& shifted,const Bnd_Box& box) {
         const auto& g=b.features[y];
         ++stats.cad_extrema;
@@ -204,11 +245,13 @@ double bounded_distance(const std::shared_ptr<const BoundaryIndex>& first,const 
         if (!std::isfinite(d)) throw dynamics::UnresolvedContact("nonfinite STEP feature distance");
         if (d>=best) return false;
         best=d;
-        if (witness) *witness={first,second,x,y};
+        if (witness && d>tol && !test.Seq1Value().IsEmpty() && !test.Seq2Value().IsEmpty())
+            normal=test.Seq2Value().First().Point().XYZ()-test.Seq1Value().First().Point().XYZ();
+        if (witness) *witness={first,second,x,y,normal};
         return true;
     };
     std::optional<std::pair<std::size_t,std::size_t>> seed;
-    if (witness && witness->first.lock()==first && witness->second.lock()==second) {
+    if (reusable) {
         const auto x=witness->x,y=witness->y;
         const auto& f=a.features[x];
         const auto box=f.box.Transformed(placement);
@@ -221,9 +264,32 @@ double bounded_distance(const std::shared_ptr<const BoundaryIndex>& first,const 
             }
         }
     }
+    const DirectionalBoxes *da=nullptr,*db=nullptr;
+    gp_Trsf relative_frame;
+    if (reusable && normal.Modulus()>tol) {
+        // Fit boxes to the CAD geometry in the new frames. Rotating the old
+        // AABBs would only enclose them again and lose the tighter bounds.
+        gp_Trsf frame_b;
+        frame_b.SetTransformation(gp_Ax3({},gp_Dir(normal)));
+        auto frame_a=frame_b*placement;
+        frame_a.SetTranslationPart(gp_Vec());
+        da=a.directional(frame_a);
+        db=b.directional(frame_b);
+        // A concurrent query may have initialized either index in another
+        // frame. Use the frames of the boxes actually returned by the indices.
+        if (da && db) relative_frame=db->frame*placement*da->frame.Inverted();
+    }
+    const double frame_pad=8*Precision::Confusion()+128*std::numeric_limits<double>::epsilon()*
+        (a.nodes.front().box.CornerMin().XYZ().Modulus()+a.nodes.front().box.CornerMax().XYZ().Modulus()+
+         b.nodes.front().box.CornerMin().XYZ().Modulus()+b.nodes.front().box.CornerMax().XYZ().Modulus()+
+         placement.TranslationPart().Modulus());
     const auto push=[&](std::size_t i,std::size_t j) {
-        const double lower=a.nodes[i].box.Transformed(placement).Distance(b.nodes[j].box);
+        double lower=a.nodes[i].box.Transformed(placement).Distance(b.nodes[j].box);
         ++stats.cad_box_tests;
+        if (da && db && lower<=best+eps) {
+            lower=std::max(lower,da->nodes[i].Transformed(relative_frame).Distance(db->nodes[j])-frame_pad);
+            ++stats.cad_box_tests;
+        }
         if (lower<=best+eps) queue.push({lower,i,j});
     };
     push(0,0);
@@ -236,6 +302,7 @@ double bounded_distance(const std::shared_ptr<const BoundaryIndex>& first,const 
                 const auto& f=a.features[x];
                 const auto box=f.box.Transformed(placement);
                 const auto shifted=f.shape.Moved(location);
+                const auto aligned=da && db ? da->features[x].Transformed(relative_frame) : Bnd_Box{};
                 for (auto y=right.begin;y<right.end;++y) {
                     const auto& g=b.features[y];
                     if (seed && seed->first==x && seed->second==y) continue;
@@ -251,6 +318,10 @@ double bounded_distance(const std::shared_ptr<const BoundaryIndex>& first,const 
                         (g.plane && f.flat.preserves_height(inverse*g.normal))) continue;
                     ++stats.cad_box_tests;
                     if (box.Distance(g.box)>best+eps) continue;
+                    if (da && db) {
+                        ++stats.cad_box_tests;
+                        if (aligned.Distance(db->features[y])>best+eps+frame_pad) continue;
+                    }
                     if (evaluate(x,y,shifted,box) && best<=tol) return 0.;
                 }
             }

@@ -1,0 +1,589 @@
+{
+  "before": {
+    "measurement": {
+      "duration_s": 0.00035,
+      "dt_s": 5e-05,
+      "steps": 7,
+      "active_frames": 3,
+      "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+      "trace_sha256": "b84bf55d5019952ab14422f1077ce75385209da0ddc4e2807d430fbbcf11cda7",
+      "normal_impulse_Ns": 0.5210944300015354,
+      "peak_normal_N": 5377.070933829591,
+      "subdivisions": 3,
+      "integration_s": 681.0801438,
+      "process_s": 692.0520348999999,
+      "observed_peak_working_set_bytes": 117796864,
+      "monitor_interval_s": 0.025,
+      "observed_peak_commit_bytes": 132792320,
+      "ccd_checks": 13,
+      "ccd_rejected": 3,
+      "ccd_unresolved": 0,
+      "ccd_nodes": 153,
+      "cad_boolean_queries": 58,
+      "cad_event_distances": 143,
+      "chen_patch_queries": 0,
+      "chen_confirmed_candidates": 0,
+      "tdib_cells": 0,
+      "tdib_candidates": 0,
+      "tdib_unresolved": 0,
+      "cad_box_tests": 908530,
+      "cad_extrema": 45382,
+      "cad_classifications": 0,
+      "cad_region_cache_hits": 0,
+      "cad_distance_cache_hits": 10,
+      "event_tolerance_s": 2.5e-05,
+      "setup_s": 9.7598011,
+      "evaluations": 57,
+      "stages": [
+        {
+          "stage": 1,
+          "active_frames": 3,
+          "peak_normal_N": 5377.070933829591,
+          "normal_impulse_Ns": 0.5210944300015354
+        }
+      ],
+      "simultaneously_loaded_frames": 3,
+      "shaft_speed_range_rad_s": [
+        [
+          179.02811276341987,
+          197.49169185052688
+        ],
+        [
+          91.51750662660318,
+          96.14906316806383
+        ]
+      ],
+      "step_assets": [
+        {
+          "asset": "spur-1a.step",
+          "step_sha256": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d"
+        },
+        {
+          "asset": "spur-1b.step",
+          "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d"
+        }
+      ],
+      "method": "cad-occt",
+      "solver": "penalty",
+      "compared_with_previous_run": {
+        "reference_trace_sha256": "b84bf55d5019952ab14422f1077ce75385209da0ddc4e2807d430fbbcf11cda7",
+        "frames": 8,
+        "stages": [
+          {
+            "stage": 1,
+            "different_active_frames": 0,
+            "max_force_difference_N": 0.0,
+            "normal_impulse_difference_Ns": 0.0
+          }
+        ],
+        "reference_solver": "penalty",
+        "max_shaft_speed_difference_rad_s": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "saved_switch_intervals": [
+      {
+        "kind": "load",
+        "left_s": 0.0002,
+        "right_s": 0.00025
+      }
+    ],
+    "loaded_frames_different_from_before": 0,
+    "maximum_force_difference_from_before_N": 0.0,
+    "maximum_speed_differences_from_before_rad_s": [
+      0.0,
+      0.0
+    ],
+    "repeat_measurement": {
+      "duration_s": 0.00035,
+      "dt_s": 5e-05,
+      "steps": 7,
+      "active_frames": 3,
+      "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+      "trace_sha256": "b84bf55d5019952ab14422f1077ce75385209da0ddc4e2807d430fbbcf11cda7",
+      "normal_impulse_Ns": 0.5210944300015354,
+      "peak_normal_N": 5377.070933829591,
+      "subdivisions": 3,
+      "integration_s": 226.4403463,
+      "process_s": 228.2416307000094,
+      "observed_peak_working_set_bytes": 150323200,
+      "monitor_interval_s": 0.025,
+      "observed_peak_commit_bytes": 159924224,
+      "ccd_checks": 13,
+      "ccd_rejected": 3,
+      "ccd_unresolved": 0,
+      "ccd_nodes": 153,
+      "cad_boolean_queries": 58,
+      "cad_event_distances": 143,
+      "chen_patch_queries": 0,
+      "chen_confirmed_candidates": 0,
+      "tdib_cells": 0,
+      "tdib_candidates": 0,
+      "tdib_unresolved": 0,
+      "cad_box_tests": 908530,
+      "cad_extrema": 45382,
+      "cad_classifications": 0,
+      "cad_region_cache_hits": 0,
+      "cad_distance_cache_hits": 10,
+      "event_tolerance_s": 2.5e-05,
+      "setup_s": 1.656366,
+      "evaluations": 57,
+      "stages": [
+        {
+          "stage": 1,
+          "active_frames": 3,
+          "peak_normal_N": 5377.070933829591,
+          "normal_impulse_Ns": 0.5210944300015354
+        }
+      ],
+      "simultaneously_loaded_frames": 3,
+      "shaft_speed_range_rad_s": [
+        [
+          179.02811276341987,
+          197.49169185052688
+        ],
+        [
+          91.51750662660318,
+          96.14906316806383
+        ]
+      ],
+      "step_assets": [
+        {
+          "asset": "spur-1a.step",
+          "step_sha256": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d"
+        },
+        {
+          "asset": "spur-1b.step",
+          "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d"
+        }
+      ],
+      "method": "cad-occt",
+      "solver": "penalty",
+      "compared_with_previous_run": {
+        "reference_trace_sha256": "b84bf55d5019952ab14422f1077ce75385209da0ddc4e2807d430fbbcf11cda7",
+        "frames": 8,
+        "stages": [
+          {
+            "stage": 1,
+            "different_active_frames": 0,
+            "max_force_difference_N": 0.0,
+            "normal_impulse_difference_Ns": 0.0
+          }
+        ],
+        "reference_solver": "penalty",
+        "max_shaft_speed_difference_rad_s": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  "ours": {
+    "measurement": {
+      "duration_s": 0.00035,
+      "dt_s": 5e-05,
+      "steps": 7,
+      "active_frames": 3,
+      "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+      "trace_sha256": "b84bf55d5019952ab14422f1077ce75385209da0ddc4e2807d430fbbcf11cda7",
+      "normal_impulse_Ns": 0.5210944300015354,
+      "peak_normal_N": 5377.070933829591,
+      "subdivisions": 3,
+      "integration_s": 228.6861963,
+      "process_s": 231.16697220003698,
+      "observed_peak_working_set_bytes": 149688320,
+      "monitor_interval_s": 0.025,
+      "observed_peak_commit_bytes": 165199872,
+      "ccd_checks": 13,
+      "ccd_rejected": 3,
+      "ccd_unresolved": 0,
+      "ccd_nodes": 153,
+      "cad_boolean_queries": 58,
+      "cad_event_distances": 143,
+      "chen_patch_queries": 0,
+      "chen_confirmed_candidates": 0,
+      "tdib_cells": 0,
+      "tdib_candidates": 0,
+      "tdib_unresolved": 0,
+      "cad_box_tests": 991653,
+      "cad_extrema": 33082,
+      "cad_classifications": 0,
+      "cad_region_cache_hits": 0,
+      "cad_distance_cache_hits": 10,
+      "cad_witness_tests": 142,
+      "cad_witness_improvements": 142,
+      "event_tolerance_s": 2.5e-05,
+      "setup_s": 2.2114419,
+      "evaluations": 57,
+      "stages": [
+        {
+          "stage": 1,
+          "active_frames": 3,
+          "peak_normal_N": 5377.070933829591,
+          "normal_impulse_Ns": 0.5210944300015354
+        }
+      ],
+      "simultaneously_loaded_frames": 3,
+      "shaft_speed_range_rad_s": [
+        [
+          179.02811276341987,
+          197.49169185052688
+        ],
+        [
+          91.51750662660318,
+          96.14906316806383
+        ]
+      ],
+      "step_assets": [
+        {
+          "asset": "spur-1a.step",
+          "step_sha256": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d"
+        },
+        {
+          "asset": "spur-1b.step",
+          "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d"
+        }
+      ],
+      "method": "cad-occt",
+      "solver": "penalty",
+      "compared_with_previous_run": {
+        "reference_trace_sha256": "b84bf55d5019952ab14422f1077ce75385209da0ddc4e2807d430fbbcf11cda7",
+        "frames": 8,
+        "stages": [
+          {
+            "stage": 1,
+            "different_active_frames": 0,
+            "max_force_difference_N": 0.0,
+            "normal_impulse_difference_Ns": 0.0
+          }
+        ],
+        "reference_solver": "penalty",
+        "max_shaft_speed_difference_rad_s": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "saved_switch_intervals": [
+      {
+        "kind": "load",
+        "left_s": 0.0002,
+        "right_s": 0.00025
+      }
+    ],
+    "loaded_frames_different_from_before": 0,
+    "maximum_force_difference_from_before_N": 0.0,
+    "maximum_speed_differences_from_before_rad_s": [
+      0.0,
+      0.0
+    ],
+    "repeat_measurement": {
+      "duration_s": 0.00035,
+      "dt_s": 5e-05,
+      "steps": 7,
+      "active_frames": 3,
+      "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+      "trace_sha256": "b84bf55d5019952ab14422f1077ce75385209da0ddc4e2807d430fbbcf11cda7",
+      "normal_impulse_Ns": 0.5210944300015354,
+      "peak_normal_N": 5377.070933829591,
+      "subdivisions": 3,
+      "integration_s": 255.0988734,
+      "process_s": 256.8762217000476,
+      "observed_peak_working_set_bytes": 151691264,
+      "monitor_interval_s": 0.025,
+      "observed_peak_commit_bytes": 160915456,
+      "ccd_checks": 13,
+      "ccd_rejected": 3,
+      "ccd_unresolved": 0,
+      "ccd_nodes": 153,
+      "cad_boolean_queries": 58,
+      "cad_event_distances": 143,
+      "chen_patch_queries": 0,
+      "chen_confirmed_candidates": 0,
+      "tdib_cells": 0,
+      "tdib_candidates": 0,
+      "tdib_unresolved": 0,
+      "cad_box_tests": 991653,
+      "cad_extrema": 33082,
+      "cad_classifications": 0,
+      "cad_region_cache_hits": 0,
+      "cad_distance_cache_hits": 10,
+      "cad_witness_tests": 142,
+      "cad_witness_improvements": 142,
+      "event_tolerance_s": 2.5e-05,
+      "setup_s": 1.6243303,
+      "evaluations": 57,
+      "stages": [
+        {
+          "stage": 1,
+          "active_frames": 3,
+          "peak_normal_N": 5377.070933829591,
+          "normal_impulse_Ns": 0.5210944300015354
+        }
+      ],
+      "simultaneously_loaded_frames": 3,
+      "shaft_speed_range_rad_s": [
+        [
+          179.02811276341987,
+          197.49169185052688
+        ],
+        [
+          91.51750662660318,
+          96.14906316806383
+        ]
+      ],
+      "step_assets": [
+        {
+          "asset": "spur-1a.step",
+          "step_sha256": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d"
+        },
+        {
+          "asset": "spur-1b.step",
+          "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d"
+        }
+      ],
+      "method": "cad-occt",
+      "solver": "penalty",
+      "compared_with_previous_run": {
+        "reference_trace_sha256": "b84bf55d5019952ab14422f1077ce75385209da0ddc4e2807d430fbbcf11cda7",
+        "frames": 8,
+        "stages": [
+          {
+            "stage": 1,
+            "different_active_frames": 0,
+            "max_force_difference_N": 0.0,
+            "normal_impulse_difference_Ns": 0.0
+          }
+        ],
+        "reference_solver": "penalty",
+        "max_shaft_speed_difference_rad_s": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  "mesh": {
+    "measurement": {
+      "duration_s": 0.00035,
+      "dt_s": 5e-05,
+      "steps": 7,
+      "active_frames": 3,
+      "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+      "trace_sha256": "6b8f68c113ec438edddc3981573162249b6ab4abc1a8c127a9ab2dc97589812d",
+      "normal_impulse_Ns": 0.5241551003509286,
+      "peak_normal_N": 5847.687562046858,
+      "subdivisions": 5,
+      "integration_s": 32.7121266,
+      "process_s": 33.566522100009024,
+      "observed_peak_working_set_bytes": 31752192,
+      "monitor_interval_s": 0.025,
+      "observed_peak_commit_bytes": 42852352,
+      "ccd_checks": 13,
+      "ccd_rejected": 1,
+      "ccd_unresolved": 0,
+      "ccd_nodes": 326811,
+      "cad_boolean_queries": 0,
+      "cad_event_distances": 0,
+      "chen_patch_queries": 0,
+      "chen_confirmed_candidates": 0,
+      "tdib_cells": 0,
+      "tdib_candidates": 0,
+      "tdib_unresolved": 0,
+      "cad_box_tests": 0,
+      "cad_extrema": 0,
+      "cad_classifications": 0,
+      "cad_region_cache_hits": 0,
+      "cad_distance_cache_hits": 0,
+      "event_tolerance_s": 2.5e-05,
+      "setup_s": 0.6346716,
+      "evaluations": 158,
+      "region_scope": "local",
+      "boolean_queries": 146,
+      "boolean_input_faces": 672184,
+      "local_solid_uses": 292,
+      "local_solid_builds": 2,
+      "detection_s": 0.03437150000000001,
+      "placement_s": 0.19528890000000004,
+      "boolean_s": 3.6682129,
+      "stages": [
+        {
+          "stage": 1,
+          "active_frames": 3,
+          "peak_normal_N": 5847.687562046858,
+          "normal_impulse_Ns": 0.5241551003509286
+        }
+      ],
+      "simultaneously_loaded_frames": 3,
+      "shaft_speed_range_rad_s": [
+        [
+          178.20311404735793,
+          197.49169185052688
+        ],
+        [
+          91.51750662660318,
+          96.38826850558154
+        ]
+      ],
+      "meshes": [
+        {
+          "asset": "spur-1a.msh",
+          "file_bytes": 727501,
+          "triangles": 10216,
+          "step_sha256": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d",
+          "mesh_sha256": "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+          "max_normal_angle_deg": 5.417667657804644,
+          "max_sampled_surface_error_m": 4.812533171050068e-05,
+          "min_sicn": 0.01045735078250156
+        },
+        {
+          "asset": "spur-1b.msh",
+          "file_bytes": 729966,
+          "triangles": 10240,
+          "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d",
+          "mesh_sha256": "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+          "max_normal_angle_deg": 4.871479036615452,
+          "max_sampled_surface_error_m": 8.487492800076537e-05,
+          "min_sicn": 0.0005368108854989981
+        }
+      ],
+      "method": "mesh-obb",
+      "solver": "penalty",
+      "compared_with_previous_run": {
+        "reference_trace_sha256": "6b8f68c113ec438edddc3981573162249b6ab4abc1a8c127a9ab2dc97589812d",
+        "frames": 8,
+        "stages": [
+          {
+            "stage": 1,
+            "different_active_frames": 0,
+            "max_force_difference_N": 0.0,
+            "normal_impulse_difference_Ns": 0.0
+          }
+        ],
+        "reference_solver": "penalty",
+        "max_shaft_speed_difference_rad_s": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "saved_switch_intervals": [
+      {
+        "kind": "load",
+        "left_s": 0.0002,
+        "right_s": 0.00025
+      }
+    ],
+    "loaded_frames_different_from_before": 0,
+    "maximum_force_difference_from_before_N": 989.851585691207,
+    "maximum_speed_differences_from_before_rad_s": [
+      0.8249987160619412,
+      0.2392053375177028
+    ],
+    "repeat_measurement": {
+      "duration_s": 0.00035,
+      "dt_s": 5e-05,
+      "steps": 7,
+      "active_frames": 3,
+      "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+      "trace_sha256": "6b8f68c113ec438edddc3981573162249b6ab4abc1a8c127a9ab2dc97589812d",
+      "normal_impulse_Ns": 0.5241551003509286,
+      "peak_normal_N": 5847.687562046858,
+      "subdivisions": 5,
+      "integration_s": 28.5090794,
+      "process_s": 29.269254999991972,
+      "observed_peak_working_set_bytes": 31662080,
+      "monitor_interval_s": 0.025,
+      "observed_peak_commit_bytes": 42852352,
+      "ccd_checks": 13,
+      "ccd_rejected": 1,
+      "ccd_unresolved": 0,
+      "ccd_nodes": 326811,
+      "cad_boolean_queries": 0,
+      "cad_event_distances": 0,
+      "chen_patch_queries": 0,
+      "chen_confirmed_candidates": 0,
+      "tdib_cells": 0,
+      "tdib_candidates": 0,
+      "tdib_unresolved": 0,
+      "cad_box_tests": 0,
+      "cad_extrema": 0,
+      "cad_classifications": 0,
+      "cad_region_cache_hits": 0,
+      "cad_distance_cache_hits": 0,
+      "event_tolerance_s": 2.5e-05,
+      "setup_s": 0.6054368,
+      "evaluations": 158,
+      "region_scope": "local",
+      "boolean_queries": 146,
+      "boolean_input_faces": 672184,
+      "local_solid_uses": 292,
+      "local_solid_builds": 2,
+      "detection_s": 0.03061030000000002,
+      "placement_s": 0.1707101000000001,
+      "boolean_s": 3.1664525999999995,
+      "stages": [
+        {
+          "stage": 1,
+          "active_frames": 3,
+          "peak_normal_N": 5847.687562046858,
+          "normal_impulse_Ns": 0.5241551003509286
+        }
+      ],
+      "simultaneously_loaded_frames": 3,
+      "shaft_speed_range_rad_s": [
+        [
+          178.20311404735793,
+          197.49169185052688
+        ],
+        [
+          91.51750662660318,
+          96.38826850558154
+        ]
+      ],
+      "meshes": [
+        {
+          "asset": "spur-1a.msh",
+          "file_bytes": 727501,
+          "triangles": 10216,
+          "step_sha256": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d",
+          "mesh_sha256": "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+          "max_normal_angle_deg": 5.417667657804644,
+          "max_sampled_surface_error_m": 4.812533171050068e-05,
+          "min_sicn": 0.01045735078250156
+        },
+        {
+          "asset": "spur-1b.msh",
+          "file_bytes": 729966,
+          "triangles": 10240,
+          "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d",
+          "mesh_sha256": "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+          "max_normal_angle_deg": 4.871479036615452,
+          "max_sampled_surface_error_m": 8.487492800076537e-05,
+          "min_sicn": 0.0005368108854989981
+        }
+      ],
+      "method": "mesh-obb",
+      "solver": "penalty",
+      "compared_with_previous_run": {
+        "reference_trace_sha256": "6b8f68c113ec438edddc3981573162249b6ab4abc1a8c127a9ab2dc97589812d",
+        "frames": 8,
+        "stages": [
+          {
+            "stage": 1,
+            "different_active_frames": 0,
+            "max_force_difference_N": 0.0,
+            "normal_impulse_difference_Ns": 0.0
+          }
+        ],
+        "reference_solver": "penalty",
+        "max_shaft_speed_difference_rad_s": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  }
+}

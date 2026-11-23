@@ -99,6 +99,31 @@ python benchmarks/chen/gear_region_audit.py build/cpu-swept/Release/nc_cad_dista
 python benchmarks/chen/plot_spur_loading.py
 ~~~
 
+### Reusing the closest features across poses
+
+The indexed STEP distance query retains the winning pair of CAD features. At a new pose it runs the feature extrema kernel on that pair and starts the ordinary BVH traversal with the smaller of the measured distance and the query cap. A tolerance-level contact can return immediately. For a separated witness, the BVH still visits every branch whose lower bound can improve the result, including other disconnected components. Changing a local solid's boundary index discards the hint. HHT uses the same step, event tolerance and contact law with either search.
+
+The first implementation at `f303d83` reuses just the upper bound. The current version also bounds the CAD features in body-fixed frames oriented by the separation between witness points. A pose update maps one frame into the other. Each surviving branch must pass the original and the additional box-distance tests. The first seven gear steps used 143 original-surface distance queries with each version. Original-feature extrema fell from 45,382 to 44,680 with the upper bound alone and to 33,082 with the additional boxes. The last version made 991,653 box tests against 908,530 in the control. Of the 143 distance queries, 142 tested the previous feature pair and tightened the initial cap. [Upper-bound-only run](../../results/aes/general-contact/spur-feature-reuse/seed-only.json) · [Dynamics and solver counters](../../results/aes/general-contact/spur-feature-reuse/runs.json)
+
+All runs used a Ryzen 9 5900X with one simulation at a time. Times below cover online integration of the first 0.35 ms, with initialization reported separately in the JSON. The first series ran the control, mesh, upper-bound-only and final STEP binary. The repeat ran the STEP control, final STEP and mesh consecutively.
+
+| Method | First run (s) | Repeat (s) | CAD feature extrema |
+|---|---:|---:|---:|
+| STEP before | 681.08 | 226.44 | 45,382 |
+| STEP with previous feature pair alone | 281.79 | — | 44,680 |
+| STEP with previous feature pair and directional boxes (ours) | 228.69 | 255.10 | 33,082 |
+| Triangle mesh, OBB BVH | 32.71 | 28.51 | — |
+
+The same STEP control previously took 388.21 s. The 27.1% reduction in feature extrema reproduced, while the ordering of the STEP wall times changed. In the consecutive repeat the updated STEP query took 12.7% longer than the control over the whole simulation. Both STEP versions made 58 Boolean queries and three event subdivisions. [Historical STEP control](../../results/aes/general-contact/spur-serial-cad-occt.json) · [Both timing series](../../results/aes/general-contact/spur-feature-reuse/runs.json)
+
+All eight saved states, including both shaft speeds and all three loaded outputs, matched the STEP control byte for byte. STEP and the 20,456-triangle OBB control reached sampled peaks of 5,377.07 and 5,847.69 N. The largest sampled force difference between them was 989.85 N at 0.35 ms. The cold and warm CAD queries both bracketed contact at 216.40625–217.18750 µs on the interpolated shaft poses using a 0.1 µm distance tolerance. The full STEP intersection and the mesh volume calculation on their respective interpolated paths first showed positive overlap at a bracket of 217.18750–217.96875 µs. This replay resolves geometry inside the 200–250 µs saved interval of the 50 µs integration grid. [Saved loads and shaft speeds](../../results/aes/general-contact/spur-feature-reuse/responses.csv) · [Switch brackets](../../results/aes/general-contact/spur-feature-reuse/entry.json) · [Force overlays and differences](../../results/aes/general-contact/spur-feature-reuse/loads.png)
+
+To repeat the comparison, copy the Release solver from commit `735b7a2` before building the new version. Run the same seven-step command in [Gear distance and event costs](#gear-distance-and-event-costs) once per configuration, giving each run its own directory and a sibling JSON with the same stem. Use `--method cad-occt` for the before and after binaries and `--method mesh-obb` for the mesh control. Run them sequentially. The comparison script checks scene and trace hashes and extracts the saved load and both shaft speeds. The optional entry replay refines the first clear-to-loaded output interval on each recorded path, interpolating shaft angles between its endpoints.
+
+~~~powershell
+python benchmarks/chen/gear_witness_comparison.py build/cad-witness/cad-before.json build/cad-witness/witness-frame.json build/cad-witness/mesh-before.json build/cad-witness/comparison --repeat build/cad-witness/cad-control-repeat.json build/cad-witness/cad-witness-repeat.json build/cad-witness/mesh-control-repeat.json --replay build/cpu-contact/spur-edge-compact/spur.scene build/cpu-swept/Release/nc_cad_distance_benchmark.exe build/cpu-swept/Release/nc_mesh.exe
+~~~
+
 ## 2026 labeled triangular-patch queries
 
 For the separately implemented 2026 variant and its results see [Safeguarded envelopes](#safeguarded-envelopes).

@@ -13,6 +13,7 @@ std::shared_ptr<const BoundaryIndex> boundary_index(const TopoDS_Shape& solid);
 struct BoundaryWitness {
     std::weak_ptr<const BoundaryIndex> first,second;
     std::size_t x{},y{};
+    gp_XYZ direction;
 };
 
 // Numerical minimum solid distance in STEP units, capped at the requested

@@ -125,7 +125,8 @@ void boundary_distances() {
     // must still recover the distance for parallel, tilted and crossing poses.
     const auto plate=BRepBuilderAPI_NurbsConvert(BRepPrimAPI_MakeBox(20.,2.,1.).Shape()).Shape();
     const auto plate_index=cad::boundary_index(plate);
-    for (double tilt:{0.,.013,-.25}) {
+    cad::BoundaryWitness plate_witness;
+    for (double tilt:{0.,.013,-.25,.15,1.40}) {
         gp_Trsf pose;
         pose.SetRotation(gp_Ax1({},gp_Dir(0,1,0)),tilt);
         pose.SetTranslationPart(gp_Vec(-5.,4.,tilt<0. ? 7. : 11.));
@@ -133,6 +134,8 @@ void boundary_distances() {
         require(ref.IsDone(),"plate reference failed");
         close(cad::bounded_distance(plate_index,b,pose,5.,1e-7,counts),ref.Value(),2e-6,
               "trimmed spline against planar face");
+        close(cad::bounded_distance(plate_index,b,pose,5.,1e-7,counts,&plate_witness),ref.Value(),2e-6,
+              "witness-aligned boxes after relative rotation");
     }
     for (double separation:{3.,2.,1.,0.}) {
         gp_Trsf pose;

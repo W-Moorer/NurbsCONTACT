@@ -1,0 +1,49 @@
+{
+  "subdivisions_of_saved_interval": 64,
+  "cad_distance_tolerance_m": 1e-07,
+  "scene_sha256": "e065a55615edfd6116d59288abd285d767afeb31c9f966646744ec38671b2a38",
+  "trace_sha256": {
+    "before": "b84bf55d5019952ab14422f1077ce75385209da0ddc4e2807d430fbbcf11cda7",
+    "ours": "b84bf55d5019952ab14422f1077ce75385209da0ddc4e2807d430fbbcf11cda7",
+    "mesh": "6b8f68c113ec438edddc3981573162249b6ab4abc1a8c127a9ab2dc97589812d"
+  },
+  "interpolation": "Linear shaft origins and fixed-axis angles between adjacent saved states.",
+  "before_path": {
+    "cold": {
+      "bracket_s": [
+        0.00021640625000000002,
+        0.00021718750000000001
+      ],
+      "extrema": 1776,
+      "witness_tests": 0,
+      "status": "resolved"
+    },
+    "previous_feature": {
+      "bracket_s": [
+        0.00021640625000000002,
+        0.00021718750000000001
+      ],
+      "extrema": 1172,
+      "witness_tests": 7,
+      "status": "resolved"
+    },
+    "whole_solid_load": {
+      "bracket_s": [
+        0.00021718750000000001,
+        0.00021796875
+      ],
+      "extrema": 0,
+      "witness_tests": 0,
+      "status": "resolved"
+    }
+  },
+  "ours_path": {
+    "identical_to": "before_path"
+  },
+  "mesh_path": {
+    "volume_load_bracket_s": [
+      0.00021718750000000001,
+      0.00021796875
+    ]
+  }
+}

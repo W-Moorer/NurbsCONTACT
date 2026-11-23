@@ -1,6 +1,6 @@
 # 通用 CPU 刚体接触后端的响应与效率
 
-2026-11-24。轻量网格能复现本次齿轮和减速器对照网格的带载响应。原始 STEP 接触在双球和凸轮短时段有较小的位移误差，代价是更长的在线时间。齿轮还没有满足 30 分钟预算的通用 STEP 带载时程。四页图集和下方 CSV 保留实际输出时间和数值，曲线均未平滑或平移。[响应曲线 PDF](response-curves.pdf)
+2026-11-24。轻量网格能复现本次齿轮和减速器对照网格的带载响应。原始 STEP 接触在双球和凸轮短时段有较小的位移误差，代价是更长的在线时间。通用 STEP 后端已在 30 分钟内完成齿轮首次加载的 0.35 ms，完整啮合周期仍待验证。四页图集和下方 CSV 保留实际输出时间和数值，曲线均未平滑或平移。[响应曲线 PDF](response-curves.pdf)
 
 ## 已完成的同模型对照
 
@@ -16,6 +16,8 @@
 齿轮优化前三条 STEP 路线都在 1,800 s 截止。优化后仅对可接触的局部 STEP 实体计算距离和受力，并根据该区域的相对运动约束步内搜索。三条都完成了七步，输出文件逐字节相同。局部 STEP 一行的各进程在同一工作站上重叠运行。配对复测首个 50 µs 无载步，全实体和局部 STEP 在线分别用时 394.54 和 65.22 s，距离查询从 19 次降至 7 次，几何特征求极值从 9,314 次降至 2,487 次。[首步配对记录](../general-contact/spur-local-first-step.json) · [七步对照与截止记录](../../../benchmarks/chen/README.md#gear-distance-and-event-costs) · [双球各方法记录](../general-contact/surface-methods-impact.json) · [凸轮对照](../../../benchmarks/chen/README.md#rigid-step-scenes)
 
 在同一工作站先后单独运行网格和局部 STEP 距离推进，在线耗时分别为 36.14 和 388.21 s，后者约为前者的 10.74 倍。两者分别复现了上表对应的响应文件。首次加载段的 8 帧输出中有 3 帧承载。三个 STEP 方法的采样峰值为 5.377 kN，网格为 5.848 kN。用完整 STEP 实体在相同姿态重算，8 个输出姿态及首次加载附近 3 个插值姿态的接触区数、受力点、法向和深度均与局部实体相同。完整啮合周期的齿轮精度仍需独立参考解。[顺序运行网格](../general-contact/spur-serial-mesh-obb.json) · [顺序运行 STEP](../general-contact/spur-serial-cad-occt.json) · [全实体逐姿态核对](../general-contact/spur-local-regions.json) · [接触力和轴转速曲线](../general-contact/spur-local-response.png)
+
+在相同的 0.35 ms 齿轮首次加载段上，通用 STEP 后端重算上一姿态的最近特征对，用当前距离和沿最近点方向建立的包围盒共同裁剪 BVH。两轮分别单跑，优化前后在线用时为 681.08 → 228.69 s 和 226.44 → 255.10 s，纯网格分别为 32.71 和 28.51 s。精确特征查询均由 45,382 次降至 33,082 次，整段耗时的改善未复现。两个 STEP 版本的 8 帧响应文件逐字节相同。用各自保存的轴姿态插值回放，完整 STEP 和网格首次产生接触体积的时刻都落在 217.19–217.97 µs。[两轮计时与计数](../general-contact/spur-feature-reuse/runs.json) · [接触切换回放](../general-contact/spur-feature-reuse/entry.json) · [法向载荷与逐帧差值](../general-contact/spur-feature-reuse/loads.png)
 
 ## 接触、脱开和位移误差
 
