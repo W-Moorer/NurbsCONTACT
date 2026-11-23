@@ -11,7 +11,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "apps"))
-from prepare_contact_mesh import check_topology, prepare, sha256
+from prepare_contact_mesh import check_topology, prepare, refine_slender_faces, sha256
 
 
 class ContactMeshTest(unittest.TestCase):
@@ -64,6 +64,30 @@ class ContactMeshTest(unittest.TestCase):
             report = prepare(path, output, .001, min_sicn=.2)
             self.assertGreater(report["locally_refined_edges"], 0)
             self.assertGreaterEqual(report["min_sicn"], .2)
+
+    def test_wheel_trim_end_elements(self):
+        # The full wheel has a 24 mm long face bounded by 7.44 µm trims.
+        # Isolate one copy to test the corner triangles without meshing every tooth.
+        gmsh.initialize(readConfigFiles=False)
+        try:
+            gmsh.option.setNumber("General.Terminal", 0)
+            gmsh.model.occ.importShapes(str(ROOT / "results/gears/models/spur-1b.step"))
+            gmsh.model.occ.synchronize()
+            [(dim, tag)] = gmsh.model.occ.copy([(2, 1)])
+            gmsh.model.occ.remove(gmsh.model.getEntities(3), recursive=True)
+            gmsh.model.occ.synchronize()
+            self.assertEqual(gmsh.model.getEntities(2), [(dim, tag)])
+            gmsh.option.setNumber("Mesh.MeshSizeMax", 1.)
+            gmsh.option.setNumber("Mesh.Algorithm", 6)
+            gmsh.model.mesh.generate(2)
+            def lowest_quality():
+                elements, _ = gmsh.model.mesh.getElementsByType(2, tag)
+                return gmsh.model.mesh.getElementQualities(elements, "minSICN").min()
+            self.assertLess(lowest_quality(), .01)
+            self.assertGreater(refine_slender_faces(.2, 1.), 0)
+            self.assertGreaterEqual(lowest_quality(), .2)
+        finally:
+            gmsh.finalize()
 
 
 if __name__ == "__main__":

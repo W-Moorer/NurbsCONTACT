@@ -147,7 +147,9 @@ def refine_slender_faces(required_sicn, size_mm):
     if edge_counts:
         gmsh.model.mesh.clear()
         for tag, count in edge_counts.items():
-            gmsh.model.mesh.setTransfiniteCurve(tag, count)
+            # At the ends of a strip, CAD corner nodes meet shorter trim
+            # segments. Concentrate some of the long-edge nodes at both ends.
+            gmsh.model.mesh.setTransfiniteCurve(tag, count, "Bump", .7)
         gmsh.option.setNumber("Mesh.MeshSizeExtendFromBoundary", 0)
         gmsh.model.mesh.generate(2)
         _, tri_tags, _ = gmsh.model.mesh.getElements(2)
