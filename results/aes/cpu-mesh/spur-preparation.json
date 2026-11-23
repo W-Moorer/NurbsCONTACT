@@ -1,0 +1,59 @@
+{
+  "models_dir": "results/gears/models",
+  "run_limit_s": 1800,
+  "pinion": {
+    "source": "spur-1a.step",
+    "status": "passed_requested_mesh_checks",
+    "requested_min_sicn": 0.3,
+    "requested_max_sampled_error_m": 5e-05,
+    "requested_max_normal_angle_deg": 8.0,
+    "mesh": {
+      "step_sha256": "d1c8979d3d6e88b7fd9339f28f364d9ed7a541395cf54aa611537e2d7a19622d",
+      "mesh_sha256": "5769ef63d01f93993a0ddefac9ac3cd3fb30744f4d70c4a5779fefd140f18535",
+      "gmsh_version": "4.15.0",
+      "mesh_size_m": 0.0015,
+      "triangles": 50060,
+      "preparation_s": 74.5976158999838,
+      "min_angle_deg": 15.718854559860215,
+      "min_sicn": 0.4516939800651144,
+      "max_sampled_edge_error_m": 2.8168308636093257e-05,
+      "max_sampled_surface_error_m": 3.739566244507005e-05,
+      "max_normal_angle_deg": 6.43361474705305
+    }
+  },
+  "wheel": {
+    "source": "spur-1b.step",
+    "coarse_mesh": {
+      "step_sha256": "f56b27cdc2dc9a15b784f3abef616ba7c70fa81fe949704c66206480037ab19d",
+      "mesh_sha256": "8cf908d93238f26e42cc2014a5e2d4b3dbbe4f60ba4504a0782d9c9bb18cf6cf",
+      "gmsh_version": "4.15.0",
+      "mesh_size_m": 0.0015,
+      "triangles": 69234,
+      "preparation_s": 233.2556749000214,
+      "min_angle_deg": 0.14206021181615602,
+      "min_sicn": 0.004294461097660964,
+      "max_sampled_edge_error_m": 2.3881139824351774e-05,
+      "max_sampled_surface_error_m": 2.3881139824348755e-05,
+      "max_normal_angle_deg": 3.8567746395245455
+    },
+    "coarse_mesh_status": "below_trial_min_sicn",
+    "refined_target_size_m": 0.001,
+    "requested_min_sicn": 0.2,
+    "requested_max_sampled_error_m": 5e-05,
+    "requested_max_normal_angle_deg": 8.0,
+    "trials": [
+      {
+        "mesh_threads": 1,
+        "audit_workers": 1,
+        "stage_reached": "CAD face projection audit after element quality check",
+        "status": "no_qualified_mesh_by_time_limit"
+      },
+      {
+        "mesh_threads": 1,
+        "audit_workers": 6,
+        "stage_reached": "CAD face projection audit after element quality check",
+        "status": "no_qualified_mesh_by_time_limit"
+      }
+    ]
+  }
+}

@@ -17,6 +17,8 @@ When a requested minSICN fails on a long narrow face, the generator measures its
 
 `--audit-workers N` distributes the face projection samples over independent Gmsh sessions. Each session reimports the STEP file and checks its face tags, surface types, areas and centroids against the meshed model. All workers use the same projection and normal evaluations. The report includes the worker count and audit time.
 
+In the [spur pair preparation trial](../results/aes/cpu-mesh/spur-preparation.json), the 50,060-triangle pinion met its requested checks. The coarse wheel had a minSICN of 0.00429. Refinement of its 7.44 µm-wide strips reached the element quality gate of 0.2. Both the one-worker and six-worker full-wheel runs exhausted the 1,800 s budget during the remaining CAD audit. This gear pair still lacks a qualified wheel for dynamics comparisons.
+
 ## Discrete triangle contact
 
 Build the optional CPU mesh target with FCL 0.7 and CGAL 6. In a vcpkg environment on Windows:
