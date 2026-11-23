@@ -44,7 +44,7 @@ def prepare(work, tolerance):
     equations(work)
 
 
-def equations(work, h=0.000125):
+def equations(work, h=0.000125, duration=3.0):
     """Convert the existing mechanism's loads to corrections about nominal joint motion."""
     lines = iter((work / "reducer.scene").read_text().splitlines())
     next(lines)
@@ -73,14 +73,18 @@ def equations(work, h=0.000125):
     for _ in range(npairs):
         row = next(lines).split()
         pairs.append([int(row[1]), int(row[2])])
-        stiffness.append(float(row[4]))
+        if row[0] not in ("closest", "surface"):
+            raise ValueError(f"unsupported contact pair {row[0]}")
+        stiffness.append(float(row[3] if row[0] == "surface" else row[4]))
     if next(lines) != "drives 0":
         raise ValueError("Expected free shafts")
-    t = np.arange(round(3 / h) + 1) * h
+    t = np.arange(round(duration / h) + 1) * h
     loads = coords[:, 6] - coords[:, 4] * coords[:, 2] - t[:, None] * coords[:, 2] * coords[:, 3]
     for _ in range(int(next(lines).split()[1])):
         _, j, count = next(lines).split()
         samples = np.array([list(map(float, next(lines).split())) for _ in range(int(count))])
+        if samples[0, 0] > 0 or samples[-1, 0] < t[-1] - 1e-12:
+            raise ValueError("load history does not span the integration interval")
         loads[:, int(j)] += np.interp(t, samples[:, 0], samples[:, 1])
     np.savez_compressed(
         work / "assembly.npz",

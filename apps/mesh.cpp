@@ -11,18 +11,22 @@ using namespace nc::cpu;
 int main(int argc, char** argv) {
     try {
         if (argc < 5 || std::string_view(argv[1]) != "--method")
-            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--contours|--any|--regions local|full] [--tolerance-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz per body");
+            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--contours|--any [--same-face-only] [--candidate-window]|--regions local|full] [--tolerance-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz per body");
         const auto method = mesh_method(argv[2]);
         int first_mesh=3;
         bool continuous=false;
         bool contours=false;
         bool any=false;
+        bool candidate_window=false;
+        bool follow_adjacent=true;
         std::optional<bool> local_regions;
         double tolerance=1e-7;
         while (first_mesh < argc && std::string_view(argv[first_mesh]).starts_with("--")) {
             const std::string_view option=argv[first_mesh++];
             if (option=="--contours") { contours=true; continue; }
             if (option=="--any") { any=true; continue; }
+            if (option=="--candidate-window") { candidate_window=true; continue; }
+            if (option=="--same-face-only") { follow_adjacent=false; continue; }
             if (first_mesh==argc) throw std::invalid_argument("missing option value");
             const std::string value=argv[first_mesh++];
             if (option=="--detection") {
@@ -41,6 +45,9 @@ int main(int argc, char** argv) {
         if (argc-first_mesh<2) throw std::invalid_argument("expected at least two contact meshes");
         if (continuous && contours) throw std::invalid_argument("contours require a discrete query");
         if (any && (continuous || contours)) throw std::invalid_argument("--any requires discrete overlap detection");
+        if (!follow_adjacent && !any) throw std::invalid_argument("--same-face-only requires --any");
+        if (candidate_window && (!any || method==MeshMethod::obb))
+            throw std::invalid_argument("--candidate-window requires --any and mesh-aabb or mesh-sap");
         if (local_regions && (any || continuous || contours || argc-first_mesh!=2))
             throw std::invalid_argument("--regions takes two closed meshes for a discrete volume query");
 #ifndef NC_WITH_MESH_CCD
@@ -57,7 +64,7 @@ int main(int argc, char** argv) {
         std::optional<MeshScene> scene;
         std::shared_ptr<const nc::dynamics::PairRegionQuery> regions;
         if (local_regions) regions=mesh_region_query(bodies[0],bodies[1],method,{},*local_regions);
-        else scene.emplace(bodies,method);
+        else scene.emplace(bodies,method,candidate_window);
         std::string line;
         std::vector<RigidPlacement> previous;
         std::cout << std::setprecision(17);
@@ -118,10 +125,11 @@ int main(int argc, char** argv) {
             }
 #endif
             if (any) {
-                const auto hit=scene->overlaps(poses);
+                const auto hit=scene->overlaps(poses,follow_adjacent);
                 const double seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
                 std::cout<<std::boolalpha<<"{\"overlap\":"<<hit.overlap<<",\"reused_triangle_pair\":"
-                         <<hit.reused_triangle_pair<<",\"body_pairs\":"<<hit.body_pairs<<",\"node_pairs\":"
+                         <<hit.reused_triangle_pair<<",\"adjacent_triangle_pair\":"<<hit.adjacent_triangle_pair
+                         <<",\"body_pairs\":"<<hit.body_pairs<<",\"node_pairs\":"
                          <<hit.node_pairs<<",\"triangle_tests\":"<<hit.triangle_tests<<",\"query_s\":"<<seconds<<"}"<<std::endl;
                 continue;
             }

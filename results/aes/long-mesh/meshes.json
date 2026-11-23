@@ -1,0 +1,48 @@
+{
+  "parts": [
+    {
+      "archive": "reducer-1a.npz",
+      "mesh": "reducer-1a.msh",
+      "step": "reducer-1a.step",
+      "sha256": "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+      "triangles": 10216,
+      "max_sampled_surface_error_m": 4.812533171050068e-05,
+      "max_normal_angle_deg": 5.417667657804644,
+      "min_sicn": 0.01045735078250156,
+      "gmsh_version": "4.15.0"
+    },
+    {
+      "archive": "reducer-1b.npz",
+      "mesh": "reducer-1b.msh",
+      "step": "reducer-1b.step",
+      "sha256": "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+      "triangles": 10240,
+      "max_sampled_surface_error_m": 8.487492800076537e-05,
+      "max_normal_angle_deg": 4.871479036615452,
+      "min_sicn": 0.0005368108854989981,
+      "gmsh_version": "4.15.0"
+    },
+    {
+      "archive": "reducer-2a.npz",
+      "mesh": "reducer-2a.msh",
+      "step": "reducer-2a.step",
+      "sha256": "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+      "triangles": 27934,
+      "max_sampled_surface_error_m": 2.7052420583497806e-05,
+      "max_normal_angle_deg": 6.051116592670291,
+      "min_sicn": 0.12280293051593455,
+      "gmsh_version": "4.15.0"
+    },
+    {
+      "archive": "reducer-2b.npz",
+      "mesh": "reducer-2b.msh",
+      "step": "reducer-2b.step",
+      "sha256": "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0",
+      "triangles": 17342,
+      "max_sampled_surface_error_m": 4.8093436127912344e-05,
+      "max_normal_angle_deg": 3.571556915230091,
+      "min_sicn": 0.0037408528660150733,
+      "gmsh_version": "4.15.0"
+    }
+  ]
+}

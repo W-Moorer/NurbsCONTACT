@@ -68,4 +68,14 @@ const std::array<std::size_t,6>& SolidBoundary::extreme_vertices(std::size_t com
     return data_->extremes.at(component);
 }
 std::size_t SolidBoundary::component(std::size_t face) const { return data_->face_components.at(face); }
+std::array<std::size_t,3> SolidBoundary::neighbors(std::size_t face) const {
+    const auto& surface=data_->surface;
+    auto edge=surface.halfedge(Surface::Face_index(static_cast<unsigned int>(face)));
+    std::array<std::size_t,3> adjacent;
+    for (auto& id:adjacent) {
+        id=surface.face(surface.opposite(edge)).idx();
+        edge=surface.next(edge);
+    }
+    return adjacent;
+}
 }

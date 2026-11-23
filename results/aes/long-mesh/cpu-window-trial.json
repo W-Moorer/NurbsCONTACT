@@ -1,0 +1,93 @@
+{
+  "trace_sha256": "a11c2e6fa63464f1636bb47b727746f8783875e8ca743d14bf8d981b8e7d6824",
+  "mesh_sha256": [
+    "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+    "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+    "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+    "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0"
+  ],
+  "physical_s": 5.0,
+  "steps": 50000,
+  "methods": {
+    "mesh-aabb": [
+      {
+        "queries": 50001,
+        "overlap_frames": 49982,
+        "process_s": 141.87927580001997,
+        "query_s": 132.1708342,
+        "p99_us": 7168.400000000001,
+        "node_pairs": 172866992,
+        "triangle_tests": 5118520,
+        "witness_reuses": 14008,
+        "overlap_without_sampled_force": 0,
+        "sampled_force_without_overlap": 0
+      },
+      {
+        "queries": 50001,
+        "overlap_frames": 49978,
+        "process_s": 447.9233109999914,
+        "query_s": 434.8912113,
+        "p99_us": 20832.5,
+        "node_pairs": 359965490,
+        "triangle_tests": 74838462,
+        "witness_reuses": 13311,
+        "overlap_without_sampled_force": 4,
+        "sampled_force_without_overlap": 0
+      }
+    ],
+    "mesh-obb": [
+      {
+        "queries": 50001,
+        "overlap_frames": 49982,
+        "process_s": 120.21671010000864,
+        "query_s": 108.900955,
+        "p99_us": 7206.200000000001,
+        "node_pairs": 105979552,
+        "triangle_tests": 4347353,
+        "witness_reuses": 23899,
+        "overlap_without_sampled_force": 0,
+        "sampled_force_without_overlap": 0
+      },
+      {
+        "queries": 50001,
+        "overlap_frames": 49978,
+        "process_s": 560.0727008000249,
+        "query_s": 543.494989,
+        "p99_us": 22543.2,
+        "node_pairs": 371684296,
+        "triangle_tests": 80559445,
+        "witness_reuses": 12336,
+        "overlap_without_sampled_force": 4,
+        "sampled_force_without_overlap": 0
+      }
+    ],
+    "mesh-sap": [
+      {
+        "queries": 50001,
+        "overlap_frames": 49982,
+        "process_s": 189.069633099949,
+        "query_s": 175.5539201,
+        "p99_us": 8953.5,
+        "node_pairs": 172866992,
+        "triangle_tests": 5118520,
+        "witness_reuses": 14008,
+        "overlap_without_sampled_force": 0,
+        "sampled_force_without_overlap": 0
+      },
+      {
+        "queries": 50001,
+        "overlap_frames": 49978,
+        "process_s": 563.8048611999839,
+        "query_s": 545.7129153000001,
+        "p99_us": 24681.0,
+        "node_pairs": 359965490,
+        "triangle_tests": 74838462,
+        "witness_reuses": 13311,
+        "overlap_without_sampled_force": 4,
+        "sampled_force_without_overlap": 0
+      }
+    ]
+  },
+  "implementation": "Experimental center-line overlap window enabled on both AABB and OBB. Released CLI limits this opt-in to AABB/SAP.",
+  "same_flags_as_cpu_detection": true
+}

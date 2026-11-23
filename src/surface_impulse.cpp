@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <numbers>
 #include <numeric>
+#include <string>
 
 namespace nc::dynamics {
 namespace {
@@ -205,7 +206,9 @@ SurfaceImpulseResult surface_impulses(ImpulseLaw law,std::span<const ContactBody
             throw std::runtime_error("incidence-dependent SAP damping needs per-region impact histories");
         for (const auto& region:regions) {
             if (!(region.depth_m>0 && region.depth_m<=pair.material.maximum_depth))
-                throw UnresolvedContact("invalid predicted overlap for contact impulse");
+                throw UnresolvedContact("predicted overlap "+std::to_string(region.depth_m*1e6)+
+                    " um outside the range (0, "+std::to_string(pair.material.maximum_depth*1e6)+
+                    "] um for contact pair "+std::to_string(i));
             Block block{};
             block.pair=i;
             block.region=region;

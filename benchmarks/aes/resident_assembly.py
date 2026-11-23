@@ -32,7 +32,8 @@ def load_inputs(args):
     models = []
     for entry in json.loads((args.work / "models.json").read_text())["parts"]:
         with np.load(args.work / entry["archive"]) as d:
-            models.append((d["tri"], d["faces"], d["points"]))
+            points = d["points"] if args.method == "cad" else None
+            models.append((d["tri"], d["faces"], points))
     with np.load(args.work / "assembly.npz") as d:
         return (
             models,

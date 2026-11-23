@@ -104,7 +104,111 @@ struct Body {
     Bounds local;
     X world = X::Identity();
     double padding{};
+    // Radii of enclosing cylinders about the three axes of the local AABB.
+    V radial=V::Zero();
 };
+
+double support_radius(const Body& body,const V& direction) {
+    const V half=(body.local.max_-body.local.min_)*.5;
+    double result=direction.cwiseAbs().dot(half);
+    for (int k=0;k<3;++k)
+        result=std::min(result,std::abs(direction[k])*half[k]+
+            std::hypot(direction[(k+1)%3],direction[(k+2)%3])*body.radial[k]);
+    return result;
+}
+
+double projected_radius(const Bounds& b,const V& dir) {
+    return .5*dir.cwiseAbs().dot(b.max_-b.min_);
+}
+double projected_radius(const Oriented& b,const V& dir) {
+    return (b.axis.transpose()*dir).cwiseAbs().dot(b.extent);
+}
+
+struct CandidateTriangle {
+    Triangle triangle;
+    Vec lo,hi;
+    std::size_t face;
+    int side;
+};
+
+// Each vertex of a possible intersection lies in the interval common to the
+// two solids along the centre line. Visit the two trees independently there,
+// then sweep tight boxes of the surviving triangles in world coordinates.
+template<class Box,class Visitor>
+std::optional<bool> visit_contact_window(const Body& a,const Body& b,std::span<const RigidPlacement> poses,
+        std::size_t& node_tests,std::size_t& triangle_tests,Visitor& visitor) {
+    if (a.mesh->faces.size()<128 || b.mesh->faces.size()<128) return {};
+    const V ca=a.world*a.local.center(),cb=b.world*b.local.center();
+    const double spacing=(cb-ca).norm();
+    const double pad=4*(a.padding+b.padding);
+    if (spacing<=pad) return {};
+    const V axis=(cb-ca)/spacing;
+    const V ua=a.world.linear().transpose()*axis,ub=b.world.linear().transpose()*axis;
+    const double ra=support_radius(a,ua),rb=support_radius(b,ub);
+    const double width=ra+rb-spacing+2*pad;
+    if (width<0) return false;
+    if (width>.4*std::min(ra,rb)) return {};
+
+    std::vector<CandidateTriangle> candidates;
+    const auto gather=[&](const Body& body,const V& dir,double lower,int side) {
+        const auto& tree=*std::get<std::shared_ptr<Tree<Box>>>(body.tree);
+        std::vector<int> stack{0};
+        while (!stack.empty()) {
+            const auto& node=tree.getBV(stack.back());
+            stack.pop_back();
+            ++node_tests;
+            if (dir.dot(node.bv.center()-body.local.center())+projected_radius(node.bv,dir)<lower) continue;
+            if (!node.isLeaf()) {
+                stack.push_back(node.leftChild());
+                stack.push_back(node.rightChild());
+                continue;
+            }
+            const auto face=static_cast<std::size_t>(node.primitiveId());
+            const auto t=triangle(*body.mesh,face,poses[body.proxy->index]);
+            CandidateTriangle c{t,t[0],t[0],face,side};
+            for (int k=0;k<3;++k) {
+                c.lo[k]=std::min({t[0][k],t[1][k],t[2][k]})-pad;
+                c.hi[k]=std::max({t[0][k],t[1][k],t[2][k]})+pad;
+            }
+            candidates.push_back(c);
+        }
+    };
+    gather(a,ua,spacing-rb-pad,0);
+    gather(b,-ub,spacing-ra-pad,1);
+    if (candidates.empty()) return false;
+    Vec lo=candidates.front().lo,hi=candidates.front().hi,width_sum{};
+    for (const auto& c:candidates) for (int k=0;k<3;++k) {
+        lo[k]=std::min(lo[k],c.lo[k]);
+        hi[k]=std::max(hi[k],c.hi[k]);
+        width_sum[k]+=c.hi[k]-c.lo[k];
+    }
+    int sweep=0;
+    for (int k=1;k<3;++k)
+        if ((hi[k]-lo[k])*width_sum[sweep]>(hi[sweep]-lo[sweep])*width_sum[k]) sweep=k;
+    std::vector<const CandidateTriangle*> order;
+    order.reserve(candidates.size());
+    for (const auto& c:candidates) order.push_back(&c);
+    std::sort(order.begin(),order.end(),[&](const auto* l,const auto* r) {
+        return std::tie(l->lo[sweep],l->side,l->face)<std::tie(r->lo[sweep],r->side,r->face);
+    });
+    std::array<std::vector<const CandidateTriangle*>,2> active;
+    for (const auto* entry:order) {
+        const auto& c=*entry;
+        auto& others=active[1-c.side];
+        std::erase_if(others,[&](const auto* p){ return p->hi[sweep]<c.lo[sweep]; });
+        for (const auto* p:others) {
+            bool disjoint=false;
+            for (int k=0;k<3;++k) disjoint|=c.lo[k]>p->hi[k] || p->lo[k]>c.hi[k];
+            if (disjoint) continue;
+            ++triangle_tests;
+            const auto& first=c.side ? *p : c;
+            const auto& second=c.side ? c : *p;
+            if (visitor(first.face,second.face,first.triangle,second.triangle)) return true;
+        }
+        active[c.side].push_back(&c);
+    }
+    return false;
+}
 
 Pairs sweep_and_prune(const std::vector<Body>& bodies, std::vector<std::size_t>& order) {
     Pairs candidates;
@@ -160,10 +264,16 @@ void enclosed(const Body& a, const Body& b, std::span<const Intersection> hits, 
 
 template<class Box,class Visitor>
 bool visit_pair(const Body& a, const Body& b, std::span<const RigidPlacement> poses,
-                std::size_t& node_tests,std::size_t& triangle_tests,Visitor& visitor) {
+                std::size_t& node_tests,std::size_t& triangle_tests,Visitor& visitor,bool window) {
+    if (window)
+        if (auto hit=visit_contact_window<Box>(a,b,poses,node_tests,triangle_tests,visitor)) return *hit;
     const auto i = a.proxy->index, j = b.proxy->index;
     const auto& first = *std::get<std::shared_ptr<Tree<Box>>>(a.tree);
     const auto& second = *std::get<std::shared_ptr<Tree<Box>>>(b.tree);
+    // Traverse in the second body's frame. Its tree is already positioned
+    // there, and its AABBs retain their original tightness as the body turns.
+    const X relative = b.world.inverse() * a.world;
+    const double padding = 4 * (a.padding + b.padding);
     std::vector<std::pair<int,int>> pending{{0,0}};
     while (!pending.empty()) {
         const auto [ia, ib] = pending.back();
@@ -171,7 +281,7 @@ bool visit_pair(const Body& a, const Body& b, std::span<const RigidPlacement> po
         ++node_tests;
         const auto& na = first.getBV(ia);
         const auto& nb = second.getBV(ib);
-        if (!placed(na.bv, a.world, a.padding).overlap(placed(nb.bv, b.world, b.padding))) continue;
+        if (!placed(na.bv, relative, padding).overlap(nb.bv)) continue;
         if (na.isLeaf() && nb.isLeaf()) {
             const auto fa = static_cast<std::size_t>(na.primitiveId());
             const auto fb = static_cast<std::size_t>(nb.primitiveId());
@@ -195,6 +305,7 @@ struct MeshScene::Impl {
     std::unique_ptr<fcl::BroadPhaseCollisionManagerd> manager;
     std::vector<std::size_t> order;
     bool registered{};
+    bool candidate_window{};
     MeshMethod method;
     using Pair = std::pair<std::size_t,std::size_t>;
     std::map<Pair,Pair> last_triangle_pair;
@@ -211,11 +322,11 @@ struct MeshScene::Impl {
     }
 
     template<class Result,class Visitor>
-    bool visit(Pair pair,std::span<const RigidPlacement> poses,Result& result,Visitor visitor) {
+    bool visit(Pair pair,std::span<const RigidPlacement> poses,Result& result,Visitor visitor,bool window=false) {
         const auto& a=bodies[pair.first];
         const auto& b=bodies[pair.second];
-        if (method==MeshMethod::obb) return visit_pair<Oriented>(a,b,poses,result.node_pairs,result.triangle_tests,visitor);
-        return visit_pair<Bounds>(a,b,poses,result.node_pairs,result.triangle_tests,visitor);
+        if (method==MeshMethod::obb) return visit_pair<Oriented>(a,b,poses,result.node_pairs,result.triangle_tests,visitor,false);
+        return visit_pair<Bounds>(a,b,poses,result.node_pairs,result.triangle_tests,visitor,window);
     }
 
     Pairs candidates() {
@@ -234,9 +345,10 @@ struct MeshScene::Impl {
     }
 };
 
-MeshScene::MeshScene(std::span<const std::shared_ptr<const MeshData>> inputs, MeshMethod method)
+MeshScene::MeshScene(std::span<const std::shared_ptr<const MeshData>> inputs, MeshMethod method, bool candidate_window)
     : impl_(std::make_unique<Impl>()) {
     impl_->method = method;
+    impl_->candidate_window = candidate_window && method!=MeshMethod::obb;
     if (method == MeshMethod::sap) {
         impl_->order.resize(inputs.size());
         std::iota(impl_->order.begin(),impl_->order.end(),std::size_t{0});
@@ -255,6 +367,12 @@ MeshScene::MeshScene(std::span<const std::shared_ptr<const MeshData>> inputs, Me
         auto proxy = std::make_unique<BodyProxy>(impl_->bodies.size(), proxy_shape);
         auto local = std::visit([](const auto& tree) { return tree->aabb_local; }, it->second);
         impl_->bodies.push_back({mesh,it->second,solids.at(mesh.get()),std::move(proxy),local});
+        auto& body=impl_->bodies.back();
+        if (impl_->candidate_window) for (const auto& point:mesh->vertices) {
+            const V v=vector(point)-local.center();
+            for (int k=0;k<3;++k)
+                body.radial[k]=std::max(body.radial[k],std::hypot(v[(k+1)%3],v[(k+2)%3]));
+        }
     }
 }
 
@@ -289,7 +407,7 @@ IntersectionResult MeshScene::intersect(std::span<const RigidPlacement> poses, b
     return result;
 }
 
-OverlapResult MeshScene::overlaps(std::span<const RigidPlacement> poses) {
+OverlapResult MeshScene::overlaps(std::span<const RigidPlacement> poses, bool follow_adjacent) {
     auto& state=*impl_;
     const auto candidates=state.place(poses);
     OverlapResult result;
@@ -301,10 +419,30 @@ OverlapResult MeshScene::overlaps(std::span<const RigidPlacement> poses) {
         auto hint=state.last_triangle_pair.find(pair);
         if (hint!=state.last_triangle_pair.end()) {
             const auto [fa,fb]=hint->second;
+            const auto ta=triangle(*left.mesh,fa,poses[a]),tb=triangle(*right.mesh,fb,poses[b]);
             ++result.triangle_tests;
-            if (triangle_overlap(triangle(*left.mesh,fa,poses[a]),triangle(*right.mesh,fb,poses[b]))) {
+            if (triangle_overlap(ta,tb)) {
                 result.overlap=result.reused_triangle_pair=true;
                 return result;
+            }
+            if (follow_adjacent) {
+                const auto left_ring=left.boundary->neighbors(fa),right_ring=right.boundary->neighbors(fb);
+                std::array<Triangle,3> tl,tr;
+                const auto test=[&](std::size_t ia,std::size_t ib,const Triangle& x,const Triangle& y) {
+                    ++result.triangle_tests;
+                    if (!triangle_overlap(x,y)) return false;
+                    hint->second={ia,ib};
+                    result.overlap=result.adjacent_triangle_pair=true;
+                    return true;
+                };
+                for (std::size_t k=0;k<3;++k) {
+                    tl[k]=triangle(*left.mesh,left_ring[k],poses[a]);
+                    if (test(left_ring[k],fb,tl[k],tb)) return result;
+                    tr[k]=triangle(*right.mesh,right_ring[k],poses[b]);
+                    if (test(fa,right_ring[k],ta,tr[k])) return result;
+                }
+                for (std::size_t i=0;i<3;++i) for (std::size_t j=0;j<3;++j)
+                    if (test(left_ring[i],right_ring[j],tl[i],tr[j])) return result;
             }
             state.last_triangle_pair.erase(hint);
         }
@@ -312,7 +450,7 @@ OverlapResult MeshScene::overlaps(std::span<const RigidPlacement> poses) {
             if (!triangle_overlap(ta,tb)) return false;
             state.last_triangle_pair[pair]={fa,fb};
             return true;
-        });
+        },state.candidate_window);
         if (result.overlap) return result;
         IntersectionResult inside;
         enclosed(left,right,{},true,inside);

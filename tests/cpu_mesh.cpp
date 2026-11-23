@@ -102,6 +102,33 @@ void check_local_regions() {
     }
     auto local=mesh_region_query(mesh,mesh,MeshMethod::obb);
     auto full=mesh_region_query(mesh,mesh,MeshMethod::obb,{},false);
+    std::array<std::shared_ptr<const MeshData>,2> mesh_pair{mesh,mesh};
+    {
+        MeshScene sliding(mesh_pair,MeshMethod::obb);
+        std::array<RigidPlacement,2> poses{};
+        bool advanced=false;
+        for (int i=0;i<=100;++i) {
+            poses[1].origin={.997,-.75+.015*i,.037};
+            const auto hit=sliding.overlaps(poses);
+            require(hit.overlap,"lost overlap during a tangential slide");
+            advanced|=hit.adjacent_triangle_pair;
+        }
+        require(advanced,"did not follow an intersecting pair onto neighboring triangles");
+        poses[1].origin[0]=1.002;
+        require(!sliding.overlaps(poses).overlap,"accepted a stale witness after separation");
+    }
+    for (auto method:{MeshMethod::aabb,MeshMethod::obb,MeshMethod::sap}) {
+        MeshScene geometry(mesh_pair,method,true);
+        std::array<RigidPlacement,2> poses{};
+        for (int i=0;i<12;++i) {
+            const double angle=.1*i;
+            poses[1].origin={.98+.013*i,.025,.031};
+            poses[1].basis={{{std::cos(angle),std::sin(angle),0},{-std::sin(angle),std::cos(angle),0},{0,0,1}}};
+            const auto all=geometry.intersect(poses);
+            require(geometry.overlaps(poses).overlap==
+                    (!all.intersections.empty() || !all.enclosed.empty()),"contact-window pruning changed overlap");
+        }
+    }
     ContactWork work,reference;
     for (Vec offset:std::vector<Vec>{{.96,.031,.048},{.95,.032,.047},{-.96,.031,.048},
                                      {.021,.97,-.024},{2.,0,0},{.035,.012,.017}}) {

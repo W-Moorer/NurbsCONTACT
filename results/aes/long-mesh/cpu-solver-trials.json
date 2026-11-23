@@ -1,0 +1,68 @@
+{
+  "mujoco_rigid_flex": {
+    "version": "3.4.0",
+    "requested_s": 5,
+    "step_s": 0.0001,
+    "cap_s": 1800,
+    "status": "timeout",
+    "triangles": 65732,
+    "rigid_bodies": 3,
+    "rigid_flexes": 4,
+    "triangle_radius_m": 2e-06,
+    "last_reported_steps": 8000,
+    "online_progress": [
+      {
+        "step": 1000,
+        "elapsed_s": 174.07
+      },
+      {
+        "step": 2000,
+        "elapsed_s": 420.13
+      },
+      {
+        "step": 3000,
+        "elapsed_s": 648.54
+      },
+      {
+        "step": 4000,
+        "elapsed_s": 844.55
+      },
+      {
+        "step": 5000,
+        "elapsed_s": 1031.93
+      },
+      {
+        "step": 6000,
+        "elapsed_s": 1189.83
+      },
+      {
+        "step": 7000,
+        "elapsed_s": 1397.32
+      },
+      {
+        "step": 8000,
+        "elapsed_s": 1707.37
+      }
+    ]
+  },
+  "experimental_triangle_force": {
+    "status": "solver_failure",
+    "method": "mesh-obb",
+    "solver": "sap",
+    "process_s": 16.213448599970434,
+    "requested_s": 5.0,
+    "step_s": 0.0001,
+    "depth_guard_override_um": null,
+    "contact_response": "deepest verified mesh witness on intersecting faces",
+    "last_log_lines": [
+      "impulse trial at 0.003574 s: predicted overlap 175.058655 um outside the range (0, 53.000000] um for contact pair 1"
+    ]
+  },
+  "native_mesh_obb_local_volume_sap": {
+    "requested_s": 5,
+    "step_s": 0.0001,
+    "cap_s": 1800,
+    "status": "timeout",
+    "wall_s": 1800.1224918999942
+  }
+}

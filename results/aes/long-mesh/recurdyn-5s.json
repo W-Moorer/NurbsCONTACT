@@ -1,0 +1,63 @@
+{
+  "version": "10.1.40231.2023 x64",
+  "steps": 50000,
+  "h": 9.999999999999999e-05,
+  "physical_s": 5.0,
+  "setup_s": 248.07659950002562,
+  "online_s": 1044.3948958999827,
+  "speed_initial": [
+    188.495559215388,
+    -94.2477796076938,
+    47.1238898038469
+  ],
+  "peak_force": [
+    5221.156775951392,
+    12760.006785392206
+  ],
+  "patch_plane_tolerance_scale": null,
+  "solver_reported_cpu_s": 1004.75,
+  "shared_samples": 50001,
+  "shaft_speed_rms_difference_rad_s": [
+    3.5623992265919537,
+    0.9927117877816715,
+    0.974245171178687
+  ],
+  "transmission_error_rms_difference_mrad": [
+    0.9388003099862114,
+    0.884143550416812
+  ],
+  "output_contact_torque_rms_difference_Nm": 72.76376669476134,
+  "mean_output_contact_torque_Nm": {
+    "mesh_hht": 137.80461169908472,
+    "RecurDyn": 137.9468732675683
+  },
+  "time_refinements": {
+    "8": {
+      "shaft_speed_rms_difference_rad_s": [
+        3.563877064124859,
+        0.9933727332092593,
+        0.9744243303403859
+      ],
+      "output_torque_rms_difference_Nm": 72.78212608797311,
+      "mean_output_torque_Nm": 137.8051998991315
+    },
+    "16": {
+      "shaft_speed_rms_difference_rad_s": [
+        3.5623992265919537,
+        0.9927117877816715,
+        0.974245171178687
+      ],
+      "output_torque_rms_difference_Nm": 72.76376669476134,
+      "mean_output_torque_Nm": 137.80461169908472
+    },
+    "32": {
+      "shaft_speed_rms_difference_rad_s": [
+        3.5621083169520857,
+        0.9925579530088281,
+        0.9742031806531244
+      ],
+      "output_torque_rms_difference_Nm": 72.75990781723814,
+      "mean_output_torque_Nm": 137.8045261895665
+    }
+  }
+}

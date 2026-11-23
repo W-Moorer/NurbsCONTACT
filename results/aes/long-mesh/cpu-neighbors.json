@@ -1,0 +1,100 @@
+{
+  "trace_sha256": "a11c2e6fa63464f1636bb47b727746f8783875e8ca743d14bf8d981b8e7d6824",
+  "mesh_sha256": [
+    "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+    "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+    "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+    "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0"
+  ],
+  "physical_s": 5.0,
+  "steps": 50000,
+  "candidate_window": false,
+  "methods": {
+    "mesh-obb": [
+      {
+        "queries": 50001,
+        "overlap_frames": 49982,
+        "process_s": 14.994254300021566,
+        "query_s": 10.6832895,
+        "p99_us": 1843.0,
+        "node_pairs": 30030017,
+        "triangle_tests": 784475,
+        "witness_reuses": 14625,
+        "adjacent_witnesses": 17814,
+        "overlap_without_sampled_force": 0,
+        "sampled_force_without_overlap": 0
+      },
+      {
+        "queries": 50001,
+        "overlap_frames": 49978,
+        "process_s": 10.088785099971574,
+        "query_s": 4.674782,
+        "p99_us": 1477.6,
+        "node_pairs": 12628123,
+        "triangle_tests": 307949,
+        "witness_reuses": 29116,
+        "adjacent_witnesses": 15820,
+        "overlap_without_sampled_force": 4,
+        "sampled_force_without_overlap": 0
+      }
+    ],
+    "mesh-aabb": [
+      {
+        "queries": 50001,
+        "overlap_frames": 49982,
+        "process_s": 155.21276970003964,
+        "query_s": 149.9113798,
+        "p99_us": 24748.4,
+        "node_pairs": 640397957,
+        "triangle_tests": 3389513,
+        "witness_reuses": 15082,
+        "adjacent_witnesses": 16644,
+        "overlap_without_sampled_force": 0,
+        "sampled_force_without_overlap": 0
+      },
+      {
+        "queries": 50001,
+        "overlap_frames": 49978,
+        "process_s": 25.295989899954293,
+        "query_s": 20.640403499999998,
+        "p99_us": 6827.299999999999,
+        "node_pairs": 56559430,
+        "triangle_tests": 10567651,
+        "witness_reuses": 28480,
+        "adjacent_witnesses": 16619,
+        "overlap_without_sampled_force": 4,
+        "sampled_force_without_overlap": 0
+      }
+    ],
+    "mesh-sap": [
+      {
+        "queries": 50001,
+        "overlap_frames": 49982,
+        "process_s": 133.85204980004346,
+        "query_s": 129.4419252,
+        "p99_us": 20814.4,
+        "node_pairs": 640397957,
+        "triangle_tests": 3389513,
+        "witness_reuses": 15082,
+        "adjacent_witnesses": 16644,
+        "overlap_without_sampled_force": 0,
+        "sampled_force_without_overlap": 0
+      },
+      {
+        "queries": 50001,
+        "overlap_frames": 49978,
+        "process_s": 31.19924769998761,
+        "query_s": 25.213323399999997,
+        "p99_us": 8792.1,
+        "node_pairs": 56559430,
+        "triangle_tests": 10567651,
+        "witness_reuses": 28480,
+        "adjacent_witnesses": 16619,
+        "overlap_without_sampled_force": 4,
+        "sampled_force_without_overlap": 0
+      }
+    ]
+  },
+  "incomplete": {},
+  "flags_identical_to_cpu_overlap": true
+}

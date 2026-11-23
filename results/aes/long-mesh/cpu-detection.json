@@ -1,0 +1,91 @@
+{
+  "trace_sha256": "a11c2e6fa63464f1636bb47b727746f8783875e8ca743d14bf8d981b8e7d6824",
+  "mesh_sha256": [
+    "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+    "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+    "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+    "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0"
+  ],
+  "physical_s": 5.0,
+  "steps": 50000,
+  "methods": {
+    "mesh-aabb": [
+      {
+        "queries": 50001,
+        "overlap_frames": 49982,
+        "process_s": 825.1908385000424,
+        "query_s": 814.7058678999998,
+        "p99_us": 100808.59999999999,
+        "node_pairs": 1464128478,
+        "triangle_tests": 18544275,
+        "witness_reuses": 20711,
+        "overlap_without_sampled_force": 0,
+        "sampled_force_without_overlap": 0
+      },
+      {
+        "queries": 50001,
+        "overlap_frames": 49978,
+        "process_s": 247.15110609994736,
+        "query_s": 237.17017860000004,
+        "p99_us": 35970.9,
+        "node_pairs": 297895476,
+        "triangle_tests": 50395298,
+        "witness_reuses": 31398,
+        "overlap_without_sampled_force": 4,
+        "sampled_force_without_overlap": 0
+      }
+    ],
+    "mesh-obb": [
+      {
+        "queries": 50001,
+        "overlap_frames": 49982,
+        "process_s": 44.113013399997726,
+        "query_s": 34.51636549999999,
+        "p99_us": 4628.8,
+        "node_pairs": 49632823,
+        "triangle_tests": 691614,
+        "witness_reuses": 19964,
+        "overlap_without_sampled_force": 0,
+        "sampled_force_without_overlap": 0
+      },
+      {
+        "queries": 50001,
+        "overlap_frames": 49978,
+        "process_s": 34.79256600001827,
+        "query_s": 25.322121199999998,
+        "p99_us": 3688.4,
+        "node_pairs": 38874167,
+        "triangle_tests": 450701,
+        "witness_reuses": 32450,
+        "overlap_without_sampled_force": 4,
+        "sampled_force_without_overlap": 0
+      }
+    ],
+    "mesh-sap": [
+      {
+        "queries": 50001,
+        "overlap_frames": 49982,
+        "process_s": 1022.6647582000005,
+        "query_s": 1010.4141066,
+        "p99_us": 116843.4,
+        "node_pairs": 1464128478,
+        "triangle_tests": 18544275,
+        "witness_reuses": 20711,
+        "overlap_without_sampled_force": 0,
+        "sampled_force_without_overlap": 0
+      },
+      {
+        "queries": 50001,
+        "overlap_frames": 49978,
+        "process_s": 340.77764300000854,
+        "query_s": 325.20811499999996,
+        "p99_us": 48189.5,
+        "node_pairs": 297895476,
+        "triangle_tests": 50395298,
+        "witness_reuses": 31398,
+        "overlap_without_sampled_force": 4,
+        "sampled_force_without_overlap": 0
+      }
+    ]
+  }
+}

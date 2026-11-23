@@ -8,6 +8,7 @@ public:
     ~SolidBoundary();
     bool contains(Vec local) const;
     std::size_t component(std::size_t face) const;
+    std::array<std::size_t,3> neighbors(std::size_t face) const;
     std::span<const std::size_t> representatives() const;
     const std::array<std::size_t,6>& extreme_vertices(std::size_t component) const;
 private:
