@@ -1,0 +1,227 @@
+{
+  "baseline": "CPU node-to-NURBS (independent implementation)",
+  "sphere_radius_mm": 61.0,
+  "sphere_geometry": {
+    "setup_s": 0.0478108,
+    "online_s": 0.4318507,
+    "queries": 90,
+    "classifications": 0,
+    "faces_a": 1,
+    "nodes_a": 0,
+    "nodes_b": 0,
+    "nodes": 90,
+    "max_gap_error_um": 2.1316282072803006e-11,
+    "max_position_error_um": 3.1174936010075254e-11,
+    "max_normal_vector_error": 8.308148362110449e-16,
+    "max_abs_tangent_dot_analytic_normal": 7.199374787011837e-16,
+    "max_tangential_residual_mm": 2.916011197720473e-14
+  },
+  "trim_control": {
+    "setup_s": 0.0486166,
+    "online_s": 0.0204686,
+    "queries": 3,
+    "classifications": 0,
+    "faces_a": 6,
+    "nodes_a": 0,
+    "nodes_b": 0,
+    "gaps_mm": [
+      -0.5,
+      0.5,
+      1.4142135623730951
+    ],
+    "sharp_edge_reported": true
+  },
+  "impacts": [
+    {
+      "hht_evaluations": 1533,
+      "subdivisions": 0,
+      "setup_s": 0.1839584,
+      "online_s": 54.7057829,
+      "queries": 2008,
+      "classifications": 2012,
+      "faces_a": 1,
+      "nodes_a": 1795,
+      "nodes_b": 1795,
+      "step_us": 125,
+      "duration_s": 0.16,
+      "rows": 1281,
+      "source_deflection_mm": 0.5,
+      "body_rotations_rad": [
+        0,
+        -0.0
+      ],
+      "rotation_axis": [
+        1,
+        2,
+        0.5
+      ],
+      "displacement_rms_um": 0.08779366139449266,
+      "axial_force_rms_N": 0.00021942214967847042,
+      "peak_axial_force_N": 22.499728227680578
+    },
+    {
+      "hht_evaluations": 1534,
+      "subdivisions": 0,
+      "setup_s": 0.1652207,
+      "online_s": 38.2788624,
+      "queries": 1006,
+      "classifications": 1013,
+      "faces_a": 1,
+      "nodes_a": 1795,
+      "nodes_b": 1795,
+      "step_us": 125,
+      "duration_s": 0.16,
+      "rows": 1281,
+      "source_deflection_mm": 0.5,
+      "body_rotations_rad": [
+        0.47,
+        -0.32899999999999996
+      ],
+      "rotation_axis": [
+        1,
+        2,
+        0.5
+      ],
+      "displacement_rms_um": 91.56899124166239,
+      "axial_force_rms_N": 0.1811364976568638,
+      "peak_axial_force_N": 22.476281843263443
+    },
+    {
+      "hht_evaluations": 1533,
+      "subdivisions": 0,
+      "setup_s": 3.8614992,
+      "online_s": 34.1466911,
+      "queries": 1004,
+      "classifications": 1004,
+      "faces_a": 1,
+      "nodes_a": 30508,
+      "nodes_b": 30508,
+      "step_us": 125,
+      "duration_s": 0.16,
+      "rows": 1281,
+      "source_deflection_mm": 0.025,
+      "body_rotations_rad": [
+        0.47,
+        -0.32899999999999996
+      ],
+      "rotation_axis": [
+        1,
+        2,
+        0.5
+      ],
+      "displacement_rms_um": 2.207705963191441,
+      "axial_force_rms_N": 0.004590087061506683,
+      "peak_axial_force_N": 22.499135746373277
+    }
+  ],
+  "gear_node": {
+    "setup_s": 4.7492113,
+    "online_s": 0.0438116,
+    "queries": 1,
+    "classifications": 0,
+    "faces_a": 267,
+    "nodes_a": 0,
+    "nodes_b": 0,
+    "time_s": 1.2527080078125001,
+    "gap_um": 17.638362923412867,
+    "original_step_gap_um": 17.63836292340781,
+    "face": 106,
+    "tangential_residual_mm": 6.496127494500269e-15
+  },
+  "gear_pairs": [
+    {
+      "setup_s": 8.0399731,
+      "online_s": 22.823693,
+      "queries": 25,
+      "classifications": 874,
+      "faces_a": 135,
+      "nodes_a": 3842,
+      "nodes_b": 5160,
+      "time_s": 1.25275,
+      "source_deflection_mm": 0.25,
+      "pose_mm_axis_rad": [
+        90.0,
+        0,
+        38.0,
+        0,
+        0,
+        -1,
+        117.99495041269475,
+        196.77493952508075,
+        0,
+        38.0,
+        0,
+        0,
+        1,
+        55.92559843992475
+      ],
+      "depth_mm": 0.02008186598750868,
+      "unit_normal": [
+        0.3443050360562992,
+        -0.8703674289376652,
+        -0.35201502921140887
+      ],
+      "on_a_mm": [
+        127.73099791147895,
+        -5.314983024045538,
+        43.326264214701624
+      ],
+      "on_b_mm": [
+        127.72408362388603,
+        -5.297504421977723,
+        43.33333333334384
+      ],
+      "pair_stiffness_N_m": 160000000.0,
+      "output_torque_Nm": 198.96654429400348,
+      "recurDyn_output_torque_Nm": 145.92930508683688,
+      "sampled_STEP_output_torque_Nm": 199.38572484521765
+    },
+    {
+      "setup_s": 11.6922196,
+      "online_s": 178.7966419,
+      "queries": 166,
+      "classifications": 7525,
+      "faces_a": 135,
+      "nodes_a": 25352,
+      "nodes_b": 23929,
+      "time_s": 1.25275,
+      "source_deflection_mm": 0.025,
+      "pose_mm_axis_rad": [
+        90.0,
+        0,
+        38.0,
+        0,
+        0,
+        -1,
+        117.99495041269475,
+        196.77493952508075,
+        0,
+        38.0,
+        0,
+        0,
+        1,
+        55.92559843992475
+      ],
+      "depth_mm": 0.02019777584955366,
+      "unit_normal": [
+        0.34196766882957275,
+        -0.8712884297195176,
+        -0.3520150362018148
+      ],
+      "on_a_mm": [
+        123.91343423673075,
+        4.280153894927071,
+        41.027261545081686
+      ],
+      "on_b_mm": [
+        123.90652725040795,
+        4.297751983330858,
+        41.034371465878564
+      ],
+      "pair_stiffness_N_m": 160000000.0,
+      "output_torque_Nm": 200.42563950166195,
+      "recurDyn_output_torque_Nm": 145.92930508683688,
+      "sampled_STEP_output_torque_Nm": 199.38572484521765
+    }
+  ]
+}
