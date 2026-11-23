@@ -1,0 +1,44 @@
+{
+  "method": "mesh-aabb",
+  "solver": "penalty",
+  "step_s": 0.00025,
+  "duration_s": 0.16,
+  "frames": 641,
+  "scene_sha256": "05767980630c319532fdc8d251f54915c306c1fe2470f6b6b117081e743f9428",
+  "mesh_sha256": "4dc7190110c747baf7b7ad37481c51b7f9e7f9efb5146e1096beac21ac93342d",
+  "step_sha256": "b1b75a633d5f5de9267246c3faa9457f22615bc8b742d4cc9f297e9df2e81d2c",
+  "triangles": 22482,
+  "mesh_size_m": 0.0015,
+  "entry_s": 0.040040213129618946,
+  "release_s": 0.07143040513406027,
+  "active_duration_s": 0.03139019200444132,
+  "reference_entry_s": 0.039999999999999994,
+  "reference_active_duration_s": 0.031415926535897934,
+  "peak_force_N": 22.499078524925096,
+  "reference_peak_force_N": 22.5,
+  "impulse_Ns": 0.4500053551479178,
+  "reference_impulse_Ns": 0.45,
+  "final_velocity_m_s": [
+    -0.4500053550426678,
+    5.355042667697574e-06
+  ],
+  "reference_final_velocity_m_s": [
+    -0.45,
+    0.0
+  ],
+  "max_momentum_drift_kg_m_s": 1.6653345369377348e-16,
+  "position_rmse_m": [
+    9.5555655766666e-06,
+    9.555565576390176e-06
+  ],
+  "force_rmse_N": 0.01916598514884018,
+  "integration_s": 26.1287771,
+  "setup_s": 0.3583148,
+  "process_wall_s": 38.35548989998642,
+  "force_evaluations": 776,
+  "subdivisions": 0,
+  "maximum_hht_residual": 3.659362984853587e-08,
+  "event_tolerance_s": 0.0,
+  "step_checks": 0,
+  "event_rejections": 0
+}

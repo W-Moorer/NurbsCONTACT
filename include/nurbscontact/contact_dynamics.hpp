@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <span>
+#include <stdexcept>
 
 namespace nc::dynamics {
 
@@ -80,6 +81,32 @@ public:
     virtual PairProximity closest(ContactPose a, ContactPose b, double cutoff, ContactWork& work) const = 0;
 };
 
+struct ContactRegion {
+    Vec point, normal; // Common world-space point, unit normal from A toward B.
+    double depth_m;
+};
+
+class UnresolvedContact : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+};
+
+struct SurfaceTransition {
+    std::optional<double> fraction;
+    bool start_in_contact{};
+    bool end_in_contact{};
+    std::size_t nodes{};
+};
+
+class PairRegionQuery {
+public:
+    virtual ~PairRegionQuery() = default;
+    virtual std::vector<ContactRegion> regions(ContactPose a, ContactPose b, ContactWork& work) const = 0;
+    // A sweep from a separated endpoint locates an entry or a release.
+    virtual SurfaceTransition transition(ContactPose a0,ContactPose b0,ContactPose a1,ContactPose b1,
+                                         double tolerance_m) const = 0;
+};
+
 struct ContactBodyState {
     const ContactSurface* surface;
     ContactPose pose;
@@ -108,6 +135,7 @@ struct ContactPair {
     ContactMaterial material;
     double activation{};
     std::shared_ptr<const PairContactQuery> closest{};
+    std::shared_ptr<const PairRegionQuery> regions{};
 };
 
 struct ContactSample {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nurbscontact/triangle_bvh.hpp"
+#include "nurbscontact/contact_dynamics.hpp"
 
 #include <filesystem>
 #include <memory>
@@ -81,5 +82,9 @@ private:
 };
 
 std::vector<Vec> intersect_triangles(const Triangle& a, const Triangle& b);
+
+// Each connected overlap volume supplies one unilateral penalty region.
+std::shared_ptr<const dynamics::PairRegionQuery> mesh_region_query(
+    std::shared_ptr<const MeshData> a, std::shared_ptr<const MeshData> b, MeshMethod method);
 
 } // namespace nc::cpu

@@ -160,6 +160,39 @@ bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState&
               ContactWork& work, ContactSample& sample, bool observe,
               const ImpactHistory& previous) {
     ++work.pairs;
+    if (pair.regions) {
+        std::vector<ContactRegion> regions;
+        try {
+            regions=pair.regions->regions(a.pose,b.pose,work);
+        } catch (const UnresolvedContact&) {
+            ++work.unresolved_queries;
+            return false;
+        }
+        if (regions.empty()) { ++work.culled; return true; }
+        if (pair.material.approach_floor>0 && regions.size()>1)
+            throw std::runtime_error("incidence-dependent damping needs per-region impact histories");
+        for (const auto& region : regions) {
+            ContactSample item;
+            item.gap=-region.depth_m;
+            if (region.depth_m>pair.material.maximum_depth) return false;
+            const Vec ra=sub(region.point,a.pose.origin), rb=sub(region.point,b.pose.origin);
+            const auto differential=[&](const Twist& da,const Twist& db) {
+                const Vec relative=sub(db.at(rb),da.at(ra));
+                return std::pair{dot3(region.normal,relative),tangential(relative,region.normal)};
+            };
+            if (!assemble_contact(forces,pair.material,item,a,b,velocity,previous,differential)) return false;
+            if (!sample.resolved || item.gap<sample.gap) {
+                sample.gap=item.gap;
+                sample.gap_rate=item.gap_rate;
+                sample.impact_speed=item.impact_speed;
+                sample.witness_a=sample.witness_b=region.point;
+            }
+            sample.resolved=true;
+            sample.normal_force+=item.normal_force;
+            sample.friction=add(sample.friction,item.friction);
+        }
+        return true;
+    }
     if (pair.closest) return evaluate_closest(forces, a, b, pair, velocity, work, sample, previous);
     const Vec anchor_a = a.pose.point(pair.anchor_a);
     const Vec anchor_b = b.pose.point(pair.anchor_b);

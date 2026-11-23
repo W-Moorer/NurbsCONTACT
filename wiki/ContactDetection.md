@@ -70,3 +70,23 @@ The [two-sphere replay](../benchmarks/aes/cpu_mesh_spheres.py) uses all 641 pose
 At the frames with the most intersecting triangle pairs, the coarse mesh has 128 pairs and the fine mesh has 250. Grouping the exact boundary witnesses gives one connected intersection in both cases. These comparisons measure event timing and connectivity on prescribed poses. A mesh-driven force response requires a separate simulation.
 
 At the same maximum-compression pose, the sphere intersection projects to a disk of area `π(R² − d²/4)`, where `d` is center spacing. The geometric reference area is 563.708 mm². The 3 mm mesh gives 556.942 mm² and the 1.5 mm mesh gives 561.967 mm². The angles between the loop area vector and the line of centers are 0.00640° and 0.000255°, respectively. Both bodies use the same triangulation at the same orientation for this translational trajectory.
+
+## Mesh-driven penalty dynamics
+
+```text
+nc_contact MODEL.scene 0 DT_S DURATION_S STRIDE OUTPUT --method mesh-obb --mesh-dir MESH_DIRECTORY --solver penalty
+```
+
+Use the same model, material and initial conditions across `mesh-aabb`, `mesh-obb` and `mesh-sap`. Each body resolves its scene asset to a matching relative Gmsh filename. The v2 pair record `surface A B stiffness exponent damping friction slip_speed maximum_depth` selects contact when the surfaces meet. Existing surface probe records also work with the mesh methods. Add `--event-tol-s 0.00005 --ccd-tol-m 1e-7` to check for step-interior entry and release. Both-endpoints-active checks currently track the pair as a whole. They do not detect the birth of another disconnected patch on an already active pair.
+
+At each HHT force evaluation the selected hierarchy finds intersecting triangles and enclosed components. For positive candidates the CPU reference implementation constructs the Boolean intersection of the two closed meshes. Each connected overlap volume contributes one contact at its volume centroid. The difference of the area-weighted outward normals on the two source boundaries gives the loading direction. Depth is the overlap width along that direction. Both bodies receive equal and opposite forces at the same point. A fully enclosed or symmetric overlap with no resolved direction reports a failure. Constructing the overlap of the full meshes is part of the measured cost.
+
+The [impact benchmark](../benchmarks/aes/cpu_mesh_impact.py) integrates both slider masses from their initial state. The independent linear-spring solution gives an entry time of 40 ms, an impulse of 0.45 N·s and a peak of 22.5 N. On a fixed mesh the three broad phases produced matching response histories in these runs.
+
+| Target size | HHT step | Entry error | Force RMSE | Impulse | CPU integration (OBB) |
+| --- | --- | --- | --- | --- | --- |
+| [3 mm](../results/aes/cpu-mesh/impact/3mm-mesh-obb-250us.json) | 250 µs | 128.9 µs | 0.07862 N | 0.449976 N·s | 15.72 s |
+| [1.5 mm](../results/aes/cpu-mesh/impact/1p5mm-mesh-obb-250us.json) | 250 µs | 40.2 µs | 0.01917 N | 0.450005 N·s | 23.82 s |
+| [1.5 mm](../results/aes/cpu-mesh/impact/1p5mm-mesh-obb-125us.json) | 125 µs | 40.2 µs | 0.01871 N | 0.450001 N·s | 46.04 s |
+
+Each run spans 0.16 s. The timings are single measurements on the local CPU. The [entry/release guarded run](../results/aes/cpu-mesh/impact/3mm-mesh-obb-250us-guard.json) used 648 acceptance checks and subdivided four trials. Its entry error remained 128.9 µs at the coarse mesh resolution.

@@ -9,8 +9,67 @@ void require(bool condition, const char* message) {
     if (!condition) throw std::runtime_error(message);
 }
 
+void append_box(MeshData& mesh,double left,double right) {
+    const std::size_t start=mesh.vertices.size();
+    for (const double z : {0.,1.})
+        for (const double y : {0.,1.})
+            for (const double x : {left,right}) mesh.vertices.push_back({x,y,z});
+    const std::array<std::array<std::size_t,3>,12> faces{{
+        {0,2,3},{0,3,1},{4,5,7},{4,7,6},{0,1,5},{0,5,4},
+        {2,6,7},{2,7,3},{0,4,6},{0,6,2},{1,3,7},{1,7,5}}};
+    for (auto f : faces) {
+        for (auto& id : f) id+=start;
+        mesh.faces.push_back(f);
+    }
+}
+
+void check_penalty_regions() {
+    using namespace nc::dynamics;
+    auto box=std::make_shared<MeshData>();
+    append_box(*box,0.,1.);
+    auto upper=std::make_shared<MeshData>(*box);
+    upper->vertices.push_back({.25,.5,0.});
+    upper->faces[0]={0,2,8};
+    upper->faces.push_back({2,3,8});
+    upper->faces.push_back({3,0,8});
+    ContactPose resting,pressed;
+    pressed.origin[2]=.75;
+    ContactWork work;
+    for (auto method : {MeshMethod::aabb,MeshMethod::obb,MeshMethod::sap}) {
+        auto query=mesh_region_query(box,upper,method);
+        const auto one=query->regions(resting,pressed,work);
+        require(one.size()==1 && std::abs(one[0].depth_m-.25)<1e-12 &&
+                length(sub(one[0].point,{.5,.5,.875}))<1e-12 &&
+                length(sub(one[0].normal,{0,0,1}))<1e-12,"split box face generated incorrect overlap region");
+        const auto inverse=mesh_region_query(upper,box,method)->regions(pressed,resting,work);
+        require(inverse.size()==1 && length(add(inverse[0].normal,one[0].normal))<1e-12 &&
+                length(sub(inverse[0].point,one[0].point))<1e-12,"asymmetric mesh penalty region");
+        ContactPose touch;
+        touch.origin[2]=1.;
+        require(query->regions(resting,touch,work).empty(),"touch without volume must carry no elastic load");
+#ifdef NC_WITH_MESH_CCD
+        ContactPose left,right;
+        left.origin[2]=-2.; right.origin[2]=2.;
+        const auto tunnel=query->transition(resting,left,resting,right,1e-7);
+        require(tunnel.fraction && std::abs(*tunnel.fraction-.25)<1e-10 &&
+                !tunnel.start_in_contact && !tunnel.end_in_contact,"missed a crossing between disjoint endpoints");
+        const auto release=query->transition(resting,pressed,resting,right,1e-7);
+        require(release.fraction && std::abs(*release.fraction-.2)<1e-10 &&
+                release.start_in_contact && !release.end_in_contact,"incorrect release on a reversed sweep");
+#endif
+    }
+    auto twin=std::make_shared<MeshData>(*box),plate=std::make_shared<MeshData>();
+    append_box(*twin,2.,3.);
+    append_box(*plate,-.5,3.5);
+    auto query=mesh_region_query(twin,plate,MeshMethod::aabb);
+    const auto two=query->regions(resting,pressed,work);
+    require(two.size()==2 && std::abs(two[0].depth_m-.25)<1e-12 && std::abs(two[1].depth_m-.25)<1e-12,
+            "two disconnected overlap volumes must carry separate loads");
+}
+
 int main() {
     try {
+        check_penalty_regions();
         Triangle a{{{0,0,0},{1,0,0},{0,1,0}}};
         Triangle cross{{{.25,.25,-1},{.25,.25,1},{.75,.25,0}}};
         require(intersect_triangles(a,cross).size()==2,"transverse crossing");

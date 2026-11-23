@@ -1,5 +1,8 @@
 #include "nurbscontact/cad_contact_regions.hpp"
 #include "nurbscontact/occt_contact.hpp"
+#ifdef NC_WITH_CPU_MESH
+#include "nurbscontact/cpu_mesh.hpp"
+#endif
 
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAdaptor_Surface.hxx>
@@ -113,8 +116,14 @@ void expect(std::istream& in,std::string_view expected) {
     if (take<std::string>(in)!=expected) throw std::invalid_argument("expected "+std::string(expected));
 }
 
+struct SurfaceOptions {
+    std::string method;
+    Path mesh_directory;
+    double distance_tolerance{1e-7};
+};
+
 Input read_scene(const Path& path,double deflection,std::optional<PairBackend> pair_backend,
-                 PairSearchOptions pair_options,bool detect_events) {
+                 PairSearchOptions pair_options,bool detect_events,const SurfaceOptions& surface_options) {
     if (!(deflection >= 0) || !std::isfinite(deflection)) throw std::invalid_argument("invalid mesh deflection");
     std::ifstream in(path);
     if (!in) throw std::runtime_error("could not open scene "+path.string());
@@ -138,12 +147,29 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
     }
     std::map<Path,TopoDS_Shape> shapes;
     std::vector<Path> files;
+#ifdef NC_WITH_CPU_MESH
+    std::map<Path,std::shared_ptr<const cpu::MeshData>> mesh_cache;
+    std::vector<std::shared_ptr<const cpu::MeshData>> meshes;
+#endif
     for (unsigned i=0;i<bodies;++i) {
         expect(in,"body");
         std::string filename;
         if (!(in>>std::quoted(filename))) throw std::invalid_argument("missing body STEP file");
         const auto file=path.parent_path()/filename;
-        if (!shapes.contains(file)) shapes.emplace(file,read_step_shape(file));
+        if (surface_options.method.empty()) {
+            if (!shapes.contains(file)) shapes.emplace(file,read_step_shape(file));
+        } else {
+#ifdef NC_WITH_CPU_MESH
+            Path asset=filename;
+            if (asset.is_absolute()) asset=std::filesystem::relative(asset,path.parent_path());
+            asset=(surface_options.mesh_directory / asset).replace_extension(".msh");
+            auto& mesh=mesh_cache[asset];
+            if (!mesh) mesh=std::make_shared<cpu::MeshData>(cpu::read_gmsh(asset));
+            meshes.push_back(mesh);
+#else
+            throw std::invalid_argument("rebuild nc_contact with NC_WITH_CPU_MESH for mesh contact");
+#endif
+        }
         files.push_back(file);
         Body body{{},number(in),{vector(in),unit(vector(in)),number(in)},vector(in),{},
                   take<int>(in),vector(in)};
@@ -175,7 +201,9 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         const auto a=take<unsigned>(in),b=take<unsigned>(in);
         if (a>=bodies || b>=bodies || a==b) throw std::invalid_argument("invalid probe pair");
         ContactPair pair{a,b,{},{},ContactDirection::world,{},{}};
-        if (type=="closest") {
+        if (type=="surface") {
+            if (surface_options.method.empty()) throw std::invalid_argument("surface pair requires a surface method");
+        } else if (type=="closest") {
             if (!has_drives || !pair_backend) throw std::invalid_argument("closest requires a v2 scene and a pair backend");
             pair.activation=number(in);
             if (!(pair.activation>0)) throw std::invalid_argument("closest activation distance must be positive");
@@ -191,20 +219,25 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
             pair.anchor_a=vector(in);
             pair.anchor_b=vector(in);
             pair.normal=unit(vector(in));
-            for (auto id : {a,b}) {
-                const auto& file=files[id];
-                auto it=ray_geometry.find(file);
-                if (it==ray_geometry.end()) {
-                    it=ray_geometry.emplace(file,contact_surface(shapes.at(file),deflection)).first;
+            if (surface_options.method.empty()) {
+                for (auto id : {a,b}) {
+                    const auto& file=files[id];
+                    auto it=ray_geometry.find(file);
+                    if (it==ray_geometry.end())
+                        it=ray_geometry.emplace(file,contact_surface(shapes.at(file),deflection)).first;
+                    input.bodies[id].surface=it->second;
                 }
-                input.bodies[id].surface=it->second;
             }
-        } else throw std::invalid_argument("expected probe or closest contact");
+        } else throw std::invalid_argument("expected surface, probe or closest contact");
+#ifdef NC_WITH_CPU_MESH
+        if (!surface_options.method.empty())
+            pair.regions=cpu::mesh_region_query(meshes[a],meshes[b],cpu::mesh_method(surface_options.method));
+#endif
         pair.material={number(in),number(in),number(in),number(in),number(in),number(in)};
         const auto& m=pair.material;
         if (!(m.stiffness>0 && m.exponent>=1 && m.rate>=0 && m.friction>=0 && m.slip_speed>0 &&
                 m.maximum_depth>0)) throw std::invalid_argument("invalid contact material");
-        if (detect_events) {
+        if (detect_events && !pair.regions) {
             if (!pair.closest || count==0) throw std::invalid_argument("step CCD requires dynamic closest-pair contacts");
             input.event_geometry.emplace_back(load_pair_geometry(a,PairBackend::brep),load_pair_geometry(b,PairBackend::brep));
         }
@@ -322,6 +355,13 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         }
     }
     if (!(in>>std::ws).eof()) throw std::invalid_argument("extra fields in scene");
+    if (detect_events && !surface_options.method.empty()) {
+        for (const auto& body : input.bodies) {
+            if ((body.hinge>=0 && body.reference.origin!=body.pivot) ||
+                !std::holds_alternative<std::monostate>(body.drive))
+                throw std::invalid_argument("mesh entry checks currently require affine body origins between step endpoints");
+        }
+    }
     for (std::size_t i=0;i<input.event_geometry.size();++i) {
         const auto& pair=input.pairs[i];
         const auto& a=input.bodies[pair.a];
@@ -741,14 +781,15 @@ double sampled_load(const std::vector<LoadSample>& table,double time) {
 }
 
 void simulate(const Path& scene,double deflection,double dt,double duration,unsigned stride,const Path& output,
-              std::optional<PairBackend> pair_backend,PairSearchOptions pair_options,double event_tolerance) {
+              std::optional<PairBackend> pair_backend,PairSearchOptions pair_options,double event_tolerance,
+              const SurfaceOptions& surface={}) {
     if (!(std::isfinite(dt) && dt>0 && std::isfinite(duration) && duration>=dt && stride>0))
         throw std::invalid_argument("invalid step, duration or stride");
     const double step_count=duration/dt;
     const double roundoff=8*std::numeric_limits<double>::epsilon()*step_count;
     const auto steps=static_cast<std::size_t>(std::ceil(step_count-roundoff));
     const auto setup=Clock::now();
-    const Input input=read_scene(scene,deflection,pair_backend,pair_options,event_tolerance>0);
+    const Input input=read_scene(scene,deflection,pair_backend,pair_options,event_tolerance>0,surface);
     for (const auto& body:input.bodies) {
         const auto* table=std::get_if<std::vector<TranslationSample>>(&body.drive);
         if (table && steps*dt>table->back().time+1e-12)
@@ -815,6 +856,22 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             const auto last=kinematics(input,end.q,end.time);
             for (std::size_t i=0;i<input.pairs.size();++i) {
                 const auto& pair=input.pairs[i];
+                if (pair.regions) {
+                    const auto& a0=first[pair.a].pose; const auto& a1=last[pair.a].pose;
+                    const auto& b0=first[pair.b].pose; const auto& b1=last[pair.b].pose;
+                    if (std::abs(a1.angle-a0.angle)>=std::acos(-1.) || std::abs(b1.angle-b0.angle)>=std::acos(-1.))
+                        return .5;
+                    const auto hit=pair.regions->transition(a0,b0,a1,b1,surface.distance_tolerance);
+                    event_nodes+=hit.nodes;
+                    if (!hit.fraction) continue;
+                    if (dt_trial>event_tolerance)
+                        return *hit.fraction+(hit.start_in_contact ? -.5 : .5)*event_tolerance/dt_trial;
+                    if (!hit.start_in_contact && !hit.end_in_contact) {
+                        ++unresolved_events;
+                        return .5;
+                    }
+                    continue;
+                }
                 const auto& [a,b]=input.event_geometry[i];
                 const auto result=fixed_axis_pair_sweep(*a,*b,first[pair.a].pose,last[pair.a].pose,
                     first[pair.b].pose,last[pair.b].pose,pair.activation,std::min(.25,event_tolerance/dt_trial),pair_options);
@@ -856,7 +913,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         } catch (const std::exception& error) {
             if (!work.unresolved_queries && !unresolved_events) throw;
             std::ostringstream detail;
-            detail<<error.what()<<" ("<<work.unresolved_queries<<" unresolved closest-pair force evaluations, "
+            detail<<error.what()<<" ("<<work.unresolved_queries<<" unresolved pair force evaluations, "
                   <<unresolved_events<<" unresolved step sweeps)";
             if (const auto bound=work.last_unresolved_distance) {
                 detail<<", last distance interval ["<<std::setprecision(9)<<bound->lo<<", "<<bound->hi<<"] m";
@@ -993,30 +1050,52 @@ int main(int argc,char** argv) {
             export_fixture(argc,argv);
             return 0;
         }
-        if (argc<7 || argc>11) {
+        const bool named=argc>7 && std::string_view(argv[7]).starts_with("--");
+        if (argc<7 || (!named && argc>11)) {
             std::cerr<<"nc_contact SCENE DEFLECTION_M DT_S DURATION_S OUTPUT_STRIDE OUTPUT_PREFIX "
-                        "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n";
+                        "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
+                        "  or append --method mesh-aabb|mesh-obb|mesh-sap --mesh-dir DIR [--solver penalty] "
+                        "[--event-tol-s SECONDS --ccd-tol-m METRES]\n";
             return 2;
         }
         std::optional<PairBackend> pair_backend;
         PairSearchOptions settings;
-        if (argc>=8) {
+        SurfaceOptions surface;
+        double event_tolerance=0.;
+        if (named) {
+            for (int i=7;i<argc;i+=2) {
+                if (i+1==argc) throw std::invalid_argument("missing method, solver or mesh directory value");
+                const std::string_view key=argv[i], value=argv[i+1];
+                if (key=="--method") surface.method=value;
+                else if (key=="--mesh-dir") surface.mesh_directory=argv[i+1];
+                else if (key=="--event-tol-s") event_tolerance=std::stod(argv[i+1]);
+                else if (key=="--ccd-tol-m") surface.distance_tolerance=std::stod(argv[i+1]);
+                else if (key=="--solver") {
+                    if (value!="penalty") throw std::invalid_argument("unsupported surface contact solver");
+                }
+                else throw std::invalid_argument("unsupported surface option or solver");
+            }
+            if (surface.method.empty() || surface.mesh_directory.empty())
+                throw std::invalid_argument("surface dynamics requires --method mesh-aabb|mesh-obb|mesh-sap and --mesh-dir DIR");
+            if (!(std::isfinite(surface.distance_tolerance) && surface.distance_tolerance>0))
+                throw std::invalid_argument("invalid mesh CCD tolerance");
+        } else if (argc>=8) {
             const std::string_view option(argv[7]);
             if (option=="pair-occt") pair_backend=PairBackend::occt;
             else if (option=="pair-mesh") pair_backend=PairBackend::mesh;
             else if (option=="pair-brep") pair_backend=PairBackend::brep;
             else throw std::invalid_argument("unknown closest-pair backend");
         }
-        if (argc>=9) settings.tolerance_m=std::stod(argv[8]);
-        if (argc>=10) {
+        if (!named && argc>=9) settings.tolerance_m=std::stod(argv[8]);
+        if (!named && argc>=10) {
             const auto nodes=std::stoll(argv[9]);
             if (nodes<1 || nodes>100'000'000) throw std::invalid_argument("invalid closest-pair node budget");
             settings.max_nodes=static_cast<std::size_t>(nodes);
         }
-        const double event_tolerance=argc>=11 ? std::stod(argv[10]) : 0;
+        if (!named && argc>=11) event_tolerance=std::stod(argv[10]);
         if (!std::isfinite(event_tolerance) || event_tolerance<0) throw std::invalid_argument("invalid event tolerance");
         simulate(argv[1],std::stod(argv[2]),std::stod(argv[3]),std::stod(argv[4]),
-                 static_cast<unsigned>(std::stoul(argv[5])),argv[6],pair_backend,settings,event_tolerance);
+                 static_cast<unsigned>(std::stoul(argv[5])),argv[6],pair_backend,settings,event_tolerance,surface);
     } catch (const Standard_Failure& error) {
         std::cerr<<error.GetMessageString()<<'\n';
         return 1;

@@ -1,0 +1,44 @@
+{
+  "method": "mesh-sap",
+  "solver": "penalty",
+  "step_s": 0.00025,
+  "duration_s": 0.16,
+  "frames": 641,
+  "scene_sha256": "05767980630c319532fdc8d251f54915c306c1fe2470f6b6b117081e743f9428",
+  "mesh_sha256": "3795e94baf6025aef289fe17a3294fff6abd98c9cbfc53f8f842307b618c0161",
+  "step_sha256": "b1b75a633d5f5de9267246c3faa9457f22615bc8b742d4cc9f297e9df2e81d2c",
+  "triangles": 5708,
+  "mesh_size_m": 0.003,
+  "entry_s": 0.04012887542795828,
+  "release_s": 0.07151165112273448,
+  "active_duration_s": 0.031382775694776203,
+  "reference_entry_s": 0.039999999999999994,
+  "reference_active_duration_s": 0.031415926535897934,
+  "peak_force_N": 22.496089828688177,
+  "reference_peak_force_N": 22.5,
+  "impulse_Ns": 0.44997623865367775,
+  "reference_impulse_Ns": 0.45,
+  "final_velocity_m_s": [
+    -0.4499762324756497,
+    -2.376752434993272e-05
+  ],
+  "reference_final_velocity_m_s": [
+    -0.45,
+    0.0
+  ],
+  "max_momentum_drift_kg_m_s": 3.885780586188048e-16,
+  "position_rmse_m": [
+    4.07049766387386e-05,
+    4.0704976638775665e-05
+  ],
+  "force_rmse_N": 0.07862230099496444,
+  "integration_s": 14.972054,
+  "setup_s": 0.0748908,
+  "process_wall_s": 21.013373400026467,
+  "force_evaluations": 802,
+  "subdivisions": 0,
+  "maximum_hht_residual": 1.248117054153397e-07,
+  "event_tolerance_s": 0.0,
+  "step_checks": 0,
+  "event_rejections": 0
+}
