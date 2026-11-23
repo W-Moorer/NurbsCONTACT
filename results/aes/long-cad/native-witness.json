@@ -1,0 +1,93 @@
+{
+  "stage": 1,
+  "pad_mm": 0.25,
+  "samples": [
+    {
+      "step": 71,
+      "time_s": 0.0070999999999999995,
+      "load_pair": [
+        118,
+        22
+      ],
+      "native_queries": 522,
+      "patch_load_N": 37.75112188015662,
+      "witness": {
+        "source": "reducer-2a.step",
+        "source_probe": 18958,
+        "native_depth_mm": 0.00018626687887107526,
+        "source_shell_residual_mm": 3.552713678800501e-15,
+        "target_local_mm": [
+          66.43708101141534,
+          -29.590916444527213,
+          6.220961341945229
+        ],
+        "native_normal": [
+          0.005539866977991295,
+          -0.9359779341617757,
+          0.35201508012600946
+        ],
+        "equivalent_spring_load_N": 29.802700619372043,
+        "same_point_patch_depth_mm": 0.0002359445117470283,
+        "same_point_patch_load_N": 37.751121879524526
+      }
+    },
+    {
+      "step": 12527,
+      "time_s": 1.2527,
+      "load_pair": [
+        28,
+        112
+      ],
+      "native_queries": 534,
+      "patch_load_N": 2333.3290667850433,
+      "witness": {
+        "source": "reducer-2a.step",
+        "source_probe": 4660,
+        "native_depth_mm": 0.014559297854000544,
+        "source_shell_residual_mm": 8.881784197001252e-16,
+        "target_local_mm": [
+          -58.17438658120873,
+          -41.380580510226444,
+          14.220993556363604
+        ],
+        "native_normal": [
+          -0.7874510032062049,
+          0.5059706848589244,
+          0.35201503322007766
+        ],
+        "equivalent_spring_load_N": 2329.487656640087,
+        "same_point_patch_depth_mm": 0.014568664625310196,
+        "same_point_patch_load_N": 2330.9863400496315
+      }
+    },
+    {
+      "step": 12528,
+      "time_s": 1.2528,
+      "load_pair": [
+        34,
+        106
+      ],
+      "native_queries": 544,
+      "patch_load_N": 2350.12809708726,
+      "witness": {
+        "source": "reducer-2a.step",
+        "source_probe": 5369,
+        "native_depth_mm": 0.01464185193628954,
+        "source_shell_residual_mm": 0.0,
+        "target_local_mm": [
+          -56.61341901809272,
+          -42.232098706745816,
+          -6.2234617393942
+        ],
+        "native_normal": [
+          -0.7848224838890517,
+          0.51003832105503,
+          0.3520150278575975
+        ],
+        "equivalent_spring_load_N": 2342.6963098063266,
+        "same_point_patch_depth_mm": 0.01459571945361421,
+        "same_point_patch_load_N": 2335.315112578274
+      }
+    }
+  ]
+}

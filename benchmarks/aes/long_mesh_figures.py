@@ -261,17 +261,20 @@ def plot(work, out):
 
 
 def animate(work,out):
+    with np.load(out/"responses.npz") as d:
+        render_reducer_animation(work/"deck",out/"reducer.mp4",d["shaft_angle_rad"],d["stage_load_N"],d["time_s"])
+
+
+def render_reducer_animation(deck, video, angle, force, t, title="Two-stage reducer  |  transverse mesh sections"):
     import cv2
     import imageio.v2 as io
     import trimesh
-    with np.load(out/"responses.npz") as d:
-        angle, force, t = (d[k] for k in ("shaft_angle_rad","stage_load_N","time_s"))
-    with np.load(work/"deck/assembly.npz") as d:
+    with np.load(deck/"assembly.npz") as d:
         bodies,pairs,mapping=(d[k] for k in ("bodies","pairs","mapping"))
-    parts=json.loads((work/"deck/models.json").read_text())["parts"]
+    parts=json.loads((deck/"models.json").read_text())["parts"]
     cuts=[]
     for part in parts:
-        with np.load(work/"deck"/part["archive"]) as d:
+        with np.load(deck/part["archive"]) as d:
             nodes,faces=np.unique(d["tri"].reshape(-1,3),axis=0,return_inverse=True)
         mesh=trimesh.Trimesh(nodes,faces.reshape(-1,3),process=False)
         plane=mesh.section(plane_normal=[0,0,1],plane_origin=mesh.bounds.mean(axis=0))
@@ -285,12 +288,12 @@ def animate(work,out):
     dark=(33,52,66)
     def label(frame,text,x,y,size=.53):
         cv2.putText(frame,text,(x,y),cv2.FONT_HERSHEY_SIMPLEX,size,dark,1,cv2.LINE_AA)
-    with io.get_writer(out/"reducer.mp4",fps=fps,codec="libx264",quality=8,macro_block_size=1,
+    with io.get_writer(video,fps=fps,codec="libx264",quality=8,macro_block_size=1,
                        ffmpeg_log_level="error",output_params=["-pix_fmt","yuv420p"]) as writer:
         for mode, ids in (("Full 5 s / 0.25x playback",overview),("Loading detail / 0.005x playback",detail)):
             for idx in ids:
                 frame=np.full((460,1060,3),250,np.uint8)
-                label(frame,"Two-stage reducer  |  transverse mesh sections",24,34,.77)
+                label(frame,title,24,34,.77)
                 label(frame,f"{mode}     t = {t[idx]:.4f} s",24,63,.53)
                 for stage,(first,last) in enumerate(panels):
                     pair=pairs[stage]

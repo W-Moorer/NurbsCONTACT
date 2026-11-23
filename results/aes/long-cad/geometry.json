@@ -1,0 +1,150 @@
+{
+  "cold_wall_s": 156.11365289997775,
+  "jobs_cold": 4,
+  "warm_wall_s": 0.19500529998913407,
+  "jobs_warm": 1,
+  "parts": [
+    {
+      "archive": "7e60fd0cef3c07a48028b4b68340824fda936797fb2e617508a25b50c07ebeb5.npz",
+      "mesh": "reducer-1a.msh",
+      "step": "reducer-1a.step",
+      "sha256": "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+      "triangles": 10216,
+      "max_sampled_surface_error_m": 4.812533171050068e-05,
+      "max_normal_angle_deg": 5.417667657804644,
+      "min_sicn": 0.01045735078250156,
+      "gmsh_version": "4.15.0",
+      "patch": {
+        "key": "7e60fd0cef3c07a48028b4b68340824fda936797fb2e617508a25b50c07ebeb5",
+        "step_sha256": "90a5180ba1d3cd2b6e603de00a80c94cded07bfdccdf13f26e8a693845920035",
+        "mesh_sha256": "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+        "triangles": 10216,
+        "max_carrier_offset_mm": 0.09625066342100136,
+        "audit_samples": 30648,
+        "initial_fold_candidates": 0,
+        "repaired_faces": 0,
+        "min_oriented_jacobian_ratio": 0.9114642882016131,
+        "quadratic_p99_max_um": [
+          0.017696023035136305,
+          0.1691729933259381
+        ],
+        "linear_p99_max_um": [
+          22.360198356476847,
+          43.25528076515199
+        ],
+        "bake_s": 52.82220440002857
+      },
+      "archive_bytes": 467885,
+      "archive_sha256": "12a6a393a70c3c53705a72d5c3deaeb76ab801214f280b83e0b42aaed1bdc4d9"
+    },
+    {
+      "archive": "76c589181b275c85faa97e66ca1011e123924b219f786ecc2bb5f3e7c9cc5e8a.npz",
+      "mesh": "reducer-1b.msh",
+      "step": "reducer-1b.step",
+      "sha256": "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+      "triangles": 10240,
+      "max_sampled_surface_error_m": 8.487492800076537e-05,
+      "max_normal_angle_deg": 4.871479036615452,
+      "min_sicn": 0.0005368108854989981,
+      "gmsh_version": "4.15.0",
+      "patch": {
+        "key": "76c589181b275c85faa97e66ca1011e123924b219f786ecc2bb5f3e7c9cc5e8a",
+        "step_sha256": "f0b5c19d140b2817f00ba29a3cadcd042141df5e2700e860dff7b9aedd37bf7b",
+        "mesh_sha256": "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+        "triangles": 10240,
+        "max_carrier_offset_mm": 0.16974985600153075,
+        "audit_samples": 30720,
+        "initial_fold_candidates": 0,
+        "repaired_faces": 0,
+        "min_oriented_jacobian_ratio": 0.864495308388206,
+        "quadratic_p99_max_um": [
+          0.03094360726347062,
+          0.040547394959448445
+        ],
+        "linear_p99_max_um": [
+          41.007919632689095,
+          74.98333829666986
+        ],
+        "bake_s": 56.24228989996482
+      },
+      "archive_bytes": 454506,
+      "archive_sha256": "7444d2834c0053f39f06e6aa1f10174d1ca9114d809b7b210175ac0dab0b8deb"
+    },
+    {
+      "archive": "4c0ebfda511a699fbae7f7e2ac177dba094816391edfea839a6d141a4e29cb26.npz",
+      "mesh": "reducer-2a.msh",
+      "step": "reducer-2a.step",
+      "sha256": "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+      "triangles": 27934,
+      "max_sampled_surface_error_m": 2.7052420583497806e-05,
+      "max_normal_angle_deg": 6.051116592670291,
+      "min_sicn": 0.12280293051593455,
+      "gmsh_version": "4.15.0",
+      "patch": {
+        "key": "4c0ebfda511a699fbae7f7e2ac177dba094816391edfea839a6d141a4e29cb26",
+        "step_sha256": "9037e0d52ca2550e2251621d46a6781b9b698722842b4178b9758858ee8f14a9",
+        "mesh_sha256": "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+        "triangles": 27934,
+        "max_carrier_offset_mm": 0.054104841167002586,
+        "audit_samples": 83802,
+        "initial_fold_candidates": 0,
+        "repaired_faces": 0,
+        "min_oriented_jacobian_ratio": 0.9399644889604085,
+        "quadratic_p99_max_um": [
+          0.47103160448067755,
+          0.5750206733001862
+        ],
+        "linear_p99_max_um": [
+          10.754007153185476,
+          19.796935486293584
+        ],
+        "bake_s": 149.58458339999197
+      },
+      "archive_bytes": 1854682,
+      "archive_sha256": "c4fab32deef98b7c8c8703c10321c3025d4e4a56c689d0b90036cb7878b3307c"
+    },
+    {
+      "archive": "e7451c7703d1ada863de9656793c4781d76040554a1cc769c849954fa6531851.npz",
+      "mesh": "reducer-2b.msh",
+      "step": "reducer-2b.step",
+      "sha256": "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0",
+      "triangles": 17342,
+      "max_sampled_surface_error_m": 4.8093436127912344e-05,
+      "max_normal_angle_deg": 3.571556915230091,
+      "min_sicn": 0.0037408528660150733,
+      "gmsh_version": "4.15.0",
+      "patch": {
+        "key": "e7451c7703d1ada863de9656793c4781d76040554a1cc769c849954fa6531851",
+        "step_sha256": "93b72d60ebd26f3e94faedd22be00aa5d80dda5936605541ae3646ace82aee01",
+        "mesh_sha256": "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0",
+        "triangles": 17342,
+        "max_carrier_offset_mm": 0.09618687225582934,
+        "audit_samples": 52026,
+        "initial_fold_candidates": 528,
+        "repaired_faces": 88,
+        "min_oriented_jacobian_ratio": 0.8549048039936545,
+        "quadratic_p99_max_um": [
+          0.1027197914162635,
+          0.1339368780119701
+        ],
+        "linear_p99_max_um": [
+          22.733223651552255,
+          38.26482090219164
+        ],
+        "bake_s": 107.47938330000034
+      },
+      "archive_bytes": 1050332,
+      "archive_sha256": "9406e6a276bbcb6c030a5c71f8e560f1591bb8f1bfb870defccd5176e68b8131"
+    }
+  ],
+  "environment": {
+    "python": "3.12.7",
+    "gmsh": "4.15.0",
+    "ocp": "7.8.1.1",
+    "cupy": "13.6.0",
+    "numpy": "2.1.2",
+    "meshio": "5.3.5",
+    "os": "Windows 11 build 22631"
+  },
+  "geometry_cache_bytes": 3827405
+}

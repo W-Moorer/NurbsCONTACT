@@ -1,0 +1,186 @@
+{
+  "geometry": [
+    {
+      "step": "cam.step",
+      "mesh": "cam.msh",
+      "sha256": "66ba7c9556fd1e4704bb3b968182016c3aa788b8d853b5005897f3278fee7f66",
+      "archive": "9e775c93ffdf8c2483602c6b5b2694f1990f445e95a33a8c599dbba57531cd77.npz",
+      "patch": {
+        "key": "9e775c93ffdf8c2483602c6b5b2694f1990f445e95a33a8c599dbba57531cd77",
+        "step_sha256": "137593cae42611d500d3a3156beefc4cef1673da65685f069f937b686b6c677c",
+        "mesh_sha256": "66ba7c9556fd1e4704bb3b968182016c3aa788b8d853b5005897f3278fee7f66",
+        "triangles": 1414,
+        "max_carrier_offset_mm": 0.6953558385333999,
+        "audit_samples": 4242,
+        "initial_fold_candidates": 0,
+        "repaired_faces": 0,
+        "min_oriented_jacobian_ratio": 0.9984046507681589,
+        "quadratic_p99_max_um": [
+          0.05916961964655777,
+          0.0967105352854257
+        ],
+        "linear_p99_max_um": [
+          222.12239560155132,
+          265.49885287165733
+        ],
+        "bake_s": 0.17379889998119324
+      }
+    },
+    {
+      "step": "follower.step",
+      "mesh": "follower.msh",
+      "sha256": "e9227b933196759560ef37fa6471927624549f25897cbaefb75feb4d420f4d87",
+      "archive": "bacc976bdcbd247cc1313036b2ac49977bdc807c9c80717535c834380ab95e22.npz",
+      "patch": {
+        "key": "bacc976bdcbd247cc1313036b2ac49977bdc807c9c80717535c834380ab95e22",
+        "step_sha256": "cb5c73bf9d29b6a000fcc50f217dd39591f76e533c68ac198529d077671fdd99",
+        "mesh_sha256": "e9227b933196759560ef37fa6471927624549f25897cbaefb75feb4d420f4d87",
+        "triangles": 12,
+        "max_carrier_offset_mm": 0.0,
+        "audit_samples": 36,
+        "initial_fold_candidates": 0,
+        "repaired_faces": 0,
+        "min_oriented_jacobian_ratio": 1.0,
+        "quadratic_p99_max_um": [
+          0.0,
+          0.0
+        ],
+        "linear_p99_max_um": [
+          0.0,
+          0.0
+        ],
+        "bake_s": 0.0818728000158444
+      }
+    }
+  ],
+  "lanes": 4,
+  "patch_search": "bounded",
+  "checks": {
+    "cam.step": {
+      "grid": {
+        "query_stage_counts": [
+          224,
+          133,
+          124,
+          90,
+          0,
+          0,
+          26
+        ],
+        "samples": 224,
+        "false_negative": 86,
+        "false_positive": 0,
+        "depth_rms_um": 15.361513580928014,
+        "depth_max_um": 50.02504458605535,
+        "normal_p95_deg": 0.0,
+        "normal_p95_by_kind_deg": {
+          "curved": 0.0,
+          "flat": 0.0
+        },
+        "maximum_by_kind_um": {
+          "bisector": 35.35526521967469,
+          "curved": 50.02504458605535,
+          "flat": 0.0,
+          "off_bisector": 17.350271803067585
+        }
+      },
+      "patch": {
+        "query_stage_counts": [
+          224,
+          134,
+          134,
+          134,
+          0,
+          0,
+          112
+        ],
+        "samples": 224,
+        "false_negative": 0,
+        "false_positive": 0,
+        "depth_rms_um": 0.005131408571085162,
+        "depth_max_um": 0.02504458844512173,
+        "normal_p95_deg": 0.00020871109022564612,
+        "normal_p95_by_kind_deg": {
+          "bisector": 0.0,
+          "curved": 0.0009808285136845912,
+          "flat": 0.0,
+          "off_bisector": 0.0
+        },
+        "maximum_by_kind_um": {
+          "bisector": 0.0,
+          "curved": 0.02504458844512173,
+          "flat": 0.0,
+          "off_bisector": 0.0
+        },
+        "history_check": {
+          "queries": 1568,
+          "load_flag_mismatches": 0,
+          "max_depth_difference_um": 0.0,
+          "max_normal_vector_difference": 0.0
+        }
+      }
+    },
+    "follower.step": {
+      "grid": {
+        "query_stage_counts": [
+          144,
+          72,
+          72,
+          72,
+          0,
+          0,
+          72
+        ],
+        "samples": 144,
+        "false_negative": 0,
+        "false_positive": 0,
+        "depth_rms_um": 0.0,
+        "depth_max_um": 0.0,
+        "normal_p95_deg": 0.0,
+        "normal_p95_by_kind_deg": {
+          "bisector": 0.0,
+          "flat": 0.0,
+          "off_bisector": 0.0
+        },
+        "maximum_by_kind_um": {
+          "bisector": 0.0,
+          "flat": 0.0,
+          "off_bisector": 0.0
+        }
+      },
+      "patch": {
+        "query_stage_counts": [
+          144,
+          72,
+          72,
+          72,
+          0,
+          0,
+          72
+        ],
+        "samples": 144,
+        "false_negative": 0,
+        "false_positive": 0,
+        "depth_rms_um": 0.0,
+        "depth_max_um": 0.0,
+        "normal_p95_deg": 0.0,
+        "normal_p95_by_kind_deg": {
+          "bisector": 0.0,
+          "flat": 0.0,
+          "off_bisector": 0.0
+        },
+        "maximum_by_kind_um": {
+          "bisector": 0.0,
+          "flat": 0.0,
+          "off_bisector": 0.0
+        },
+        "history_check": {
+          "queries": 1008,
+          "load_flag_mismatches": 0,
+          "max_depth_difference_um": 0.0,
+          "max_normal_vector_difference": 0.0
+        }
+      }
+    }
+  }
+}

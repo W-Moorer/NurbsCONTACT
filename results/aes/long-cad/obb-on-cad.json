@@ -1,0 +1,44 @@
+{
+  "trace_sha256": "77681656a1ee76238bbf7941b50e8404a2ebefa54cca7f893c2babcf24c1de9c",
+  "mesh_sha256": [
+    "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+    "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+    "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+    "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0"
+  ],
+  "physical_s": 5.0,
+  "steps": 50000,
+  "candidate_window": false,
+  "same_face_only": false,
+  "methods": {
+    "mesh-obb": [
+      {
+        "queries": 50001,
+        "overlap_frames": 49982,
+        "process_s": 19.363949099963065,
+        "query_s": 14.0431902,
+        "p99_us": 2459.2,
+        "node_pairs": 31101925,
+        "triangle_tests": 810680,
+        "witness_reuses": 14487,
+        "adjacent_witnesses": 17404,
+        "overlap_without_sampled_force": 0,
+        "sampled_force_without_overlap": 0
+      },
+      {
+        "queries": 50001,
+        "overlap_frames": 49976,
+        "process_s": 11.804944699979387,
+        "query_s": 5.4759204,
+        "p99_us": 1729.3,
+        "node_pairs": 12964472,
+        "triangle_tests": 314223,
+        "witness_reuses": 29051,
+        "adjacent_witnesses": 15889,
+        "overlap_without_sampled_force": 0,
+        "sampled_force_without_overlap": 1
+      }
+    ]
+  },
+  "incomplete": {}
+}

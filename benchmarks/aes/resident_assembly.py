@@ -7,8 +7,18 @@ from time import perf_counter
 
 import cupy as cp
 import numpy as np
-from resident_contact import ResidentMeshContact
+from resident_contact import ResidentMeshContact, contact_source
 from resident_dynamics import projection_order, swept_samples
+
+
+def load_parts(directory, method):
+    models = []
+    for entry in json.loads((directory / "models.json").read_text())["parts"]:
+        with np.load(directory / entry["archive"]) as d:
+            points = d["points"] if method != "mesh" else None
+            patch = d["shift"] if method == "cad-patch" else None
+            models.append((d["tri"], d["faces"], points, patch))
+    return models
 
 
 def load_inputs(args):
@@ -18,9 +28,18 @@ def load_inputs(args):
         with np.load(args.cam_deck) as d:
             a, b, fa, fb, rows, loads = (d[k] for k in ("a", "b", "fa", "fb", "rows", "loads"))
             k, h = float(d["stiffness"]), float(d["h"])
-        points = load_probes(args.cam_cache, b, fb, 1)[0] if args.cam_cache else None
+        if args.method == "cad-patch":
+            models = load_parts(args.work, args.method)
+            if len(models) != 2 or any(
+                not np.array_equal(t, carrier) or not np.array_equal(f, labels)
+                for (t, f, _, _), (carrier, labels) in zip(models, ((a, fa), (b, fb)))
+            ):
+                raise ValueError("The baked parts must match both carrier meshes in the cam deck")
+        else:
+            points = load_probes(args.cam_cache, b, fb, 1)[0] if args.cam_cache else None
+            models = [(a, fa, None, None), (b, fb, points, None)]
         return (
-            [(a, fa, None), (b, fb, points)],
+            models,
             rows[:, [9, 10, 11, 12]],
             rows,
             [0, 1],
@@ -29,11 +48,7 @@ def load_inputs(args):
             loads,
             h,
         )
-    models = []
-    for entry in json.loads((args.work / "models.json").read_text())["parts"]:
-        with np.load(args.work / entry["archive"]) as d:
-            points = d["points"] if args.method == "cad" else None
-            models.append((d["tri"], d["faces"], points))
+    models = load_parts(args.work, args.method)
     with np.load(args.work / "assembly.npz") as d:
         return (
             models,
@@ -44,6 +59,17 @@ def load_inputs(args):
 
 def solve(args):
     start = perf_counter()
+    curved = args.method == "cad-patch"
+    if args.patch_search is None:
+        args.patch_search = "carrier-filter" if curved else "bounded"
+    if args.lanes is None:
+        args.lanes = 8 if curved else 4
+    prepared_index = args.work / "patch-index"
+    if curved and args.index_cache is None and prepared_index.is_dir():
+        args.index_cache = prepared_index
+    if not np.isfinite(args.contact_floor_nm) or args.contact_floor_nm < 0:
+        raise ValueError("Expected a finite nonnegative contact depth floor")
+    depth_floor = args.contact_floor_nm * 1e-6
     if args.broad_phase is None:
         args.broad_phase = "projection" if args.prefix_contact is not None else "blocks"
     models, coord, bodies, mapping, pairs, stiffness, loads, h = load_inputs(args)
@@ -110,9 +136,12 @@ def solve(args):
     if args.audit_probe_order is not None:
         assembly = (files / "resident_order_audit.cuh").read_text() + "\n" + assembly
     patch_args = ()
+    motion_args = ()
+    motion_buffers = []
     options = (
         "--std=c++17",
         f"-DQUERY_LANES={args.lanes}",
+        f"-DNC_DEPTH_FLOOR_MM={depth_floor:.17g}",
         "-DNC_TWO_SIDED",
         f"-DASSEMBLY_TICKS={args.ticks}",
     )
@@ -129,14 +158,35 @@ def solve(args):
         assembly = (files / "resident_blocks.cuh").read_text() + "\n" + assembly
         options += ("-DNC_PATCHES",)
         patch_args = (cp.empty((2 * m, 104), cp.uint8),)
-    elif args.guard_mm is not None:
+        if args.inner_guard_mm is not None:
+            if not 0 < args.inner_guard_mm <= guard:
+                raise ValueError("The inner motion margin must be positive and at most the outer margin")
+            options += (f"-DNC_INNER_GUARD={args.inner_guard_mm:.17g}",)
+            motion_args = (cp.zeros((2 * m, 120), cp.uint8),)
+    elif args.guard_mm is not None or args.inner_guard_mm is not None:
         raise ValueError("The reuse margin applies to the block broad phase")
     broad_phase_data = patch_args[0] if patch_args else cp.zeros(2 * m, cp.uint64)
     profile_args = ()
     if args.profile_phases:
         options += ("-DNC_ASSEMBLY_PROFILE",)
         profile_args = (cp.zeros(5 + 2 * m, cp.uint64),)
+    history_args = ()
+    if args.contact_history:
+        if args.stiffness_scope != "pair":
+            raise ValueError("The winning face pair is defined for pair stiffness")
+        history_args = (cp.empty((count, m), cp.uint64),)
+        options += ("-DNC_CONTACT_HISTORY",)
     blocks = cp.cuda.Device().attributes["MultiProcessorCount"]
+    if args.method == "cad-patch":
+        options += ("-DNC_CAD_PATCH", "-I" + str(files.resolve()))
+        if args.no_patch_reuse:
+            options += ("-DNC_NO_PATCH_REUSE",)
+        if args.patch_search == "direct":
+            options += ("-DNC_DIRECT_PATCH_SEARCH",)
+        if args.patch_search == "carrier-filter":
+            options += ("-DNC_CARRIER_FILTER",)
+    elif args.no_patch_reuse or args.index_cache is not None or args.patch_search != "bounded":
+        raise ValueError("CAD patch options require --method cad-patch")
     threads = 128
     search_args = ()
     search_stages = (
@@ -149,6 +199,14 @@ def solve(args):
         "contact_witness",
     )
     if args.count_search_paths:
+        if args.method == "cad-patch":
+            search_stages = (
+                *search_stages[:3],
+                "curved_query",
+                "unrestricted_bvh",
+                "reused_patch",
+                "contact_witness",
+            )
         options += (f"-DNC_SEARCH_COUNTS={len(search_stages)}",)
         search_args = (cp.zeros((blocks * threads // args.lanes, len(search_stages)), cp.uint64),)
     order_scratch = []
@@ -161,7 +219,9 @@ def solve(args):
 
     def compile_module(contact):
         return cp.RawModule(
-            code=contact.read_text() + "\n" + assembly, options=options, enable_cooperative_groups=True
+            code=contact_source(contact, args.method == "cad-patch") + "\n" + assembly,
+            options=options,
+            enable_cooperative_groups=True,
         )
 
     module = compile_module(files / "resident_contact.cu")
@@ -173,8 +233,8 @@ def solve(args):
     for p, (ia, ib) in enumerate(pairs):
         forward, reverse = None, None
         for d, (a, b) in ((1, (ib, ia)), (0, (ia, ib))):
-            target, fa, _ = models[a]
-            source, fb, pts = models[b]
+            target, fa, _, patch = models[a]
+            source, fb, pts, _ = models[b]
             model = ResidentMeshContact(
                 target,
                 source,
@@ -182,12 +242,20 @@ def solve(args):
                 fb,
                 pitch=args.pitch,
                 lanes=args.lanes,
-                source_points=pts if args.method == "cad" else None,
+                source_points=pts if args.method != "mesh" else None,
+                backend="patch" if patch is not None else "grid",
+                patch_shift=patch,
+                index_cache=args.index_cache,
                 merge_planar=True,
                 reverse=reverse,
                 include_vertices=args.include_vertices,
             )
-            select = swept_samples(target, model.samples[0].get(), bodies[[a, b]])
+            if patch is None:
+                select = swept_samples(target, model.samples[0].get(), bodies[[a, b]], depth_floor)
+            else:
+                # The Bernstein control hull encloses the complete curved target.
+                hull = np.concatenate((target, 0.5 * (target + np.roll(target, -1, axis=1)) + 2 * patch))
+                select = swept_samples(hull, model.samples[0].get(), bodies[[a, b]], depth_floor)
             if select.any() and not select.all():
                 idx = cp.asarray(select)
                 model.samples = tuple(cp.ascontiguousarray(v[idx]) for v in model.samples)
@@ -199,12 +267,17 @@ def solve(args):
                 sorted_probes = np.argsort(model.samples[0][:, axis].get(), kind="stable")
                 words = (model.n + 31) // 32
                 scratch = cp.zeros(2 * model.n + 2 * words + 1, cp.int32)
-                scratch[:model.n] = cp.asarray(sorted_probes, dtype=cp.int32)
+                scratch[: model.n] = cp.asarray(sorted_probes, dtype=cp.int32)
                 order_scratch[i] = scratch
             module.get_function("bind_mesh")((1,), (1,), (*model.args(), views[i]))
             if patch_args:
                 order = block_index(model, guard)
                 module.get_function("bind_patches")((1,), (1,), (patch_args[0][i], *order))
+                if motion_args:
+                    motion_buffers.append(cp.empty(model.n, cp.int32))
+                    module.get_function("bind_motion_candidates")(
+                        (1,), (1,), (motion_args[0][i], motion_buffers[-1])
+                    )
             else:
                 order = projection_order(model)
                 module.get_function("bind_order")((1,), (1,), (orders[i], *order))
@@ -261,7 +334,9 @@ def solve(args):
                 output,
                 elapsed,
                 broad_phase_data,
+                *motion_args,
                 *profile_args,
+                *history_args,
                 *search_args,
                 *order_args,
                 *audit_args,
@@ -313,6 +388,8 @@ def solve(args):
         directional_probes=probes,
         steps=steps - 1,
         trials=trials,
+        lanes=args.lanes,
+        contact_floor_nm=args.contact_floor_nm,
         accepted_increments=increments - 1,
         setup_s=tic - start,
         online_s=wall,
@@ -322,6 +399,10 @@ def solve(args):
         peak_normal_N=data[:, 2 * n :: 4].max(axis=0).tolist(),
         max_active_regions=data[:, 2 * n + 3 :: 4].max(axis=0).tolist(),
     )
+    if args.method == "cad-patch":
+        report["static_index_hits"] = sum(model.index_hit for model, _ in keep_alive)
+        report["patch_reuse"] = not args.no_patch_reuse
+        report["patch_search"] = args.patch_search
     if profile_args:
         counters = profile_args[0].get().tolist()
         report["phase_profile"] = dict(
@@ -338,12 +419,20 @@ def solve(args):
             ((2 * m + 127) // 128,), (128,), (frames, broad_phase_data, counts, np.int32(2 * m))
         )
         rebuilds, visits = counts.get().T
-        report.update(guard_mm=guard, directional_rebuilds=rebuilds.tolist(), directional_probe_visits=visits.tolist())
+        report.update(
+            guard_mm=guard, directional_rebuilds=rebuilds.tolist(), directional_probe_visits=visits.tolist()
+        )
     else:
         report["directional_probe_visits"] = broad_phase_data.get().tolist()
     if search_args:
         totals = search_args[0].get().sum(axis=0).tolist()
         report["search_paths"] = dict(zip(search_stages, totals, strict=True))
+    if motion_args:
+        builds = cp.empty(2 * m, cp.uint64)
+        module.get_function("motion_counts")(
+            ((2 * m + 127) // 128,), (128,), (motion_args[0], builds, np.int32(2 * m))
+        )
+        report.update(inner_guard_mm=args.inner_guard_mm, inner_rebuilds=builds.get().tolist())
     if order_scratch:
         if any(int(a[-1].get()) for a in order_scratch):
             raise RuntimeError("A rebuilt list did not preserve its unique candidates")
@@ -368,6 +457,16 @@ def solve(args):
             )
         )
     np.save(args.trace, data)
+    if history_args:
+        keys = history_args[0][:steps].get()
+        faces = np.full((*keys.shape, 2), -1, dtype=np.int64)
+        for j in range(m):
+            target = keep_alive[2 * j + 1][0]
+            hit = keys[:, j] != np.iinfo(np.uint64).max
+            packed_keys = keys[hit, j]
+            faces[hit, j, 0] = target.tags_a[(packed_keys >> 32).astype(np.intp)]
+            faces[hit, j, 1] = target.tags_b[(packed_keys & 0xFFFFFFFF).astype(np.intp)]
+        np.savez_compressed(args.contact_history, faces=faces)
     if audit_args:
         entries = int(logged.get()[0])
         if entries > capacity:
@@ -412,6 +511,12 @@ if __name__ == "__main__":
     p.add_argument("--cam-cache", type=Path)
     p.add_argument("--duration", type=float, default=3.0)
     p.add_argument(
+        "--contact-floor-nm",
+        type=float,
+        default=1.0e-4,
+        help="Minimum load-producing penetration in nm, applied to both geometries",
+    )
+    p.add_argument(
         "--profile-phases",
         action="store_true",
         help="Measure GPU phases at existing grid barriers and count probe visits after interval culling",
@@ -428,16 +533,27 @@ if __name__ == "__main__":
     )
     p.add_argument("--pitch", type=float, default=0.8)
     p.add_argument(
-        "--broad-phase", choices=("projection", "blocks"),
+        "--broad-phase",
+        choices=("projection", "blocks"),
         help="Use reusable blocks by default; archived contact-prefix replays default to projection",
     )
     p.add_argument("--guard-mm", type=float, help="Candidate reuse margin in mm (default: one quarter cell)")
+    p.add_argument(
+        "--inner-guard-mm",
+        type=float,
+        help="Compact outer probe candidates over a smaller rigid motion bound",
+    )
     p.add_argument(
         "--audit-probe-order",
         choices=("native", "x", "y", "z"),
         help="Measure the effect of reordering the same block candidates along a body-local axis",
     )
-    p.add_argument("--lanes", type=int, choices=(1, 2, 4, 8, 16, 32), default=4)
+    p.add_argument(
+        "--lanes",
+        type=int,
+        choices=(1, 2, 4, 8, 16, 32),
+        help="GPU threads per query (8 for curved patches, 4 otherwise)",
+    )
     p.add_argument(
         "--contact-samples",
         type=int,
@@ -451,7 +567,18 @@ if __name__ == "__main__":
         action="store_true",
         help="Retry an unresolved minimum interval with a counted velocity-Verlet step",
     )
-    p.add_argument("--method", choices=("cad", "mesh"), default="cad")
+    p.add_argument("--method", choices=("cad", "mesh", "cad-patch"), default="cad")
+    p.add_argument("--index-cache", type=Path, help="Override the prepared patch-index directory in the deck")
+    p.add_argument(
+        "--patch-search",
+        choices=("bounded", "direct", "carrier-filter"),
+        help="CAD candidate search (default: carrier-filter)",
+    )
+    p.add_argument(
+        "--no-patch-reuse",
+        action="store_true",
+        help="Always search the CAD candidate list after spatial culling",
+    )
     p.add_argument(
         "--stiffness-scope",
         choices=("region", "pair"),
@@ -465,6 +592,7 @@ if __name__ == "__main__":
     )
     p.add_argument("--audit-window", nargs=2, type=float, metavar=("FIRST_END_S", "LAST_END_S"))
     p.add_argument("--audit-output", type=Path)
+    p.add_argument("--contact-history", type=Path, help="Save the load-bearing face pair at each output time")
     p.add_argument(
         "--audit-regions-at",
         type=float,

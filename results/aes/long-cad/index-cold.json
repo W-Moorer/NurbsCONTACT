@@ -1,0 +1,34 @@
+{
+  "wall_s": 11.575385899981484,
+  "pitch_mm": 0.8,
+  "parts": [
+    {
+      "part": "reducer-1a.step",
+      "key": "1f9fbd359b2e6e43cebaced7056296d7c1f1bdb0cb7a300ae170d1e2bcb28035",
+      "bytes": 23919098,
+      "restored": false,
+      "setup_s": 3.4386183999595232
+    },
+    {
+      "part": "reducer-1b.step",
+      "key": "048858889603a0a6888845be23cc44a3249103f71f8f48f4d2b7932f7ac5c5c7",
+      "bytes": 44449654,
+      "restored": false,
+      "setup_s": 1.8208009999943897
+    },
+    {
+      "part": "reducer-2a.step",
+      "key": "d6bf3cc21c72be59cceecc17278b9695feb750a1e60286b449a7811d96d2cdb9",
+      "bytes": 42479334,
+      "restored": false,
+      "setup_s": 3.474533699976746
+    },
+    {
+      "part": "reducer-2b.step",
+      "key": "397e1ca84550253fe6f11370a2edaba9c554824e5d8a7ef778bdc2a27f158bc5",
+      "bytes": 71554948,
+      "restored": false,
+      "setup_s": 2.6780765999574214
+    }
+  ]
+}

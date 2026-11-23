@@ -164,7 +164,7 @@ def mesh_features(tri):
     )
 
 
-def compile_mesh(tri, fa, pitch):
+def compile_mesh(tri, fa, pitch, *, patch_shift=None):
     from gpu_mesh_line import device_bvhs
 
     if not np.isfinite(pitch) or pitch <= 0:
@@ -178,13 +178,21 @@ def compile_mesh(tri, fa, pitch):
     features = features[ids]
     low = tri.min(axis=(0, 1))
     high = tri.max(axis=(0, 1))
+    deviation = 0.0
+    if patch_shift is not None:
+        deviation = 2 * np.linalg.norm(patch_shift, axis=2).max() + 1e-9
+        # Bounds per coordinate prevent curvature in one direction from
+        # artificially thickening a flat end face in an unrelated direction.
+        controls = 0.5 * (tri + np.roll(tri, -1, axis=1)) + 2 * patch_shift[ids]
+        low = np.minimum(low, controls.min(axis=(0, 1)))
+        high = np.maximum(high, controls.max(axis=(0, 1)))
     sizes = np.ceil((high - low) / pitch) + 1
     if not np.isfinite(sizes).all() or np.prod(sizes) > 64_000_000:
         raise ValueError("Voxel index exceeds budget; increase pitch")
     sizes = sizes.astype(np.int32)
-    radius = 1.5 * pitch
+    radius = 1.5 * pitch + 2 * deviation
     offsets, tri_ids = voxel_lists(tri, n, low, sizes, pitch, radius)
-    thin, _ = voxel_lists(tri, n, low, sizes, pitch, 0.0)
+    thin, _ = voxel_lists(tri, n, low, sizes, pitch, deviation)
     occupied = binary_fill_holes((np.diff(thin) > 0).reshape(tuple(sizes[::-1]))).astype(np.uint8)
     tags, compact = np.unique(fa, return_inverse=True)
     geom = (
@@ -194,9 +202,11 @@ def compile_mesh(tri, fa, pitch):
         offsets,
         tri_ids,
         sizes,
-        np.array([*low, *high, 1 / pitch, radius]),
+        np.array([*low, *high, 1 / pitch, radius] + ([deviation] if patch_shift is not None else [])),
         nodes,
         boxes,
         occupied,
     )
+    if patch_shift is not None:
+        return geom, tags, ids
     return geom, tags

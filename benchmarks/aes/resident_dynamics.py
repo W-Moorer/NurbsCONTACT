@@ -81,7 +81,7 @@ def spheres(args):
     return tri, tri, tags, tags, rows, np.zeros((round(args.duration / args.h) + 1, 2)), 5000.0
 
 
-def swept_samples(tri, points, joints):
+def swept_samples(tri, points, joints, depth_floor=1.e-10):
     # A point on any rotating B describes a circle. The sphere enclosing the
     # rotating target about its joint is a conservative, trajectory-free bound.
     a, b = np.asarray(joints)
@@ -100,7 +100,7 @@ def swept_samples(tri, points, joints):
     if np.count_nonzero(na) == 1 and (np.array_equal(na, nb) or np.array_equal(na, -nb)):
         level = (points + shift) @ na
         height = tri.reshape(-1, 3) @ na
-        keep &= (level > height.min() + 1.0e-10) & (level < height.max() - 1.0e-10)
+        keep &= (level > height.min() + depth_floor) & (level < height.max() - depth_floor)
     return keep
 
 

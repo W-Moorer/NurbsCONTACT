@@ -142,3 +142,59 @@ extern "C" __global__ void patch_counts(const State *frames, const PatchIndex *p
         counts[2*i+1] = p[i].visits;
     }
 }
+
+#ifdef NC_INNER_GUARD
+struct MotionCandidates {
+    double anchor[12];
+    int *ids;
+    int count, cold;
+    U64 builds;
+};
+extern "C" __global__ void bind_motion_candidates(MotionCandidates *v, int *ids) {
+    static_assert(sizeof(MotionCandidates) == 120);
+    v->ids = ids;
+}
+__device__ void prepare_motion_candidates(MotionCandidates &v, const State &f, double radius) {
+    v.cold = !v.builds || f.cold;
+    for (int i = 0; i < 3 && !v.cold; ++i) {
+        const double *a = f.pose + 4 * i, *b = v.anchor + 4 * i;
+        P row = {a[0] - b[0], a[1] - b[1], a[2] - b[2]};
+        v.cold = fabs(a[3] - b[3]) + radius * sqrt(dot(row, row)) >= NC_INNER_GUARD;
+    }
+    if (v.cold) {
+        ++v.builds;
+        v.count = 0;
+        for (int i = 0; i < 12; ++i)
+            v.anchor[i] = f.pose[i];
+    }
+}
+__device__ void compact_motion_candidates(MotionCandidates &v, const State &f, const MeshView &m,
+                                          const PatchIndex &outer, int worker) {
+    double scale = 1. + outer.radius + fabs(v.anchor[3]) + fabs(v.anchor[7]) + fabs(v.anchor[11]);
+    double e = NC_INNER_GUARD + 1.e-10 + 128. * 2.220446049250313e-16 * scale;
+    int lane = worker % 32;
+    for (int row = worker - lane; row < f.nc; row += blockDim.x * gridDim.x) {
+        int id = row + lane < f.nc ? outer.active[row + lane] : -1;
+        bool keep = false;
+        if (id >= 0) {
+            P c = move(v.anchor, m.points[id]);
+            double4 previous = m.outside[id];
+            P motion = {c.x - previous.x, c.y - previous.y, c.z - previous.z};
+            if (!(previous.w > sqrt(dot(motion, motion)) + 1.732050807568878 * e))
+                keep = patch_overlap<true>(c, {e, e, e}, m, outer);
+        }
+        unsigned chosen = __ballot_sync(0xffffffff, keep);
+        int base = 0;
+        if (!lane && chosen)
+            base = atomicAdd(&v.count, __popc(chosen));
+        base = __shfl_sync(0xffffffff, base, 0);
+        if (keep)
+            v.ids[base + __popc(chosen & ((1u << lane) - 1))] = id;
+    }
+}
+extern "C" __global__ void motion_counts(const MotionCandidates *views, U64 *counts, int n) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < n)
+        counts[i] = views[i].builds;
+}
+#endif

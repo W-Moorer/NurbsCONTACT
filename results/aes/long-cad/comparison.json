@@ -1,0 +1,2179 @@
+{
+  "cad": "filter16",
+  "mesh": "mesh-floor16",
+  "reference_mean_output_torque_Nm": 137.9468732675683,
+  "reference_unloaded_output_frames": [
+    2067,
+    777
+  ],
+  "window_s": [
+    1.245,
+    1.265
+  ],
+  "window_output_torque_range_Nm": {
+    "RecurDyn": [
+      0.0,
+      325.29602579393725
+    ],
+    "filter16": [
+      138.73075065267355,
+      145.99186753587247
+    ],
+    "mesh-floor16": [
+      110.91828785593559,
+      176.95919329054556
+    ],
+    "fast16": [
+      138.73075065267355,
+      145.99186753587247
+    ],
+    "width16": [
+      138.73075065267355,
+      145.99186753587247
+    ],
+    "width-mesh16": [
+      110.91828785593559,
+      176.95919329054556
+    ],
+    "patch8": [
+      138.61294974469232,
+      145.92858487309493
+    ],
+    "mesh8": [
+      110.7911391147683,
+      177.19095890315035
+    ],
+    "winner8": [
+      138.61294974469232,
+      145.92858487309493
+    ],
+    "source-floor16": [
+      128.45322848593278,
+      156.17511427099316
+    ],
+    "single16": [
+      138.73075065267355,
+      145.99186753587247
+    ],
+    "inner16": [
+      138.73075065267355,
+      145.99186753587247
+    ],
+    "inner-mesh16": [
+      110.91828785593559,
+      176.95919329054556
+    ],
+    "no-reuse16": [
+      138.73075065267355,
+      145.99186753587247
+    ],
+    "direct16": [
+      138.73075065267355,
+      145.99186753587247
+    ],
+    "repeat16": [
+      138.73075065267355,
+      145.99186753587247
+    ]
+  },
+  "runs": {
+    "filter16": {
+      "raw_trace_sha256": "2f10de8c77794dd44fc4d80fe71fd8e42009cbc060a6e1433f979c7a69ef9564",
+      "unloaded_output_frames": [
+        19,
+        24
+      ],
+      "on_off_switches": [
+        17,
+        17
+      ],
+      "timing": {
+        "gpu": "NVIDIA GeForce RTX 3070",
+        "method": "cad-patch",
+        "broad_phase": "blocks",
+        "include_vertices": false,
+        "stiffness_scope": "pair",
+        "physical_s": 5.0,
+        "requested_s": 5.0,
+        "step_s": 9.999999999999999e-05,
+        "terminated": "complete",
+        "coordinates": 3,
+        "pairs": 2,
+        "contact_samples": 16,
+        "minimum_step_s": 2.4414062499999998e-08,
+        "explicit_crossing_enabled": true,
+        "explicit_crossings": 0,
+        "directional_probes": [
+          [
+            4128,
+            3888
+          ],
+          [
+            12848,
+            22044
+          ]
+        ],
+        "steps": 50000,
+        "trials": 1612120,
+        "lanes": 8,
+        "contact_floor_nm": 0.01,
+        "accepted_increments": 799806,
+        "setup_s": 23.314883599989116,
+        "online_s": 271.5402383999899,
+        "p99_us": 7905.28,
+        "over_budget": 50000,
+        "device_pool_MiB": 230.91796875,
+        "peak_normal_N": [
+          4779.854918496471,
+          9164.789109497946
+        ],
+        "max_active_regions": [
+          1.0,
+          1.0
+        ],
+        "static_index_hits": 4,
+        "patch_reuse": true,
+        "patch_search": "carrier-filter",
+        "phase_profile": {
+          "prepare_s": 29.472784512,
+          "search_s": 211.027398304,
+          "merge_and_hht_s": 30.526463232,
+          "online_trials": 1612119,
+          "trials_after_newton_update": 812280,
+          "directional_probe_visits": [
+            375381124,
+            795913498,
+            1166603240,
+            4466246048
+          ]
+        },
+        "guard_mm": 0.8,
+        "directional_rebuilds": [
+          188945,
+          98109,
+          112980,
+          62769
+        ],
+        "directional_probe_visits": [
+          375381124,
+          795913498,
+          1166603240,
+          4466246048
+        ]
+      },
+      "rms_vs_recurdyn": {
+        "speed": [
+          3.5387656618200265,
+          1.0019998792476477,
+          0.9897189331390204
+        ],
+        "twist": [
+          0.9592555202947253,
+          0.9692915507054539
+        ],
+        "torque": 73.44589113858669
+      },
+      "mean_output_torque_Nm": 137.8055259633179,
+      "stage_peak_N": [
+        4779.854918496471,
+        9164.789109497946
+      ],
+      "rms_stage_load_difference_vs_cad_N": [
+        0.0,
+        0.0
+      ],
+      "face_agreement_vs_cad": [
+        1.0,
+        1.0
+      ],
+      "switches_vs_cad": [
+        [
+          {
+            "first_events": 16739,
+            "second_events": 16739,
+            "matched": 16739,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 16739,
+            "second_events": 16739,
+            "matched": 16739,
+            "max_allowed_steps": 5
+          }
+        ],
+        [
+          {
+            "first_events": 24150,
+            "second_events": 24150,
+            "matched": 24150,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 24150,
+            "second_events": 24150,
+            "matched": 24150,
+            "max_allowed_steps": 5
+          }
+        ]
+      ]
+    },
+    "mesh-floor16": {
+      "raw_trace_sha256": "ebd31ebad2c3400f0589b3e2afc484dce821f1df3bc005f149e67cbca24893c5",
+      "unloaded_output_frames": [
+        19,
+        27
+      ],
+      "on_off_switches": [
+        19,
+        23
+      ],
+      "timing": {
+        "gpu": "NVIDIA GeForce RTX 3070",
+        "method": "mesh",
+        "broad_phase": "blocks",
+        "include_vertices": false,
+        "stiffness_scope": "pair",
+        "physical_s": 5.0,
+        "requested_s": 5.0,
+        "step_s": 9.999999999999999e-05,
+        "terminated": "complete",
+        "coordinates": 3,
+        "pairs": 2,
+        "contact_samples": 16,
+        "minimum_step_s": 2.4414062499999998e-08,
+        "explicit_crossing_enabled": true,
+        "explicit_crossings": 0,
+        "directional_probes": [
+          [
+            4128,
+            3888
+          ],
+          [
+            12848,
+            21956
+          ]
+        ],
+        "steps": 50000,
+        "trials": 1603242,
+        "lanes": 4,
+        "contact_floor_nm": 0.01,
+        "accepted_increments": 799815,
+        "setup_s": 51.34172869997565,
+        "online_s": 120.3655807999894,
+        "p99_us": 2960.394240000002,
+        "over_budget": 50000,
+        "device_pool_MiB": 210.65087890625,
+        "peak_normal_N": [
+          4420.400228123352,
+          9391.60538064749
+        ],
+        "max_active_regions": [
+          1.0,
+          1.0
+        ],
+        "phase_profile": {
+          "prepare_s": 28.413076192000002,
+          "search_s": 61.885742208,
+          "merge_and_hht_s": 29.549534880000003,
+          "online_trials": 1603241,
+          "trials_after_newton_update": 803393,
+          "directional_probe_visits": [
+            368013415,
+            753267251,
+            1140806433,
+            4315506693
+          ]
+        },
+        "guard_mm": 0.8,
+        "directional_rebuilds": [
+          189111,
+          98109,
+          112983,
+          62770
+        ],
+        "directional_probe_visits": [
+          368013415,
+          753267251,
+          1140806433,
+          4315506693
+        ]
+      },
+      "rms_vs_recurdyn": {
+        "speed": [
+          3.5623992265919537,
+          0.9927117877816715,
+          0.974245171178687
+        ],
+        "twist": [
+          0.9388003099862114,
+          0.884143550416812
+        ],
+        "torque": 72.76376669476134
+      },
+      "mean_output_torque_Nm": 137.80461169908472,
+      "stage_peak_N": [
+        4420.400228123352,
+        9391.60538064749
+      ],
+      "rms_stage_load_difference_vs_cad_N": [
+        103.13121018172673,
+        268.8377447939608
+      ],
+      "face_agreement_vs_cad": [
+        0.6500669986600268,
+        0.40409191816163675
+      ],
+      "switches_vs_cad": [
+        [
+          {
+            "first_events": 27322,
+            "second_events": 16739,
+            "matched": 15620,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 27322,
+            "second_events": 16739,
+            "matched": 16737,
+            "max_allowed_steps": 5
+          }
+        ],
+        [
+          {
+            "first_events": 16637,
+            "second_events": 24150,
+            "matched": 5895,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 16637,
+            "second_events": 24150,
+            "matched": 13525,
+            "max_allowed_steps": 5
+          }
+        ]
+      ]
+    },
+    "fast16": {
+      "raw_trace_sha256": "2f10de8c77794dd44fc4d80fe71fd8e42009cbc060a6e1433f979c7a69ef9564",
+      "unloaded_output_frames": [
+        19,
+        24
+      ],
+      "on_off_switches": [
+        17,
+        17
+      ],
+      "timing": {
+        "gpu": "NVIDIA GeForce RTX 3070",
+        "method": "cad-patch",
+        "broad_phase": "blocks",
+        "include_vertices": false,
+        "stiffness_scope": "pair",
+        "physical_s": 5.0,
+        "requested_s": 5.0,
+        "step_s": 9.999999999999999e-05,
+        "terminated": "complete",
+        "coordinates": 3,
+        "pairs": 2,
+        "contact_samples": 16,
+        "minimum_step_s": 2.4414062499999998e-08,
+        "explicit_crossing_enabled": true,
+        "explicit_crossings": 0,
+        "directional_probes": [
+          [
+            4128,
+            3888
+          ],
+          [
+            12848,
+            22044
+          ]
+        ],
+        "steps": 50000,
+        "trials": 1612120,
+        "lanes": 4,
+        "contact_floor_nm": 0.01,
+        "accepted_increments": 799806,
+        "setup_s": 41.30981449998217,
+        "online_s": 299.98922029999085,
+        "p99_us": 8947.752960000007,
+        "over_budget": 50000,
+        "device_pool_MiB": 230.1396484375,
+        "peak_normal_N": [
+          4779.854918496471,
+          9164.789109497946
+        ],
+        "max_active_regions": [
+          1.0,
+          1.0
+        ],
+        "static_index_hits": 0,
+        "patch_reuse": true,
+        "phase_profile": {
+          "prepare_s": 28.983634432000002,
+          "search_s": 239.92305744,
+          "merge_and_hht_s": 30.561705152000002,
+          "online_trials": 1612119,
+          "trials_after_newton_update": 812280,
+          "directional_probe_visits": [
+            375381124,
+            795913498,
+            1166603240,
+            4466246048
+          ]
+        },
+        "guard_mm": 0.8,
+        "directional_rebuilds": [
+          188945,
+          98109,
+          112980,
+          62769
+        ],
+        "directional_probe_visits": [
+          375381124,
+          795913498,
+          1166603240,
+          4466246048
+        ]
+      },
+      "rms_vs_recurdyn": {
+        "speed": [
+          3.5387656618200265,
+          1.0019998792476477,
+          0.9897189331390204
+        ],
+        "twist": [
+          0.9592555202947253,
+          0.9692915507054539
+        ],
+        "torque": 73.44589113858669
+      },
+      "mean_output_torque_Nm": 137.8055259633179,
+      "stage_peak_N": [
+        4779.854918496471,
+        9164.789109497946
+      ],
+      "rms_stage_load_difference_vs_cad_N": [
+        0.0,
+        0.0
+      ],
+      "face_agreement_vs_cad": [
+        1.0,
+        1.0
+      ],
+      "switches_vs_cad": [
+        [
+          {
+            "first_events": 16739,
+            "second_events": 16739,
+            "matched": 16739,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 16739,
+            "second_events": 16739,
+            "matched": 16739,
+            "max_allowed_steps": 5
+          }
+        ],
+        [
+          {
+            "first_events": 24150,
+            "second_events": 24150,
+            "matched": 24150,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 24150,
+            "second_events": 24150,
+            "matched": 24150,
+            "max_allowed_steps": 5
+          }
+        ]
+      ]
+    },
+    "width16": {
+      "raw_trace_sha256": "2f10de8c77794dd44fc4d80fe71fd8e42009cbc060a6e1433f979c7a69ef9564",
+      "unloaded_output_frames": [
+        19,
+        24
+      ],
+      "on_off_switches": [
+        17,
+        17
+      ],
+      "timing": {
+        "gpu": "NVIDIA GeForce RTX 3070",
+        "method": "cad-patch",
+        "broad_phase": "blocks",
+        "include_vertices": false,
+        "stiffness_scope": "pair",
+        "physical_s": 5.0,
+        "requested_s": 5.0,
+        "step_s": 9.999999999999999e-05,
+        "terminated": "complete",
+        "coordinates": 3,
+        "pairs": 2,
+        "contact_samples": 16,
+        "minimum_step_s": 2.4414062499999998e-08,
+        "explicit_crossing_enabled": true,
+        "explicit_crossings": 0,
+        "directional_probes": [
+          [
+            4128,
+            3888
+          ],
+          [
+            12848,
+            22044
+          ]
+        ],
+        "steps": 50000,
+        "trials": 1612120,
+        "lanes": 8,
+        "contact_floor_nm": 0.01,
+        "accepted_increments": 799806,
+        "setup_s": 11.047639299998991,
+        "online_s": 287.7370222999598,
+        "p99_us": 7923.712,
+        "over_budget": 50000,
+        "device_pool_MiB": 230.91796875,
+        "peak_normal_N": [
+          4779.854918496471,
+          9164.789109497946
+        ],
+        "max_active_regions": [
+          1.0,
+          1.0
+        ],
+        "static_index_hits": 4,
+        "patch_reuse": true,
+        "patch_search": "bounded",
+        "phase_profile": {
+          "prepare_s": 29.226078400000002,
+          "search_s": 227.28872336,
+          "merge_and_hht_s": 30.639338432000002,
+          "online_trials": 1612119,
+          "trials_after_newton_update": 812280,
+          "directional_probe_visits": [
+            375381124,
+            795913498,
+            1166603240,
+            4466246048
+          ]
+        },
+        "guard_mm": 0.8,
+        "directional_rebuilds": [
+          188945,
+          98109,
+          112980,
+          62769
+        ],
+        "directional_probe_visits": [
+          375381124,
+          795913498,
+          1166603240,
+          4466246048
+        ]
+      },
+      "rms_vs_recurdyn": {
+        "speed": [
+          3.5387656618200265,
+          1.0019998792476477,
+          0.9897189331390204
+        ],
+        "twist": [
+          0.9592555202947253,
+          0.9692915507054539
+        ],
+        "torque": 73.44589113858669
+      },
+      "mean_output_torque_Nm": 137.8055259633179,
+      "stage_peak_N": [
+        4779.854918496471,
+        9164.789109497946
+      ],
+      "rms_stage_load_difference_vs_cad_N": [
+        0.0,
+        0.0
+      ],
+      "face_agreement_vs_cad": [
+        1.0,
+        1.0
+      ],
+      "switches_vs_cad": [
+        [
+          {
+            "first_events": 16739,
+            "second_events": 16739,
+            "matched": 16739,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 16739,
+            "second_events": 16739,
+            "matched": 16739,
+            "max_allowed_steps": 5
+          }
+        ],
+        [
+          {
+            "first_events": 24150,
+            "second_events": 24150,
+            "matched": 24150,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 24150,
+            "second_events": 24150,
+            "matched": 24150,
+            "max_allowed_steps": 5
+          }
+        ]
+      ]
+    },
+    "width-mesh16": {
+      "raw_trace_sha256": "ebd31ebad2c3400f0589b3e2afc484dce821f1df3bc005f149e67cbca24893c5",
+      "unloaded_output_frames": [
+        19,
+        27
+      ],
+      "on_off_switches": [
+        19,
+        23
+      ],
+      "timing": {
+        "gpu": "NVIDIA GeForce RTX 3070",
+        "method": "mesh",
+        "broad_phase": "blocks",
+        "include_vertices": false,
+        "stiffness_scope": "pair",
+        "physical_s": 5.0,
+        "requested_s": 5.0,
+        "step_s": 9.999999999999999e-05,
+        "terminated": "complete",
+        "coordinates": 3,
+        "pairs": 2,
+        "contact_samples": 16,
+        "minimum_step_s": 2.4414062499999998e-08,
+        "explicit_crossing_enabled": true,
+        "explicit_crossings": 0,
+        "directional_probes": [
+          [
+            4128,
+            3888
+          ],
+          [
+            12848,
+            21956
+          ]
+        ],
+        "steps": 50000,
+        "trials": 1603242,
+        "lanes": 8,
+        "contact_floor_nm": 0.01,
+        "accepted_increments": 799815,
+        "setup_s": 14.133795699977782,
+        "online_s": 128.5685886000283,
+        "p99_us": 3200.0,
+        "over_budget": 50000,
+        "device_pool_MiB": 212.23876953125,
+        "peak_normal_N": [
+          4420.400228123352,
+          9391.60538064749
+        ],
+        "max_active_regions": [
+          1.0,
+          1.0
+        ],
+        "phase_profile": {
+          "prepare_s": 28.785240576000003,
+          "search_s": 69.262044512,
+          "merge_and_hht_s": 29.979208832,
+          "online_trials": 1603241,
+          "trials_after_newton_update": 803393,
+          "directional_probe_visits": [
+            368013415,
+            753267251,
+            1140806433,
+            4315506693
+          ]
+        },
+        "guard_mm": 0.8,
+        "directional_rebuilds": [
+          189111,
+          98109,
+          112983,
+          62770
+        ],
+        "directional_probe_visits": [
+          368013415,
+          753267251,
+          1140806433,
+          4315506693
+        ]
+      },
+      "rms_vs_recurdyn": {
+        "speed": [
+          3.5623992265919537,
+          0.9927117877816715,
+          0.974245171178687
+        ],
+        "twist": [
+          0.9388003099862114,
+          0.884143550416812
+        ],
+        "torque": 72.76376669476134
+      },
+      "mean_output_torque_Nm": 137.80461169908472,
+      "stage_peak_N": [
+        4420.400228123352,
+        9391.60538064749
+      ],
+      "rms_stage_load_difference_vs_cad_N": [
+        103.13121018172673,
+        268.8377447939608
+      ],
+      "face_agreement_vs_cad": [
+        0.6500669986600268,
+        0.40409191816163675
+      ],
+      "switches_vs_cad": [
+        [
+          {
+            "first_events": 27322,
+            "second_events": 16739,
+            "matched": 15620,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 27322,
+            "second_events": 16739,
+            "matched": 16737,
+            "max_allowed_steps": 5
+          }
+        ],
+        [
+          {
+            "first_events": 16637,
+            "second_events": 24150,
+            "matched": 5895,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 16637,
+            "second_events": 24150,
+            "matched": 13525,
+            "max_allowed_steps": 5
+          }
+        ]
+      ]
+    },
+    "patch8": {
+      "raw_trace_sha256": "bc532e279d7f41a2c9ab3bde19e41e75baacb3d5f3146d565669494d6b2a9d72",
+      "unloaded_output_frames": [
+        20,
+        23
+      ],
+      "on_off_switches": [
+        19,
+        17
+      ],
+      "timing": {
+        "gpu": "NVIDIA GeForce RTX 3070",
+        "method": "cad-patch",
+        "broad_phase": "blocks",
+        "include_vertices": false,
+        "stiffness_scope": "pair",
+        "physical_s": 5.0,
+        "requested_s": 5.0,
+        "step_s": 9.999999999999999e-05,
+        "terminated": "complete",
+        "coordinates": 3,
+        "pairs": 2,
+        "contact_samples": 8,
+        "minimum_step_s": 2.4414062499999998e-08,
+        "explicit_crossing_enabled": true,
+        "explicit_crossings": 0,
+        "directional_probes": [
+          [
+            4128,
+            3888
+          ],
+          [
+            12848,
+            22044
+          ]
+        ],
+        "steps": 50000,
+        "trials": 1007208,
+        "lanes": 8,
+        "contact_floor_nm": 0.01,
+        "accepted_increments": 399923,
+        "setup_s": 11.387462899961974,
+        "online_s": 191.03067040001042,
+        "p99_us": 5289.984,
+        "over_budget": 50000,
+        "device_pool_MiB": 230.91796875,
+        "peak_normal_N": [
+          4768.2154084827025,
+          9159.672946918974
+        ],
+        "max_active_regions": [
+          1.0,
+          1.0
+        ],
+        "static_index_hits": 4,
+        "patch_reuse": true,
+        "patch_search": "bounded",
+        "phase_profile": {
+          "prepare_s": 22.052365312000003,
+          "search_s": 148.8952944,
+          "merge_and_hht_s": 19.715675104000002,
+          "online_trials": 1007207,
+          "trials_after_newton_update": 607249,
+          "directional_probe_visits": [
+            234550553,
+            497266567,
+            728880958,
+            2790485958
+          ]
+        },
+        "guard_mm": 0.8,
+        "directional_rebuilds": [
+          181579,
+          96591,
+          99998,
+          60774
+        ],
+        "directional_probe_visits": [
+          234550553,
+          497266567,
+          728880958,
+          2790485958
+        ]
+      },
+      "rms_vs_recurdyn": {
+        "speed": [
+          3.5393450888052658,
+          1.0018448894119631,
+          0.9897120315122709
+        ],
+        "twist": [
+          0.9592700285599498,
+          0.9692915842169666
+        ],
+        "torque": 73.44538673246285
+      },
+      "mean_output_torque_Nm": 137.80403493727786,
+      "stage_peak_N": [
+        4768.2154084827025,
+        9159.672946918974
+      ],
+      "rms_stage_load_difference_vs_cad_N": [
+        10.03121735832083,
+        12.836750141552843
+      ],
+      "face_agreement_vs_cad": [
+        0.999840003199936,
+        0.999840003199936
+      ],
+      "switches_vs_cad": [
+        [
+          {
+            "first_events": 16730,
+            "second_events": 16739,
+            "matched": 16728,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 16730,
+            "second_events": 16739,
+            "matched": 16728,
+            "max_allowed_steps": 5
+          }
+        ],
+        [
+          {
+            "first_events": 24148,
+            "second_events": 24150,
+            "matched": 24139,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 24148,
+            "second_events": 24150,
+            "matched": 24139,
+            "max_allowed_steps": 5
+          }
+        ]
+      ]
+    },
+    "mesh8": {
+      "raw_trace_sha256": "e953d3fef00452cce6c25c7282389dbae306e5a78435e06091c13e57d8e96092",
+      "unloaded_output_frames": [
+        20,
+        27
+      ],
+      "on_off_switches": [
+        19,
+        23
+      ],
+      "timing": {
+        "gpu": "NVIDIA GeForce RTX 3070",
+        "method": "mesh",
+        "broad_phase": "blocks",
+        "include_vertices": false,
+        "stiffness_scope": "pair",
+        "physical_s": 5.0,
+        "requested_s": 5.0,
+        "step_s": 9.999999999999999e-05,
+        "terminated": "complete",
+        "coordinates": 3,
+        "pairs": 2,
+        "contact_samples": 8,
+        "minimum_step_s": 2.4414062499999998e-08,
+        "explicit_crossing_enabled": true,
+        "explicit_crossings": 0,
+        "directional_probes": [
+          [
+            4128,
+            3888
+          ],
+          [
+            12848,
+            21956
+          ]
+        ],
+        "steps": 50000,
+        "trials": 917405,
+        "lanes": 8,
+        "contact_floor_nm": 0.01,
+        "accepted_increments": 399923,
+        "setup_s": 13.348201400018297,
+        "online_s": 79.56899800000247,
+        "p99_us": 2176.0,
+        "over_budget": 50000,
+        "device_pool_MiB": 212.23876953125,
+        "peak_normal_N": [
+          4438.082077938663,
+          9388.193647442793
+        ],
+        "max_active_regions": [
+          1.0,
+          1.0
+        ],
+        "phase_profile": {
+          "prepare_s": 20.907020288000002,
+          "search_s": 40.910246912000005,
+          "merge_and_hht_s": 17.407593472000002,
+          "online_trials": 917404,
+          "trials_after_newton_update": 517448,
+          "directional_probe_visits": [
+            210599969,
+            430990875,
+            652781418,
+            2469889827
+          ]
+        },
+        "guard_mm": 0.8,
+        "directional_rebuilds": [
+          181846,
+          96592,
+          99998,
+          60759
+        ],
+        "directional_probe_visits": [
+          210599969,
+          430990875,
+          652781418,
+          2469889827
+        ]
+      },
+      "rms_vs_recurdyn": {
+        "speed": [
+          3.563877064124859,
+          0.9933727332092593,
+          0.9744243303403859
+        ],
+        "twist": [
+          0.9388277786367685,
+          0.8841712337808066
+        ],
+        "torque": 72.78212608797311
+      },
+      "mean_output_torque_Nm": 137.8051998991315,
+      "stage_peak_N": [
+        4438.082077938663,
+        9388.193647442793
+      ],
+      "rms_stage_load_difference_vs_cad_N": [
+        103.97216819624936,
+        269.90828150851354
+      ],
+      "face_agreement_vs_cad": [
+        0.6500869982600348,
+        0.40403191936161276
+      ],
+      "switches_vs_cad": [
+        [
+          {
+            "first_events": 27322,
+            "second_events": 16739,
+            "matched": 15620,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 27322,
+            "second_events": 16739,
+            "matched": 16737,
+            "max_allowed_steps": 5
+          }
+        ],
+        [
+          {
+            "first_events": 16647,
+            "second_events": 24150,
+            "matched": 5895,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 16647,
+            "second_events": 24150,
+            "matched": 13535,
+            "max_allowed_steps": 5
+          }
+        ]
+      ]
+    },
+    "winner8": {
+      "raw_trace_sha256": "bc532e279d7f41a2c9ab3bde19e41e75baacb3d5f3146d565669494d6b2a9d72",
+      "unloaded_output_frames": [
+        20,
+        23
+      ],
+      "on_off_switches": [
+        19,
+        17
+      ],
+      "timing": {
+        "gpu": "NVIDIA GeForce RTX 3070",
+        "method": "cad-patch",
+        "broad_phase": "blocks",
+        "include_vertices": false,
+        "stiffness_scope": "pair",
+        "physical_s": 5.0,
+        "requested_s": 5.0,
+        "step_s": 9.999999999999999e-05,
+        "terminated": "complete",
+        "coordinates": 3,
+        "pairs": 2,
+        "contact_samples": 8,
+        "minimum_step_s": 2.4414062499999998e-08,
+        "explicit_crossing_enabled": true,
+        "explicit_crossings": 0,
+        "directional_probes": [
+          [
+            4128,
+            3888
+          ],
+          [
+            12848,
+            22044
+          ]
+        ],
+        "steps": 50000,
+        "trials": 1007208,
+        "lanes": 8,
+        "contact_floor_nm": 0.01,
+        "accepted_increments": 399923,
+        "setup_s": 9.569128200004343,
+        "online_s": 177.09293410001555,
+        "p99_us": 5208.064,
+        "over_budget": 50000,
+        "device_pool_MiB": 230.91796875,
+        "peak_normal_N": [
+          4768.2154084827025,
+          9159.672946918974
+        ],
+        "max_active_regions": [
+          1.0,
+          1.0
+        ],
+        "static_index_hits": 4,
+        "patch_reuse": true,
+        "patch_search": "carrier-filter",
+        "phase_profile": {
+          "prepare_s": 22.254948448,
+          "search_s": 134.825788288,
+          "merge_and_hht_s": 19.628793984,
+          "online_trials": 1007207,
+          "trials_after_newton_update": 607249,
+          "directional_probe_visits": [
+            234550553,
+            497266567,
+            728880958,
+            2790485958
+          ]
+        },
+        "guard_mm": 0.8,
+        "directional_rebuilds": [
+          181579,
+          96591,
+          99998,
+          60774
+        ],
+        "directional_probe_visits": [
+          234550553,
+          497266567,
+          728880958,
+          2790485958
+        ]
+      },
+      "rms_vs_recurdyn": {
+        "speed": [
+          3.5393450888052658,
+          1.0018448894119631,
+          0.9897120315122709
+        ],
+        "twist": [
+          0.9592700285599498,
+          0.9692915842169666
+        ],
+        "torque": 73.44538673246285
+      },
+      "mean_output_torque_Nm": 137.80403493727786,
+      "stage_peak_N": [
+        4768.2154084827025,
+        9159.672946918974
+      ],
+      "rms_stage_load_difference_vs_cad_N": [
+        10.03121735832083,
+        12.836750141552843
+      ],
+      "face_agreement_vs_cad": [
+        0.999840003199936,
+        0.999840003199936
+      ],
+      "switches_vs_cad": [
+        [
+          {
+            "first_events": 16730,
+            "second_events": 16739,
+            "matched": 16728,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 16730,
+            "second_events": 16739,
+            "matched": 16728,
+            "max_allowed_steps": 5
+          }
+        ],
+        [
+          {
+            "first_events": 24148,
+            "second_events": 24150,
+            "matched": 24139,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 24148,
+            "second_events": 24150,
+            "matched": 24139,
+            "max_allowed_steps": 5
+          }
+        ]
+      ]
+    },
+    "source-floor16": {
+      "raw_trace_sha256": "aa99f522ea10e70b1d68230a17201361df12c5691deef202145dd92c290c837e",
+      "unloaded_output_frames": [
+        19,
+        25
+      ],
+      "on_off_switches": [
+        17,
+        19
+      ],
+      "timing": {
+        "gpu": "NVIDIA GeForce RTX 3070",
+        "method": "cad",
+        "broad_phase": "blocks",
+        "include_vertices": false,
+        "stiffness_scope": "pair",
+        "physical_s": 5.0,
+        "requested_s": 5.0,
+        "step_s": 9.999999999999999e-05,
+        "terminated": "complete",
+        "coordinates": 3,
+        "pairs": 2,
+        "contact_samples": 16,
+        "minimum_step_s": 2.4414062499999998e-08,
+        "explicit_crossing_enabled": true,
+        "explicit_crossings": 0,
+        "directional_probes": [
+          [
+            4128,
+            3888
+          ],
+          [
+            12848,
+            22044
+          ]
+        ],
+        "steps": 50000,
+        "trials": 1612887,
+        "lanes": 4,
+        "contact_floor_nm": 0.01,
+        "accepted_increments": 799817,
+        "setup_s": 36.02049530000659,
+        "online_s": 120.26039019995369,
+        "p99_us": 2874.368,
+        "over_budget": 50000,
+        "device_pool_MiB": 210.66015625,
+        "peak_normal_N": [
+          4660.277198842366,
+          9244.733077718396
+        ],
+        "max_active_regions": [
+          1.0,
+          1.0
+        ],
+        "phase_profile": {
+          "prepare_s": 28.588825600000003,
+          "search_s": 62.481570816,
+          "merge_and_hht_s": 28.717933568000003,
+          "online_trials": 1612886,
+          "trials_after_newton_update": 812992,
+          "directional_probe_visits": [
+            370288919,
+            757834618,
+            1149086114,
+            4352742388
+          ]
+        },
+        "guard_mm": 0.8,
+        "directional_rebuilds": [
+          189017,
+          98109,
+          112976,
+          62768
+        ],
+        "directional_probe_visits": [
+          370288919,
+          757834618,
+          1149086114,
+          4352742388
+        ]
+      },
+      "rms_vs_recurdyn": {
+        "speed": [
+          3.5452103632369525,
+          1.0062135619168875,
+          0.989151409097818
+        ],
+        "twist": [
+          0.9531941369567407,
+          0.9476844622637313
+        ],
+        "torque": 73.5501669534379
+      },
+      "mean_output_torque_Nm": 137.80461113140302,
+      "stage_peak_N": [
+        4660.277198842366,
+        9244.733077718396
+      ],
+      "rms_stage_load_difference_vs_cad_N": [
+        86.27815076850094,
+        91.62167604555938
+      ],
+      "face_agreement_vs_cad": [
+        0.7274654506909862,
+        0.44295114097718047
+      ],
+      "switches_vs_cad": [
+        [
+          {
+            "first_events": 15625,
+            "second_events": 16739,
+            "matched": 10403,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 15625,
+            "second_events": 16739,
+            "matched": 12894,
+            "max_allowed_steps": 5
+          }
+        ],
+        [
+          {
+            "first_events": 16325,
+            "second_events": 24150,
+            "matched": 6773,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 16325,
+            "second_events": 24150,
+            "matched": 12097,
+            "max_allowed_steps": 5
+          }
+        ]
+      ]
+    },
+    "single16": {
+      "raw_trace_sha256": "2f10de8c77794dd44fc4d80fe71fd8e42009cbc060a6e1433f979c7a69ef9564",
+      "unloaded_output_frames": [
+        19,
+        24
+      ],
+      "on_off_switches": [
+        17,
+        17
+      ],
+      "timing": {
+        "gpu": "NVIDIA GeForce RTX 3070",
+        "method": "cad-patch",
+        "broad_phase": "blocks",
+        "include_vertices": false,
+        "stiffness_scope": "pair",
+        "physical_s": 5.0,
+        "requested_s": 5.0,
+        "step_s": 9.999999999999999e-05,
+        "terminated": "complete",
+        "coordinates": 3,
+        "pairs": 2,
+        "contact_samples": 16,
+        "minimum_step_s": 2.4414062499999998e-08,
+        "explicit_crossing_enabled": true,
+        "explicit_crossings": 0,
+        "directional_probes": [
+          [
+            4128,
+            3888
+          ],
+          [
+            12848,
+            22044
+          ]
+        ],
+        "steps": 50000,
+        "trials": 1612120,
+        "lanes": 1,
+        "contact_floor_nm": 0.01,
+        "accepted_increments": 799806,
+        "setup_s": 48.65703509998275,
+        "online_s": 485.9198996000341,
+        "p99_us": 15950.888960000008,
+        "over_budget": 50000,
+        "device_pool_MiB": 229.634765625,
+        "peak_normal_N": [
+          4779.854918496471,
+          9164.789109497946
+        ],
+        "max_active_regions": [
+          1.0,
+          1.0
+        ],
+        "static_index_hits": 0,
+        "patch_reuse": true,
+        "patch_search": "bounded",
+        "phase_profile": {
+          "prepare_s": 26.04109184,
+          "search_s": 429.352052768,
+          "merge_and_hht_s": 30.054562976000003,
+          "online_trials": 1612119,
+          "trials_after_newton_update": 812280,
+          "directional_probe_visits": [
+            375381124,
+            795913498,
+            1166603240,
+            4466246048
+          ]
+        },
+        "guard_mm": 0.8,
+        "directional_rebuilds": [
+          188945,
+          98109,
+          112980,
+          62769
+        ],
+        "directional_probe_visits": [
+          375381124,
+          795913498,
+          1166603240,
+          4466246048
+        ]
+      },
+      "rms_vs_recurdyn": {
+        "speed": [
+          3.5387656618200265,
+          1.0019998792476477,
+          0.9897189331390204
+        ],
+        "twist": [
+          0.9592555202947253,
+          0.9692915507054539
+        ],
+        "torque": 73.44589113858669
+      },
+      "mean_output_torque_Nm": 137.8055259633179,
+      "stage_peak_N": [
+        4779.854918496471,
+        9164.789109497946
+      ],
+      "rms_stage_load_difference_vs_cad_N": [
+        0.0,
+        0.0
+      ],
+      "face_agreement_vs_cad": [
+        1.0,
+        1.0
+      ],
+      "switches_vs_cad": [
+        [
+          {
+            "first_events": 16739,
+            "second_events": 16739,
+            "matched": 16739,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 16739,
+            "second_events": 16739,
+            "matched": 16739,
+            "max_allowed_steps": 5
+          }
+        ],
+        [
+          {
+            "first_events": 24150,
+            "second_events": 24150,
+            "matched": 24150,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 24150,
+            "second_events": 24150,
+            "matched": 24150,
+            "max_allowed_steps": 5
+          }
+        ]
+      ]
+    },
+    "inner16": {
+      "raw_trace_sha256": "2f10de8c77794dd44fc4d80fe71fd8e42009cbc060a6e1433f979c7a69ef9564",
+      "unloaded_output_frames": [
+        19,
+        24
+      ],
+      "on_off_switches": [
+        17,
+        17
+      ],
+      "timing": {
+        "gpu": "NVIDIA GeForce RTX 3070",
+        "method": "cad-patch",
+        "broad_phase": "blocks",
+        "include_vertices": false,
+        "stiffness_scope": "pair",
+        "physical_s": 5.0,
+        "requested_s": 5.0,
+        "step_s": 9.999999999999999e-05,
+        "terminated": "complete",
+        "coordinates": 3,
+        "pairs": 2,
+        "contact_samples": 16,
+        "minimum_step_s": 2.4414062499999998e-08,
+        "explicit_crossing_enabled": true,
+        "explicit_crossings": 0,
+        "directional_probes": [
+          [
+            4128,
+            3888
+          ],
+          [
+            12848,
+            22044
+          ]
+        ],
+        "steps": 50000,
+        "trials": 1612120,
+        "lanes": 8,
+        "contact_floor_nm": 0.01,
+        "accepted_increments": 799806,
+        "setup_s": 32.75051300000632,
+        "online_s": 344.8070002999739,
+        "p99_us": 9125.898240000002,
+        "over_budget": 50000,
+        "device_pool_MiB": 230.91845703125,
+        "peak_normal_N": [
+          4779.854918496471,
+          9164.789109497946
+        ],
+        "max_active_regions": [
+          1.0,
+          1.0
+        ],
+        "static_index_hits": 4,
+        "patch_reuse": true,
+        "patch_search": "bounded",
+        "phase_profile": {
+          "prepare_s": 59.394957056,
+          "search_s": 253.86310979200002,
+          "merge_and_hht_s": 31.020679232000003,
+          "online_trials": 1612119,
+          "trials_after_newton_update": 812280,
+          "directional_probe_visits": [
+            86763304,
+            216293758,
+            247738711,
+            1159015900
+          ]
+        },
+        "guard_mm": 0.8,
+        "directional_rebuilds": [
+          188945,
+          98109,
+          112980,
+          62769
+        ],
+        "directional_probe_visits": [
+          86763304,
+          216293758,
+          247738711,
+          1159015900
+        ],
+        "inner_guard_mm": 0.06,
+        "inner_rebuilds": [
+          799840,
+          799828,
+          799840,
+          772922
+        ]
+      },
+      "rms_vs_recurdyn": {
+        "speed": [
+          3.5387656618200265,
+          1.0019998792476477,
+          0.9897189331390204
+        ],
+        "twist": [
+          0.9592555202947253,
+          0.9692915507054539
+        ],
+        "torque": 73.44589113858669
+      },
+      "mean_output_torque_Nm": 137.8055259633179,
+      "stage_peak_N": [
+        4779.854918496471,
+        9164.789109497946
+      ],
+      "rms_stage_load_difference_vs_cad_N": [
+        0.0,
+        0.0
+      ],
+      "face_agreement_vs_cad": [
+        1.0,
+        1.0
+      ],
+      "switches_vs_cad": [
+        [
+          {
+            "first_events": 16739,
+            "second_events": 16739,
+            "matched": 16739,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 16739,
+            "second_events": 16739,
+            "matched": 16739,
+            "max_allowed_steps": 5
+          }
+        ],
+        [
+          {
+            "first_events": 24150,
+            "second_events": 24150,
+            "matched": 24150,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 24150,
+            "second_events": 24150,
+            "matched": 24150,
+            "max_allowed_steps": 5
+          }
+        ]
+      ]
+    },
+    "inner-mesh16": {
+      "raw_trace_sha256": "ebd31ebad2c3400f0589b3e2afc484dce821f1df3bc005f149e67cbca24893c5",
+      "unloaded_output_frames": [
+        19,
+        27
+      ],
+      "on_off_switches": [
+        19,
+        23
+      ],
+      "timing": {
+        "gpu": "NVIDIA GeForce RTX 3070",
+        "method": "mesh",
+        "broad_phase": "blocks",
+        "include_vertices": false,
+        "stiffness_scope": "pair",
+        "physical_s": 5.0,
+        "requested_s": 5.0,
+        "step_s": 9.999999999999999e-05,
+        "terminated": "complete",
+        "coordinates": 3,
+        "pairs": 2,
+        "contact_samples": 16,
+        "minimum_step_s": 2.4414062499999998e-08,
+        "explicit_crossing_enabled": true,
+        "explicit_crossings": 0,
+        "directional_probes": [
+          [
+            4128,
+            3888
+          ],
+          [
+            12848,
+            21956
+          ]
+        ],
+        "steps": 50000,
+        "trials": 1603242,
+        "lanes": 8,
+        "contact_floor_nm": 0.01,
+        "accepted_increments": 799815,
+        "setup_s": 36.93555320001906,
+        "online_s": 163.9116623000009,
+        "p99_us": 3864.586240000002,
+        "over_budget": 50000,
+        "device_pool_MiB": 212.2392578125,
+        "peak_normal_N": [
+          4420.400228123352,
+          9391.60538064749
+        ],
+        "max_active_regions": [
+          1.0,
+          1.0
+        ],
+        "phase_profile": {
+          "prepare_s": 60.610565472000005,
+          "search_s": 73.005402016,
+          "merge_and_hht_s": 29.809275744,
+          "online_trials": 1603241,
+          "trials_after_newton_update": 803393,
+          "directional_probe_visits": [
+            79211754,
+            168447235,
+            223502273,
+            936444799
+          ]
+        },
+        "guard_mm": 0.8,
+        "directional_rebuilds": [
+          189111,
+          98109,
+          112983,
+          62770
+        ],
+        "directional_probe_visits": [
+          79211754,
+          168447235,
+          223502273,
+          936444799
+        ],
+        "inner_guard_mm": 0.06,
+        "inner_rebuilds": [
+          799849,
+          799839,
+          799849,
+          773533
+        ]
+      },
+      "rms_vs_recurdyn": {
+        "speed": [
+          3.5623992265919537,
+          0.9927117877816715,
+          0.974245171178687
+        ],
+        "twist": [
+          0.9388003099862114,
+          0.884143550416812
+        ],
+        "torque": 72.76376669476134
+      },
+      "mean_output_torque_Nm": 137.80461169908472,
+      "stage_peak_N": [
+        4420.400228123352,
+        9391.60538064749
+      ],
+      "rms_stage_load_difference_vs_cad_N": [
+        103.13121018172673,
+        268.8377447939608
+      ],
+      "face_agreement_vs_cad": [
+        0.6500669986600268,
+        0.40409191816163675
+      ],
+      "switches_vs_cad": [
+        [
+          {
+            "first_events": 27322,
+            "second_events": 16739,
+            "matched": 15620,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 27322,
+            "second_events": 16739,
+            "matched": 16737,
+            "max_allowed_steps": 5
+          }
+        ],
+        [
+          {
+            "first_events": 16637,
+            "second_events": 24150,
+            "matched": 5895,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 16637,
+            "second_events": 24150,
+            "matched": 13525,
+            "max_allowed_steps": 5
+          }
+        ]
+      ]
+    },
+    "no-reuse16": {
+      "raw_trace_sha256": "2f10de8c77794dd44fc4d80fe71fd8e42009cbc060a6e1433f979c7a69ef9564",
+      "unloaded_output_frames": [
+        19,
+        24
+      ],
+      "on_off_switches": [
+        17,
+        17
+      ],
+      "timing": {
+        "gpu": "NVIDIA GeForce RTX 3070",
+        "method": "cad-patch",
+        "broad_phase": "blocks",
+        "include_vertices": false,
+        "stiffness_scope": "pair",
+        "physical_s": 5.0,
+        "requested_s": 5.0,
+        "step_s": 9.999999999999999e-05,
+        "terminated": "complete",
+        "coordinates": 3,
+        "pairs": 2,
+        "contact_samples": 16,
+        "minimum_step_s": 2.4414062499999998e-08,
+        "explicit_crossing_enabled": true,
+        "explicit_crossings": 0,
+        "directional_probes": [
+          [
+            4128,
+            3888
+          ],
+          [
+            12848,
+            22044
+          ]
+        ],
+        "steps": 50000,
+        "trials": 1612120,
+        "lanes": 8,
+        "contact_floor_nm": 0.01,
+        "accepted_increments": 799806,
+        "setup_s": 28.21923980000429,
+        "online_s": 283.0578426999855,
+        "p99_us": 7829.534720000006,
+        "over_budget": 50000,
+        "device_pool_MiB": 230.91796875,
+        "peak_normal_N": [
+          4779.854918496471,
+          9164.789109497946
+        ],
+        "max_active_regions": [
+          1.0,
+          1.0
+        ],
+        "static_index_hits": 4,
+        "patch_reuse": false,
+        "patch_search": "bounded",
+        "phase_profile": {
+          "prepare_s": 28.670704,
+          "search_s": 223.90625606400002,
+          "merge_and_hht_s": 30.016993120000002,
+          "online_trials": 1612119,
+          "trials_after_newton_update": 812280,
+          "directional_probe_visits": [
+            375381124,
+            795913498,
+            1166603240,
+            4466246048
+          ]
+        },
+        "guard_mm": 0.8,
+        "directional_rebuilds": [
+          188945,
+          98109,
+          112980,
+          62769
+        ],
+        "directional_probe_visits": [
+          375381124,
+          795913498,
+          1166603240,
+          4466246048
+        ]
+      },
+      "rms_vs_recurdyn": {
+        "speed": [
+          3.5387656618200265,
+          1.0019998792476477,
+          0.9897189331390204
+        ],
+        "twist": [
+          0.9592555202947253,
+          0.9692915507054539
+        ],
+        "torque": 73.44589113858669
+      },
+      "mean_output_torque_Nm": 137.8055259633179,
+      "stage_peak_N": [
+        4779.854918496471,
+        9164.789109497946
+      ],
+      "rms_stage_load_difference_vs_cad_N": [
+        0.0,
+        0.0
+      ],
+      "face_agreement_vs_cad": [
+        1.0,
+        1.0
+      ],
+      "switches_vs_cad": [
+        [
+          {
+            "first_events": 16739,
+            "second_events": 16739,
+            "matched": 16739,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 16739,
+            "second_events": 16739,
+            "matched": 16739,
+            "max_allowed_steps": 5
+          }
+        ],
+        [
+          {
+            "first_events": 24150,
+            "second_events": 24150,
+            "matched": 24150,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 24150,
+            "second_events": 24150,
+            "matched": 24150,
+            "max_allowed_steps": 5
+          }
+        ]
+      ]
+    },
+    "direct16": {
+      "raw_trace_sha256": "2f10de8c77794dd44fc4d80fe71fd8e42009cbc060a6e1433f979c7a69ef9564",
+      "unloaded_output_frames": [
+        19,
+        24
+      ],
+      "on_off_switches": [
+        17,
+        17
+      ],
+      "timing": {
+        "gpu": "NVIDIA GeForce RTX 3070",
+        "method": "cad-patch",
+        "broad_phase": "blocks",
+        "include_vertices": false,
+        "stiffness_scope": "pair",
+        "physical_s": 5.0,
+        "requested_s": 5.0,
+        "step_s": 9.999999999999999e-05,
+        "terminated": "complete",
+        "coordinates": 3,
+        "pairs": 2,
+        "contact_samples": 16,
+        "minimum_step_s": 2.4414062499999998e-08,
+        "explicit_crossing_enabled": true,
+        "explicit_crossings": 0,
+        "directional_probes": [
+          [
+            4128,
+            3888
+          ],
+          [
+            12848,
+            22044
+          ]
+        ],
+        "steps": 50000,
+        "trials": 1612120,
+        "lanes": 8,
+        "contact_floor_nm": 0.01,
+        "accepted_increments": 799806,
+        "setup_s": 28.111997900006827,
+        "online_s": 364.74305849999655,
+        "p99_us": 9461.76,
+        "over_budget": 50000,
+        "device_pool_MiB": 230.91796875,
+        "peak_normal_N": [
+          4779.854918496471,
+          9164.789109497946
+        ],
+        "max_active_regions": [
+          1.0,
+          1.0
+        ],
+        "static_index_hits": 4,
+        "patch_reuse": false,
+        "patch_search": "direct",
+        "phase_profile": {
+          "prepare_s": 28.982976544000003,
+          "search_s": 304.780154848,
+          "merge_and_hht_s": 30.477812640000003,
+          "online_trials": 1612119,
+          "trials_after_newton_update": 812280,
+          "directional_probe_visits": [
+            375381124,
+            795913498,
+            1166603240,
+            4466246048
+          ]
+        },
+        "guard_mm": 0.8,
+        "directional_rebuilds": [
+          188945,
+          98109,
+          112980,
+          62769
+        ],
+        "directional_probe_visits": [
+          375381124,
+          795913498,
+          1166603240,
+          4466246048
+        ]
+      },
+      "rms_vs_recurdyn": {
+        "speed": [
+          3.5387656618200265,
+          1.0019998792476477,
+          0.9897189331390204
+        ],
+        "twist": [
+          0.9592555202947253,
+          0.9692915507054539
+        ],
+        "torque": 73.44589113858669
+      },
+      "mean_output_torque_Nm": 137.8055259633179,
+      "stage_peak_N": [
+        4779.854918496471,
+        9164.789109497946
+      ],
+      "rms_stage_load_difference_vs_cad_N": [
+        0.0,
+        0.0
+      ],
+      "face_agreement_vs_cad": [
+        1.0,
+        1.0
+      ],
+      "switches_vs_cad": [
+        [
+          {
+            "first_events": 16739,
+            "second_events": 16739,
+            "matched": 16739,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 16739,
+            "second_events": 16739,
+            "matched": 16739,
+            "max_allowed_steps": 5
+          }
+        ],
+        [
+          {
+            "first_events": 24150,
+            "second_events": 24150,
+            "matched": 24150,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 24150,
+            "second_events": 24150,
+            "matched": 24150,
+            "max_allowed_steps": 5
+          }
+        ]
+      ]
+    },
+    "repeat16": {
+      "raw_trace_sha256": "2f10de8c77794dd44fc4d80fe71fd8e42009cbc060a6e1433f979c7a69ef9564",
+      "unloaded_output_frames": [
+        19,
+        24
+      ],
+      "on_off_switches": [
+        17,
+        17
+      ],
+      "timing": {
+        "gpu": "NVIDIA GeForce RTX 3070",
+        "method": "cad-patch",
+        "broad_phase": "blocks",
+        "include_vertices": false,
+        "stiffness_scope": "pair",
+        "physical_s": 5.0,
+        "requested_s": 5.0,
+        "step_s": 9.999999999999999e-05,
+        "terminated": "complete",
+        "coordinates": 3,
+        "pairs": 2,
+        "contact_samples": 16,
+        "minimum_step_s": 2.4414062499999998e-08,
+        "explicit_crossing_enabled": true,
+        "explicit_crossings": 0,
+        "directional_probes": [
+          [
+            4128,
+            3888
+          ],
+          [
+            12848,
+            22044
+          ]
+        ],
+        "steps": 50000,
+        "trials": 1612120,
+        "lanes": 8,
+        "contact_floor_nm": 0.01,
+        "accepted_increments": 799806,
+        "setup_s": 17.363061699958052,
+        "online_s": 271.85064860002603,
+        "p99_us": 7920.670720000006,
+        "over_budget": 50000,
+        "device_pool_MiB": 230.91796875,
+        "peak_normal_N": [
+          4779.854918496471,
+          9164.789109497946
+        ],
+        "max_active_regions": [
+          1.0,
+          1.0
+        ],
+        "static_index_hits": 4,
+        "patch_reuse": true,
+        "patch_search": "carrier-filter",
+        "phase_profile": {
+          "prepare_s": 29.480785824,
+          "search_s": 211.28512700800002,
+          "merge_and_hht_s": 30.556935456,
+          "online_trials": 1612119,
+          "trials_after_newton_update": 812280,
+          "directional_probe_visits": [
+            375381124,
+            795913498,
+            1166603240,
+            4466246048
+          ]
+        },
+        "guard_mm": 0.8,
+        "directional_rebuilds": [
+          188945,
+          98109,
+          112980,
+          62769
+        ],
+        "directional_probe_visits": [
+          375381124,
+          795913498,
+          1166603240,
+          4466246048
+        ]
+      },
+      "rms_vs_recurdyn": {
+        "speed": [
+          3.5387656618200265,
+          1.0019998792476477,
+          0.9897189331390204
+        ],
+        "twist": [
+          0.9592555202947253,
+          0.9692915507054539
+        ],
+        "torque": 73.44589113858669
+      },
+      "mean_output_torque_Nm": 137.8055259633179,
+      "stage_peak_N": [
+        4779.854918496471,
+        9164.789109497946
+      ],
+      "rms_stage_load_difference_vs_cad_N": [
+        0.0,
+        0.0
+      ],
+      "face_agreement_vs_cad": [
+        1.0,
+        1.0
+      ],
+      "switches_vs_cad": [
+        [
+          {
+            "first_events": 16739,
+            "second_events": 16739,
+            "matched": 16739,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 16739,
+            "second_events": 16739,
+            "matched": 16739,
+            "max_allowed_steps": 5
+          }
+        ],
+        [
+          {
+            "first_events": 24150,
+            "second_events": 24150,
+            "matched": 24150,
+            "max_allowed_steps": 1
+          },
+          {
+            "first_events": 24150,
+            "second_events": 24150,
+            "matched": 24150,
+            "max_allowed_steps": 5
+          }
+        ]
+      ]
+    }
+  }
+}

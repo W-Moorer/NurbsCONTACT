@@ -2,6 +2,9 @@
 namespace cg = cooperative_groups;
 using U64 = unsigned long long;
 constexpr U64 vacant = ~0ULL;
+#ifndef NC_DEPTH_FLOOR_MM
+#define NC_DEPTH_FLOOR_MM 1.e-10
+#endif
 
 struct P {
     double x, y, z;
@@ -21,6 +24,10 @@ __device__ double dot(P a, P b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
 #define FIELD_ARGS , const float *sdf, const int *sdfFace
 #define FIELD_PASS , sdf, sdfFace
 #define VIEW_FIELD(v) , (v).sdf, (v).sdfFace
+#elif defined(NC_CAD_PATCH)
+#define FIELD_ARGS , const double4 *controls
+#define FIELD_PASS , controls
+#define VIEW_FIELD(v) , (v).controls
 #else
 #define FIELD_ARGS
 #define FIELD_PASS
@@ -63,6 +70,8 @@ struct MeshView {
 #ifdef NC_SDF
     const float *sdf;
     const int *sdfFace;
+#elif defined(NC_CAD_PATCH)
+    const double4 *controls;
 #endif
 };
 #define VIEW(v)                                                                                              \
@@ -226,12 +235,15 @@ template <int W, bool enabled> __device__ void count_search_stage(unsigned long 
         if (threadIdx.x % W == 0)
             ++stages[stage];
 }
+#ifdef NC_CAD_PATCH
+#include "resident_cad_patch.cuh"
+#endif
 template <int W, bool countStages = false>
 __device__ void sample_contact(int i, const double *pose, GEOM, unsigned long long *stages = nullptr) {
     count_search_stage<W, countStages>(stages, 0);
     P p = move(pose, points[i]);
     for (int d = 0; d < 3; ++d)
-        if (p.at(d) <= bounds[d] + 1.e-10 || p.at(d) >= bounds[d + 3] - 1.e-10)
+        if (p.at(d) <= bounds[d] + NC_DEPTH_FLOOR_MM || p.at(d) >= bounds[d + 3] - NC_DEPTH_FLOOR_MM)
             return;
     count_search_stage<W, countStages>(stages, 1);
     int ix = (int)((p.x - bounds[0]) * bounds[6]), iy = (int)((p.y - bounds[1]) * bounds[6]),
@@ -240,6 +252,10 @@ __device__ void sample_contact(int i, const double *pose, GEOM, unsigned long lo
     if (!occupied[cell])
         return;
     count_search_stage<W, countStages>(stages, 2);
+#ifdef NC_CAD_PATCH
+    curved_contact<W, countStages>(p, i, cell, ix, iy, iz, pose, PASS, stages);
+    return;
+#endif
 #ifdef NC_SDF
     // Analytic derivative of the trilinear interpolant. Face tags come from the
     // closest grid node and are categorical, so they are never interpolated.
@@ -260,7 +276,7 @@ __device__ void sample_contact(int i, const double *pose, GEOM, unsigned long lo
                 g.z += wx * wy * (k ? 1 : -1) * v;
             }
     double length = sqrt(dot(g, g));
-    if (value >= -1e-10 || length <= 1e-14)
+    if (value >= -NC_DEPTH_FLOOR_MM || length <= 1e-14)
         return;
     P nrm = {g.x / length, g.y / length, g.z / length};
     double f = dot(nrm, rotate(pose, normals[i])), o = dot(nrm, rotate(pose, other[i]));
@@ -391,7 +407,7 @@ __device__ void sample_contact(int i, const double *pose, GEOM, unsigned long lo
         if constexpr (W > 1)
             nearby[i].w = 0.;
     }
-    if (sq <= 1.e-20)
+    if (sq <= NC_DEPTH_FLOOR_MM * NC_DEPTH_FLOOR_MM)
         return;
     if (dot(delta, features[7 * id + region]) <= 0) {
         if constexpr (W > 1)
@@ -887,7 +903,11 @@ extern "C" __global__ void impact_stats(const State *s, double *out) {
 #endif
 extern "C" __global__ void cell_planes(const int *work, int ncell, const P *tri, const P *features,
                                        const double *bounds, const int *grid, const int *offsets, int *ids,
-                                       int *finish, float4 *plane, int *seed) {
+                                       int *finish, float4 *plane, int *seed
+#ifdef NC_CAD_PATCH
+                                       , const double4 *controls
+#endif
+                                       ) {
     int w = (blockIdx.x * blockDim.x + threadIdx.x) / 32, lane = threadIdx.x % 32;
     for (; w < ncell; w += gridDim.x * blockDim.x / 32) {
         int cell = work[w];
@@ -901,6 +921,12 @@ extern "C" __global__ void cell_planes(const int *work, int ncell, const P *tri,
         b = nearest_group<32>(b);
         P normal = features[7 * b.id];
         double limit = sqrt(b.sq) + 2 * radius + 1.e-8, margin = 1.e300;
+#ifdef NC_CAD_PATCH
+        const double deviation=bounds[8];
+        limit += 2*deviation;
+#else
+        const double deviation=0.;
+#endif
         int next = first;
         for (int row = first; row < end; row += 32) {
             int j = row + lane < end ? ids[row + lane] : -1;
@@ -915,6 +941,14 @@ extern "C" __global__ void cell_planes(const int *work, int ncell, const P *tri,
                 P n = features[7 * j];
                 P diff = sub(n, normal);
                 double m = dot(n, sub(p, tri[3 * j])) - .5 * h * (fabs(diff.x) + fabs(diff.y) + fabs(diff.z));
+#ifdef NC_CAD_PATCH
+                // Support of all six curved Bernstein controls in the
+                // carrier-normal direction. The three vertices have zero offset.
+                const double4 *edge = controls + 3*j;
+                double support = fmax(0., fmax(dot(n,cad_vec(edge[0])),
+                                          fmax(dot(n,cad_vec(edge[1])),dot(n,cad_vec(edge[2])))));
+                m -= 2*support;
+#endif
                 margin = fmin(margin, m);
                 ids[next + __popc(chosen & ((1u << lane) - 1))] = j;
             }
@@ -926,7 +960,7 @@ extern "C" __global__ void cell_planes(const int *work, int ncell, const P *tri,
         if (!lane) {
             finish[cell] = next;
             seed[cell] = b.id;
-            if (sqrt(b.sq) + radius + 1.e-8 < bounds[7])
+            if (sqrt(b.sq) + radius + 1.e-8 + 2*deviation < bounds[7])
                 plane[cell] =
                     make_float4(normal.x, normal.y, normal.z, margin - 1.e-6 * (1. + h + fabs(margin)));
         }

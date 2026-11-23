@@ -6,6 +6,17 @@ import cupy as cp
 import numpy as np
 
 
+def contact_source(path, curved=False):
+    src = path.read_text()
+    if curved:
+        # NVRTC's binary cache hashes the supplied source and options.
+        return src.replace(
+            '#include "resident_cad_patch.cuh"',
+            Path(__file__).with_name("resident_cad_patch.cuh").read_text(),
+        )
+    return src
+
+
 def surface_samples(triangles, faces, per_edge=1, crease_samples=False):
     # Interior lattice probes and shared-crease probes are disjoint.
     if per_edge < 1:
@@ -77,10 +88,12 @@ class ResidentMeshContact:
         merge_planar=False,
         reverse=None,
         include_vertices=False,
+        patch_shift=None,
+        index_cache=None,
     ):
         from resident_index import compile_mesh
 
-        if backend not in ("grid", "bvh", "sdf") or lanes not in (1, 2, 4, 8, 16, 32):
+        if backend not in ("grid", "bvh", "sdf", "patch") or lanes not in (1, 2, 4, 8, 16, 32):
             raise ValueError("Unknown backend or unsupported warp group size")
         if reverse is not None and (reverse.backend != backend or reverse.reverse is not None):
             raise ValueError("Reverse queries require a single-direction model with the same backend")
@@ -101,7 +114,29 @@ class ResidentMeshContact:
             from resident_index import planar_regions
 
             fa = planar_regions(a, fa)[np.unique(fa, return_inverse=True)[1]]
-        geom, self.tags_a = compile_mesh(a, fa, pitch)
+        cache_path = None
+        self.index_hit = False
+        if index_cache is not None:
+            from cad_patch_index import index_path, load
+
+            if backend != "patch":
+                raise ValueError("Static CAD index caching requires quadratic patches")
+            cache_path = index_path(index_cache, a, fa, patch_shift, pitch)
+            self.index_hit = cache_path.is_file()
+        if self.index_hit:
+            geom, self.tags_a, patch_field = load(cache_path)
+        elif backend == "patch":
+            if np.shape(patch_shift) != a.shape or not np.isfinite(patch_shift).all():
+                raise ValueError("Missing quadratic STEP controls for target triangles")
+            geom, self.tags_a, order = compile_mesh(a, fa, pitch, patch_shift=patch_shift)
+            shifts = patch_shift[order]
+            controls = np.zeros((len(a), 3, 4))
+            controls[:, :, :3] = shifts
+            controls[:, 0, 3] = 2 * np.linalg.norm(shifts, axis=2).max(axis=1) + 1e-12
+            patch_field = (cp.asarray(controls),)
+        else:
+            geom, self.tags_a = compile_mesh(a, fa, pitch)
+            patch_field = ()
         p, normals, ids, other, alt, self.tags_b = surface_samples(b, fb, samples, crease_samples)
         if source_points is not None:
             source_points = np.ascontiguousarray(source_points, dtype=np.float64)
@@ -150,16 +185,50 @@ class ResidentMeshContact:
         self.active = cp.empty(total, cp.int32)
         self.count = cp.zeros(1, cp.int32)
         self.witness = cp.empty((total, 8), cp.float64)
-        src = Path(__file__).with_name("resident_contact.cu").read_text()
+        src = contact_source(Path(__file__).with_name("resident_contact.cu"), backend == "patch")
         self.module = cp.RawModule(
             code=src,
             options=("--std=c++17", f"-DQUERY_LANES={1 if backend == 'sdf' else lanes}")
             + (("-DNC_BVH_CONTROL",) if backend == "bvh" else ())
             + (("-DNC_SDF",) if backend == "sdf" else ())
+            + (("-DNC_CAD_PATCH", "-I" + str(Path(__file__).resolve().parent)) if backend == "patch" else ())
             + (("-DNC_TWO_SIDED",) if reverse is not None else ())
             + ((f"-DNC_IMPACT_SAMPLES={self.impact_samples}",) if self.impact_samples else ()),
             enable_cooperative_groups=True,
         )
+        if not self.index_hit:
+            self._finish_index(patch_field)
+            if cache_path is not None:
+                from cad_patch_index import save
+
+                save(cache_path, self.geometry, self.tags_a, patch_field)
+        self.field = patch_field
+        if backend == "sdf":
+            from resident_index import sampled_distance_field
+
+            self.field = tuple(cp.asarray(v) for v in sampled_distance_field(a, fa, geom[5], pitch))
+
+        self.outside = cp.zeros((self.n, 4))
+        self.nearby = cp.zeros((self.n, 4))
+        self.neighbors = cp.empty((self.n, lanes), cp.int32)
+        self.fp_pad = 64 * np.finfo(np.float32).eps * max(1.0, np.max(np.abs(a)))
+        self.probe = self.module.get_function("probe")
+        self.reset = self.module.get_function("clear_active")
+        self.reverse_args = ()
+        if reverse is not None:
+            from hashlib import sha256
+
+            if not np.array_equal(reverse.tags_a, self.tags_b) or not np.array_equal(
+                reverse.tags_b, self.tags_a
+            ):
+                raise ValueError("Forward and reverse region maps differ")
+            # A stable geometry order resolves equal depths in the two queries.
+            self.prefer_reverse = sha256(a.tobytes()).digest() < sha256(b.tobytes()).digest()
+            view = cp.empty(320, cp.uint8)
+            reverse.module.get_function("bind_mesh")((1,), (1,), (*reverse.args(), view))
+            self.reverse_args = (view, np.int32(self.prefer_reverse))
+
+    def _finish_index(self, patch_field):
         off = self.geometry[3]
         occ = self.geometry[9]
         cells = off.size - 1
@@ -185,6 +254,7 @@ class ResidentMeshContact:
                     ends,
                     planes,
                     seeds,
+                    *patch_field,
                 ),
             )
         self.geometry += planes, ends, seeds
@@ -207,31 +277,6 @@ class ResidentMeshContact:
             axis=1,
         )
         self.geometry += (cp.asarray(chart2.astype(np.float32)),)
-        self.field = ()
-        if backend == "sdf":
-            from resident_index import sampled_distance_field
-
-            self.field = tuple(cp.asarray(v) for v in sampled_distance_field(a, fa, geom[5], pitch))
-
-        self.outside = cp.zeros((self.n, 4))
-        self.nearby = cp.zeros((self.n, 4))
-        self.neighbors = cp.empty((self.n, lanes), cp.int32)
-        self.fp_pad = 64 * np.finfo(np.float32).eps * max(1.0, np.max(np.abs(a)))
-        self.probe = self.module.get_function("probe")
-        self.reset = self.module.get_function("clear_active")
-        self.reverse_args = ()
-        if reverse is not None:
-            from hashlib import sha256
-
-            if not np.array_equal(reverse.tags_a, self.tags_b) or not np.array_equal(
-                reverse.tags_b, self.tags_a
-            ):
-                raise ValueError("Forward and reverse region maps differ")
-            # A stable geometry order resolves equal depths in the two queries.
-            self.prefer_reverse = sha256(a.tobytes()).digest() < sha256(b.tobytes()).digest()
-            view = cp.empty(320, cp.uint8)
-            reverse.module.get_function("bind_mesh")((1,), (1,), (*reverse.args(), view))
-            self.reverse_args = (view, np.int32(self.prefer_reverse))
 
     def args(self):
         return (

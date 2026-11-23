@@ -56,11 +56,17 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
                  int contactSamples, int allowExplicit, double *trace, unsigned long long *elapsed
 #ifdef NC_PATCHES
                  , PatchIndex *patches
+#ifdef NC_INNER_GUARD
+                 , MotionCandidates *motion
+#endif
 #else
                  , unsigned long long *projectionVisits
 #endif
 #ifdef NC_ASSEMBLY_PROFILE
                  , unsigned long long *profile
+#endif
+#ifdef NC_CONTACT_HISTORY
+                 , U64 *faceHistory
 #endif
 #ifdef NC_SEARCH_COUNTS
                  , unsigned long long *searchCounts
@@ -115,10 +121,14 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
             assembly_frame(frames[d], joints + 2*d, map + 2*d, s, t);
             prepare_patches(frames[d], patches[d]);
             if (frames[d].cold)
-                atomicExch(&s.refresh, 1);
+                atomicOr(&s.refresh, 1);
+#ifdef NC_INNER_GUARD
+            prepare_motion_candidates(motion[d],frames[d],patches[d].radius);
+            if (motion[d].cold) atomicOr(&s.refresh,2);
+#endif
         }
         all.sync();
-        if (s.refresh) {
+        if (s.refresh & 1) {
             for (int d = 0; d < 2 * pairs; ++d)
                 if (frames[d].cold)
                     rebuild_patches(frames[d], mesh_at(views, d), patches[d], worker);
@@ -131,6 +141,13 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
 #endif
         }
 #endif
+#ifdef NC_INNER_GUARD
+        if (s.refresh & 2) {
+            for (int d=0;d<2*pairs;++d)
+                if(motion[d].cold) compact_motion_candidates(motion[d],frames[d],mesh_at(views,d),patches[d],worker);
+            all.sync();
+        }
+#endif
 #ifdef NC_ASSEMBLY_PROFILE
         if (!worker)
             prepared = gpu_time();
@@ -141,6 +158,10 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
 #ifdef NC_PATCHES
             int size = f.nc;
             const int *indices = patches[d].active;
+#ifdef NC_INNER_GUARD
+            size=motion[d].count;
+            indices=motion[d].ids;
+#endif
             if (!worker && s.step)
                 patches[d].visits += size;
 #else
@@ -217,6 +238,9 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
                 }
 #endif
                 active += bearing;
+#ifdef NC_CONTACT_HISTORY
+                faceHistory[s.step * pairs + p] = bearing ? m.keys[m.slots[0]] : vacant;
+#endif
                 double total = 0, ta = 0, tb = 0;
                 for (int i = 0; i < bearing; ++i) {
                     int slot = m.slots[i];
