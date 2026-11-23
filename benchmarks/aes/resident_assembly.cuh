@@ -65,6 +65,9 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
 #ifdef NC_SEARCH_COUNTS
                  , unsigned long long *searchCounts
 #endif
+#ifdef NC_PROBE_ORDER_AUDIT
+                 , int **orderScratch, int reorder
+#endif
 #ifdef NC_ASSEMBLY_AUDIT
                  ,
                  int auditFirst, int auditLast, double *audit, int *auditCount, int auditCapacity,
@@ -120,6 +123,12 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
                 if (frames[d].cold)
                     rebuild_patches(frames[d], mesh_at(views, d), patches[d], worker);
             all.sync();
+#ifdef NC_PROBE_ORDER_AUDIT
+            if (reorder)
+                for (int d = 0; d < 2 * pairs; ++d)
+                    if (frames[d].cold)
+                        order_candidates(all, worker, frames[d], mesh_at(views, d), patches[d], orderScratch[d]);
+#endif
         }
 #endif
 #ifdef NC_ASSEMBLY_PROFILE

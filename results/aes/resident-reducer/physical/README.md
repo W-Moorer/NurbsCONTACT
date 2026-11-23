@@ -153,3 +153,34 @@ python benchmarks/aes/check_resident_blocks.py "$w/blocks-real-coverage.json" --
 ```
 
 `--guard-mm 0` 每次重建，`--guard-mm 0.8` 给出一格宽的余量。两个设置与默认 0.2 mm、投影粗筛在同一段 0–0.05 s STEP 历程上的耗时分别为 2.712、1.885、2.075 和 2.565 s。轨迹与历史输出一致。完整结果采用预先设定的默认余量。
+
+### 双球正碰中的候选点访问顺序
+
+两个球沿 z 轴相向平移，每个球面有 307,524 个 STEP 采样点。RTX 3070 上用 125 µs 主步重跑 0.16 s，分开测量 GPU 上候选准备、接触搜索和动力学更新的时间。候选访问为全程正反两个方向的累计次数。[分阶段计时、查询路径计数及输出校验](sphere-search-cost.json)
+
+| 粗筛与访问顺序 | 累计候选访问 | 准备与重建（s） | 接触搜索（s） | 在线总耗时（s） |
+|---|---:|---:|---:|---:|
+| 投影粗筛 | 30,364,174 | 0.038 | 32.34 | 32.39 |
+| 分块复用，默认顺序 | 32,701,114 | 0.027 | 49.89 | 49.93 |
+| 分块复用，排序对照中按 z 轴排列 | 32,701,114 | 0.027 | 33.31 | 33.35 |
+
+排序对照使用同一 GPU 内核、缓冲区和候选集合，依次跑分块默认顺序、按 z 排序、分块默认顺序。两次默认顺序的搜索分别耗时 49.26 和 48.55 s。三个运行各方向均重建 66 次，1,281 个时刻的全部八列输出逐位一致。轴向排序为此固定方向运动的诊断对照。
+
+按 1,537 次在线试算和双向源点数计算，遍历全部点将访问 945,328,776 次。投影和分块分别剔除了 96.8% 和 96.5%。两者实际进入最近三角形查询的次数均为 20,365,298，记录接触见证的次数均为 20,180,812。全程两种 BVH 回退计数均为零。
+
+沿用上文双球精度实验生成的 `sphere-2.npz` 和 `assembly.npz`，`models.json` 中两个零件都引用 `sphere-2.npz`。在仓库根目录依次运行下列命令。
+
+```powershell
+$w = "build/resident-impact"
+$common = @("--method","cad","--pitch","4","--duration","0.16","--step-us","125","--ticks","4096","--contact-samples","16")
+foreach ($mode in "projection","blocks") {
+    python benchmarks/aes/resident_assembly.py $w "$w/explain-$mode.json" --trace "$w/explain-$mode.npy" --broad-phase $mode --profile-phases @common
+}
+foreach ($run in "native-a","z","native-b") {
+    $order = if ($run -eq "z") { "z" } else { "native" }
+    python benchmarks/aes/resident_assembly.py $w "$w/order-$run.json" --trace "$w/order-$run.npy" --broad-phase blocks --profile-phases --audit-probe-order $order @common
+}
+foreach ($mode in "projection","blocks") {
+    python benchmarks/aes/resident_assembly.py $w "$w/paths-$mode.json" --trace "$w/paths-$mode.npy" --broad-phase $mode --count-search-paths @common
+}
+```

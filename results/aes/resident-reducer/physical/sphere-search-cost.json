@@ -1,0 +1,122 @@
+{
+  "gpu": "NVIDIA GeForce RTX 3070",
+  "case": "Axial impact of two translating STEP spheres",
+  "method": "cad",
+  "source_points_per_body": 307524,
+  "pitch_mm": 4,
+  "block_guard_mm": 1,
+  "duration_s": 0.16,
+  "step_s": 0.000125,
+  "steps": 1280,
+  "accepted_increments": 1280,
+  "online_trials": 1537,
+  "trials_after_newton_update": 257,
+  "candidate_rebuilds_by_direction": [
+    66,
+    66
+  ],
+  "archived_online_s": {
+    "projection": 32.67071089998353,
+    "blocks": 50.6433631000109
+  },
+  "production_profile": {
+    "projection": {
+      "online_s": 32.39255079999566,
+      "prepare_s": 0.038221824,
+      "search_s": 32.341692416,
+      "merge_and_hht_s": 0.012186624,
+      "online_trials": 1537,
+      "trials_after_newton_update": 257,
+      "directional_probe_visits": [
+        15187684,
+        15176490
+      ]
+    },
+    "blocks": {
+      "online_s": 49.932218300004024,
+      "prepare_s": 0.026621824000000002,
+      "search_s": 49.88511168,
+      "merge_and_hht_s": 0.019902016,
+      "online_trials": 1537,
+      "trials_after_newton_update": 257,
+      "directional_probe_visits": [
+        15977424,
+        16723690
+      ]
+    }
+  },
+  "block_list_order_control_in_run_sequence": [
+    {
+      "run": "native-a",
+      "order": "native",
+      "online_s": 49.2857419999782,
+      "prepare_s": 0.015772672,
+      "search_s": 49.25758976,
+      "merge_and_hht_s": 0.012271616,
+      "online_trials": 1537,
+      "trials_after_newton_update": 257,
+      "directional_probe_visits": [
+        15977424,
+        16723690
+      ]
+    },
+    {
+      "run": "z",
+      "order": "z",
+      "online_s": 33.35083289997419,
+      "prepare_s": 0.02720256,
+      "search_s": 33.310737408,
+      "merge_and_hht_s": 0.012466176,
+      "online_trials": 1537,
+      "trials_after_newton_update": 257,
+      "directional_probe_visits": [
+        15977424,
+        16723690
+      ]
+    },
+    {
+      "run": "native-b",
+      "order": "native",
+      "online_s": 48.58090739999898,
+      "prepare_s": 0.016108544000000002,
+      "search_s": 48.552348672,
+      "merge_and_hht_s": 0.012292096,
+      "online_trials": 1537,
+      "trials_after_newton_update": 257,
+      "directional_probe_visits": [
+        15977424,
+        16723690
+      ]
+    }
+  ],
+  "search_paths_separate_runs": {
+    "projection": {
+      "visited": 30364174,
+      "inside_bounds": 28828134,
+      "occupied_cell": 27095768,
+      "closest_triangle_query": 20365298,
+      "unrestricted_bvh": 0,
+      "projection_fallback_bvh": 0,
+      "contact_witness": 20180812
+    },
+    "blocks": {
+      "visited": 32701114,
+      "inside_bounds": 27898964,
+      "occupied_cell": 26680022,
+      "closest_triangle_query": 20365298,
+      "unrestricted_bvh": 0,
+      "projection_fallback_bvh": 0,
+      "contact_witness": 20180812
+    }
+  },
+  "validation": {
+    "trace_shape": [
+      1281,
+      8
+    ],
+    "physically_loaded_output_frames": 251,
+    "peak_normal_N": 22.499685740982347,
+    "bitwise_equal_to_archived_projection_runs": 9,
+    "sha256_trace_f64_le_row_major": "c7a1f6a953be8219916c456fcaf39906843ac40c40f62129965bb5eb8b9962b8"
+  }
+}

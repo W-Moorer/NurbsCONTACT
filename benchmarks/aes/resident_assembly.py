@@ -106,6 +106,8 @@ def solve(args):
             np.int32(region_capacity),
         )
     assembly = (files / "resident_assembly.cuh").read_text()
+    if args.audit_probe_order is not None:
+        assembly = (files / "resident_order_audit.cuh").read_text() + "\n" + assembly
     patch_args = ()
     options = (
         "--std=c++17",
@@ -148,6 +150,13 @@ def solve(args):
     if args.count_search_paths:
         options += (f"-DNC_SEARCH_COUNTS={len(search_stages)}",)
         search_args = (cp.zeros((blocks * threads // args.lanes, len(search_stages)), cp.uint64),)
+    order_scratch = []
+    order_args = ()
+    if args.audit_probe_order is not None:
+        if not patch_args:
+            raise ValueError("Candidate order can only be audited for a cached block list")
+        options += ("-DNC_PROBE_ORDER_AUDIT",)
+        order_scratch = [None] * (2 * m)
 
     def compile_module(contact):
         return cp.RawModule(
@@ -183,6 +192,14 @@ def solve(args):
                 model.samples = tuple(cp.ascontiguousarray(v[idx]) for v in model.samples)
                 model.n = int(select.sum())
             i = 2 * p + d
+            if order_scratch:
+                # The native and sorted controls use the same binary, buffers and launch geometry.
+                axis = {"native": 2, "x": 0, "y": 1, "z": 2}[args.audit_probe_order]
+                sorted_probes = np.argsort(model.samples[0][:, axis].get(), kind="stable")
+                words = (model.n + 31) // 32
+                scratch = cp.zeros(2 * model.n + 2 * words + 1, cp.int32)
+                scratch[:model.n] = cp.asarray(sorted_probes, dtype=cp.int32)
+                order_scratch[i] = scratch
             module.get_function("bind_mesh")((1,), (1,), (*model.args(), views[i]))
             if patch_args:
                 order = block_index(model, guard)
@@ -199,6 +216,11 @@ def solve(args):
         ids.extend([mapping[ia], mapping[ib], mapping[ib], mapping[ia]])
         preferred.append(forward.prefer_reverse)
         probes.append([forward.n, reverse.n])
+    if order_scratch:
+        order_args = (
+            cp.asarray([a.data.ptr for a in order_scratch], dtype=cp.uint64),
+            np.int32(args.audit_probe_order != "native"),
+        )
     device_args = (
         state,
         views,
@@ -240,6 +262,7 @@ def solve(args):
                 broad_phase_data,
                 *profile_args,
                 *search_args,
+                *order_args,
                 *audit_args,
             ),
         )
@@ -320,6 +343,10 @@ def solve(args):
     if search_args:
         totals = search_args[0].get().sum(axis=0).tolist()
         report["search_paths"] = dict(zip(search_stages, totals, strict=True))
+    if order_scratch:
+        if any(int(a[-1].get()) for a in order_scratch):
+            raise RuntimeError("A rebuilt list did not preserve its unique candidates")
+        report["audit_probe_order"] = args.audit_probe_order
     if failure:
         diagnostic = cp.empty(8)
         module.get_function("assembly_failure")((1,), (1,), (state, diagnostic))
@@ -404,6 +431,11 @@ if __name__ == "__main__":
         help="Use reusable blocks by default; archived contact-prefix replays default to projection",
     )
     p.add_argument("--guard-mm", type=float, help="Candidate reuse margin in mm (default: one quarter cell)")
+    p.add_argument(
+        "--audit-probe-order",
+        choices=("native", "x", "y", "z"),
+        help="Measure the effect of reordering the same block candidates along a body-local axis",
+    )
     p.add_argument("--lanes", type=int, choices=(1, 2, 4, 8, 16, 32), default=4)
     p.add_argument(
         "--contact-samples",
