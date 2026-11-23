@@ -19,6 +19,8 @@
         0.071289095198608
       ],
       "peak_intersecting_triangle_pairs": 128,
+      "peak_frame_contours": 1,
+      "peak_frame_time_s": 0.0555,
       "active_frames": 125
     },
     "mesh-obb": {
@@ -27,6 +29,8 @@
         0.071289095198608
       ],
       "peak_intersecting_triangle_pairs": 128,
+      "peak_frame_contours": 1,
+      "peak_frame_time_s": 0.0555,
       "active_frames": 125
     },
     "mesh-sap": {
@@ -35,6 +39,8 @@
         0.071289095198608
       ],
       "peak_intersecting_triangle_pairs": 128,
+      "peak_frame_contours": 1,
+      "peak_frame_time_s": 0.0555,
       "active_frames": 125
     }
   }

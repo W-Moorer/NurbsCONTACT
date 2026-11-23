@@ -11,13 +11,15 @@ using namespace nc::cpu;
 int main(int argc, char** argv) {
     try {
         if (argc < 5 || std::string_view(argv[1]) != "--method")
-            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--tolerance-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz per body");
+            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--contours] [--tolerance-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz per body");
         const auto method = mesh_method(argv[2]);
         int first_mesh=3;
         bool continuous=false;
+        bool contours=false;
         double tolerance=1e-7;
         while (first_mesh < argc && std::string_view(argv[first_mesh]).starts_with("--")) {
             const std::string_view option=argv[first_mesh++];
+            if (option=="--contours") { contours=true; continue; }
             if (first_mesh==argc) throw std::invalid_argument("missing option value");
             const std::string value=argv[first_mesh++];
             if (option=="--detection") {
@@ -31,6 +33,7 @@ int main(int argc, char** argv) {
             } else throw std::invalid_argument("unknown mesh option");
         }
         if (argc-first_mesh<2) throw std::invalid_argument("expected at least two contact meshes");
+        if (continuous && contours) throw std::invalid_argument("contours require a discrete query");
 #ifndef NC_WITH_MESH_CCD
         if (continuous) throw std::invalid_argument("build with NC_WITH_MESH_CCD for continuous detection");
 #endif
@@ -80,7 +83,7 @@ int main(int argc, char** argv) {
                 continue;
             }
 #endif
-            auto result = scene.intersect(poses);
+            auto result = scene.intersect(poses,contours);
             const double seconds = std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
             std::cout << "{\"body_pairs\":" << result.body_pairs << ",\"node_pairs\":" << result.node_pairs
                       << ",\"triangle_tests\":" << result.triangle_tests << ",\"query_s\":" << seconds << ",\"hits\":[";
@@ -102,7 +105,22 @@ int main(int argc, char** argv) {
                 if (i) std::cout << ',';
                 std::cout << '[' << item.body << ',' << item.enclosing_body << ',' << item.vertex << ']';
             }
-            std::cout << "]}" << std::endl;
+            std::cout << ']';
+            if (contours) {
+                std::cout << ",\"contours\":[";
+                for (std::size_t i=0;i<result.contours.size();++i) {
+                    if (i) std::cout << ',';
+                    const auto& group=result.contours[i];
+                    std::cout << "{\"bodies\":[" << group.body_a << ',' << group.body_b << "],\"triangle_pairs\":[";
+                    for (std::size_t j=0;j<group.triangles.size();++j) {
+                        if (j) std::cout << ',';
+                        std::cout << '[' << group.triangles[j][0] << ',' << group.triangles[j][1] << ']';
+                    }
+                    std::cout << "]}";
+                }
+                std::cout << ']';
+            }
+            std::cout << "}" << std::endl;
         }
         return 0;
     } catch (const std::exception& error) {

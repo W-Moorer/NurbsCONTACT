@@ -36,6 +36,8 @@ ctest --test-dir build/cpu-mesh -C Release --output-on-failure
 
 The leaf predicate and intersection construction use the same CGAL exact kernel on the binary64 world vertices in every branch. The public witnesses are rounded to binary64. The mesh input is a closed triangular boundary. Initial containment uses an inside test for each connected boundary component without a crossing. Output triangle pairs describe geometry; individual triangle hits carry no individual spring.
 
+Add `--contours` to a discrete query to group connected triangle intersections within each body pair. Groups meet at exact world-space witnesses on triangle boundaries. A group can contain a point, a curve, or coplanar polygons. A contact region with holes can have several boundary curves. Force integration and penetration depth require further geometry.
+
 ## Continuous surface detection
 
 In the CPU mesh build, `NC_WITH_MESH_CCD` enables continuous queries and fetches the pinned Tight Inclusion and spdlog sources. Use `-DNC_WITH_MESH_CCD=OFF` for a discrete-only build.
@@ -59,4 +61,4 @@ The [two-sphere replay](../benchmarks/aes/cpu_mesh_spheres.py) uses all 641 pose
 | [3 mm](../results/aes/cpu-mesh/spheres-3mm.json) | 5,708 | 40.129 ms | 71.289 ms |
 | [1.5 mm](../results/aes/cpu-mesh/spheres-1p5mm.json) | 22,482 | 40.040 ms | 71.378 ms |
 
-These comparisons measure event timing on prescribed poses. They do not measure the force response of a mesh-driven simulation.
+At the frames with the most intersecting triangle pairs, the coarse mesh has 128 pairs and the fine mesh has 250. Grouping the exact boundary witnesses gives one connected intersection in both cases. These comparisons measure event timing and connectivity on prescribed poses. A mesh-driven force response requires a separate simulation.

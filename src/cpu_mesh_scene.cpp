@@ -1,5 +1,6 @@
 #include "nurbscontact/cpu_mesh.hpp"
 #include "cpu_mesh_solid.hpp"
+#include "cpu_mesh_contours.hpp"
 #ifdef NC_WITH_MESH_CCD
 #include "cpu_mesh_ccd.hpp"
 #include "cpu_mesh_motion.hpp"
@@ -149,7 +150,7 @@ void enclosed(const Body& a, const Body& b, std::span<const Intersection> hits, 
 
 template<class Box>
 void intersect_pair(const Body& a, const Body& b, std::span<const RigidPlacement> poses,
-                    IntersectionResult& result) {
+                    IntersectionResult& result, TriangleContours* contours) {
     const auto i = a.proxy->index, j = b.proxy->index;
     const auto& first = *std::get<std::shared_ptr<Tree<Box>>>(a.tree);
     const auto& second = *std::get<std::shared_ptr<Tree<Box>>>(b.tree);
@@ -165,7 +166,8 @@ void intersect_pair(const Body& a, const Body& b, std::span<const RigidPlacement
             const auto fa = static_cast<std::size_t>(na.primitiveId());
             const auto fb = static_cast<std::size_t>(nb.primitiveId());
             ++result.triangle_tests;
-            auto points = intersect_triangles(triangle(*a.mesh, fa, poses[i]), triangle(*b.mesh, fb, poses[j]));
+            const auto ta=triangle(*a.mesh,fa,poses[i]), tb=triangle(*b.mesh,fb,poses[j]);
+            auto points = contours ? contours->intersect(ta,tb) : intersect_triangles(ta,tb);
             if (!points.empty()) result.intersections.push_back({i,j,fa,fb,std::move(points)});
         } else if (nb.isLeaf() || (!na.isLeaf() && na.num_primitives >= nb.num_primitives)) {
             pending.emplace_back(na.leftChild(), ib);
@@ -229,7 +231,7 @@ MeshScene::~MeshScene() = default;
 MeshScene::MeshScene(MeshScene&&) noexcept = default;
 MeshScene& MeshScene::operator=(MeshScene&&) noexcept = default;
 
-IntersectionResult MeshScene::intersect(std::span<const RigidPlacement> poses) {
+IntersectionResult MeshScene::intersect(std::span<const RigidPlacement> poses, bool collect_contours) {
     auto& state = *impl_;
     if (poses.size() != state.bodies.size()) throw std::invalid_argument("one pose required per body");
     for (std::size_t i = 0; i < poses.size(); ++i) {
@@ -243,9 +245,14 @@ IntersectionResult MeshScene::intersect(std::span<const RigidPlacement> poses) {
     result.body_pairs = candidates.size();
     for (const auto& [a,b] : candidates) {
         const auto before = result.intersections.size();
-        if (state.method == MeshMethod::obb) intersect_pair<Oriented>(state.bodies[a],state.bodies[b],poses,result);
-        else intersect_pair<Bounds>(state.bodies[a],state.bodies[b],poses,result);
+        auto contours=collect_contours ? std::make_unique<TriangleContours>() : nullptr;
+        if (state.method == MeshMethod::obb) intersect_pair<Oriented>(state.bodies[a],state.bodies[b],poses,result,contours.get());
+        else intersect_pair<Bounds>(state.bodies[a],state.bodies[b],poses,result,contours.get());
         const auto hits = std::span<const Intersection>(result.intersections).subspan(before);
+        if (contours) {
+            auto groups=contours->finish(hits);
+            result.contours.insert(result.contours.end(),std::make_move_iterator(groups.begin()),std::make_move_iterator(groups.end()));
+        }
         enclosed(state.bodies[a],state.bodies[b],hits,true,result);
         enclosed(state.bodies[b],state.bodies[a],hits,false,result);
     }

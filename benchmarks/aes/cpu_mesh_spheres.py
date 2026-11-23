@@ -48,6 +48,7 @@ def compare(exe, mesh, trace):
     if quality["mesh_sha256"] != geometry["mesh_sha256"][0]:
         raise ValueError("the mesh does not match its quality report")
     methods = {}
+    reference_contours = None
     sphere_events = []
     changes = np.flatnonzero(np.diff((gap < 0).astype(int)))
     if len(changes) != 2:
@@ -62,7 +63,18 @@ def compare(exe, mesh, trace):
         i, j = map(int, changes)
         entry = swept_time(exe, method, mesh, t, z, i, i + 1)
         release = swept_time(exe, method, mesh, t, z, j + 1, j)
+        peak = counts.argmax()
+        sample = f"0 0 0 1 0 0 0 0 0 {z[peak]:.17g} 1 0 0 0\n"
+        run = subprocess.run([exe, "--method", method, "--contours", mesh, mesh], text=True,
+                             input=sample, capture_output=True, check=True, timeout=1800)
+        contours = json.loads(run.stdout)["contours"]
+        if len(contours) != 1 or len(contours[0]["triangle_pairs"]) != counts[peak]:
+            raise ValueError("expected one connected boundary where the two spheres intersect")
+        if reference_contours is not None and contours != reference_contours:
+            raise ValueError("inconsistent contour membership across broad phases")
+        reference_contours = contours
         methods[method] = dict(mesh_event_times_s=[entry, release], peak_intersecting_triangle_pairs=int(max(counts)),
+                               peak_frame_contours=len(contours), peak_frame_time_s=float(t[peak]),
                                active_frames=int(np.count_nonzero(counts)))
         if len(methods) > 1 and not np.allclose([entry, release], next(iter(methods.values()))["mesh_event_times_s"],
                                                 rtol=0, atol=1e-12):

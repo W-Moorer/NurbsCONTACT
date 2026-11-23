@@ -73,6 +73,33 @@ int main() {
             const auto mixed=mixed_scene.intersect(std::array<RigidPlacement,2>{});
             require(!mixed.intersections.empty() && mixed.enclosed.size()==1 && mixed.enclosed[0].body==1,
                     "enclosure and crossing in different components of one body");
+            // Splitting an original face adds mesh edges on exactly the same plane.
+            auto split=std::make_shared<MeshData>(*data);
+            split->vertices.push_back({.25,.25,0});
+            split->faces[0]={0,2,4};
+            split->faces.push_back({2,1,4});
+            split->faces.push_back({1,0,4});
+            std::array<RigidPlacement,2> contact{};
+            contact[1].origin={.125,.125,-.25};
+            for (auto surface : {data,split}) {
+                std::array<std::shared_ptr<const MeshData>,2> pair{surface,data};
+                MeshScene connected(pair,m);
+                const auto patches=connected.intersect(contact,true);
+                require(patches.contours.size()==1 && patches.contours[0].triangles.size()==patches.intersections.size(),
+                        "artificial face split divided a connected intersection");
+            }
+            auto islands=std::make_shared<MeshData>(*data);
+            for (auto p : data->vertices) {
+                p[0]+=3.;
+                islands->vertices.push_back(p);
+            }
+            for (auto f : data->faces) {
+                for (auto& index : f) index+=4;
+                islands->faces.push_back(f);
+            }
+            std::array<std::shared_ptr<const MeshData>,2> island_pair{islands,islands};
+            MeshScene island_scene(island_pair,m);
+            require(island_scene.intersect(contact,true).contours.size()==2,"independent contact contours were merged");
 #ifdef NC_WITH_MESH_CCD
             std::array<std::shared_ptr<const MeshData>,2> moving{data,data};
             MeshScene swept(moving,m);

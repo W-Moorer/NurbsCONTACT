@@ -1,4 +1,6 @@
 #include "nurbscontact/cpu_mesh.hpp"
+#include "cpu_mesh_contours.hpp"
+#include <map>
 #ifdef NC_WITH_MESH_CCD
 #include "cpu_mesh_ccd.hpp"
 #include <CGAL/squared_distance_3.h>
@@ -71,20 +73,72 @@ TriangleTime translated_triangle_ccd(const Triangle& a, const Triangle& b,
 }
 #endif
 
-std::vector<Vec> intersect_triangles(const Triangle& a, const Triangle& b) {
+namespace {
+std::vector<Point> exact_intersection(const Triangle& a, const Triangle& b) {
     using Predicate = CGAL::Exact_predicates_inexact_constructions_kernel;
     const auto left = triangle<Predicate>(a), right = triangle<Predicate>(b);
     if (left.is_degenerate() || right.is_degenerate()) throw std::invalid_argument("degenerate triangle");
     if (!CGAL::do_intersect(left, right)) return {};
     const auto hit = CGAL::intersection(triangle<Kernel>(a), triangle<Kernel>(b));
     if (!hit) throw std::runtime_error("inconsistent triangle intersection");
-    if (const auto* p = std::get_if<Point>(&*hit)) return {as_vec(*p)};
-    if (const auto* s = std::get_if<Kernel::Segment_3>(&*hit)) return {as_vec(s->source()), as_vec(s->target())};
+    if (const auto* p = std::get_if<Point>(&*hit)) return {*p};
+    if (const auto* s = std::get_if<Kernel::Segment_3>(&*hit)) return {s->source(),s->target()};
     if (const auto* t = std::get_if<Kernel::Triangle_3>(&*hit)) {
-        return {as_vec(t->vertex(0)), as_vec(t->vertex(1)), as_vec(t->vertex(2))};
+        return {t->vertex(0),t->vertex(1),t->vertex(2)};
     }
+    return std::get<std::vector<Point>>(*hit);
+}
+
+std::vector<Vec> world_vertices(const std::vector<Point>& intersection) {
     std::vector<Vec> vertices;
-    for (const Point& p : std::get<std::vector<Point>>(*hit)) vertices.push_back(as_vec(p));
+    vertices.reserve(intersection.size());
+    for (const auto& p : intersection) vertices.push_back(as_vec(p));
     return vertices;
+}
+}
+
+std::vector<Vec> intersect_triangles(const Triangle& a, const Triangle& b) {
+    return world_vertices(exact_intersection(a,b));
+}
+
+struct TriangleContours::Data {
+    std::map<Point,std::size_t,Kernel::Less_xyz_3> owner;
+    std::vector<std::size_t> parent;
+    std::size_t root(std::size_t i) {
+        while (parent[i]!=i) {
+            parent[i]=parent[parent[i]];
+            i=parent[i];
+        }
+        return i;
+    }
+};
+
+TriangleContours::TriangleContours() : data_(std::make_unique<Data>()) {}
+TriangleContours::~TriangleContours() = default;
+
+std::vector<Vec> TriangleContours::intersect(const Triangle& a, const Triangle& b) {
+    const auto points=exact_intersection(a,b);
+    if (points.empty()) return {};
+    const auto id=data_->parent.size();
+    data_->parent.push_back(id);
+    for (const auto& point : points) {
+        const auto [it,fresh]=data_->owner.emplace(point,id);
+        if (!fresh) data_->parent[data_->root(it->second)]=data_->root(id);
+    }
+    return world_vertices(points);
+}
+
+std::vector<IntersectionResult::Contour> TriangleContours::finish(std::span<const Intersection> hits) {
+    if (hits.size()!=data_->parent.size()) throw std::logic_error("inconsistent triangle contour hits");
+    std::map<std::size_t,std::vector<std::array<std::size_t,2>>> groups;
+    for (std::size_t i=0;i<hits.size();++i)
+        groups[data_->root(i)].push_back({hits[i].triangle_a,hits[i].triangle_b});
+    std::vector<IntersectionResult::Contour> result;
+    for (auto& [root,group] : groups) {
+        std::sort(group.begin(),group.end());
+        result.push_back({hits[0].body_a,hits[0].body_b,std::move(group)});
+    }
+    std::sort(result.begin(),result.end(),[](const auto& a,const auto& b) { return a.triangles.front()<b.triangles.front(); });
+    return result;
 }
 } // namespace nc::cpu

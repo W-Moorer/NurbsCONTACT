@@ -35,6 +35,12 @@ struct IntersectionResult {
     // Each entry identifies an enclosed boundary component with no crossing of its own.
     struct Enclosed { std::size_t body, enclosing_body, vertex; };
     std::vector<Enclosed> enclosed;
+    struct Contour {
+        std::size_t body_a, body_b;
+        std::vector<std::array<std::size_t,2>> triangles;
+    };
+    // Connected sets of boundary intersections (points, curves or coplanar areas).
+    std::vector<Contour> contours;
     std::size_t body_pairs{}, node_pairs{}, triangle_tests{};
 };
 
@@ -58,7 +64,7 @@ public:
     ~MeshScene();
     MeshScene(MeshScene&&) noexcept;
     MeshScene& operator=(MeshScene&&) noexcept;
-    IntersectionResult intersect(std::span<const RigidPlacement> poses);
+    IntersectionResult intersect(std::span<const RigidPlacement> poses, bool collect_contours = false);
 #ifdef NC_WITH_MESH_CCD
     // Straight translation and shortest-arc orientation per body.
     MeshSweepResult sweep(std::span<const RigidPlacement> start, std::span<const RigidPlacement> end,
