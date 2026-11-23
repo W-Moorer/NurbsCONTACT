@@ -227,6 +227,7 @@ public:
                 const auto transform=b.Inverted()*a;
                 const auto pose=key(transform);
                 const double cap=speed+2*tol;
+                BoundaryWitness witness;
                 {
                     std::lock_guard lock(cache_mutex_);
                     for (const auto& entry:distances_)
@@ -234,15 +235,17 @@ public:
                             ++result.cad_distance_cache_hits;
                             return std::min(cap,entry.distance);
                         }
+                    witness=witness_;
                 }
                 ++result.cad_distances;
                 double value;
                 if (local_) {
                     const auto parts=local_->select(transform,cap);
-                    value=parts.separated ? cap : bounded_distance(*parts.a.boundary,*parts.b.boundary,
-                                                                   transform,cap,tol,result);
-                } else value=bounded_distance(*boundaries_[0],*boundaries_[1],transform,cap,tol,result);
+                    value=parts.separated ? cap : bounded_distance(parts.a.boundary,parts.b.boundary,
+                                                                   transform,cap,tol,result,&witness);
+                } else value=bounded_distance(boundaries_[0],boundaries_[1],transform,cap,tol,result,&witness);
                 std::lock_guard lock(cache_mutex_);
+                witness_=std::move(witness);
                 if (distances_.size()==32) distances_.pop_back();
                 distances_.push_front({pose,cap,tol,value});
                 return value;
@@ -360,6 +363,7 @@ private:
     mutable std::mutex cache_mutex_;
     mutable std::deque<RegionEntry> regions_;
     mutable std::deque<DistanceEntry> distances_;
+    mutable BoundaryWitness witness_;
     mutable std::once_flag index_once_;
     mutable std::unique_ptr<LocalSolidSearch> local_;
     mutable std::array<std::shared_ptr<const BoundaryIndex>,2> boundaries_;

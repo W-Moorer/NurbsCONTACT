@@ -76,7 +76,7 @@ int main(int argc,char** argv) {
             const auto t=Clock::now();
             const auto relative=pose[1].Inverted()*pose[0];
             if (search) pair=search->select(relative,cap);
-            const auto d=pair.separated ? cap : cad::bounded_distance(*pair.a.boundary,*pair.b.boundary,
+            const auto d=pair.separated ? cap : cad::bounded_distance(pair.a.boundary,pair.b.boundary,
                                                                       relative,cap,tol,stats);
             const auto indexed=elapsed(t);
             const auto s=Clock::now();

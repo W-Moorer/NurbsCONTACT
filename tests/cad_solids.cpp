@@ -109,7 +109,7 @@ void boundary_distances() {
     const auto check=[&](gp_XYZ center,double cap,double expected) {
         gp_Trsf transform;
         transform.SetTranslationPart(gp_Vec(center));
-        const auto d=cad::bounded_distance(*a,*b,transform,cap,1e-7,counts);
+        const auto d=cad::bounded_distance(a,b,transform,cap,1e-7,counts);
         close(d,expected,2e-6,"bounded feature distance");
         BRepExtrema_DistShapeShape ref(ball.Moved(TopLoc_Location(transform)),box,1e-7);
         require(ref.IsDone(),"whole-solid reference failed");
@@ -131,20 +131,20 @@ void boundary_distances() {
         pose.SetTranslationPart(gp_Vec(-5.,4.,tilt<0. ? 7. : 11.));
         BRepExtrema_DistShapeShape ref(plate.Moved(TopLoc_Location(pose)),box,1e-7);
         require(ref.IsDone(),"plate reference failed");
-        close(cad::bounded_distance(*plate_index,*b,pose,5.,1e-7,counts),ref.Value(),2e-6,
+        close(cad::bounded_distance(plate_index,b,pose,5.,1e-7,counts),ref.Value(),2e-6,
               "trimmed spline against planar face");
     }
     for (double separation:{3.,2.,1.,0.}) {
         gp_Trsf pose;
         pose.SetRotation(gp_Ax1(gp_Pnt(),gp_Dir(1,2,3)),.7);
         pose.SetTranslationPart(gp_Vec(separation/std::sqrt(2.),separation/std::sqrt(2.),0));
-        close(cad::bounded_distance(*a,*a,pose,5,1e-7,counts),std::max(0.,separation-2.),2e-6,
+        close(cad::bounded_distance(a,a,pose,5,1e-7,counts),std::max(0.,separation-2.),2e-6,
               "oblique smooth boundaries");
     }
     const auto hollow=BRepAlgoAPI_Cut(BRepPrimAPI_MakeSphere(10.).Shape(),
                                       BRepPrimAPI_MakeSphere(6.).Shape()).Shape();
     const auto shell=cad::boundary_index(hollow);
-    close(cad::bounded_distance(*a,*shell,gp_Trsf(),10,1e-7,counts),5.,2e-6,"sphere in cavity");
+    close(cad::bounded_distance(a,shell,gp_Trsf(),10,1e-7,counts),5.,2e-6,"sphere in cavity");
 
     BRep_Builder builder;
     TopoDS_Compound compound;
@@ -162,6 +162,26 @@ void boundary_distances() {
     close(*loaded.fraction,.5,.02,"time-bracketed indexed entry");
     const auto repeated=many->transition(origin,left,origin,origin,1e-8,.02);
     require(repeated.fraction==loaded.fraction && repeated.cad_distance_cache_hits>=2,"indexed distance cache");
+
+    // Translate across two disconnected solids, then replace the target index
+    // as a new local cut would. A valid hint may cease to be the global winner.
+    const auto compound_index=cad::boundary_index(compound);
+    cad::BoundaryWitness witness;
+    SurfaceTransition warm;
+    for (double y:{4.,4.1,29.,54.,26.,4.}) {
+        gp_Trsf pose;
+        pose.SetTranslationPart(gp_Vec(y==26. ? 10.5 : 14.,y,5.));
+        const double expected=cad::bounded_distance(a,compound_index,pose,60.,1e-7,counts);
+        close(cad::bounded_distance(a,compound_index,pose,60.,1e-7,warm,&witness),expected,2e-6,
+              "warm feature failed at component switch or overlap");
+    }
+    require(warm.cad_witness_improvements>0,"repeated feature never tightened the initial cap");
+    const auto replaced=cad::boundary_index(box);
+    gp_Trsf pose;
+    pose.SetTranslationPart(gp_Vec(14,4,5));
+    const auto attempts=warm.cad_witness_tests;
+    close(cad::bounded_distance(a,replaced,pose,.5,1e-7,warm,&witness),.5,1e-12,"capped search after recut");
+    require(warm.cad_witness_tests==attempts,"used a feature index from an old cut");
 }
 
 void local_solids() {
@@ -178,7 +198,7 @@ void local_solids() {
         if (x==50.) { require(pair.separated,"envelopes failed to separate distant boxes"); continue; }
         require(!pair.separated && !pair.a.shape.IsSame(a),"expected retained local CAD solid");
         SurfaceTransition stats;
-        close(bounded_distance(*pair.a.boundary,*pair.b.boundary,t.Inverted(),.1,1e-7,stats),0,1e-8,
+        close(bounded_distance(pair.a.boundary,pair.b.boundary,t.Inverted(),.1,1e-7,stats),0,1e-8,
               "cropped solids lost containment or crossing");
         if (x==8.) continue; // complete containment has no unique force normal
         const auto full=solid_regions(a,placed,work);

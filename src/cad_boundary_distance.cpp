@@ -180,8 +180,11 @@ bool enclosed(const BoundaryIndex& a,const BoundaryIndex& b,const gp_Trsf& place
 }
 }
 
-double bounded_distance(const BoundaryIndex& a,const BoundaryIndex& b,const gp_Trsf& placement,
-                        double cap,double tol,dynamics::SurfaceTransition& stats) {
+double bounded_distance(const std::shared_ptr<const BoundaryIndex>& first,const std::shared_ptr<const BoundaryIndex>& second,
+                        const gp_Trsf& placement,double cap,double tol,dynamics::SurfaceTransition& stats,
+                        BoundaryWitness* witness) {
+    const auto& a=*first;
+    const auto& b=*second;
     struct Pair {
         double lower;
         std::size_t i,j;
@@ -192,6 +195,32 @@ double bounded_distance(const BoundaryIndex& a,const BoundaryIndex& b,const gp_T
     std::priority_queue<Pair> queue;
     const double eps=std::min(.05*tol,Precision::Confusion());
     double best=cap;
+    const auto evaluate=[&](std::size_t x,std::size_t y,const TopoDS_Shape& shifted,const Bnd_Box& box) {
+        const auto& g=b.features[y];
+        ++stats.cad_extrema;
+        BRepExtrema_DistanceSS test(shifted,g.shape,box,g.box,best,eps);
+        if (!test.IsDone()) return false;
+        const double d=test.DistValue();
+        if (!std::isfinite(d)) throw dynamics::UnresolvedContact("nonfinite STEP feature distance");
+        if (d>=best) return false;
+        best=d;
+        if (witness) *witness={first,second,x,y};
+        return true;
+    };
+    std::optional<std::pair<std::size_t,std::size_t>> seed;
+    if (witness && witness->first.lock()==first && witness->second.lock()==second) {
+        const auto x=witness->x,y=witness->y;
+        const auto& f=a.features[x];
+        const auto box=f.box.Transformed(placement);
+        if (box.Distance(b.features[y].box)<=cap+eps) {
+            seed.emplace(x,y);
+            ++stats.cad_witness_tests;
+            if (evaluate(x,y,f.shape.Moved(location),box)) {
+                ++stats.cad_witness_improvements;
+                if (best<=tol) return 0.;
+            }
+        }
+    }
     const auto push=[&](std::size_t i,std::size_t j) {
         const double lower=a.nodes[i].box.Transformed(placement).Distance(b.nodes[j].box);
         ++stats.cad_box_tests;
@@ -209,6 +238,7 @@ double bounded_distance(const BoundaryIndex& a,const BoundaryIndex& b,const gp_T
                 const auto shifted=f.shape.Moved(location);
                 for (auto y=right.begin;y<right.end;++y) {
                     const auto& g=b.features[y];
+                    if (seed && seed->first==x && seed->second==y) continue;
                     // A minimizing pair in two bounded plane interiors can slide
                     // along a common tangent until a trim is reached. Its distance
                     // is covered by the edge/face or lower-dimensional queries.
@@ -221,13 +251,7 @@ double bounded_distance(const BoundaryIndex& a,const BoundaryIndex& b,const gp_T
                         (g.plane && f.flat.preserves_height(inverse*g.normal))) continue;
                     ++stats.cad_box_tests;
                     if (box.Distance(g.box)>best+eps) continue;
-                    ++stats.cad_extrema;
-                    BRepExtrema_DistanceSS test(shifted,g.shape,box,g.box,best,eps);
-                    if (!test.IsDone()) continue;
-                    const double d=test.DistValue();
-                    if (!std::isfinite(d)) throw dynamics::UnresolvedContact("nonfinite STEP feature distance");
-                    best=std::min(best,d);
-                    if (best<=tol) return 0.;
+                    if (evaluate(x,y,shifted,box) && best<=tol) return 0.;
                 }
             }
         } else if (!left.leaf() && (right.leaf() || left.end-left.begin>=right.end-right.begin)) {

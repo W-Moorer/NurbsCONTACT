@@ -158,7 +158,8 @@ def dynamics(exe, meshes, scene, method, dt, duration, work, region_scope=None, 
                                                   "chen_patch_queries","chen_confirmed_candidates")})
         result.update({k:int(stats[k]) for k in ("tdib_cells","tdib_candidates","tdib_unresolved",
                                                  "cad_box_tests","cad_extrema","cad_classifications",
-                                                 "cad_region_cache_hits","cad_distance_cache_hits") if k in stats})
+                                                 "cad_region_cache_hits","cad_distance_cache_hits",
+                                                 "cad_witness_tests","cad_witness_improvements") if k in stats})
         result.update(event_tolerance_s=float(stats.get("event_tolerance_s",event_tolerance)), setup_s=float(stats["setup_s"]),
                       evaluations=int(stats["force_evaluations"]))
     if meshes is not None and "mesh_boolean_queries" in stats:

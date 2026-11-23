@@ -1022,6 +1022,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     std::size_t tdib_cells=0,tdib_candidates=0,tdib_unresolved=0;
     std::size_t cad_box_tests=0,cad_extrema=0,cad_classifications=0;
     std::size_t cad_distance_hits=0;
+    std::size_t cad_witness_tests=0,cad_witness_improvements=0;
     StepAcceptanceFunction accept_step;
     if (event_tolerance>0) {
         accept_step=[&](const State& start,const State& end) -> std::optional<double> {
@@ -1058,6 +1059,8 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                             cad_extrema+=hit.cad_extrema;
                             cad_classifications+=hit.cad_classifications;
                             cad_distance_hits+=hit.cad_distance_cache_hits;
+                            cad_witness_tests+=hit.cad_witness_tests;
+                            cad_witness_improvements+=hit.cad_witness_improvements;
                             event_nodes+=hit.nodes;
                         };
                         sweep(surface.distance_tolerance);
@@ -1271,7 +1274,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             "mesh_detection_s,mesh_placement_s,mesh_boolean_s,cad_boolean_queries,cad_event_distances,chen_patch_queries,chen_confirmed_candidates,event_tolerance_s,"
             "solver,impulse_solves,impulse_regions,impulse_iterations,impulse_residual_m_s,ccd_refinements,ccd_refined_clear,"
             "tdib_cells,tdib_candidates,tdib_unresolved,cad_box_tests,cad_extrema,cad_classifications,"
-            "cad_region_cache_hits,cad_distance_cache_hits\n"
+            "cad_region_cache_hits,cad_distance_cache_hits,cad_witness_tests,cad_witness_improvements\n"
         <<(n || surface.impulse_law ? wall : replay_s)<<','<<setup_s<<','<<steps<<','<<stats.accepted_steps<<','<<stats.subdivisions<<','<<stats.evaluations
         <<','<<stats.maximum_residual<<','<<work.pairs<<','<<work.culled<<','<<work.rays<<','<<work.missing
         <<','<<work.mesh.triangles<<','<<work.closest_queries<<','<<work.unresolved_queries<<','<<work.native_nodes
@@ -1283,7 +1286,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         <<','<<impulse_solves<<','<<impulse_regions<<','<<impulse_iterations<<','<<impulse_residual
         <<','<<spatial_refinements<<','<<refined_clear<<','<<tdib_cells<<','<<tdib_candidates<<','<<tdib_unresolved
         <<','<<cad_box_tests<<','<<cad_extrema<<','<<cad_classifications<<','<<work.cad_region_cache_hits
-        <<','<<cad_distance_hits<<'\n';
+        <<','<<cad_distance_hits<<','<<cad_witness_tests<<','<<cad_witness_improvements<<'\n';
     if (!trace || !report) throw std::runtime_error("failed to write contact run");
 }
 

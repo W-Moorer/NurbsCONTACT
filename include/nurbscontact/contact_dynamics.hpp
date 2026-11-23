@@ -104,6 +104,7 @@ struct SurfaceTransition {
     std::size_t tdib_cells{}, tdib_candidates{}, tdib_unresolved{};
     std::size_t cad_box_tests{}, cad_extrema{}, cad_classifications{};
     std::size_t cad_distance_cache_hits{};
+    std::size_t cad_witness_tests{}, cad_witness_improvements{};
 };
 
 class PairRegionQuery {
