@@ -59,7 +59,9 @@ def run(executable, directory, method, step, event_tol, mesh_dir):
     result.update({k: int(stats[k]) for k in ("ccd_checks","ccd_rejected","ccd_unresolved","ccd_nodes","cad_boolean_queries",
                                               "cad_event_distances","chen_patch_queries","chen_confirmed_candidates",
                                               "mesh_boolean_queries")})
-    if method=="chen-2024" and result["chen_patch_queries"]==0:
+    result.update({k:int(stats[k]) for k in ("cad_region_cache_hits","cad_distance_cache_hits",
+                                             "tdib_cells","tdib_candidates","tdib_unresolved") if k in stats})
+    if method.startswith("chen-") and result["chen_patch_queries"]==0:
         raise ValueError("the Chen solver did not run during this impact")
     if not method.startswith("mesh-") and (result["mesh_boolean_queries"] or not result["cad_boolean_queries"]):
         raise ValueError("unexpected contact geometry used by the CAD method")
@@ -75,7 +77,9 @@ if __name__ == "__main__":
     control = parser.add_mutually_exclusive_group()
     control.add_argument("--mesh-dir", type=Path, nargs="+", default=[],
                          help="use these meshes in place of the default 8 mm Gmsh sphere")
-    control.add_argument("--cad-only", action="store_true", help="run only the two STEP methods")
+    control.add_argument("--cad-only", action="store_true", help="run only the selected STEP methods")
+    parser.add_argument("--cad-methods", nargs="+", choices=["cad-occt","chen-2024","chen-2026"],
+                        default=["cad-occt","chen-2024","chen-2026"])
     parser.add_argument("--mesh-only", action="store_true", help="measure only the Gmsh controls")
     args = parser.parse_args()
     if args.cad_only and args.mesh_only:
@@ -88,7 +92,7 @@ if __name__ == "__main__":
                         directory / "offset-sphere.msh", "--size-m", ".008", "--max-error-m", ".0005",
                         "--max-normal-deg", "8", "--min-sicn", ".3"], check=True, timeout=1800)
         args.mesh_dir = [directory]
-    methods = [] if args.mesh_only else [("cad-occt", None), ("chen-2024", None)]
+    methods = [] if args.mesh_only else [(method, None) for method in args.cad_methods]
     methods.extend(("mesh-obb", mesh_dir) for mesh_dir in args.mesh_dir)
     runs = [run(args.exe.resolve(), args.work, method, args.step, args.event_tol_s, mesh_dir)
             for method, mesh_dir in methods]

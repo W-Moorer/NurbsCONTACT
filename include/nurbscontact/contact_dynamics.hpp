@@ -43,6 +43,7 @@ struct ContactWork {
     std::size_t boolean_queries{}, boolean_input_faces{}, local_solid_uses{}, local_solid_builds{};
     double mesh_detection_s{}, mesh_placement_s{}, mesh_boolean_s{};
     std::size_t cad_boolean_queries{};
+    std::size_t cad_region_cache_hits{};
 };
 
 struct ContactLineSample {
@@ -101,6 +102,8 @@ struct SurfaceTransition {
     std::size_t nodes{};
     std::size_t cad_distances{}, chen_queries{}, chen_confirmed{};
     std::size_t tdib_cells{}, tdib_candidates{}, tdib_unresolved{};
+    std::size_t cad_box_tests{}, cad_extrema{}, cad_classifications{};
+    std::size_t cad_distance_cache_hits{};
 };
 
 class PairRegionQuery {
@@ -110,6 +113,10 @@ public:
     // A sweep from a separated endpoint locates an entry or a release.
     virtual SurfaceTransition transition(ContactPose a0,ContactPose b0,ContactPose a1,ContactPose b1,
                                          double tolerance_m) const = 0;
+    virtual SurfaceTransition transition(ContactPose a0,ContactPose b0,ContactPose a1,ContactPose b1,
+                                         double tolerance_m,double /*fraction_tolerance*/) const {
+        return transition(a0,b0,a1,b1,tolerance_m);
+    }
 };
 
 struct ContactBodyState {

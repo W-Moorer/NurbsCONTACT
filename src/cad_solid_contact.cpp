@@ -1,4 +1,7 @@
 #include "cad_rigid_path.hpp"
+#include "cad_boundary_distance.hpp"
+#include <mutex>
+#include <deque>
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepAlgoAPI_Common.hxx>
 #include <BRepBndLib.hxx>
@@ -16,6 +19,13 @@ namespace nc {
 namespace {
 using namespace dynamics;
 using namespace cad;
+
+using TransformKey=std::array<double,12>;
+TransformKey key(const gp_Trsf& pose) {
+    TransformKey value;
+    for (int i=0;i<3;++i) for (int j=0;j<4;++j) value[4*i+j]=pose.Value(i+1,j+1);
+    return value;
+}
 
 Bnd_Box bounds(const TopoDS_Shape& shape,bool tight=false) {
     Bnd_Box box;
@@ -111,6 +121,25 @@ public:
     std::vector<ContactRegion> regions(ContactPose a,ContactPose b,ContactWork& work) const override try {
         const auto ta=placement(a),tb=placement(b);
         if (a_.box.Transformed(ta).IsOut(b_.box.Transformed(tb))) return {};
+        const std::array poses{key(ta),key(tb)};
+        {
+            std::lock_guard lock(cache_mutex_);
+            for (const auto& entry:regions_) if (entry.poses==poses) {
+                ++work.cad_region_cache_hits;
+                return entry.regions;
+            }
+        }
+        auto answer=overlap(ta,tb,work);
+        {
+            std::lock_guard lock(cache_mutex_);
+            if (regions_.size()==8) regions_.pop_back();
+            regions_.push_front({poses,answer});
+        }
+        return answer;
+    } catch (const Standard_Failure& e) {
+        throw UnresolvedContact(std::string("CAD overlap failed: ")+e.GetMessageString());
+    }
+    std::vector<ContactRegion> overlap(const gp_Trsf& ta,const gp_Trsf& tb,ContactWork& work) const {
         const auto first=a_.shape.Moved(TopLoc_Location(ta)),second=b_.shape.Moved(TopLoc_Location(tb));
         ++work.cad_boolean_queries;
         BRepAlgoAPI_Common op;
@@ -156,18 +185,56 @@ public:
                                .001*(extent.CornerMax().Z()-extent.CornerMin().Z())});
         }
         return regions;
-    } catch (const Standard_Failure& e) {
-        throw UnresolvedContact(std::string("CAD overlap failed: ")+e.GetMessageString());
     }
     SurfaceTransition transition(ContactPose a0,ContactPose b0,ContactPose a1,ContactPose b1,
-                                 double tolerance_m) const override try {
+                                 double tolerance_m) const override {
+        return transition(a0,b0,a1,b1,tolerance_m,0.);
+    }
+    SurfaceTransition transition(ContactPose a0,ContactPose b0,ContactPose a1,ContactPose b1,
+                                 double tolerance_m,double fraction_tolerance) const override try {
         if (!(tolerance_m>0 && std::isfinite(tolerance_m))) throw std::invalid_argument("invalid CAD event tolerance");
         SurfaceTransition result;
         const double tol=std::max(1000*tolerance_m,2.*Precision::Confusion());
         RigidPath a(a0,a1,centers_[0]),b(b0,b1,centers_[1]);
         if (a_.swept(a).Distance(b_.swept(b))>tol) return result;
+        const double speed=(gp_Vec(a.from,a.to)-gp_Vec(b.from,b.to)).Magnitude()+
+                           std::abs(a.angle)*a_.radius+std::abs(b.angle)*b_.radius;
+        std::call_once(index_once_,[&] {
+            // Simple boundaries already have cheap whole-solid queries.
+            // Count topology, independently of the mechanism or surface type.
+            TopTools_IndexedMapOfShape fa,fb;
+            TopExp::MapShapes(a_.shape,TopAbs_FACE,fa);
+            TopExp::MapShapes(b_.shape,TopAbs_FACE,fb);
+            if (fa.Extent()+fb.Extent()<=16) return;
+            try {
+                auto first=boundary_index(a_.shape),second=boundary_index(b_.shape);
+                boundaries_={std::move(first),std::move(second)};
+            } catch (const UnresolvedContact&) {
+                // Unsupported shell topology still uses the whole-solid kernel.
+            }
+        });
+        if (!boundaries_[0]) fraction_tolerance=0.;
         const auto distance=[&](const gp_Trsf& a,const gp_Trsf& b) {
             ++result.nodes;
+            if (boundaries_[0]) {
+                const auto transform=b.Inverted()*a;
+                const auto pose=key(transform);
+                const double cap=speed+2*tol;
+                {
+                    std::lock_guard lock(cache_mutex_);
+                    for (const auto& entry:distances_)
+                        if (entry.pose==pose && tol==entry.tol && (cap<=entry.cap || entry.distance<entry.cap)) {
+                            ++result.cad_distance_cache_hits;
+                            return std::min(cap,entry.distance);
+                        }
+                }
+                ++result.cad_distances;
+                const double value=bounded_distance(*boundaries_[0],*boundaries_[1],transform,cap,tol,result);
+                std::lock_guard lock(cache_mutex_);
+                if (distances_.size()==32) distances_.pop_back();
+                distances_.push_front({pose,cap,tol,value});
+                return value;
+            }
             ++result.cad_distances;
             BRepExtrema_DistShapeShape query(a_.shape.Moved(TopLoc_Location(a)),b_.shape.Moved(TopLoc_Location(b)),
                                             std::min(.05*tol,Precision::Confusion()));
@@ -181,11 +248,11 @@ public:
         if (result.start_in_contact) {
             a=RigidPath(a1,a0,centers_[0]); b=RigidPath(b1,b0,centers_[1]); std::swap(d0,d1);
         }
-        const double speed=(gp_Vec(a.from,a.to)-gp_Vec(b.from,b.to)).Magnitude()+
-                           std::abs(a.angle)*a_.radius+std::abs(b.angle)*b_.radius;
         if (speed==0 || d0>speed+tol) return result;
         double horizon=1.,safe_left=1.,safe_right=1.;
         bool known_hit=d1<=tol;
+        // A separated far endpoint also excludes the final part of the step.
+        const double end_clear_from=known_hit ? 1. : 1.-(d1-tol)/speed;
         // Validate a polynomial-patch proposal on both original trimmed solids.
         // The distance at a rejected proposal can also exclude a time interval.
         if (candidate_) {
@@ -217,9 +284,27 @@ public:
             }
             double next=t+(d-.25*tol)/speed;
             if (next>=safe_left && next<safe_right) next=safe_right;
+            if (!known_hit && next>end_clear_from) return result;
             if (next>=horizon) {
                 if (known_hit) result.fraction=result.start_in_contact ? 1-horizon : horizon;
                 return result;
+            }
+            // A verified upper endpoint and a collision-free prefix bracket the
+            // earliest physical touch. Respect the integrator's event resolution.
+            if (known_hit && fraction_tolerance>0. && horizon-next<=fraction_tolerance) {
+                result.fraction=result.start_in_contact ? 1-horizon : horizon;
+                return result;
+            }
+            if (known_hit && fraction_tolerance>0. && i%4==0) {
+                const double mid=std::midpoint(next,horizon);
+                const double dmid=distance(a.at(mid),b.at(mid));
+                if (dmid<=tol) horizon=mid;
+                else {
+                    const double radius=(dmid-tol)/speed;
+                    safe_left=mid-radius;
+                    safe_right=mid+radius;
+                    if (next>=safe_left && next<safe_right) next=std::min(safe_right,horizon);
+                }
             }
             if (!(next>t)) break;
             t=next;
@@ -230,7 +315,14 @@ public:
         throw UnresolvedContact(std::string("CAD sweep failed: ")+e.GetMessageString());
     }
 private:
+    struct RegionEntry { std::array<TransformKey,2> poses; std::vector<ContactRegion> regions; };
+    struct DistanceEntry { TransformKey pose; double cap,tol,distance; };
     Solid a_,b_;
+    mutable std::mutex cache_mutex_;
+    mutable std::deque<RegionEntry> regions_;
+    mutable std::deque<DistanceEntry> distances_;
+    mutable std::once_flag index_once_;
+    mutable std::array<std::shared_ptr<const BoundaryIndex>,2> boundaries_;
     std::array<Vec,2> centers_;
     CandidateQuery candidate_;
 };

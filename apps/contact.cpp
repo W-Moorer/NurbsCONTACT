@@ -1020,6 +1020,8 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     std::size_t event_nodes=0, unresolved_events=0, spatial_refinements=0, refined_clear=0;
     std::size_t cad_distances=0,chen_queries=0,chen_confirmed=0;
     std::size_t tdib_cells=0,tdib_candidates=0,tdib_unresolved=0;
+    std::size_t cad_box_tests=0,cad_extrema=0,cad_classifications=0;
+    std::size_t cad_distance_hits=0;
     StepAcceptanceFunction accept_step;
     if (event_tolerance>0) {
         accept_step=[&](const State& start,const State& end) -> std::optional<double> {
@@ -1044,13 +1046,18 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                     SurfaceTransition hit;
                     try {
                         const auto sweep=[&](double tolerance) {
-                            hit=pair.regions->transition(a0,b0,a1,b1,tolerance);
+                            hit=pair.regions->transition(a0,b0,a1,b1,tolerance,
+                                                        std::min(1.,.25*event_tolerance/dt_trial));
                             cad_distances+=hit.cad_distances;
                             chen_queries+=hit.chen_queries;
                             chen_confirmed+=hit.chen_confirmed;
                             tdib_cells+=hit.tdib_cells;
                             tdib_candidates+=hit.tdib_candidates;
                             tdib_unresolved+=hit.tdib_unresolved;
+                            cad_box_tests+=hit.cad_box_tests;
+                            cad_extrema+=hit.cad_extrema;
+                            cad_classifications+=hit.cad_classifications;
+                            cad_distance_hits+=hit.cad_distance_cache_hits;
                             event_nodes+=hit.nodes;
                         };
                         sweep(surface.distance_tolerance);
@@ -1263,7 +1270,8 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             "mesh_boolean_queries,mesh_boolean_input_faces,mesh_local_solid_uses,mesh_local_solid_builds,"
             "mesh_detection_s,mesh_placement_s,mesh_boolean_s,cad_boolean_queries,cad_event_distances,chen_patch_queries,chen_confirmed_candidates,event_tolerance_s,"
             "solver,impulse_solves,impulse_regions,impulse_iterations,impulse_residual_m_s,ccd_refinements,ccd_refined_clear,"
-            "tdib_cells,tdib_candidates,tdib_unresolved\n"
+            "tdib_cells,tdib_candidates,tdib_unresolved,cad_box_tests,cad_extrema,cad_classifications,"
+            "cad_region_cache_hits,cad_distance_cache_hits\n"
         <<(n || surface.impulse_law ? wall : replay_s)<<','<<setup_s<<','<<steps<<','<<stats.accepted_steps<<','<<stats.subdivisions<<','<<stats.evaluations
         <<','<<stats.maximum_residual<<','<<work.pairs<<','<<work.culled<<','<<work.rays<<','<<work.missing
         <<','<<work.mesh.triangles<<','<<work.closest_queries<<','<<work.unresolved_queries<<','<<work.native_nodes
@@ -1273,7 +1281,9 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         <<','<<work.cad_boolean_queries<<','<<cad_distances<<','<<chen_queries<<','<<chen_confirmed<<','<<event_tolerance
         <<','<<(surface.impulse_law ? impulse_law_name(*surface.impulse_law) : "penalty")
         <<','<<impulse_solves<<','<<impulse_regions<<','<<impulse_iterations<<','<<impulse_residual
-        <<','<<spatial_refinements<<','<<refined_clear<<','<<tdib_cells<<','<<tdib_candidates<<','<<tdib_unresolved<<'\n';
+        <<','<<spatial_refinements<<','<<refined_clear<<','<<tdib_cells<<','<<tdib_candidates<<','<<tdib_unresolved
+        <<','<<cad_box_tests<<','<<cad_extrema<<','<<cad_classifications<<','<<work.cad_region_cache_hits
+        <<','<<cad_distance_hits<<'\n';
     if (!trace || !report) throw std::runtime_error("failed to write contact run");
 }
 

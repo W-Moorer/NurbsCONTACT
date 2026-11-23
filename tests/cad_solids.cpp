@@ -1,4 +1,7 @@
 #include "nurbscontact/cad_solid_contact.hpp"
+#include "../src/cad_boundary_distance.hpp"
+#include <BRepAlgoAPI_Cut.hxx>
+#include <BRepExtrema_DistShapeShape.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRep_Builder.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
@@ -52,6 +55,10 @@ void check(CadEventMethod chen) {
     require(overlap.size()==1,"coplanar box boundaries");
     close(overlap[0].normal[0],1.,1e-8,"box normal");
     close(overlap[0].depth_m,.001,1e-8,"box depth");
+    const auto booleans=work.cad_boolean_queries;
+    const auto cached=blocks->regions(origin,ContactPose{{.009,0,0}},work);
+    require(cached.size()==1 && cached[0].point==overlap[0].point && work.cad_boolean_queries==booleans
+            && work.cad_region_cache_hits>0,"identical poses did not reuse the same CAD region");
 
     const auto half=BRepPrimAPI_MakeBox(10.,5.,10.).Shape();
     const auto other_half=BRepPrimAPI_MakeBox(gp_Pnt(0,5,0),10.,5.,10.).Shape();
@@ -90,9 +97,60 @@ void check(CadEventMethod chen) {
     require(hit.fraction && !hit.start_in_contact && !hit.end_in_contact,"offset-pivot arc missed sphere");
     close(*hit.fraction,.5-2*std::asin(.1)/std::acos(-1.),2e-6,"rotating sphere entry time");
 }
+
+void boundary_distances() {
+    const auto box=BRepPrimAPI_MakeBox(10.,10.,10.).Shape();
+    const auto ball=BRepPrimAPI_MakeSphere(1.).Shape();
+    const auto a=cad::boundary_index(ball),b=cad::boundary_index(box);
+    SurfaceTransition counts;
+    const auto check=[&](gp_XYZ center,double cap,double expected) {
+        gp_Trsf transform;
+        transform.SetTranslationPart(gp_Vec(center));
+        const auto d=cad::bounded_distance(*a,*b,transform,cap,1e-7,counts);
+        close(d,expected,2e-6,"bounded feature distance");
+        BRepExtrema_DistShapeShape ref(ball.Moved(TopLoc_Location(transform)),box,1e-7);
+        require(ref.IsDone(),"whole-solid reference failed");
+        close(d,std::min(cap,ref.Value()),2e-6,"reference distance mismatch");
+    };
+    check({14,5,5},10,3);
+    check({14,5,5},.5,.5);
+    check({11,5,5},10,0);
+    check({10,5,5},10,0);
+    check({5,5,5},10,0);
+    require(counts.cad_extrema && counts.cad_classifications,"missing feature or containment checks");
+    for (double separation:{3.,2.,1.,0.}) {
+        gp_Trsf pose;
+        pose.SetRotation(gp_Ax1(gp_Pnt(),gp_Dir(1,2,3)),.7);
+        pose.SetTranslationPart(gp_Vec(separation/std::sqrt(2.),separation/std::sqrt(2.),0));
+        close(cad::bounded_distance(*a,*a,pose,5,1e-7,counts),std::max(0.,separation-2.),2e-6,
+              "oblique smooth boundaries");
+    }
+    const auto hollow=BRepAlgoAPI_Cut(BRepPrimAPI_MakeSphere(10.).Shape(),
+                                      BRepPrimAPI_MakeSphere(6.).Shape()).Shape();
+    const auto shell=cad::boundary_index(hollow);
+    close(cad::bounded_distance(*a,*shell,gp_Trsf(),10,1e-7,counts),5.,2e-6,"sphere in cavity");
+
+    BRep_Builder builder;
+    TopoDS_Compound compound;
+    builder.MakeCompound(compound);
+    builder.Add(compound,box);
+    builder.Add(compound,BRepPrimAPI_MakeBox(gp_Pnt(0,25,0),10.,10.,10.).Shape());
+    builder.Add(compound,BRepPrimAPI_MakeBox(gp_Pnt(0,50,0),10.,10.,10.).Shape());
+    const auto many=cad_solid_region_query(compound,box,{},false);
+    const ContactPose origin{},left{{-.020,0,0}},right{{.020,0,0}};
+    const auto interior=many->transition(origin,left,origin,right,1e-8,.02);
+    require(interior.fraction && interior.cad_extrema>0,"indexed sweep lost an interior-only collision");
+    close(*interior.fraction,.25,.02,"interior-only indexed entry");
+    const auto loaded=many->transition(origin,left,origin,origin,1e-8,.02);
+    require(loaded.fraction && loaded.end_in_contact,"indexed sweep lost a loaded endpoint");
+    close(*loaded.fraction,.5,.02,"time-bracketed indexed entry");
+    const auto repeated=many->transition(origin,left,origin,origin,1e-8,.02);
+    require(repeated.fraction==loaded.fraction && repeated.cad_distance_cache_hits>=2,"indexed distance cache");
+}
 }
 int main(int argc,char** argv) {
-    try { check(argc==1 ? CadEventMethod::conservative_advancement :
+    try { if (argc==1) boundary_distances();
+          check(argc==1 ? CadEventMethod::conservative_advancement :
                 std::string_view(argv[1])=="--chen-2026" ? CadEventMethod::chen_2026 : CadEventMethod::chen_2024); }
     catch (const Standard_Failure& e) { std::cerr<<e.GetMessageString()<<'\n'; return 1; }
     catch (const std::exception& e) { std::cerr<<e.what()<<'\n'; return 1; }

@@ -1,0 +1,186 @@
+{
+  "duration_s": 0.16,
+  "step_s": 0.00025,
+  "event_tol_s": 5e-05,
+  "reference": {
+    "onset_s": 0.039999999999999994,
+    "release_s": 0.07141592653589793,
+    "peak_force_N": 22.5,
+    "impulse_Ns": 0.45
+  },
+  "asset_sha256": {
+    "spheres.scene": "05767980630c319532fdc8d251f54915c306c1fe2470f6b6b117081e743f9428",
+    "offset-sphere.step": "b1b75a633d5f5de9267246c3faa9457f22615bc8b742d4cc9f297e9df2e81d2c"
+  },
+  "runs": [
+    {
+      "method": "cad-occt",
+      "onset_bracket_s": [
+        0.04000000000000002,
+        0.04025000000000002
+      ],
+      "release_bracket_s": [
+        0.07125000000000005,
+        0.07150000000000004
+      ],
+      "peak_force_N": 22.499506500075412,
+      "normal_impulse_Ns": 0.4500153883004097,
+      "max_force_error_N": 0.00458234102099031,
+      "max_displacement_error_m": 8.306169586927425e-07,
+      "final_velocity_m_s": [
+        -0.4499958126444362,
+        -4.187355563423769e-06
+      ],
+      "integration_s": 61.068513,
+      "setup_s": 0.0363282,
+      "trace_sha256": "9e74eeb2fcf8a1a0eabcd1b5f4eaae557a740427970a222fc1db22be13e6e7aa",
+      "process_s": 61.94884650001768,
+      "observed_peak_working_set_bytes": 26275840,
+      "monitor_interval_s": 0.025,
+      "observed_peak_commit_bytes": 30908416,
+      "ccd_checks": 650,
+      "ccd_rejected": 5,
+      "ccd_unresolved": 0,
+      "ccd_nodes": 275,
+      "cad_boolean_queries": 256,
+      "cad_event_distances": 275,
+      "chen_patch_queries": 0,
+      "chen_confirmed_candidates": 0,
+      "mesh_boolean_queries": 0,
+      "cad_region_cache_hits": 0,
+      "cad_distance_cache_hits": 0,
+      "tdib_cells": 0,
+      "tdib_candidates": 0,
+      "tdib_unresolved": 0
+    },
+    {
+      "method": "chen-2024",
+      "onset_bracket_s": [
+        0.04000000000000002,
+        0.04025000000000002
+      ],
+      "release_bracket_s": [
+        0.07125000000000005,
+        0.07150000000000004
+      ],
+      "peak_force_N": 22.499506500075412,
+      "normal_impulse_Ns": 0.4500153883004097,
+      "max_force_error_N": 0.00458234102099031,
+      "max_displacement_error_m": 8.306169586927425e-07,
+      "final_velocity_m_s": [
+        -0.4499958126444362,
+        -4.187355563423769e-06
+      ],
+      "integration_s": 51.3310102,
+      "setup_s": 0.0233464,
+      "trace_sha256": "9e74eeb2fcf8a1a0eabcd1b5f4eaae557a740427970a222fc1db22be13e6e7aa",
+      "process_s": 51.95114790002117,
+      "observed_peak_working_set_bytes": 26120192,
+      "monitor_interval_s": 0.025,
+      "observed_peak_commit_bytes": 30916608,
+      "ccd_checks": 650,
+      "ccd_rejected": 5,
+      "ccd_unresolved": 0,
+      "ccd_nodes": 740,
+      "cad_boolean_queries": 256,
+      "cad_event_distances": 280,
+      "chen_patch_queries": 56,
+      "chen_confirmed_candidates": 2,
+      "mesh_boolean_queries": 0,
+      "cad_region_cache_hits": 0,
+      "cad_distance_cache_hits": 0,
+      "tdib_cells": 0,
+      "tdib_candidates": 0,
+      "tdib_unresolved": 0
+    },
+    {
+      "method": "chen-2026",
+      "onset_bracket_s": [
+        0.04000000000000002,
+        0.04025000000000002
+      ],
+      "release_bracket_s": [
+        0.07125000000000005,
+        0.07150000000000004
+      ],
+      "peak_force_N": 22.499506500075412,
+      "normal_impulse_Ns": 0.4500153883004097,
+      "max_force_error_N": 0.00458234102099031,
+      "max_displacement_error_m": 8.306169586927425e-07,
+      "final_velocity_m_s": [
+        -0.4499958126444362,
+        -4.187355563423769e-06
+      ],
+      "integration_s": 43.5869937,
+      "setup_s": 0.0279786,
+      "trace_sha256": "9e74eeb2fcf8a1a0eabcd1b5f4eaae557a740427970a222fc1db22be13e6e7aa",
+      "process_s": 44.144870800024364,
+      "observed_peak_working_set_bytes": 26669056,
+      "monitor_interval_s": 0.025,
+      "observed_peak_commit_bytes": 30814208,
+      "ccd_checks": 650,
+      "ccd_rejected": 5,
+      "ccd_unresolved": 0,
+      "ccd_nodes": 8425,
+      "cad_boolean_queries": 256,
+      "cad_event_distances": 284,
+      "chen_patch_queries": 56,
+      "chen_confirmed_candidates": 0,
+      "mesh_boolean_queries": 0,
+      "cad_region_cache_hits": 0,
+      "cad_distance_cache_hits": 0,
+      "tdib_cells": 8141,
+      "tdib_candidates": 7,
+      "tdib_unresolved": 0
+    },
+    {
+      "method": "mesh-obb",
+      "onset_bracket_s": [
+        0.04025000000000003,
+        0.040500000000000036
+      ],
+      "release_bracket_s": [
+        0.07100000000000006,
+        0.07125000000000006
+      ],
+      "peak_force_N": 22.532496724944913,
+      "normal_impulse_Ns": 0.4500292433843316,
+      "max_force_error_N": 0.5662394131711084,
+      "max_displacement_error_m": 2.99487097722706e-05,
+      "final_velocity_m_s": [
+        -0.449998214835777,
+        -1.78516422291344e-06
+      ],
+      "integration_s": 3.3552702,
+      "setup_s": 0.0525413,
+      "trace_sha256": "4b0118af1e7efd788cefa07d9d1e22754d103d10382e2ba01eb1a47583a9b917",
+      "process_s": 3.889506999985315,
+      "observed_peak_working_set_bytes": 18186240,
+      "monitor_interval_s": 0.025,
+      "observed_peak_commit_bytes": 28692480,
+      "mesh_per_sphere": {
+        "mesh_size_m": 0.008,
+        "mesh_sha256": "21a2e8ee10a9e3fd583e3f32246857c629de21ebd82f6e6386f34d242eb5dc5d",
+        "triangles": 904,
+        "max_normal_angle_deg": 7.4870751583100725,
+        "max_sampled_surface_error_m": 0.0003931723341165931,
+        "min_sicn": 0.5609419756321852,
+        "file_bytes": 52566
+      },
+      "ccd_checks": 650,
+      "ccd_rejected": 5,
+      "ccd_unresolved": 0,
+      "ccd_nodes": 17264,
+      "cad_boolean_queries": 0,
+      "cad_event_distances": 0,
+      "chen_patch_queries": 0,
+      "chen_confirmed_candidates": 0,
+      "mesh_boolean_queries": 308,
+      "cad_region_cache_hits": 0,
+      "cad_distance_cache_hits": 0,
+      "tdib_cells": 0,
+      "tdib_candidates": 0,
+      "tdib_unresolved": 0
+    }
+  ]
+}

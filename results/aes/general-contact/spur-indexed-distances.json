@@ -1,0 +1,30 @@
+{
+  "source": "spur-static-cad-cost.json",
+  "source_sha256": "9459d67beaec043530ff8b207c898fd956a7d9c7fdc56b2bf7841b629c1c63db",
+  "distance_cap_mm": 1.0,
+  "contact_tolerance_mm": 1e-06,
+  "samples": [
+    {
+      "setup_s": 0.0890218,
+      "indexed_s": 13.3177221,
+      "distance_mm": 0.04879229977284592,
+      "shell_s": 10.1488724,
+      "shell_distance_mm": 0.04879229977284544,
+      "boxes": 6991,
+      "extrema": 499,
+      "classifications": 0,
+      "time_s": 0.0
+    },
+    {
+      "setup_s": 0.0890218,
+      "indexed_s": 0.8758892,
+      "distance_mm": 0.0,
+      "shell_s": 9.7889361,
+      "shell_distance_mm": 0.0,
+      "boxes": 184,
+      "extrema": 21,
+      "classifications": 0,
+      "time_s": 0.00025
+    }
+  ]
+}
