@@ -1,0 +1,1841 @@
+{
+  "solver": "Chen et al. 2024 official TDIB-OBB",
+  "dataset": "Chen et al. 2026 TDIB-E",
+  "width": 0.0005,
+  "query_timeout_s": 8.0,
+  "exe_sha256": "afdc3bf278dcc3a9a3a75370fe4ec3a15e539e4369fb3e81dda8dee9118ca549",
+  "elapsed_s": 38.40600000001723,
+  "files": {
+    "face-face/rp": {
+      "available": 6003,
+      "tested": 16,
+      "sha256": "d7ef2ab12b1d43c6c63a36c85a3ad26b82f5d5995d67509f8abf54dc64391adf",
+      "outcomes": {
+        "candidate": 16
+      }
+    },
+    "face-face/rn": {
+      "available": 6003,
+      "tested": 16,
+      "sha256": "8c6d6413b839ca7feb504915221cf00504564ec73ac015d96bccb6ffd6d1afa2",
+      "outcomes": {
+        "clear": 16
+      }
+    },
+    "face-face/nhp": {
+      "available": 600,
+      "tested": 16,
+      "sha256": "77626c36a92adb0ffdad0d8dc0d4f694c915c84bdd7cc0b5a41ea7361a59765f",
+      "outcomes": {
+        "candidate": 16
+      }
+    },
+    "face-face/nmn": {
+      "available": 600,
+      "tested": 16,
+      "sha256": "e21982b4a28fa4803a371f9344ba88d48dcad46ff15344094bab2e19867e8813",
+      "outcomes": {
+        "candidate": 4,
+        "clear": 12
+      }
+    },
+    "vertex-vertex/rp": {
+      "available": 1000,
+      "tested": 16,
+      "sha256": "a913849e028be7a87c15a13ce7d981f8ca397b20a4949cc0e75b0d0dbaebf0d1",
+      "outcomes": {
+        "candidate": 16
+      }
+    },
+    "vertex-vertex/rn": {
+      "available": 1000,
+      "tested": 16,
+      "sha256": "86de5bcb5efebb50b187f8466ec58a850021aae281be45e392445c28ae39e3d9",
+      "outcomes": {
+        "clear": 16
+      }
+    },
+    "vertex-vertex/nhp": {
+      "available": 100,
+      "tested": 16,
+      "sha256": "9c7a7aea6f5963bba6d6e61341797f79b05c434d7f19ca3e6fd251e5d67e1686",
+      "outcomes": {
+        "candidate": 16
+      }
+    },
+    "vertex-vertex/nmn": {
+      "available": 591,
+      "tested": 16,
+      "sha256": "960a5b93490b406bf9758fc840d37c7bd3ec6f5b8882a816f456ea3e5b23a368",
+      "outcomes": {
+        "clear": 16
+      }
+    }
+  },
+  "queries": [
+    {
+      "file": "face-face/rp",
+      "index": 187,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.8417409,
+      "fraction": 0.9999998513021496,
+      "uv_a": [
+        0.2506510416666667,
+        0.24918619791666666
+      ],
+      "uv_b": [
+        0.2506510416666667,
+        0.24967447916666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 562,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.5971157,
+      "fraction": 0.9999999773694807,
+      "uv_a": [
+        0.24690755208333334,
+        0.2527669270833333
+      ],
+      "uv_b": [
+        0.24918619791666666,
+        0.2506510416666667
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 937,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.8051819,
+      "fraction": 0.99999893116723,
+      "uv_a": [
+        0.2542317708333333,
+        0.24739583333333334
+      ],
+      "uv_b": [
+        0.24918619791666666,
+        0.2501627604166667
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 1313,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.2777822,
+      "fraction": 0.9999997422323675,
+      "uv_a": [
+        0.2503255208333333,
+        0.2503255208333333
+      ],
+      "uv_b": [
+        0.24983723958333334,
+        0.2503255208333333
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 1688,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.4404148,
+      "fraction": 0.9999999412647573,
+      "uv_a": [
+        0.24967447916666666,
+        0.2506510416666667
+      ],
+      "uv_b": [
+        0.24967447916666666,
+        0.24967447916666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 2063,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.5608408,
+      "fraction": 0.9999997774872792,
+      "uv_a": [
+        0.2521158854166667,
+        0.24674479166666666
+      ],
+      "uv_b": [
+        0.2503255208333333,
+        0.24983723958333334
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 2438,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.3687788,
+      "fraction": 0.9999966163475078,
+      "uv_a": [
+        0.4288736979166667,
+        0.4283854166666667
+      ],
+      "uv_b": [
+        0.4285481770833333,
+        0.4285481770833333
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 2813,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 1.7748713,
+      "fraction": 0.9999992905973459,
+      "uv_a": [
+        0.24837239583333334,
+        0.2503255208333333
+      ],
+      "uv_b": [
+        0.2503255208333333,
+        0.24983723958333334
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 3189,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 1.4564328,
+      "fraction": 0.9999987278378497,
+      "uv_a": [
+        0.4275716145833333,
+        0.4285481770833333
+      ],
+      "uv_b": [
+        0.2503255208333333,
+        0.2503255208333333
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 3564,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 1.0128013,
+      "fraction": 0.9999998785670416,
+      "uv_a": [
+        0.24967447916666666,
+        0.2511393229166667
+      ],
+      "uv_b": [
+        0.24967447916666666,
+        0.24967447916666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 3939,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.3478852,
+      "fraction": 0.9999998647015373,
+      "uv_a": [
+        0.2503255208333333,
+        0.24983723958333334
+      ],
+      "uv_b": [
+        0.24983723958333334,
+        0.2503255208333333
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 4314,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.415998,
+      "fraction": 0.9999999305671233,
+      "uv_a": [
+        0.24967447916666666,
+        0.2501627604166667
+      ],
+      "uv_b": [
+        0.24967447916666666,
+        0.2501627604166667
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 4689,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.6784044,
+      "fraction": 0.9999995596468957,
+      "uv_a": [
+        0.4283854166666667,
+        0.4283854166666667
+      ],
+      "uv_b": [
+        0.2501627604166667,
+        0.24918619791666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 5065,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 4.8350976,
+      "fraction": 0.9999407212466548,
+      "uv_a": [
+        0.2552083333333333,
+        0.2522786458333333
+      ],
+      "uv_b": [
+        0.2521158854166667,
+        0.24869791666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 5440,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 1.0515324,
+      "fraction": 0.999998671136557,
+      "uv_a": [
+        0.24690755208333334,
+        0.2517903645833333
+      ],
+      "uv_b": [
+        0.24967447916666666,
+        0.2501627604166667
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rp",
+      "index": 5815,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 1.6501972,
+      "fraction": 0.9999884220885842,
+      "uv_a": [
+        0.2513020833333333,
+        0.24983723958333334
+      ],
+      "uv_b": [
+        0.2506510416666667,
+        0.24967447916666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 187,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.6682458,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 562,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.5198079,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 937,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.5420178,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 1313,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.2872572,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 1688,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.4105254,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 2063,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.4409476,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 2438,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.3596039,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 2813,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.3402593,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 3189,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 1.0127137,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 3564,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.4088369,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 3939,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.3287087,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 4314,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.3587259,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 4689,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.2364991,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 5065,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.4343892,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 5440,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.5791091,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/rn",
+      "index": 5815,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.1386477,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 18,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.2643122,
+      "fraction": 0.9999999995914108,
+      "uv_a": [
+        0.2501627604166667,
+        0.24967447916666666
+      ],
+      "uv_b": [
+        0.2501627604166667,
+        0.24967447916666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 56,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0371505,
+      "fraction": 0.999588028120307,
+      "uv_a": [
+        0.6188151041666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.2848307291666667
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 93,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.1995585,
+      "fraction": 0.9734407180364413,
+      "uv_a": [
+        0.2589518229166667,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.3048502604166667,
+        0.12760416666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 131,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0209361,
+      "fraction": 0.9997564372581915,
+      "uv_a": [
+        0.6350911458333334,
+        0.016927083333333332
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 168,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.1236012,
+      "fraction": 0.9998203098371777,
+      "uv_a": [
+        0.00016276041666666666,
+        0.6710611979166666
+      ],
+      "uv_b": [
+        0.7389322916666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 206,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0467719,
+      "fraction": 0.9998197934781168,
+      "uv_a": [
+        0.4913736979166667,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.7688802083333334,
+        0.0003255208333333333
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 243,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0219378,
+      "fraction": 0.9979018861945435,
+      "uv_a": [
+        0.24104817708333334,
+        0.0003255208333333333
+      ],
+      "uv_b": [
+        0.2770182291666667,
+        0.7228190104166666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 281,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0262857,
+      "fraction": 0.9996851046688177,
+      "uv_a": [
+        0.011881510416666666,
+        0.9879557291666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.4503580729166667
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 318,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0249524,
+      "fraction": 0.9906763969187314,
+      "uv_a": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "uv_b": [
+        0.3172200520833333,
+        0.029134114583333332
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 356,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0161268,
+      "fraction": 0.9986618405798501,
+      "uv_a": [
+        0.038248697916666664,
+        0.3888346354166667
+      ],
+      "uv_b": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 393,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.5689632,
+      "fraction": 0.9999999974566924,
+      "uv_a": [
+        0.24967447916666666,
+        0.2501627604166667
+      ],
+      "uv_b": [
+        0.2506510416666667,
+        0.24967447916666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 431,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.2376217,
+      "fraction": 0.9964146638624264,
+      "uv_a": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "uv_b": [
+        0.059407552083333336,
+        0.4783528645833333
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 468,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.5324232,
+      "fraction": 0.9866838096134827,
+      "uv_a": [
+        0.4334309895833333,
+        0.3538411458333333
+      ],
+      "uv_b": [
+        0.2776692708333333,
+        0.4881184895833333
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 506,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.8858798,
+      "fraction": 0.9999999977890003,
+      "uv_a": [
+        0.2501627604166667,
+        0.24918619791666666
+      ],
+      "uv_b": [
+        0.24983723958333334,
+        0.24983723958333334
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 543,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 1.4947539,
+      "fraction": 0.999999977093235,
+      "uv_a": [
+        0.2552083333333333,
+        0.24397786458333334
+      ],
+      "uv_b": [
+        0.24967447916666666,
+        0.24967447916666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nhp",
+      "index": 581,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0352942,
+      "fraction": 0.9967214169781796,
+      "uv_a": [
+        0.23160807291666666,
+        0.7682291666666666
+      ],
+      "uv_b": [
+        0.7521158854166666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 18,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0116107,
+      "fraction": 0.3943256753196308,
+      "uv_a": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "uv_b": [
+        0.4469401041666667,
+        0.10367838541666667
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 56,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.1068114,
+      "fraction": 0.45844183353129975,
+      "uv_a": [
+        0.3194986979166667,
+        0.6803385416666666
+      ],
+      "uv_b": [
+        0.3019205729166667,
+        0.5680338541666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 93,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0612138,
+      "fraction": 0.3291041400496975,
+      "uv_a": [
+        0.4977213541666667,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.3922526041666667,
+        0.5211588541666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 131,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.6576403,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 168,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.3406906,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 206,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.2691987,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 243,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.2623383,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 281,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.6082376,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 318,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.549631,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 356,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.3320772,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 393,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.1696672,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 431,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.8435786,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 468,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0174604,
+      "fraction": 0.35244217410168915,
+      "uv_a": [
+        0.00016276041666666666,
+        0.14908854166666666
+      ],
+      "uv_b": [
+        0.9567057291666666,
+        0.043131510416666664
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 506,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.5986643,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 543,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.4906108,
+      "outcome": "clear"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 581,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.6126394,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 31,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0084903,
+      "fraction": 0.9999999999990002,
+      "uv_a": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 93,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0086296,
+      "fraction": 0.9999999999990004,
+      "uv_a": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 156,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0084241,
+      "fraction": 0.9999999999990002,
+      "uv_a": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 218,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0702856,
+      "fraction": 0,
+      "uv_a": [
+        0.3985188802083333,
+        0.058186848958333336
+      ],
+      "uv_b": [
+        0.10734049479166667,
+        0.10489908854166667
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 281,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0501705,
+      "fraction": 0,
+      "uv_a": [
+        0.050944010416666664,
+        0.6525065104166666
+      ],
+      "uv_b": [
+        0.026529947916666668,
+        0.7862955729166666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 343,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0087853,
+      "fraction": 0.9999999999990002,
+      "uv_a": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 406,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0090635,
+      "fraction": 0.9999999999990002,
+      "uv_a": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 468,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0155978,
+      "fraction": 0.9999999999987785,
+      "uv_a": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 531,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0079466,
+      "fraction": 0.9999999999990002,
+      "uv_a": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 593,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.008014,
+      "fraction": 0.999999999998937,
+      "uv_a": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "uv_b": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 656,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0082483,
+      "fraction": 0.9999999999990001,
+      "uv_a": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 718,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0084845,
+      "fraction": 0.9999999999990002,
+      "uv_a": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 781,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0082397,
+      "fraction": 0.9999999999990002,
+      "uv_a": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 843,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0076941,
+      "fraction": 0.9999999999990001,
+      "uv_a": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 906,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0081192,
+      "fraction": 0.9999999999990002,
+      "uv_a": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rp",
+      "index": 968,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0095771,
+      "fraction": 0.9999999999990002,
+      "uv_a": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 31,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 8.48e-05,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 93,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0009324,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 156,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0047201,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 218,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.012196,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 281,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0009479,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 343,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 9.74e-05,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 406,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0001024,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 468,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0012112,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 531,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0001474,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 593,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 9.37e-05,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 656,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 8.7e-05,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 718,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0008019,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 781,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 7.43e-05,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 843,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.003671,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 906,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0008377,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/rn",
+      "index": 968,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0023848,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 3,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0083647,
+      "fraction": 0.4999999999995001,
+      "uv_a": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 9,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0071415,
+      "fraction": 0.49999999999949996,
+      "uv_a": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 15,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0072101,
+      "fraction": 0.4999999999992077,
+      "uv_a": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 21,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0072466,
+      "fraction": 0.4999999999995002,
+      "uv_a": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "uv_b": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 28,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.007112,
+      "fraction": 0.49999999999806355,
+      "uv_a": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 34,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0069575,
+      "fraction": 0.4999999999989448,
+      "uv_a": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 40,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0071073,
+      "fraction": 0.4999999999995002,
+      "uv_a": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 46,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0069431,
+      "fraction": 0.4999999922299327,
+      "uv_a": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 53,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0074116,
+      "fraction": 0.4999999999990183,
+      "uv_a": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 59,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0074525,
+      "fraction": 0.49999999999950007,
+      "uv_a": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 65,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0091837,
+      "fraction": 0.4999999999993934,
+      "uv_a": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 71,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0073531,
+      "fraction": 0.499974492385464,
+      "uv_a": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 78,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0072379,
+      "fraction": 0.4999999826938081,
+      "uv_a": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "uv_b": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 84,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0138314,
+      "fraction": 0.4999999999995001,
+      "uv_a": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 90,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0076296,
+      "fraction": 0.49999999999950007,
+      "uv_a": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.9996744791666666,
+        0.00016276041666666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nhp",
+      "index": 96,
+      "label": 1,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0075597,
+      "fraction": 0.4999999999989503,
+      "uv_a": [
+        0.00016276041666666666,
+        0.00016276041666666666
+      ],
+      "uv_b": [
+        0.00016276041666666666,
+        0.9996744791666666
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 18,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.000847,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 55,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0017475,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 92,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0009005,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 129,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0009841,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 166,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0009184,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 203,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0008216,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 240,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0014171,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 277,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 6.91e-05,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 313,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0064714,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 350,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0014862,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 387,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0009224,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 424,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0014173,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 461,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 6.91e-05,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 498,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0057528,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 535,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0008035,
+      "outcome": "clear"
+    },
+    {
+      "file": "vertex-vertex/nmn",
+      "index": 572,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": false,
+      "query_s": 0.0001123,
+      "outcome": "clear"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "solver": "Chen et al. 2024 official TDIB-OBB",
+  "dataset": "Chen et al. 2026 TDIB-E",
+  "width": 5e-05,
+  "query_timeout_s": 120.0,
+  "exe_sha256": "afdc3bf278dcc3a9a3a75370fe4ec3a15e539e4369fb3e81dda8dee9118ca549",
+  "elapsed_s": 0.5160000000032596,
+  "files": {
+    "face-face/nmn": {
+      "available": 600,
+      "tested": 4,
+      "sha256": "e21982b4a28fa4803a371f9344ba88d48dcad46ff15344094bab2e19867e8813",
+      "outcomes": {
+        "candidate": 4
+      }
+    }
+  },
+  "queries": [
+    {
+      "file": "face-face/nmn",
+      "index": 18,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0195939,
+      "fraction": 0.394325699284442,
+      "uv_a": [
+        1.0172526041666666e-05,
+        0.9999796549479166
+      ],
+      "uv_b": [
+        0.4469197591145833,
+        0.10356648763020833
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 56,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.1871266,
+      "fraction": 0.45844196999079945,
+      "uv_a": [
+        0.3196512858072917,
+        0.6803385416666666
+      ],
+      "uv_b": [
+        0.3016255696614583,
+        0.5680135091145834
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 93,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.1098572,
+      "fraction": 0.3291043240913181,
+      "uv_a": [
+        0.4977213541666667,
+        1.0172526041666666e-05
+      ],
+      "uv_b": [
+        0.3920084635416667,
+        0.5214640299479166
+      ],
+      "outcome": "candidate"
+    },
+    {
+      "file": "face-face/nmn",
+      "index": 468,
+      "label": 0,
+      "max_coordinate_perturbation": 0.0,
+      "candidate": true,
+      "query_s": 0.0608158,
+      "fraction": 0.3524570718011796,
+      "uv_a": [
+        1.0172526041666666e-05,
+        0.14899698893229166
+      ],
+      "uv_b": [
+        0.9570719401041666,
+        0.042917887369791664
+      ],
+      "outcome": "candidate"
+    }
+  ]
+}

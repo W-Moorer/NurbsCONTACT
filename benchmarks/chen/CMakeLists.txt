@@ -15,6 +15,16 @@ add_executable(nc_chen_common common.cpp)
 target_include_directories(nc_chen_common SYSTEM PRIVATE "${TDIB_SOURCE_DIR}/core" "${EIGEN_INCLUDE_DIR}")
 target_link_libraries(nc_chen_common PRIVATE nurbscontact)
 
+add_executable(nc_chen_triangles triangles.cpp)
+target_compile_features(nc_chen_triangles PRIVATE cxx_std_20)
+target_include_directories(nc_chen_triangles SYSTEM PRIVATE "${TDIB_SOURCE_DIR}/core" "${EIGEN_INCLUDE_DIR}")
+if(MSVC)
+    set_property(TARGET nc_chen_triangles PROPERTY VS_GLOBAL_VcpkgEnabled false)
+    target_compile_options(nc_chen_triangles PRIVATE /fp:strict)
+else()
+    target_compile_options(nc_chen_triangles PRIVATE -fno-fast-math -ffp-contract=off)
+endif()
+
 # Generate an experimental variant from the pinned header. The common
 # linear benchmark still includes the official header directly.
 include(rotation_header.cmake)
