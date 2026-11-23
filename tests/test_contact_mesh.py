@@ -21,6 +21,10 @@ class ContactMeshTest(unittest.TestCase):
             mesh = Path(work) / "sphere.msh"
             coarse = prepare(sphere, mesh, .006)
             fine = prepare(sphere, mesh, .003)
+            parallel = prepare(sphere, Path(work) / "parallel.msh", .003, audit_workers=2)
+            self.assertEqual(fine["faces"], parallel["faces"])
+            self.assertEqual(fine["edges"], parallel["edges"])
+            self.assertEqual(fine["mesh_sha256"], parallel["mesh_sha256"])
             self.assertLess(fine["max_sampled_surface_error_m"], coarse["max_sampled_surface_error_m"])
             self.assertEqual(fine["mesh_sha256"], sha256(mesh))
             data = meshio.read(mesh)

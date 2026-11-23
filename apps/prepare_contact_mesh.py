@@ -1,9 +1,13 @@
 """Build a linear Gmsh contact surface in metres and audit it against the STEP faces."""
 
 import argparse
+from collections import deque
+from concurrent.futures import ProcessPoolExecutor
+from contextlib import nullcontext
 import hashlib
 import json
 import math
+import multiprocessing
 from pathlib import Path
 import tempfile
 import time
@@ -37,7 +41,7 @@ def check_topology(vertices, faces):
         raise ValueError(f"self-intersecting triangles {intersections[0].tolist()}")
 
 
-def face_quality(tag, triangles, element_ids):
+def surface_error(tag, triangles):
     edges = np.roll(triangles, -1, axis=1) - triangles
     area_vectors = np.cross(edges[:, 0], -edges[:, 2])
     lengths = np.linalg.norm(area_vectors, axis=1)
@@ -65,28 +69,74 @@ def face_quality(tag, triangles, element_ids):
         mesh_normals = np.repeat(normals[start:start + 1024], 4, axis=0)
         cos = np.einsum("ij,ij->i", mesh_normals, cad_normals) / cad_lengths
         max_angle = max(max_angle, float(np.degrees(np.arccos(np.clip(np.abs(cos), 0, 1))).max()))
-    qualities = np.asarray(gmsh.model.mesh.getElementQualities(element_ids, "minSICN"))
-    if not np.isfinite(qualities).all() or qualities.min() <= 0:
-        raise ValueError(f"non-positive element quality on face {tag}")
-    return dict(face=tag, triangles=len(triangles), min_angle_deg=float(min_angle),
-                min_sicn=float(qualities.min()), p05_sicn=float(np.quantile(qualities, .05)),
-                max_sampled_surface_error_m=max_error * .001, max_normal_angle_deg=max_angle)
+    return float(min_angle), max_error * .001, max_angle
 
 
-def audit():
+def open_step(step):
+    gmsh.option.setNumber("General.Terminal", 0)
+    gmsh.option.setNumber("General.NumThreads", 1)
+    gmsh.option.setString("Geometry.OCCTargetUnit", "MM")
+    gmsh.model.add("contact")
+    solids = gmsh.model.occ.importShapes(str(step.resolve()))
+    if not solids or any(dim != 3 for dim, _ in solids):
+        raise ValueError("contact mesh requires a STEP solid with a closed boundary")
+    gmsh.model.occ.synchronize()
+
+
+def cad_face_signature():
+    return [(tag, gmsh.model.getType(2, tag), gmsh.model.occ.getMass(2, tag),
+             gmsh.model.occ.getCenterOfMass(2, tag)) for _, tag in gmsh.model.getEntities(2)]
+
+
+def init_audit_worker(step, signature):
+    gmsh.initialize(readConfigFiles=False)
+    open_step(step)
+    if cad_face_signature() != signature:
+        raise ValueError("worker STEP geometry does not match the meshed body's face tags")
+
+
+def audit(step, workers):
     node_tags, coords, _ = gmsh.model.mesh.getNodes()
     order = np.argsort(node_tags)
     vertices = coords.reshape(-1, 3)[order]
     sorted_tags = node_tags[order]
     blocks, reports = [], []
-    for _, tag in gmsh.model.getEntities(2):
-        types = gmsh.model.mesh.getElementTypes(2, tag)
-        if list(types) != [2]:
-            raise ValueError(f"expected linear triangles on face {tag}, found {list(types)}")
-        element_ids, nodes = gmsh.model.mesh.getElementsByType(2, tag)
-        indices = np.searchsorted(sorted_tags, nodes).reshape(-1, 3)
-        blocks.append(indices)
-        reports.append(face_quality(tag, vertices[indices], element_ids))
+    def merge(row, values):
+        angle, error, normal = values
+        row["min_angle_deg"] = min(row["min_angle_deg"], angle)
+        row["max_sampled_surface_error_m"] = max(row["max_sampled_surface_error_m"], error)
+        row["max_normal_angle_deg"] = max(row["max_normal_angle_deg"], normal)
+
+    pool = (ProcessPoolExecutor(workers, mp_context=multiprocessing.get_context("spawn"),
+                                initializer=init_audit_worker, initargs=(step, cad_face_signature()))
+            if workers > 1 else nullcontext(None))
+    with pool as executor:
+        pending = deque()
+        for _, tag in gmsh.model.getEntities(2):
+            types = gmsh.model.mesh.getElementTypes(2, tag)
+            if list(types) != [2]:
+                raise ValueError(f"expected linear triangles on face {tag}, found {list(types)}")
+            element_ids, nodes = gmsh.model.mesh.getElementsByType(2, tag)
+            indices = np.searchsorted(sorted_tags, nodes).reshape(-1, 3)
+            blocks.append(indices)
+            qualities = gmsh.model.mesh.getElementQualities(element_ids, "minSICN")
+            if not np.isfinite(qualities).all() or qualities.min() <= 0:
+                raise ValueError(f"non-positive element quality on face {tag}")
+            row = dict(face=tag, triangles=len(indices), min_angle_deg=180.,
+                       min_sicn=float(qualities.min()), p05_sicn=float(np.quantile(qualities, .05)),
+                       max_sampled_surface_error_m=0., max_normal_angle_deg=0.)
+            reports.append(row)
+            for start in range(0, len(indices), 4096):
+                chunk = vertices[indices[start:start + 4096]]
+                if executor is None:
+                    merge(row, surface_error(tag, chunk))
+                else:
+                    pending.append((row, executor.submit(surface_error, tag, chunk)))
+                    if len(pending) >= 2 * workers:
+                        earlier, future = pending.popleft()
+                        merge(earlier, future.result())
+        for row, future in pending:
+            merge(row, future.result())
     faces = np.concatenate(blocks)
     check_topology(vertices, faces)
     volume_origin = vertices.mean(axis=0)
@@ -183,26 +233,21 @@ def refine_slender_faces(required_sicn, size_mm):
     return len(edge_counts)
 
 
-def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sicn=0.):
+def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sicn=0., audit_workers=1):
     limits = (size_m, max_error_m, max_normal_deg)
     if any(v is not None and (not math.isfinite(v) or v <= 0) for v in limits):
         raise ValueError("size and requested tolerances must be positive and finite")
     if not 0 <= min_sicn <= 1 or output.suffix.lower() != ".msh":
         raise ValueError("expected a .msh output and min-SICN between zero and one")
+    if not isinstance(audit_workers, int) or audit_workers < 1:
+        raise ValueError("expected a positive integer number of audit workers")
     start = time.perf_counter()
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=output.parent) as work:
         staged = Path(work) / "contact.msh"
         gmsh.initialize(readConfigFiles=False)
         try:
-            gmsh.option.setNumber("General.Terminal", 0)
-            gmsh.option.setNumber("General.NumThreads", 1)
-            gmsh.option.setString("Geometry.OCCTargetUnit", "MM")
-            gmsh.model.add("contact")
-            solids = gmsh.model.occ.importShapes(str(step.resolve()))
-            if not solids or any(dim != 3 for dim, _ in solids):
-                raise ValueError("contact mesh requires a STEP solid with a closed boundary")
-            gmsh.model.occ.synchronize()
+            open_step(step)
             gmsh.option.setNumber("Mesh.MeshSizeMax", size_m * 1000)
             gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", 24)
             gmsh.option.setNumber("Mesh.ElementOrder", 1)
@@ -218,7 +263,9 @@ def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sic
                     raise ValueError(f"mesh exceeds quality limits on face {tag}: minSICN "
                                      f"{qualities[worst]:.6g}, {np.count_nonzero(qualities < min_sicn)} "
                                      f"of {len(elements)} triangles below {min_sicn:.6g}")
-            report = audit()
+            audit_start = time.perf_counter()
+            report = audit(step, audit_workers)
+            audit_s = time.perf_counter() - audit_start
             sampled_error = max(report["max_sampled_surface_error_m"], report["max_sampled_edge_error_m"])
             if ((max_error_m is not None and sampled_error > max_error_m)
                     or (max_normal_deg is not None and report["max_normal_angle_deg"] > max_normal_deg)
@@ -236,7 +283,7 @@ def prepare(step, output, size_m, max_error_m=None, max_normal_deg=None, min_sic
         report.update(step_sha256=sha256(step), mesh_sha256=sha256(staged), gmsh_version=gmsh.__version__,
                       length_unit="m", mesh_size_m=size_m, requested_max_sampled_error_m=max_error_m,
                       requested_max_normal_angle_deg=max_normal_deg, requested_min_sicn=min_sicn,
-                      locally_refined_edges=refined_edges,
+                      locally_refined_edges=refined_edges, audit_workers=audit_workers, audit_s=audit_s,
                       preparation_s=time.perf_counter() - start)
         metadata = Path(work) / "quality.json"
         metadata.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")
@@ -253,6 +300,8 @@ if __name__ == "__main__":
     parser.add_argument("--max-error-m", type=float, help="maximum sampled distance to CAD faces and edges")
     parser.add_argument("--max-normal-deg", type=float)
     parser.add_argument("--min-sicn", type=float, default=0.)
+    parser.add_argument("--audit-workers", type=int, default=1, help="independent processes for CAD projections")
     args = parser.parse_args()
-    result = prepare(args.step, args.output, args.size_m, args.max_error_m, args.max_normal_deg, args.min_sicn)
+    result = prepare(args.step, args.output, args.size_m, args.max_error_m, args.max_normal_deg, args.min_sicn,
+                     args.audit_workers)
     print(json.dumps({k: v for k, v in result.items() if k not in ("faces", "edges")}, allow_nan=False))
