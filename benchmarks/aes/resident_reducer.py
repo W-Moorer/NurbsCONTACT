@@ -44,9 +44,9 @@ def prepare(work, tolerance):
     equations(work)
 
 
-def equations(work, h=0.000125, duration=3.0):
+def equations(work, h=0.000125, duration=3.0, scene=None):
     """Convert the existing mechanism's loads to corrections about nominal joint motion."""
-    lines = iter((work / "reducer.scene").read_text().splitlines())
+    lines = iter((scene or work / "reducer.scene").read_text().splitlines())
     next(lines)
     n, nb, npairs = map(int, next(lines).split()[-3:])
     coords = np.array([list(map(float, next(lines).split()[1:])) for _ in range(n)])
@@ -79,7 +79,7 @@ def equations(work, h=0.000125, duration=3.0):
     if next(lines) != "drives 0":
         raise ValueError("Expected free shafts")
     t = np.arange(round(duration / h) + 1) * h
-    loads = coords[:, 6] - coords[:, 4] * coords[:, 2] - t[:, None] * coords[:, 2] * coords[:, 3]
+    loads = coords[:, 6] + coords[:, 3] * coords[:, 5] - coords[:, 4] * coords[:, 2] - t[:, None] * coords[:, 2] * coords[:, 3]
     for _ in range(int(next(lines).split()[1])):
         _, j, count = next(lines).split()
         samples = np.array([list(map(float, next(lines).split())) for _ in range(int(count))])

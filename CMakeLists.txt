@@ -8,6 +8,10 @@ if(CMAKE_GENERATOR MATCHES "^Visual Studio")
 endif()
 
 include(CTest)
+# Optional synchronous host/GPU benchmark. The exchange helper has no CUDA link dependency.
+add_library(nc_hinge_exchange SHARED EXCLUDE_FROM_ALL benchmarks/aes/hinge_exchange.cpp)
+target_compile_features(nc_hinge_exchange PRIVATE cxx_std_20)
+
 option(NC_WITH_OCCT "Build STEP import and CAD benchmarks with Open CASCADE" ON)
 option(NC_WITH_CPU_MESH "Build the FCL / CGAL triangle contact backend" OFF)
 option(NC_WITH_MESH_CCD "Include swept triangle CCD when building the CPU mesh backend" ON)

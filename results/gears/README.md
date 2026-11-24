@@ -30,11 +30,11 @@ The model images use triangulations of the output STEP solids and translations/r
 | Gear dynamics and performance | [Force and transmission error](figures/gear-dynamics.pdf) · [Cost and faceting](figures/gear-cost-accuracy.pdf) · [Axial refinement](figures/gear-axial-refinement.pdf) |
 | Long reducer test | [Contact loads and gap envelopes](figures/reducer-duty.pdf) |
 | Bearing | [Roller forces and orbit](bearing/figures/bearing-loads.pdf) |
-| Spur | [Isometric](animations/spur-isometric.mp4) · [Face](animations/spur-face.mp4) |
-| Helical | [Isometric](animations/helical-isometric.mp4) · [Face](animations/helical-face.mp4) |
-| NASA-rig geometry | [Isometric](animations/rig28-isometric.mp4) · [Face](animations/rig28-face.mp4) |
-| Two-stage reducer | [Isometric](animations/reducer-isometric.mp4) · [Face](animations/reducer-face.mp4) |
-| Cylindrical roller bearing | [Isometric](bearing/animations/bearing-isometric.mp4) · [Face](bearing/animations/bearing-face.mp4) |
+| Spur | [Isometric](animations/spur-isometric.mp4) |
+| Helical | [Isometric](animations/helical-isometric.mp4) |
+| NASA-rig geometry | [Isometric](animations/rig28-isometric.mp4) |
+| Two-stage reducer | [Isometric](animations/reducer-isometric.mp4) |
+| Cylindrical roller bearing | [Isometric](bearing/animations/bearing-isometric.mp4) |
 
 [Gear animation index](animations/index.json) · [Bearing animation index](bearing/animations/index.json)
 

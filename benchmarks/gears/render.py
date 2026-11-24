@@ -203,7 +203,7 @@ def main():
                 points=[(row[f"station{i}_mm"],row[f"z{i}_mm"]) for i in range(stages)]
                 img=assembly.frame(row["time"],[row[f"q{i}"] for i in range(stages+1)],points)
                 img.save(png/f"{case}-{view}.png")
-                if not args.pictures_only:
+                if not args.pictures_only and view=="isometric":
                     reserve_caption(assembly.plotter)
                     path=mp4/f"{case}-{view}.mp4"
                     frames,start,final=movie(path,assembly,case,view,trace,8,args.fps)

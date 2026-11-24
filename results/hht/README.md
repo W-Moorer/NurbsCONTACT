@@ -47,6 +47,6 @@ The videos reconstruct the poses from the recorded HHT trajectory. Contact force
 
 | Scene | Simulated duration | Views |
 |---|---:|---|
-| Single-ball impact | 0.2 s | [Isometric](animations/drop-isometric.mp4) · [Side](animations/drop-side.mp4) |
-| Coupled cam and follower array | 120 s | [Isometric](animations/cam-array-isometric.mp4) · [Front](animations/cam-array-front.mp4) |
-| Driven ball train | 60 s | [Isometric](animations/ball-train-isometric.mp4) · [Top](animations/ball-train-top.mp4) |
+| Single-ball impact | 0.2 s | [Isometric](animations/drop-isometric.mp4) |
+| Coupled cam and follower array | 120 s | [Isometric](animations/cam-array-isometric.mp4) |
+| Driven ball train | 60 s | [Isometric](animations/ball-train-isometric.mp4) |

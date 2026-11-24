@@ -9,7 +9,7 @@ import av
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from render import Assembly, SIZE, VIEWS, annotation, reserve_caption
+from render import Assembly, SIZE, annotation, reserve_caption
 
 from compare import NASA, read
 
@@ -28,7 +28,7 @@ def render(root, case):
     base = .003175*14*np.cos(np.radians(20))
     pitch_projection_mm = 44.45*np.sin(np.radians(20))
     outputs = []
-    for view in VIEWS:
+    for view in ("isometric",):
         assembly = Assembly(root.parent, model, view)
         path = folder/f"nasa-{case}-{view}.mp4"
         try:

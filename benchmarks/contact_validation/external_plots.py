@@ -197,9 +197,7 @@ def main():
         trial = next(val for key, val in trials.items() if key[:2] == (3, "x+3"))
         summary = json.loads((root / "insertion/summary.json").read_text(encoding="utf-8"))
         stop = summary["identified_stop_relative_to_command_target_m"]["x+3"]
-        slider_animation(trace, directory / "clearance-slider-plan.mp4", 90, -90)
         slider_animation(trace, directory / "clearance-slider-isometric.mp4", 28, -60)
-        ring_animation(trial, stop, directory / "copper-ring-front.mp4", 8, -90)
         ring_animation(trial, stop, directory / "copper-ring-isometric.mp4", 29, -57)
 
 

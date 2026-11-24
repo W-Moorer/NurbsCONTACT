@@ -23,7 +23,7 @@ The published rig mounts the sleeve on the rod and the journal on the slider. Th
 - [Per-condition and per-backend metrics](clearance/summary.json) · [Travel and acceleration comparison](figures/clearance-slider-validation.pdf)
 - [200 rpm and 0.25 mm acceleration samples](clearance/paired-200rpm-0.25mm-brep.csv) · [Position samples](clearance/position-200rpm-0.25mm-brep.csv)
 - [STEP fixtures and scene decks](clearance/models)
-- [Plan-view animation](animations/clearance-slider-plan.mp4) · [Isometric animation](animations/clearance-slider-isometric.mp4)
+- [Isometric animation](animations/clearance-slider-isometric.mp4)
 
 ### Dissipation and compliance revision
 
@@ -301,7 +301,7 @@ The 150 held-out trials give 2.11 N waveform RMSE, against 3.01 N for zero force
 
 - [Held-out metrics and fitted parameters](insertion/summary.json) · [Paired data for all 300 trials](insertion/paired.csv)
 - [Axial STEP fixtures and representative replay deck](insertion/models)
-- [Measured and computed axial force](figures/copper-ring-validation.pdf) · [Front animation](animations/copper-ring-front.mp4) · [Isometric animation](animations/copper-ring-isometric.mp4)
+- [Measured and computed axial force](figures/copper-ring-validation.pdf) · [Isometric animation](animations/copper-ring-isometric.mp4)
 
 ## Reproduce
 

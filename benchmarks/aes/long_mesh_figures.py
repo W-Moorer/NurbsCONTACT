@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+from rigid_movie import render_reducer_animation
 
 import matplotlib
 matplotlib.use("Agg")
@@ -263,59 +264,6 @@ def plot(work, out):
 def animate(work,out):
     with np.load(out/"responses.npz") as d:
         render_reducer_animation(work/"deck",out/"reducer.mp4",d["shaft_angle_rad"],d["stage_load_N"],d["time_s"])
-
-
-def render_reducer_animation(deck, video, angle, force, t, title="Two-stage reducer  |  transverse mesh sections"):
-    import cv2
-    import imageio.v2 as io
-    import trimesh
-    with np.load(deck/"assembly.npz") as d:
-        bodies,pairs,mapping=(d[k] for k in ("bodies","pairs","mapping"))
-    parts=json.loads((deck/"models.json").read_text())["parts"]
-    cuts=[]
-    for part in parts:
-        with np.load(deck/part["archive"]) as d:
-            nodes,faces=np.unique(d["tri"].reshape(-1,3),axis=0,return_inverse=True)
-        mesh=trimesh.Trimesh(nodes,faces.reshape(-1,3),process=False)
-        plane=mesh.section(plane_normal=[0,0,1],plane_origin=mesh.bounds.mean(axis=0))
-        loops=[p[:,:2] for p in plane.discrete]
-        if not loops: raise ValueError("missing transverse mesh section")
-        cuts.append(loops)
-    fps=50
-    overview=np.arange(0,len(t),50)
-    detail=np.arange(1000,1201)
-    panels=((0,530),(531,1060))
-    dark=(33,52,66)
-    def label(frame,text,x,y,size=.53):
-        cv2.putText(frame,text,(x,y),cv2.FONT_HERSHEY_SIMPLEX,size,dark,1,cv2.LINE_AA)
-    with io.get_writer(video,fps=fps,codec="libx264",quality=8,macro_block_size=1,
-                       ffmpeg_log_level="error",output_params=["-pix_fmt","yuv420p"]) as writer:
-        for mode, ids in (("Full 5 s / 0.25x playback",overview),("Loading detail / 0.005x playback",detail)):
-            for idx in ids:
-                frame=np.full((460,1060,3),250,np.uint8)
-                label(frame,title,24,34,.77)
-                label(frame,f"{mode}     t = {t[idx]:.4f} s",24,63,.53)
-                for stage,(first,last) in enumerate(panels):
-                    pair=pairs[stage]
-                    origins=bodies[pair,4]
-                    radii=[max(np.linalg.norm(p,axis=1).max() for p in cuts[i]) for i in pair]
-                    lo,hi=origins[0]-radii[0],origins[1]+radii[1]
-                    scale=min((last-first-54)/(hi-lo),270/(2*max(radii)))
-                    y0=236
-                    for side,i in enumerate(pair):
-                        phi=bodies[i,3]*(angle[idx,mapping[i]]+bodies[i,7])
-                        c,s=np.cos(phi),np.sin(phi)
-                        rot=np.array([[c,-s],[-s,-c]])
-                        x0=(first+last)/2+(origins[side]-(lo+hi)/2)*scale
-                        xy=[np.rint(p@rot*scale+[x0,y0]).astype(np.int32) for p in cuts[i]]
-                        cv2.fillPoly(frame,xy,((112,170,177),(224,164,112))[side],cv2.LINE_AA)
-                        cv2.polylines(frame,xy,True,dark,1,cv2.LINE_AA)
-                        end=(round(x0+.8*radii[side]*scale*c),round(y0-.8*radii[side]*scale*s))
-                        cv2.line(frame,(round(x0),y0),end,dark,2,cv2.LINE_AA)
-                    label(frame,f"Stage {stage+1}   |   normal load  {force[idx,stage]/1000:.2f} kN",first+30,405,.56)
-                cv2.line(frame,(25,435),(1035,435),(208,216,221),2)
-                cv2.circle(frame,(25+round(1010*t[idx]/5),435),5,dark,-1)
-                writer.append_data(frame)
 
 
 if __name__=="__main__":

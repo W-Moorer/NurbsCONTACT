@@ -1,0 +1,37 @@
+[
+  {
+    "stage": 1,
+    "full_bvh_poses": 231,
+    "reference_crossing_pairs": 15449,
+    "missing": 0,
+    "extra": 0,
+    "exact_cpu_geometry_poses": 204,
+    "region_count_range": [
+      0,
+      2
+    ],
+    "same_pose_normal_load_rms_N": 42.78085404172746,
+    "worst_time_s": 0.0024000000000000002,
+    "worst_exact_load_N": 1418.63771080203,
+    "worst_online_load_N": 1409.5628766384825
+  },
+  {
+    "stage": 2,
+    "full_bvh_poses": 231,
+    "reference_crossing_pairs": 52453,
+    "missing": 0,
+    "extra": 0,
+    "exact_cpu_geometry_poses": 204,
+    "region_count_range": [
+      0,
+      9
+    ],
+    "same_pose_normal_load_rms_N": 121.89680830309631,
+    "worst_time_s": 0.0024000000000000002,
+    "worst_exact_load_N": 2999.2304976751298,
+    "worst_online_load_N": 2966.8769821129413,
+    "worst_same_gpu_pose_cpu_torque_Nm": 185.88928807168583,
+    "worst_online_torque_Nm": 183.85156471038303,
+    "worst_cpu_trajectory_torque_Nm": 61.61389876990013
+  }
+]

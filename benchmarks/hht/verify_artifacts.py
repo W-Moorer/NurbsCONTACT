@@ -80,25 +80,25 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("results", type=Path)
     parser.add_argument("previews", type=Path)
+    parser.add_argument("--videos-only", action="store_true", help="Decode the animation collection")
     args = parser.parse_args()
     root, qa = args.results, args.previews
     qa.mkdir(exist_ok=True, parents=True)
     entries = json.loads((root/"animations"/"index.json").read_text(encoding="utf-8"))
-    assert len(entries) == 6 and len({e["file"] for e in entries}) == 6
+    assert sorted(e["scene"] for e in entries) == ["ball-train", "cam-array", "drop"]
+    assert all(e["view"] == "isometric" for e in entries)
     items = []
     videos = []
-    views = {}
     for entry in entries:
         frames, result = verify_video(root, entry)
         videos.append(result)
         scene = entry["scene"]
-        views.setdefault(scene, []).append(np.asarray(frames[0], dtype=float)[83:-9])
         for name, image in zip(("start", "one third", "two thirds", "end"), frames, strict=True):
             items.append((f"{scene} / {entry['view']} / {name}", image))
-    for scene, frames in views.items():
-        assert len(frames) == 2 and np.mean(np.abs(frames[0]-frames[1])) > 0.25, scene
     sheet(items, (310, 174), 4, qa/"animations.png")
-    stats = {"paper_pages": verify_paper(root, qa), "videos": videos}
+    stats = {"videos": videos}
+    if not args.videos_only:
+        stats["paper_pages"] = verify_paper(root, qa)
     (qa/"verification.json").write_text(json.dumps(stats, indent=2)+"\n", encoding="utf-8")
     print(json.dumps(stats, indent=2))
 

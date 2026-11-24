@@ -42,3 +42,5 @@ python benchmarks/aes/cpu_backend_run.py build/reducer-physical/finalbin/nc_cont
 ```
 
 移除 `--spectral-radius 0` 即为原 HHT 的接触修正对照。增加 `--substeps-per-output 2` 将内部步长减半，仍每 0.1 ms 输出一次。[生成对照图与指标](../../../../../benchmarks/aes/reducer_repair_comparison.py) · [固定姿态与独立几何核验](../../../../../benchmarks/aes/reducer_contact_count_audit.py)
+
+同一网格与载荷的 GPU 独立积分涵盖 0–5 s。[逐步交互耗时、完整响应与三维动画](../../../gpu-hinge-mesh/README.md)

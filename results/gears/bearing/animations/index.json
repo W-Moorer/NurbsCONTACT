@@ -11,18 +11,5 @@
     "width": 960,
     "height": 540,
     "source": "runs/cad.csv"
-  },
-  {
-    "file": "bearing-face.mp4",
-    "case": "bearing",
-    "view": "face",
-    "physical_s": 0.04999999999999999,
-    "starting_s": 0.155,
-    "video_s": 6,
-    "frames": 144,
-    "fps": 24,
-    "width": 960,
-    "height": 540,
-    "source": "runs/cad.csv"
   }
 ]

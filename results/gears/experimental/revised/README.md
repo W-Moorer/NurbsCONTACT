@@ -27,7 +27,7 @@ The 0.25 µs check of 7(b) changes the nominal B-rep trace by 1.33 N RMS. The au
 
 [Calibrated metrics](static-matched/summary.json) · [Calibration grid](static-matched/static-calibration/grid.json) · [Beam model metrics](summary.json) · [Modal sensitivity](modal-sensitivity/summary.json) · [Dynamic force](static-matched/figures/nasa-revised-force.pdf) · [Quasi-static load shares](static-matched/figures/nasa-revised-statics.pdf) · [Profile comparison](static-matched/figures/nasa-revised-profile.pdf) · [Paper](../../paper/industrial.pdf)
 
-[Isometric animation](static-matched/animations/nasa-b-isometric.mp4) · [Face-on animation](static-matched/animations/nasa-b-face.mp4)
+[Isometric animation](static-matched/animations/nasa-b-isometric.mp4)
 
 ## Reproduce
 

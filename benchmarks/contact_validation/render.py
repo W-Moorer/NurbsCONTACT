@@ -17,7 +17,7 @@ from run import read_csv
 
 
 SIZE=(960,540)
-VIEWS={"isometric":(1.,-1.6,.9),"side":(0.,-1.,0.)}
+VIEWS={"isometric":(1.,-1.6,.9)}
 
 
 def read_geometry(scene):

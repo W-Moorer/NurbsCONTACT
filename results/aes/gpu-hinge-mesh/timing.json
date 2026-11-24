@@ -1,0 +1,38 @@
+{
+  "device": "NVIDIA GeForce RTX 3070",
+  "method": "mesh-wrench",
+  "steps": 50000,
+  "step_s": 0.0001,
+  "physical_s": 5.0,
+  "online_wall_s": 2.664298900000176,
+  "setup_s": 4.253454900000179,
+  "geometry_preparation_s": 599.5964147999998,
+  "step_us_p50_p95_p99_max": [
+    50.176,
+    64.512,
+    99.328,
+    1623.04
+  ],
+  "steps_over_budget": 467,
+  "newton_max": 8,
+  "peak_output_Nm": 430.1539888047983,
+  "mean_output_Nm": 137.8042549657779,
+  "phases": 2048,
+  "layers": 33,
+  "geometry_windows": 4096,
+  "warps_per_pair": 4,
+  "window_cache_bytes": 257826488,
+  "window_preparation_s": [
+    6.815165399999387,
+    5.473490100000163
+  ],
+  "geometry_file_bytes": 1630190,
+  "delivery": "synchronous mapped command and wrench exchange per step",
+  "host_step_us_p50_p95_p99_max": [
+    50.2,
+    63.4,
+    98.7010000000002,
+    1661.9
+  ],
+  "host_steps_over_budget": 442
+}

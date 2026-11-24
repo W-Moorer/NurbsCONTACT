@@ -1,0 +1,31 @@
+{
+  "device": "NVIDIA GeForce RTX 3070",
+  "method": "mesh-anchors",
+  "steps": 50000,
+  "step_s": 0.0001,
+  "physical_s": 5.0,
+  "online_wall_s": 4.573811000000205,
+  "setup_s": 1.5830617999999959,
+  "geometry_preparation_s": 384.6365321000003,
+  "step_us_p50_p95_p99_max": [
+    81.92,
+    138.24,
+    150.528,
+    1677.312
+  ],
+  "steps_over_budget": 13265,
+  "newton_max": 8,
+  "peak_output_Nm": 418.21026679881857,
+  "mean_output_Nm": 137.80438994391767,
+  "phases": 2048,
+  "layers": 17,
+  "geometry_windows": 4096,
+  "warps_per_pair": 4,
+  "window_cache_bytes": 257826488,
+  "window_preparation_s": [
+    6.815165399999387,
+    5.473490100000163
+  ],
+  "geometry_file_bytes": 7669149,
+  "delivery": "device-resident trajectory"
+}

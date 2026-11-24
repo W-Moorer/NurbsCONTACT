@@ -15,7 +15,7 @@ CPU 与 RecurDyn 各自从初态积分 5 s。主步长与输出间隔均为 0.1 
 
 [全程输出轴扭矩](full-output-torque.png)（[矢量图](full-output-torque.pdf)）展示同一纵轴范围内两条原始曲线。底图单列每 10 ms 的时间均值，按原始轨迹作梯形积分。两者全程最大正向扭矩分别在 2.9 ms 和 1.7 ms 出现。4–5 s 内 CPU 峰值为 529.42 N·m，同网格 RecurDyn 峰值为 241.10 N·m。两个峰值各取本方法自己的峰时。全程逐时刻输出扭矩 RMS 差为 71.87 N·m，两个方法的平均载荷接近，同时瞬态响应存在明显差异。
 
-[全程三轴转速与两级传动误差](full-shaft-responses.png)（[矢量图](full-shaft-responses.pdf)）的每行共用纵轴范围，均保留 0.1 ms 采样。[整段角冲量与输出轴速度差](duty-responses.png) · [102–114 ms 局部放大图](brake-responses.png) · [5 s 实际姿态网格截面动画](reducer.mp4)
+[全程三轴转速与两级传动误差](full-shaft-responses.png)（[矢量图](full-shaft-responses.pdf)）的每行共用纵轴范围，均保留 0.1 ms 采样。[整段角冲量与输出轴速度差](duty-responses.png) · [102–114 ms 局部放大图](brake-responses.png) · [5 s 实际姿态三维斜视动画](reducer.mp4)
 
 ## 误差来源与已做的修改
 

@@ -150,7 +150,7 @@ def main():
         painter=BearingPainter(root,view,float(np.max(cad["peak_roller_N"])))
         try:
             painter.image(row).save(images/f"bearing-{view}.png")
-            if not args.pictures_only:
+            if not args.pictures_only and view=="isometric":
                 reserve_caption(painter.plotter)
                 path=movies/f"bearing-{view}.mp4"
                 entries.append(video(path,painter,view,cad))

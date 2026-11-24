@@ -353,7 +353,7 @@ def compare(work, out, cad_name, mesh_name, controls, animate=False):
             angle,
             cad["load"],
             t,
-            "CAD patch dynamics  |  transverse mesh sections",
+            "CAD patch dynamics  |  Two-stage reducer",
         )
 
 

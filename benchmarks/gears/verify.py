@@ -6,7 +6,6 @@ import sys
 from pathlib import Path
 
 import fitz
-import numpy as np
 from PIL import Image
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"hht"))
@@ -37,19 +36,16 @@ def main():
     args.previews.mkdir(exist_ok=True,parents=True)
     videos=[]
     panels=[]
-    views={}
-    for root,expected in ((args.results,8),(args.results/"bearing",2)):
+    for root,expected in ((args.results,{"spur","helical","rig28","reducer"}),(args.results/"bearing",{"bearing"})):
         entries=json.loads((root/"animations"/"index.json").read_text(encoding="utf-8"))
-        assert len(entries)==expected
+        assert sorted(e["case"] for e in entries)==sorted(expected)
+        assert all(e["view"]=="isometric" for e in entries)
         for entry in entries:
             frames,stats=verify_video(root,entry)
             videos.append(stats)
-            views.setdefault(entry["case"],[]).append(np.asarray(frames[0],dtype=float)[83:-9])
+            assert (args.results/"assemblies"/(entry["case"]+".step")).is_file()
             for name,frame in zip(("start","one third","two thirds","end"),frames,strict=True):
                 panels.append((f"{entry['case']} / {entry['view']} / {name}",frame))
-    for scene,frames in views.items():
-        assert len(frames)==2 and np.mean(np.abs(frames[0]-frames[1]))>.25,scene
-        assert (args.results/"assemblies"/f"{scene}.step").is_file(),scene
     sheet(panels,(290,163),4,args.previews/"animations.png")
     pictures=[]
     gear_folder=args.results/"figures"

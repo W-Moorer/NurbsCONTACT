@@ -210,7 +210,7 @@ def main():
             try:
                 frame=painter.image(sample(trace,[time])[0])
                 Image.fromarray(frame).save(images/f"{name}-{view}.png")
-                if not args.pictures_only:
+                if not args.pictures_only and view=="isometric":
                     path=animations/f"{name}-{view}.mp4"
                     count=movie(path,painter,trace,title,view,seconds,args.fps)
                     index.append({"file":path.name,"scene":name,"view":view,

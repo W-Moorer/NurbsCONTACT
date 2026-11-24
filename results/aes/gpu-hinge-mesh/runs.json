@@ -1,0 +1,286 @@
+{
+  "resident": [
+    {
+      "device": "NVIDIA GeForce RTX 3070",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "online_wall_s": 2.174152700000377,
+      "setup_s": 4.209737400000449,
+      "geometry_preparation_s": 599.5964147999998,
+      "step_us_p50_p95_p99_max": [
+        40.96,
+        51.2,
+        86.02624000000209,
+        1599.488
+      ],
+      "steps_over_budget": 199,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.8042549657779,
+      "phases": 2048,
+      "layers": 33,
+      "geometry_windows": 4096,
+      "warps_per_pair": 4,
+      "window_cache_bytes": 257826488,
+      "window_preparation_s": [
+        6.815165399999387,
+        5.473490100000163
+      ],
+      "geometry_file_bytes": 1630190,
+      "delivery": "device-resident trajectory"
+    },
+    {
+      "device": "NVIDIA GeForce RTX 3070",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "online_wall_s": 2.1905657999996038,
+      "setup_s": 1.2935476999991806,
+      "geometry_preparation_s": 599.5964147999998,
+      "step_us_p50_p95_p99_max": [
+        40.96,
+        51.2,
+        87.04,
+        1611.776
+      ],
+      "steps_over_budget": 210,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.8042549657779,
+      "phases": 2048,
+      "layers": 33,
+      "geometry_windows": 4096,
+      "warps_per_pair": 4,
+      "window_cache_bytes": 257826488,
+      "window_preparation_s": [
+        6.815165399999387,
+        5.473490100000163
+      ],
+      "geometry_file_bytes": 1630190,
+      "delivery": "device-resident trajectory"
+    },
+    {
+      "device": "NVIDIA GeForce RTX 3070",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "online_wall_s": 2.190414300000157,
+      "setup_s": 1.2940147999997862,
+      "geometry_preparation_s": 599.5964147999998,
+      "step_us_p50_p95_p99_max": [
+        40.96,
+        51.2,
+        87.04,
+        1610.752
+      ],
+      "steps_over_budget": 211,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.8042549657779,
+      "phases": 2048,
+      "layers": 33,
+      "geometry_windows": 4096,
+      "warps_per_pair": 4,
+      "window_cache_bytes": 257826488,
+      "window_preparation_s": [
+        6.815165399999387,
+        5.473490100000163
+      ],
+      "geometry_file_bytes": 1630190,
+      "delivery": "device-resident trajectory"
+    }
+  ],
+  "exchange": [
+    {
+      "device": "NVIDIA GeForce RTX 3070",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "online_wall_s": 2.664298900000176,
+      "setup_s": 4.253454900000179,
+      "geometry_preparation_s": 599.5964147999998,
+      "step_us_p50_p95_p99_max": [
+        50.176,
+        64.512,
+        99.328,
+        1623.04
+      ],
+      "steps_over_budget": 467,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.8042549657779,
+      "phases": 2048,
+      "layers": 33,
+      "geometry_windows": 4096,
+      "warps_per_pair": 4,
+      "window_cache_bytes": 257826488,
+      "window_preparation_s": [
+        6.815165399999387,
+        5.473490100000163
+      ],
+      "geometry_file_bytes": 1630190,
+      "delivery": "synchronous mapped command and wrench exchange per step",
+      "host_step_us_p50_p95_p99_max": [
+        50.2,
+        63.4,
+        98.7010000000002,
+        1661.9
+      ],
+      "host_steps_over_budget": 442
+    },
+    {
+      "device": "NVIDIA GeForce RTX 3070",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "online_wall_s": 2.669784699999582,
+      "setup_s": 1.2881609000005483,
+      "geometry_preparation_s": 599.5964147999998,
+      "step_us_p50_p95_p99_max": [
+        50.176,
+        64.512,
+        99.328,
+        1623.04
+      ],
+      "steps_over_budget": 473,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.8042549657779,
+      "phases": 2048,
+      "layers": 33,
+      "geometry_windows": 4096,
+      "warps_per_pair": 4,
+      "window_cache_bytes": 257826488,
+      "window_preparation_s": [
+        6.815165399999387,
+        5.473490100000163
+      ],
+      "geometry_file_bytes": 1630190,
+      "delivery": "synchronous mapped command and wrench exchange per step",
+      "host_step_us_p50_p95_p99_max": [
+        50.2,
+        63.5,
+        98.3,
+        1686.5
+      ],
+      "host_steps_over_budget": 440
+    },
+    {
+      "device": "NVIDIA GeForce RTX 3070",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "online_wall_s": 2.6613767999997435,
+      "setup_s": 1.3645329000000856,
+      "geometry_preparation_s": 599.5964147999998,
+      "step_us_p50_p95_p99_max": [
+        50.176,
+        64.512,
+        98.304,
+        1623.04
+      ],
+      "steps_over_budget": 446,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.8042549657779,
+      "phases": 2048,
+      "layers": 33,
+      "geometry_windows": 4096,
+      "warps_per_pair": 4,
+      "window_cache_bytes": 257826488,
+      "window_preparation_s": [
+        6.815165399999387,
+        5.473490100000163
+      ],
+      "geometry_file_bytes": 1630190,
+      "delivery": "synchronous mapped command and wrench exchange per step",
+      "host_step_us_p50_p95_p99_max": [
+        50.2,
+        63.4,
+        97.6010000000002,
+        1685.0
+      ],
+      "host_steps_over_budget": 426
+    }
+  ],
+  "copy": [
+    {
+      "device": "NVIDIA GeForce RTX 3070",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "online_wall_s": 8.95536170000014,
+      "setup_s": 1.353723600000194,
+      "geometry_preparation_s": 599.5964147999998,
+      "step_us_p50_p95_p99_max": [
+        50.176,
+        69.632,
+        110.592,
+        1611.776
+      ],
+      "steps_over_budget": 848,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.8042549657779,
+      "phases": 2048,
+      "layers": 33,
+      "geometry_windows": 4096,
+      "warps_per_pair": 4,
+      "window_cache_bytes": 257826488,
+      "window_preparation_s": [
+        6.815165399999387,
+        5.473490100000163
+      ],
+      "geometry_file_bytes": 1630190,
+      "delivery": "one load upload and one wrench download per step",
+      "host_step_us_p50_p95_p99_max": [
+        169.8,
+        229.4,
+        288.2020000000004,
+        2285.3
+      ],
+      "host_steps_over_budget": 50000
+    }
+  ],
+  "anchors": [
+    {
+      "device": "NVIDIA GeForce RTX 3070",
+      "method": "mesh-anchors",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "online_wall_s": 4.573811000000205,
+      "setup_s": 1.5830617999999959,
+      "geometry_preparation_s": 384.6365321000003,
+      "step_us_p50_p95_p99_max": [
+        81.92,
+        138.24,
+        150.528,
+        1677.312
+      ],
+      "steps_over_budget": 13265,
+      "newton_max": 8,
+      "peak_output_Nm": 418.21026679881857,
+      "mean_output_Nm": 137.80438994391767,
+      "phases": 2048,
+      "layers": 17,
+      "geometry_windows": 4096,
+      "warps_per_pair": 4,
+      "window_cache_bytes": 257826488,
+      "window_preparation_s": [
+        6.815165399999387,
+        5.473490100000163
+      ],
+      "geometry_file_bytes": 7669149,
+      "delivery": "device-resident trajectory"
+    }
+  ]
+}

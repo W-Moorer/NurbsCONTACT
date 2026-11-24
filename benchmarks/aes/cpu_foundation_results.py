@@ -6,8 +6,7 @@ from pathlib import Path
 import shlex
 from zipfile import ZipFile, ZIP_DEFLATED
 
-import cv2
-import imageio.v2 as imageio
+from rigid_movie import read_triangles, render_solids
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -19,17 +18,6 @@ from scipy.spatial import ConvexHull
 from cpu_backend_run import digest
 from literature_validation import oscillator_reference
 from resident_cam import reference
-
-def gear_contours(bodies):
-    import trimesh
-    contours=[]
-    for body in bodies:
-        mesh=meshio.read(body[0].with_suffix('.msh'))
-        surface=trimesh.Trimesh(mesh.points,mesh.get_cells_type('triangle'),process=True)
-        section=surface.section(plane_normal=[0,0,1],plane_origin=surface.bounds.mean(axis=0))
-        contours.append([p[:,:2] for p in section.discrete])
-    return contours
-
 
 def gear(root,data,out):
     from cpu_backend_pose_replay import read_model
@@ -56,68 +44,26 @@ def gear(root,data,out):
     np.savez_compressed(out/'gear.npz',time_s=t,driver_speed_rad_s=data['v0'],driven_speed_rad_s=data['v1'],
                         driver_angle_rad=data['q0'],driven_angle_rad=data['q1'],normal_load_N=f)
     bodies,_=read_model(root/'spur.scene')
-    contours=gear_contours(bodies)
-    w,h=840,510
-    writer=imageio.get_writer(out/'gear.mp4',fps=50,codec='libx264',quality=8,macro_block_size=1,
-                              output_params=['-pix_fmt','yuv420p','-threads','2'],ffmpeg_log_level='error')
-    for modes,indices in [('Duty cycle',np.arange(0,len(t),100)),('Contact detail',np.arange(12500,12701))]:
-        for i in indices:
-            frame=np.full((h,w,3),249,np.uint8)
-            for j,polygons in enumerate(contours):
-                phi=data[f'b{j}_angle_rad'][i]*bodies[j][2][2]
-                c,s=np.cos(phi),np.sin(phi)
-                rotation=np.array([[c,-s],[-s,-c]])
-                origin=np.array([data[f'b{j}_x_m'][i],-data[f'b{j}_y_m'][i]])*2750+[290,267]
-                screen=[np.rint(poly@rotation*2750+origin).astype(np.int32) for poly in polygons]
-                cv2.fillPoly(frame,screen,[(184,148,88),(144,109,62)][j],cv2.LINE_AA)
-                cv2.polylines(frame,screen,True,(71,61,49),1,cv2.LINE_AA)
-                tip=np.rint(origin+62*np.array([c,-s])).astype(int)
-                cv2.line(frame,np.rint(origin).astype(int),tip,(53,52,48),2,cv2.LINE_AA)
-            label=f"{modes}     {t[i]:.4f} s     Normal load {f[i]/1000:.2f} kN"
-            cv2.putText(frame,label,(25,473),cv2.FONT_HERSHEY_SIMPLEX,.75,(48,48,48),1,cv2.LINE_AA)
-            writer.append_data(cv2.cvtColor(frame,cv2.COLOR_BGR2RGB))
-    writer.close()
+    render_scene(bodies, data, out/'gear.mp4', 'Spur gears  |  CPU mesh dynamics')
     return dict(mean_ratio=float((data['q0'][-1]-data['q0'][0])/(data['q1'][-1]-data['q1'][0])),
                 min_load_N=float(f.min()),max_load_N=float(f.max()),contact_fraction=float(np.mean(f>0)),
                 body_pair_load_switches=int(np.count_nonzero(np.diff(f>0))),
                 peak_to_peak_te_rad=float(np.ptp(te)))
 
 
-def reducer_movie(scene,trace_data,out):
+def render_scene(bodies, trace, out, title):
+    triangles = [read_triangles(body[0].with_suffix(".msh")) for body in bodies]
+    angle = np.column_stack([axis[2]*(offset+trace[f"q{j}"]) for _, _, axis, offset, j in bodies])
+    origins = np.array([body[1] for body in bodies])
+    load = (np.column_stack([trace[f"p{i}_normal_N"] for i in range(len(bodies)//2)])
+            if "p0_normal_N" in trace else None)
+    render_solids(out, triangles, origins, angle, trace["time_s"], load, title)
+
+
+def reducer_movie(scene, trace_data, out):
     from cpu_backend_pose_replay import read_model
-    bodies,pairs=read_model(scene)
-    contours=gear_contours(bodies)
-    t=trace_data['time_s']
-    layout=[]
-    for stage,(i,j,_,_) in enumerate(pairs):
-        radii=[max(np.linalg.norm(p,axis=1).max() for p in contours[k]) for k in (i,j)]
-        centers=[bodies[k][1][0] for k in (i,j)]
-        xmin=min(x-r for x,r in zip(centers,radii))
-        xmax=max(x+r for x,r in zip(centers,radii))
-        scale=min(424/(xmax-xmin),280/(2*max(radii)))
-        center=np.array([242+486*stage,211])
-        for k,x in zip((i,j),centers):
-            origin=center+np.array([scale*(x-(xmin+xmax)/2),0])
-            layout.append((k,scale,origin))
-    with imageio.get_writer(out,fps=50,codec='libx264',quality=8,macro_block_size=1,
-                            output_params=['-pix_fmt','yuv420p','-threads','2'],ffmpeg_log_level='error') as writer:
-        for n in np.union1d(np.arange(0,len(t),50),len(t)-1):
-            frame=np.full((422,970,3),249,np.uint8)
-            for k,scale,origin in layout:
-                _,_,axis,start,coordinate=bodies[k]
-                phi=axis[2]*(start+trace_data[f'q{coordinate}'][n])
-                c,s=np.cos(phi),np.sin(phi)
-                rotation=np.array([[c,-s],[-s,-c]])
-                polygons=[np.rint(p@rotation*scale+origin).astype(np.int32) for p in contours[k]]
-                cv2.fillPoly(frame,polygons,[(177,142,89),(143,109,61),(143,109,61),(115,148,103)][k],cv2.LINE_AA)
-                cv2.polylines(frame,polygons,True,(72,64,48),1,cv2.LINE_AA)
-                tip=origin+31*np.array([c,-s])
-                cv2.line(frame,np.rint(origin).astype(int),np.rint(tip).astype(int),(46,45,42),2,cv2.LINE_AA)
-            for x,label in [(24,'Stage 1  /  input to intermediate'),(510,'Stage 2  /  intermediate to output')]:
-                cv2.putText(frame,label,(x,38),cv2.FONT_HERSHEY_SIMPLEX,.72,(55,52,47),1,cv2.LINE_AA)
-            note=f"Accepted: 0 - {t[-1]:.4f} s     Time: {t[n]:.4f} s     Output: {trace_data['v2'][n]:.2f} rad/s"
-            cv2.putText(frame,note,(24,391),cv2.FONT_HERSHEY_SIMPLEX,.68,(55,52,47),1,cv2.LINE_AA)
-            writer.append_data(cv2.cvtColor(frame,cv2.COLOR_BGR2RGB))
+    bodies, _ = read_model(scene)
+    render_scene(bodies, trace_data, out, "Two-stage reducer  |  CPU mesh dynamics")
 
 
 def reducer_prefix(root,run,out,save=True):
@@ -287,42 +233,11 @@ def draw(arrays,out):
 
 
 def movie(data,meshdir,out):
-    # Both solids in this benchmark are convex extrusions; their XY projection
-    # has exactly the silhouette of their mesh. Poses are saved HHT states.
-    outlines=[]
-    for name in ['follower','cam']:
-        xy=meshio.read(meshdir/(name+'.msh')).points[:,:2]
-        outlines.append(xy[ConvexHull(xy).vertices])
-    w,h=760,550
-    writer=imageio.get_writer(out,fps=25,codec='libx264',quality=8,macro_block_size=1,
-                              output_params=['-pix_fmt','yuv420p','-threads','2'],ffmpeg_log_level='error')
-    def pixel(x):
-        return np.rint(x*[1400,-1400]+[w/2,305]).astype(np.int32)
-    for i in np.rint(np.linspace(0,len(data['time_s'])-1,126)).astype(int):
-        image=np.full((h,w,3),249,np.uint8)
-        for j,p in enumerate(outlines):
-            theta=data[f'b{j}_angle_rad'][i]
-            c,s=np.cos(theta),np.sin(theta)
-            xy=[data[f'b{j}_x_m'][i],data[f'b{j}_y_m'][i]]
-            coords=p@np.array([[c,s],[-s,c]])+xy
-            points=pixel(coords)
-            cv2.fillPoly(image,[points],[(189,160,99),(160,111,64)][j],cv2.LINE_AA)
-            cv2.polylines(image,[points],True,(71,61,49),2,cv2.LINE_AA)
-            if j==1:
-                center=pixel(np.array(xy))
-                end=pixel(np.array(xy)+.10*np.array([c,s]))
-                cv2.line(image,center,end,(246,232,210),3,cv2.LINE_AA)
-                cv2.circle(image,center,5,(54,51,49),-1,cv2.LINE_AA)
-        label=f"CPU mesh / HHT     {data['time_s'][i]:.2f} s     Normal load {data['p0_normal_N'][i]:.2f} N"
-        cv2.putText(image,label,(30,523),cv2.FONT_HERSHEY_SIMPLEX,.72,(61,55,49),1,cv2.LINE_AA)
-        writer.append_data(cv2.cvtColor(image,cv2.COLOR_BGR2RGB))
-    writer.close()
-    video=cv2.VideoCapture(str(out))
-    frames=int(video.get(cv2.CAP_PROP_FRAME_COUNT))
-    video.set(cv2.CAP_PROP_POS_FRAMES,63)
-    ok,frame=video.read()
-    video.release()
-    if frames!=126 or not ok or frame.std()<10: raise ValueError("invalid animation")
+    triangles = [read_triangles(meshdir/(name+".msh")) for name in ("follower", "cam")]
+    positions = np.stack([np.column_stack([data[f"b{j}_{k}_m"] for k in "xyz"]) for j in range(2)], axis=1)
+    angles = np.column_stack([data[f"b{j}_angle_rad"] for j in range(2)])
+    render_solids(out, triangles, positions, angles, data["time_s"], data["p0_normal_N"][:,None],
+                  "Eccentric cam and follower  |  CPU mesh dynamics")
 
 
 def free_impact(root,out):
