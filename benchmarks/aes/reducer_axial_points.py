@@ -56,6 +56,35 @@ def radial_separation(mesh_exe, bodies, pair, parts, angles, steps):
     return checks, distances_um
 
 
+def plot_check(path, time, force, original_force, report):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    fig, axes = plt.subplots(1, 2, figsize=(11, 3.8), layout="constrained")
+    mask = time <= report["point_export_end_s"] + 1e-9
+    for values, label, color in ((force, "Shared Gmsh facets", "#126965"),
+                                 (original_force, "Original RecurDyn facets", "#bd542b")):
+        axes[0].plot(1000*time[mask], values[mask]/1000, color=color, lw=1., label=label)
+    axes[0].set(yscale="symlog", ylim=(-.2, 500), ylabel="Stage 2 resultant force (kN)",
+                xlabel="Time (ms)", title="RecurDyn point-output interval")
+    axes[0].set_yticks([0, 1, 10, 100, 400], labels=["0", "1", "10", "100", "400"])
+    axes[0].legend(frameon=False, loc="upper left", fontsize=9)
+    shifts = report["radial_translation_trials_um"][:5]
+    hits = np.asarray([d["hits"][:len(shifts)] for d in report["separation_checks"]])
+    low, mid, high = np.percentile(hits, [0, 50, 100], axis=0)
+    axes[1].fill_between(shifts, low, high, alpha=.2, color="#126965", label=f"Range across {len(hits)} poses")
+    axes[1].plot(shifts, mid, "o-", color="#126965", lw=1.4, label="Median")
+    axes[1].set(title="Same meshes at high-force poses", xlabel="Increase in shaft centre distance (µm)",
+                ylabel="Intersecting triangle pairs", xticks=shifts)
+    axes[1].legend(frameon=False, fontsize=9)
+    for ax in axes:
+        ax.grid(alpha=.2)
+        ax.spines[["right", "top"]].set_visible(False)
+    fig.savefig(path, dpi=170)
+    plt.close(fig)
+
+
 def audit(deck, point_file, matched, original, out, mesh_exe=None):
     bodies, pairs = read_model(deck / "reducer.scene")
     a, b, _, _ = pairs[1]
@@ -115,6 +144,7 @@ def audit(deck, point_file, matched, original, out, mesh_exe=None):
     if mesh_exe:
         checks, shifts = radial_separation(mesh_exe, bodies, (a, b), parts, angles, np.flatnonzero(force > threshold))
         stats.update(radial_translation_trials_um=shifts.tolist(), separation_checks=checks)
+        plot_check(out.with_suffix(".png"), time, force, original_force, stats)
     out.write_text(json.dumps(stats, indent=2, allow_nan=False) + "\n")
 
 

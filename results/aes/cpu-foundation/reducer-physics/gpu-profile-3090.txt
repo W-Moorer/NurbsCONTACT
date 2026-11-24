@@ -1,0 +1,11 @@
+name, pstate, clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]
+NVIDIA GeForce RTX 3090, P2, 1905 MHz, 9501 MHz, 306.82 W
+{"poses":12,"cpu_pairs":676,"missing":0,"extra":0,"static_query_mean_us":193.751}
+{"poses":12,"cpu_pairs":2372,"missing":0,"extra":0,"static_query_mean_us":335.889}
+pstate, clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]
+P2, 1905 MHz, 9501 MHz, 252.90 W
+
+mean leaf pairs 405.5 broad 92.352 narrow 106.128 us at pose 1020
+mean leaf pairs 1451.25 broad 92.4 narrow 219.584 us at pose 1020
+
+After the diagnostic exited, nvidia-smi reported GPU utilization 100%, memory utilization 12%, 5638 MiB used, with one compute process using 5620 MiB. Query timing was not taken on a reserved device.
