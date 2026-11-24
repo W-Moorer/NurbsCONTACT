@@ -355,8 +355,12 @@ struct FiniteFeatures::Data {
             const auto& b=moving(pair[1],rel);
             if (planes_separate(a,b,slack) || planes_separate(b,a,slack)) continue;
             ++work.mesh.triangles;
-            if (triangle_overlap(a.tri,b.tri)) {index[key(pair)]=hits.size(); hits.push_back(pair);}
+            if (triangle_overlap(a.tri,b.tri)) hits.push_back(pair);
         }
+        // Contact forces are accumulated in component order. Make both the
+        // representative triangle and the accumulation independent of BVH traversal.
+        std::sort(hits.begin(),hits.end());
+        for (std::size_t i=0;i<hits.size();++i) index.emplace(key(hits[i]),i);
         std::vector<std::size_t> parent(hits.size());
         std::iota(parent.begin(),parent.end(),0);
         auto root=[&](std::size_t i) {while (i!=parent[i]) {parent[i]=parent[parent[i]]; i=parent[i];} return i;};

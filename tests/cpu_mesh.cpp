@@ -166,6 +166,30 @@ void check_crossed_edges() {
         pose.origin[2]=.02;
         require(query->regions(base,pose,work).empty(),"separated crossed edges produced a load");
     }
+    const auto compound=[](const MeshData& one) {
+        auto mesh=std::make_shared<MeshData>();
+        for (double offset:{3.,-3.,0.}) {
+            auto first=mesh->vertices.size();
+            for (auto p:one.vertices) {p[0]+=offset; mesh->vertices.push_back(p);}
+            for (auto f:one.faces) {
+                for (auto& i:f) i+=first;
+                mesh->faces.push_back(f);
+            }
+        }
+        return mesh;
+    };
+    const auto left=compound(*a),right=compound(*b);
+    ContactPose base,pose;
+    pose.origin[2]=-.02;
+    ContactWork work;
+    const auto contacts=[&](MeshMethod method) {
+        return mesh_region_query(left,right,method,{},MeshRegionMode::finite,.03)->regions(base,pose,work);
+    };
+    const auto aa=contacts(MeshMethod::aabb),bb=contacts(MeshMethod::obb);
+    require(aa.size()==3 && bb.size()==3,"missing disconnected edge contacts");
+    for (std::size_t i=0;i<aa.size();++i)
+        require(aa[i].point==bb[i].point && aa[i].normal==bb[i].normal && aa[i].depth_m==bb[i].depth_m,
+                "BVH traversal changed contact accumulation order");
 }
 
 void check_local_regions() {
