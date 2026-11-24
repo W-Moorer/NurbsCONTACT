@@ -20,7 +20,8 @@ def main():
     cli.add_argument("--angle-band", type=float, default=0.0025)
     cli.add_argument("--method", choices=("mesh-anchors", "mesh-wrench", "wrench-only"), default="mesh-wrench")
     cli.add_argument("--output", type=Path)
-    cli.add_argument("--warps", type=int, choices=(1, 2, 4), default=4)
+    cli.add_argument("--warps", type=int, choices=(1, 2, 4),
+                     help="Warps per contact pair (default: 2 for mapped exchange, otherwise 4)")
     cli.add_argument("--geometry", type=Path)
     transfer = cli.add_mutually_exclusive_group()
     transfer.add_argument("--stream-io", action="store_true")

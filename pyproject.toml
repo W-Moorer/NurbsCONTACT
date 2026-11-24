@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "nurbscontact-gpu"
-version = "0.1.0"
+version = "0.1.1"
 description = "Fixed-hinge rigid-body mesh contact and generalized-alpha integration on CUDA"
 readme = "nurbscontact_gpu/README.md"
 requires-python = ">=3.10"

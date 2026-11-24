@@ -1,0 +1,636 @@
+{
+  "model": "two-stage reducer, 65,732 Gmsh triangles, mesh-wrench; archived GPU response at ../response.npz",
+  "validation": {
+    "steps": 50000,
+    "physical_s": 5.0,
+    "step_s": 0.0001,
+    "samples": 50001,
+    "bitwise_note": "Array equality on float64 time and physics and integer iteration counts; timing counters and witness-search order are excluded.",
+    "fields": {
+      "time_s": true,
+      "q": true,
+      "speed_rad_s": true,
+      "transmission_error_mrad": true,
+      "joint_contact_torque_Nm": true,
+      "stage_normal_load_N": true,
+      "output_contact_torque_Nm": true,
+      "newton_iterations": true
+    },
+    "all_installed_runs_equal": true
+  },
+  "original": {
+    "published_windows_exchange": {
+      "groups": {
+        "all": {
+          "n": 50000,
+          "kernel_s": 2.6715453440000005,
+          "host_s": 2.6632388999999996,
+          "mean_gpu_us": 53.43090688000001,
+          "mean_rounds": 0.28712,
+          "mean_newton": 3.01264
+        },
+        "seed_only": {
+          "n": 48030,
+          "kernel_s": 2.4977264640000003,
+          "host_s": 2.4890958,
+          "mean_gpu_us": 52.00346583385385,
+          "mean_rounds": 0.0,
+          "mean_newton": 3.0142619196335625
+        },
+        "scan": {
+          "n": 1970,
+          "kernel_s": 0.17381888,
+          "host_s": 0.17414309999999997,
+          "mean_gpu_us": 88.23293401015229,
+          "mean_rounds": 7.287309644670051,
+          "mean_newton": 2.9730964467005077
+        },
+        "long_scan": {
+          "n": 6,
+          "kernel_s": 0.0062525440000000005,
+          "host_s": 0.0070006,
+          "mean_gpu_us": 1042.0906666666667,
+          "mean_rounds": 226.0,
+          "mean_newton": 3.8333333333333335
+        },
+        "gt_1ms": {
+          "n": 2,
+          "kernel_s": 0.002666496,
+          "host_s": 0.0026663,
+          "mean_gpu_us": 1333.248,
+          "mean_rounds": 260.0,
+          "mean_newton": 6.0
+        }
+      },
+      "over_1ms_seed_only": 0,
+      "host_over_1ms": 3,
+      "host_over_1ms_total_s": 0.0042897000000000005
+    },
+    "published_linux_exchange": {
+      "groups": {
+        "all": {
+          "n": 50000,
+          "kernel_s": 5.228997632,
+          "host_s": 5.67670841,
+          "mean_gpu_us": 104.57995264,
+          "mean_rounds": 0.292,
+          "mean_newton": 3.01264
+        },
+        "seed_only": {
+          "n": 47817,
+          "kernel_s": 4.82878464,
+          "host_s": 5.249572530999999,
+          "mean_gpu_us": 100.98468410816238,
+          "mean_rounds": 0.0,
+          "mean_newton": 3.013698057176318
+        },
+        "scan": {
+          "n": 2183,
+          "kernel_s": 0.400212992,
+          "host_s": 0.427135879,
+          "mean_gpu_us": 183.33165002290428,
+          "mean_rounds": 6.68804397617957,
+          "mean_newton": 2.989464040311498
+        },
+        "long_scan": {
+          "n": 6,
+          "kernel_s": 0.013222911999999998,
+          "host_s": 0.015220071,
+          "mean_gpu_us": 2203.8186666666666,
+          "mean_rounds": 228.0,
+          "mean_newton": 3.8333333333333335
+        },
+        "gt_1ms": {
+          "n": 1174,
+          "kernel_s": 2.742592512,
+          "host_s": 2.740398864,
+          "mean_gpu_us": 2336.109465076661,
+          "mean_rounds": 1.3253833049403747,
+          "mean_newton": 3.028960817717206
+        }
+      },
+      "over_1ms_seed_only": 1079,
+      "host_over_1ms": 1371,
+      "host_over_1ms_total_s": 3.196455614
+    },
+    "published_linux_resident": {
+      "groups": {
+        "all": {
+          "n": 50000,
+          "kernel_s": 4.611426303999999,
+          "host_s": 0.0,
+          "mean_gpu_us": 92.22852608,
+          "mean_rounds": 0.29144,
+          "mean_newton": 3.01264
+        },
+        "seed_only": {
+          "n": 47819,
+          "kernel_s": 4.26784768,
+          "host_s": 0.0,
+          "mean_gpu_us": 89.25004036052617,
+          "mean_rounds": 0.0,
+          "mean_newton": 3.0136974842635773
+        },
+        "scan": {
+          "n": 2181,
+          "kernel_s": 0.343578624,
+          "host_s": 0.0,
+          "mean_gpu_us": 157.5326107290234,
+          "mean_rounds": 6.681338835396607,
+          "mean_newton": 2.9894543787253554
+        },
+        "long_scan": {
+          "n": 6,
+          "kernel_s": 0.013182975999999997,
+          "host_s": 0.0,
+          "mean_gpu_us": 2197.1626666666666,
+          "mean_rounds": 228.0,
+          "mean_newton": 3.8333333333333335
+        },
+        "gt_1ms": {
+          "n": 1056,
+          "kernel_s": 2.4610775039999995,
+          "host_s": 0.0,
+          "mean_gpu_us": 2330.565818181818,
+          "mean_rounds": 1.3674242424242424,
+          "mean_newton": 3.023674242424242
+        }
+      },
+      "over_1ms_seed_only": 979,
+      "host_over_1ms": 0,
+      "host_over_1ms_total_s": 0.0
+    }
+  },
+  "timer_probe": {
+    "linux_rtx3090": {
+      "device": "NVIDIA GeForce RTX 3090",
+      "duration_ms": 400,
+      "threshold_us": 100,
+      "count": 92,
+      "sum_ms": 209.16428799999997,
+      "gap_us_p50_p95_max": [
+        2273.28,
+        2274.304,
+        2276.352
+      ]
+    },
+    "windows_rtx3070": {
+      "device": "NVIDIA GeForce RTX 3070",
+      "duration_ms": 400,
+      "threshold_us": 100,
+      "count": 170,
+      "sum_ms": 104.144896,
+      "gap_us_p50_p95_max": [
+        250.88,
+        1595.4943999999998,
+        2524.16
+      ]
+    }
+  },
+  "linux_gpu_before_each_exchange": [
+    {
+      "version": "0.1.0",
+      "clocks_sm_mem_pstate_power_util": "1935 MHz, 9501 MHz, P2, 150.95 W, 100 %",
+      "other_context_memory": [
+        "5622 MiB"
+      ]
+    },
+    {
+      "version": "0.1.0",
+      "clocks_sm_mem_pstate_power_util": "1935 MHz, 9501 MHz, P2, 151.78 W, 100 %",
+      "other_context_memory": [
+        "5622 MiB"
+      ]
+    },
+    {
+      "version": "0.1.0",
+      "clocks_sm_mem_pstate_power_util": "1935 MHz, 9501 MHz, P2, 151.64 W, 100 %",
+      "other_context_memory": [
+        "5622 MiB"
+      ]
+    },
+    {
+      "version": "0.1.1",
+      "clocks_sm_mem_pstate_power_util": "1935 MHz, 9501 MHz, P2, 151.61 W, 100 %",
+      "other_context_memory": [
+        "5622 MiB"
+      ]
+    },
+    {
+      "version": "0.1.1",
+      "clocks_sm_mem_pstate_power_util": "1935 MHz, 9501 MHz, P2, 151.68 W, 100 %",
+      "other_context_memory": [
+        "5622 MiB"
+      ]
+    },
+    {
+      "version": "0.1.1",
+      "clocks_sm_mem_pstate_power_util": "1935 MHz, 9501 MHz, P2, 151.60 W, 100 %",
+      "other_context_memory": [
+        "5622 MiB"
+      ]
+    },
+    {
+      "version": "0.1.1",
+      "clocks_sm_mem_pstate_power_util": "1935 MHz, 9501 MHz, P2, 151.43 W, 100 %",
+      "other_context_memory": [
+        "5622 MiB"
+      ]
+    },
+    {
+      "version": "0.1.1",
+      "clocks_sm_mem_pstate_power_util": "1935 MHz, 9501 MHz, P2, 151.51 W, 100 %",
+      "other_context_memory": [
+        "5622 MiB"
+      ]
+    }
+  ],
+  "linux_baseline": [
+    {
+      "device": "NVIDIA GeForce RTX 3090",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "setup_s": 1.42588050221093,
+      "online_wall_s": 5.678791676880792,
+      "warps_per_pair": 4,
+      "host_step_us_p50_p95_p99_max": [
+        50.2415,
+        78.04519999999998,
+        2334.52801,
+        3932.011
+      ],
+      "host_steps_over_budget": 1592,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.80425496577786,
+      "delivery": "synchronous mapped command and wrench exchange per step"
+    },
+    {
+      "device": "NVIDIA GeForce RTX 3090",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "setup_s": 1.4309646810870618,
+      "online_wall_s": 5.67641682503745,
+      "warps_per_pair": 4,
+      "host_step_us_p50_p95_p99_max": [
+        50.066,
+        77.96114999999999,
+        2334.3830599999997,
+        3932.367
+      ],
+      "host_steps_over_budget": 1589,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.80425496577786,
+      "delivery": "synchronous mapped command and wrench exchange per step"
+    },
+    {
+      "device": "NVIDIA GeForce RTX 3090",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "setup_s": 1.4374472501222044,
+      "online_wall_s": 5.6820719530805945,
+      "warps_per_pair": 4,
+      "host_step_us_p50_p95_p99_max": [
+        50.4225,
+        78.10205,
+        2334.57103,
+        3933.193
+      ],
+      "host_steps_over_budget": 1592,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.80425496577786,
+      "delivery": "synchronous mapped command and wrench exchange per step"
+    }
+  ],
+  "linux_updated": [
+    {
+      "device": "NVIDIA GeForce RTX 3090",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "setup_s": 2.407417592825368,
+      "online_wall_s": 4.66159982397221,
+      "warps_per_pair": 2,
+      "steps_per_launch": 1024,
+      "host_step_us_p50_p95_p99_max": [
+        43.1015,
+        63.7060999999999,
+        2323.96705,
+        3659.678
+      ],
+      "host_steps_over_budget": 1184,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.80425496577786,
+      "delivery": "synchronous mapped command and wrench exchange per step"
+    },
+    {
+      "device": "NVIDIA GeForce RTX 3090",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "setup_s": 1.4260847561527044,
+      "online_wall_s": 4.657870052149519,
+      "warps_per_pair": 2,
+      "steps_per_launch": 1024,
+      "host_step_us_p50_p95_p99_max": [
+        42.9635,
+        63.61509999999999,
+        2323.77805,
+        3806.748
+      ],
+      "host_steps_over_budget": 1184,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.80425496577786,
+      "delivery": "synchronous mapped command and wrench exchange per step"
+    },
+    {
+      "device": "NVIDIA GeForce RTX 3090",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "setup_s": 1.4292095340788364,
+      "online_wall_s": 4.659331707051024,
+      "warps_per_pair": 2,
+      "steps_per_launch": 1024,
+      "host_step_us_p50_p95_p99_max": [
+        43.212,
+        63.49334999999997,
+        2323.66104,
+        3825.621
+      ],
+      "host_steps_over_budget": 1187,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.80425496577786,
+      "delivery": "synchronous mapped command and wrench exchange per step"
+    },
+    {
+      "device": "NVIDIA GeForce RTX 3090",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "setup_s": 1.4282802420202643,
+      "online_wall_s": 4.660420957021415,
+      "warps_per_pair": 2,
+      "steps_per_launch": 1024,
+      "host_step_us_p50_p95_p99_max": [
+        43.075500000000005,
+        63.74064999999985,
+        2323.82815,
+        3792.873
+      ],
+      "host_steps_over_budget": 1183,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.80425496577786,
+      "delivery": "synchronous mapped command and wrench exchange per step"
+    },
+    {
+      "device": "NVIDIA GeForce RTX 3090",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "setup_s": 1.426165911834687,
+      "online_wall_s": 4.662514070980251,
+      "warps_per_pair": 2,
+      "steps_per_launch": 1024,
+      "host_step_us_p50_p95_p99_max": [
+        43.2665,
+        63.854199999999985,
+        2323.59618,
+        3802.975
+      ],
+      "host_steps_over_budget": 1183,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.80425496577786,
+      "delivery": "synchronous mapped command and wrench exchange per step"
+    }
+  ],
+  "linux_updated_resident": {
+    "device": "NVIDIA GeForce RTX 3090",
+    "method": "mesh-wrench",
+    "steps": 50000,
+    "step_s": 0.0001,
+    "physical_s": 5.0,
+    "setup_s": 2.392748735845089,
+    "online_wall_s": 4.627852380974218,
+    "warps_per_pair": 4,
+    "steps_per_launch": 256,
+    "newton_max": 8,
+    "peak_output_Nm": 430.1539888047983,
+    "mean_output_Nm": 137.80425496577786,
+    "delivery": "device-resident trajectory"
+  },
+  "windows_baseline": [
+    {
+      "device": "NVIDIA GeForce RTX 3070",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "setup_s": 5.588126300001022,
+      "online_wall_s": 3.6398824999996577,
+      "warps_per_pair": 4,
+      "host_step_us_p50_p95_p99_max": [
+        56.3,
+        118.5,
+        296.6010000000002,
+        2707.6
+      ],
+      "host_steps_over_budget": 3604,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.8042549657779,
+      "delivery": "synchronous mapped command and wrench exchange per step"
+    },
+    {
+      "device": "NVIDIA GeForce RTX 3070",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "setup_s": 4.411722400000144,
+      "online_wall_s": 3.89883589999954,
+      "warps_per_pair": 4,
+      "host_step_us_p50_p95_p99_max": [
+        56.6,
+        135.50499999999957,
+        381.5010000000002,
+        3769.8
+      ],
+      "host_steps_over_budget": 4204,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.8042549657779,
+      "delivery": "synchronous mapped command and wrench exchange per step"
+    }
+  ],
+  "windows_updated": [
+    {
+      "device": "NVIDIA GeForce RTX 3070",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "setup_s": 22.45926580000014,
+      "online_wall_s": 3.3911026999994647,
+      "warps_per_pair": 2,
+      "steps_per_launch": 1024,
+      "host_step_us_p50_p95_p99_max": [
+        47.2,
+        122.3,
+        503.6210000000043,
+        4370.6
+      ],
+      "host_steps_over_budget": 3568,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.8042549657779,
+      "delivery": "synchronous mapped command and wrench exchange per step"
+    },
+    {
+      "device": "NVIDIA GeForce RTX 3070",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "setup_s": 4.374246800001856,
+      "online_wall_s": 3.2666965999997046,
+      "warps_per_pair": 2,
+      "steps_per_launch": 1024,
+      "host_step_us_p50_p95_p99_max": [
+        47.3,
+        117.70499999999957,
+        407.205000000001,
+        6335.2
+      ],
+      "host_steps_over_budget": 3485,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.8042549657779,
+      "delivery": "synchronous mapped command and wrench exchange per step"
+    },
+    {
+      "device": "NVIDIA GeForce RTX 3070",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "setup_s": 4.544290099998761,
+      "online_wall_s": 3.369128800000908,
+      "warps_per_pair": 2,
+      "steps_per_launch": 1024,
+      "host_step_us_p50_p95_p99_max": [
+        47.2,
+        122.30499999999957,
+        447.2080000000016,
+        3192.4
+      ],
+      "host_steps_over_budget": 3465,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.8042549657779,
+      "delivery": "synchronous mapped command and wrench exchange per step"
+    }
+  ],
+  "linux_ablation": [
+    {
+      "configuration": "original: 4 warps, 256 steps/launch",
+      "device": "NVIDIA GeForce RTX 3090",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "setup_s": 1.4297386358957738,
+      "online_wall_s": 5.683192686876282,
+      "warps_per_pair": 4,
+      "host_step_us_p50_p95_p99_max": [
+        50.399,
+        78.06469999999993,
+        2334.4920300000003,
+        3932.522
+      ],
+      "host_steps_over_budget": 1592,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.80425496577786,
+      "delivery": "synchronous mapped command and wrench exchange per step"
+    },
+    {
+      "configuration": "read load once, 4 warps, 256 steps/launch",
+      "device": "NVIDIA GeForce RTX 3090",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "setup_s": 2.4069075169973075,
+      "online_wall_s": 5.054156727856025,
+      "warps_per_pair": 4,
+      "host_step_us_p50_p95_p99_max": [
+        46.3825,
+        72.10324999999997,
+        2330.3521499999997,
+        3929.042
+      ],
+      "host_steps_over_budget": 1346,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.80425496577786,
+      "delivery": "synchronous mapped command and wrench exchange per step"
+    },
+    {
+      "configuration": "read load once, 2 warps, 256 steps/launch",
+      "device": "NVIDIA GeForce RTX 3090",
+      "method": "mesh-wrench",
+      "steps": 50000,
+      "step_s": 0.0001,
+      "physical_s": 5.0,
+      "setup_s": 2.407324937172234,
+      "online_wall_s": 4.884293931070715,
+      "warps_per_pair": 2,
+      "host_step_us_p50_p95_p99_max": [
+        43.457499999999996,
+        64.66619999999998,
+        2323.49312,
+        3672.015
+      ],
+      "host_steps_over_budget": 1283,
+      "newton_max": 8,
+      "peak_output_Nm": 430.1539888047983,
+      "mean_output_Nm": 137.80425496577786,
+      "delivery": "synchronous mapped command and wrench exchange per step"
+    }
+  ],
+  "linux_updated_one_warp": {
+    "online_wall_s": 4.467443111818284,
+    "warps_per_pair": 1,
+    "steps_per_launch": 1024,
+    "host_step_us_p50_p95_p99_max": [
+      41.4015,
+      56.83689999999984,
+      2320.05806,
+      6396.597
+    ]
+  },
+  "trace_files": {
+    "windows-0.1.0.npz": "original 2.7063 s exchange",
+    "linux-0.1.0.npz": "original 5.6800 s exchange",
+    "linux-0.1.1.npz": "updated median exchange run (index 3)"
+  }
+}

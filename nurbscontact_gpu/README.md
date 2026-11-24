@@ -7,7 +7,7 @@ The GPU backend integrates rigid bodies on fixed parallel revolute axes using fi
 Use Python 3.10 or later on a CUDA 12 system with an NVIDIA driver and NVRTC. Install the wheel for your operating system with the `cuda12` extra. For an environment that already provides a compatible CuPy, install the wheel directly. The source distribution builds the native exchange library with CMake and a C++20 compiler.
 
 ```text
-python -m pip install "./nurbscontact_gpu-0.1.0-py3-none-win_amd64.whl[cuda12]"
+python -m pip install "./nurbscontact_gpu-0.1.1-py3-none-win_amd64.whl[cuda12]"
 nc-gpu --help
 ```
 

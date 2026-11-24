@@ -170,7 +170,7 @@ def run(
     method="mesh-wrench",
     steps=None,
     geometry=None,
-    warps=4,
+    warps=None,
     stream_io=False,
     exchange_lib=None,
     *,
@@ -186,6 +186,8 @@ def run(
             raise FileNotFoundError("Install the backend wheel for --exchange or pass --exchange-lib PATH")
     if exchange_lib is not None:
         exchange_lib = Path(exchange_lib)
+    if warps is None:
+        warps = 2 if exchange_lib is not None else 4
     if geometry is not None:
         geometry = Path(geometry)
     deck, work = Path(deck), Path(work)
@@ -373,6 +375,9 @@ def run(
             load = cp.asarray(host_load)
         init((1,), (32 * npair * warps,), (*header, load, *geometry_args, data, status))
         chunk = 1 if stream_io else 256
+        if exchange_lib:
+            # The host still sends and receives exactly one message per step inside a launch.
+            chunk = 1024
         step_args = (*header, load, np.float64(h), *geometry_args)
         for begin in range(0, n, chunk):
             end = min(n, begin + chunk)
@@ -491,6 +496,7 @@ def run(
         layers=layers,
         geometry_windows=bins,
         warps_per_pair=warps,
+        steps_per_launch=chunk,
         window_cache_bytes=window_bytes,
         window_preparation_s=window_prep,
         geometry_file_bytes=geometry.stat().st_size,

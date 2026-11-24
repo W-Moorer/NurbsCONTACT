@@ -467,6 +467,9 @@ extern "C" __global__ void advance(const unsigned long long *pointers, const int
                                    unsigned long long *ticks, int *status, unsigned long long channel) {
     constexpr int n = NC_COORDS, pairs = NC_PAIRS, stride = 3 * n + 3 * pairs;
     __shared__ double st[3][n], q[n], v[n], acc[n], predictor[n], response[pairs][9];
+#if NC_EXCHANGE
+    __shared__ double step_load[n];
+#endif
     __shared__ int cached[pairs], work[pairs], active[pairs], done;
     int lane = threadIdx.x % (32 * NC_WARPS), pair = threadIdx.x / (32 * NC_WARPS);
     DeviceStage d = stage_at(pointers, pair);
@@ -502,6 +505,10 @@ extern "C" __global__ void advance(const unsigned long long *pointers, const int
             return;
 #endif
         if (tid < n) {
+#if NC_EXCHANGE
+            // The producer holds this command until it receives this step's wrench.
+            step_load[tid] = ((const volatile double *)(page + 128))[tid];
+#endif
             acc[tid] = st[2][tid];
             predictor[tid] = st[0][tid] + h * st[1][tid] + .5 * h * h * st[2][tid];
         }
@@ -536,7 +543,7 @@ extern "C" __global__ void advance(const unsigned long long *pointers, const int
                 for (int j = 0; j < n; j++) {
                     double m = coord[4 * j], k = coord[4 * j + 1], c = coord[4 * j + 2];
 #if NC_EXCHANGE
-                    const double drive = ((volatile double *)(page + 128))[j];
+                    const double drive = step_load[j];
 #else
                     const double drive = loads[n * step + j];
 #endif

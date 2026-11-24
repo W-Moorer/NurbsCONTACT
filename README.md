@@ -4,7 +4,7 @@ NurbsCONTACT computes distance bounds and continuous clearance directly on trimm
 
 ## Build and verify
 
-For CUDA simulation of rigid bodies on fixed parallel hinges, use the installable GPU backend. Its runtime includes mesh contact, the integrator and the native load-exchange library. [Download the GPU backend](https://github.com/W-Moorer/NurbsCONTACT/releases/tag/gpu-backend-v0.1.0) · [Installation and five-second reducer example](nurbscontact_gpu/README.md)
+For CUDA simulation of rigid bodies on fixed parallel hinges, use the installable GPU backend. Its runtime includes mesh contact, the integrator and the native load-exchange library. [Download the GPU backend](https://github.com/W-Moorer/NurbsCONTACT/releases/tag/gpu-backend-v0.1.1) · [Installation and five-second reducer example](nurbscontact_gpu/README.md)
 
 ### Geometry core
 
