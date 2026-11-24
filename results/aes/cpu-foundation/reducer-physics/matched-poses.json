@@ -1,0 +1,62 @@
+{
+  "executable_sha256": "1375458f9112e9d984a2f042a03ae3a5bff629bb8c4bf086d1b89fe76dc838f6",
+  "rmd_sha256": "d9bad21693dfd8e920212bedb6a57571801821b6f030565882d9e9df5057fb17",
+  "native_triangles": null,
+  "reference_sha256": "db34e91a9b3b97fd4370082a30c901fa2c3f95ed49621d719e93d346c76fce41",
+  "samples": 129,
+  "methods": {
+    "gmsh": {
+      "unresolved_stage_step": [],
+      "invalid_surface": {},
+      "brake": {
+        "1": {
+          "samples": 121,
+          "requested": 121,
+          "force_rms_difference_N": 1621.2700309118857,
+          "shared_force_rms_difference_N": 138.79782079096847
+        },
+        "2": {
+          "samples": 121,
+          "requested": 121,
+          "force_rms_difference_N": 8298.817853753946,
+          "shared_force_rms_difference_N": 952.828631796429,
+          "mean_output_Nm": 681.2915178125827,
+          "reference_mean_output_Nm": 179.13768882123566,
+          "output_rms_difference_Nm": 514.9007457268841,
+          "shared_output_rms_difference_Nm": 59.21713335662367,
+          "shared_output_mean_Nm": 229.50612488874438
+        }
+      },
+      "uniform": {
+        "1": {
+          "samples": 7,
+          "requested": 7,
+          "force_rms_difference_N": 1325.6678523547498,
+          "shared_force_rms_difference_N": 69.22810418596002
+        },
+        "2": {
+          "samples": 7,
+          "requested": 7,
+          "force_rms_difference_N": 7361.150853451049,
+          "shared_force_rms_difference_N": 962.1406983631654,
+          "mean_output_Nm": 556.0415880284515,
+          "reference_mean_output_Nm": 137.4742210370711,
+          "output_rms_difference_Nm": 455.747838460228,
+          "shared_output_rms_difference_Nm": 59.42063715709617,
+          "shared_output_mean_Nm": 185.34719600948384
+        }
+      },
+      "second_window": {
+        "1": {
+          "samples": 0,
+          "requested": 0
+        },
+        "2": {
+          "samples": 0,
+          "requested": 0
+        }
+      }
+    }
+  },
+  "reference_brake_torque_balance_rms_Nm": 18.88375036002056
+}

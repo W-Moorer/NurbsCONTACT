@@ -1,0 +1,72 @@
+{
+  "executable_sha256": "54c674687fecf6e42be0b7bb26113a53ee0dcad8d947ea10e40b1736ba469c7e",
+  "rmd_sha256": "d9bad21693dfd8e920212bedb6a57571801821b6f030565882d9e9df5057fb17",
+  "native_triangles": null,
+  "scope": "contour-ray",
+  "reference_sha256": "286ea1382133f1ec1820bc70a2391d64edbcc7ecf2f0771026c4f099058188c8",
+  "samples": 492,
+  "methods": {
+    "gmsh": {
+      "unresolved_stage_step": [],
+      "invalid_surface": {},
+      "brake": {
+        "1": {
+          "samples": 121,
+          "requested": 121,
+          "force_rms_difference_N": 1621.2700309118857,
+          "shared_force_rms_difference_N": 138.79782079096847
+        },
+        "2": {
+          "samples": 121,
+          "requested": 121,
+          "force_rms_difference_N": 5160.0293592364205,
+          "shared_force_rms_difference_N": 482.5339430243029,
+          "mean_output_Nm": 488.79101733027045,
+          "reference_mean_output_Nm": 179.13768882123566,
+          "output_rms_difference_Nm": 320.00363545202543,
+          "shared_output_rms_difference_Nm": 29.951401558750028,
+          "shared_output_mean_Nm": 164.71910586104414
+        }
+      },
+      "uniform": {
+        "1": {
+          "samples": 251,
+          "requested": 251,
+          "force_rms_difference_N": 1298.7086855242417,
+          "shared_force_rms_difference_N": 90.76210138735898
+        },
+        "2": {
+          "samples": 251,
+          "requested": 251,
+          "force_rms_difference_N": 4280.460108432142,
+          "shared_force_rms_difference_N": 405.32110570315837,
+          "mean_output_Nm": 407.5985971834294,
+          "reference_mean_output_Nm": 148.65120338873223,
+          "output_rms_difference_Nm": 265.3097490136764,
+          "shared_output_rms_difference_Nm": 25.127565555763205,
+          "shared_output_mean_Nm": 135.86619906114313
+        }
+      },
+      "second_window": {
+        "1": {
+          "samples": 121,
+          "requested": 121,
+          "force_rms_difference_N": 1312.9119457224322,
+          "shared_force_rms_difference_N": 115.08150373189477
+        },
+        "2": {
+          "samples": 121,
+          "requested": 121,
+          "force_rms_difference_N": 4193.1487787949645,
+          "shared_force_rms_difference_N": 388.23013649783536,
+          "mean_output_Nm": 395.67341746452854,
+          "reference_mean_output_Nm": 143.53609806063074,
+          "output_rms_difference_Nm": 260.0121087008979,
+          "shared_output_rms_difference_Nm": 24.09335319144418,
+          "shared_output_mean_Nm": 132.28934898266053
+        }
+      }
+    }
+  },
+  "reference_brake_torque_balance_rms_Nm": 18.88375036002056
+}

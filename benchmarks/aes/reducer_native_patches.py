@@ -5,7 +5,6 @@ import json
 from pathlib import Path
 import re
 
-import igl
 import numpy as np
 from scipy.spatial.transform import Rotation
 
@@ -19,12 +18,11 @@ def block(section, name, count, columns, dtype):
     return np.array([line.lstrip(", ").split(",")[:columns] for line in lines], dtype=dtype)
 
 
-def measure(work, file):
+def native_surfaces(work, file):
     raw = file.read_text(encoding="utf-8-sig")
     parts = json.loads((work / "models.json").read_text())["parts"]
     with np.load(work / "assembly.npz") as deck:
         bodies, mapping = deck["bodies"], deck["mapping"]
-    results = []
     for surface in re.split(r"^CSURFACE / ", raw, flags=re.M)[1:]:
         i = int(re.search(r"\.Part(\d+)'", row(surface, "NAME"))[1])
         marker = row(surface, "RM")
@@ -42,7 +40,16 @@ def measure(work, file):
         nodes[:, 2] -= body[6] - bodies[first, 6]
         rot = Rotation.from_rotvec(body[1:4] * (body[7] + body[12]))
         nodes = rot.inv().apply(nodes)
-        with np.load(work / parts[i]["archive"]) as d:
+        yield i, parts[i], nodes, faces
+
+
+def measure(work, file):
+    import igl
+
+    results = []
+    for i, part, nodes, faces in native_surfaces(work, file):
+        nf, nv = len(faces), len(nodes)
+        with np.load(work / part["archive"]) as d:
             target, inv = np.unique(d["tri"].reshape(-1, 3), axis=0, return_inverse=True)
             indices = inv.reshape(-1, 3)
         sample = np.vstack((nodes, nodes[faces].mean(axis=1)))
@@ -60,7 +67,7 @@ def measure(work, file):
                 facet_center_max_um=float(dist[nv:].max()),
             )
         )
-    if sorted(r["part"] for r in results) != list(range(len(parts))):
+    if sorted(r["part"] for r in results) != list(range(len(json.loads((work/"models.json").read_text())["parts"]))):
         raise ValueError("Unexpected native part count")
     return results
 

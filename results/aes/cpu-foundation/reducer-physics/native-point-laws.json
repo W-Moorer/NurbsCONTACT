@@ -1,0 +1,82 @@
+{
+  "1": {
+    "con_sha256": "905024fa9c9b30c08b6303e2d64f5c950c18eb5d61c360554edd517639a54496",
+    "max_point_law_difference_N": 0.00012000000015177648,
+    "min_max_positive_points": [
+      0,
+      3
+    ],
+    "peak_penetration_um": 29.246848,
+    "all_peak_penetration_um": 34.69067,
+    "brake": {
+      "sum": {
+        "force_rms_N": 1666.0416055863584,
+        "torque_rms_Nm": 93.1322699049434,
+        "torque_max_abs_Nm": 227.90937894778665
+      },
+      "active_mean": {
+        "force_rms_N": 1.7563614344389584e-05,
+        "torque_rms_Nm": 5.299246852565452e-06,
+        "torque_max_abs_Nm": 1.2053799309796887e-05
+      }
+    },
+    "all": {
+      "sum": {
+        "force_rms_N": 1513.648319985209,
+        "torque_rms_Nm": 84.86660763329675,
+        "torque_max_abs_Nm": 237.6371254056649
+      },
+      "active_mean": {
+        "force_rms_N": 0.4830363246237038,
+        "torque_rms_Nm": 4.352713712835903e-06,
+        "torque_max_abs_Nm": 1.6119306991413396e-05
+      }
+    }
+  },
+  "2": {
+    "con_sha256": "0b12c321b032c593c903ccc61e3edb4868cb7c8f07a389c3617c729431ffe245",
+    "max_point_law_difference_N": 0.0004399999997986015,
+    "min_max_positive_points": [
+      1,
+      4
+    ],
+    "peak_penetration_um": 62.917391,
+    "all_peak_penetration_um": 99.000473,
+    "brake": {
+      "sum": {
+        "force_rms_N": 5448.049898637331,
+        "torque_rms_Nm": 337.68864833831054,
+        "torque_max_abs_Nm": 759.4625629135908
+      },
+      "active_mean": {
+        "force_rms_N": 2.216839922229802e-05,
+        "torque_rms_Nm": 6.368960889417394e-06,
+        "torque_max_abs_Nm": 2.351257734289902e-05
+      }
+    },
+    "all": {
+      "sum": {
+        "force_rms_N": 5220.742890996599,
+        "torque_rms_Nm": 323.7382507848067,
+        "torque_max_abs_Nm": 1459.6143076174903
+      },
+      "active_mean": {
+        "force_rms_N": 15.086449753619123,
+        "torque_rms_Nm": 5.57820101650186e-06,
+        "torque_max_abs_Nm": 2.4150710771664308e-05
+      }
+    },
+    "brake_native_mean_Nm": 176.71934835792635,
+    "brake_active_mean_Nm": 176.71934831433535,
+    "native_TZ_vs_instantaneous_balance_rms_Nm": 49.90772840593123
+  },
+  "repeat_speed_rms_rad_s": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "repeat_geometric_force_rms_N": [
+    0.0,
+    0.0
+  ]
+}

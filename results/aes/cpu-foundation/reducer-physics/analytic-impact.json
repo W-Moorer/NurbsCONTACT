@@ -1,0 +1,73 @@
+{
+  "case": "head-on",
+  "method": "mesh-obb",
+  "solver": "penalty",
+  "dt_s": 0.0001,
+  "duration_s": 5.0,
+  "mesh_region_scope": "contour-ray",
+  "geometry_update": "predictor",
+  "event_tolerance_s": 0.0,
+  "step_sha256": "b1b75a633d5f5de9267246c3faa9457f22615bc8b742d4cc9f297e9df2e81d2c",
+  "mesh_sha256": "3795e94baf6025aef289fe17a3294fff6abd98c9cbfc53f8f842307b618c0161",
+  "scene_sha256": "14b03f3a07d6e9d3f8ad79d228d8f9d20558a94d167ba71bb0789686408a2488",
+  "trace_sha256": "7236ea7a6b2ae95ce473033057200ffdcbf9dfe1bba524b431a8aaf2fbbb47fb",
+  "frames": 50001,
+  "process_s": 26.53273099998478,
+  "integration_s": 1.2728285,
+  "subdivisions": 0,
+  "evaluations": 51988,
+  "step_checks": 0,
+  "event_rejections": 0,
+  "cad_boolean_queries": 0,
+  "cad_event_distances": 0,
+  "chen_patch_queries": 0,
+  "chen_confirmed_candidates": 0,
+  "tdib_cells": 0,
+  "tdib_candidates": 0,
+  "tdib_unresolved": 0,
+  "impulse_residual_m_s": 0.0,
+  "impulse_solves": 0,
+  "impulse_regions": 0,
+  "impulse_iterations": 0,
+  "ccd_refinements": 0,
+  "ccd_refined_clear": 0,
+  "ccd_unresolved": 0,
+  "max_linear_momentum_drift_kg_m_s": 6.106226635438361e-16,
+  "max_angular_momentum_drift_kg_m2_s": 5.819674692045227e-11,
+  "initial_kinetic_energy_J": 0.10125,
+  "final_kinetic_energy_J": 0.10124758748548156,
+  "final_velocities_m_s": [
+    [
+      -8.563534613412767e-05,
+      0.00021893238659082893,
+      -0.4499942577087401
+    ],
+    [
+      8.563534613412767e-05,
+      -0.00021893238659082893,
+      -5.7422912603037385e-06
+    ]
+  ],
+  "final_angular_velocities_rad_s": [
+    [
+      -0.012074809154309812,
+      -0.003724822660094846,
+      -8.301412135582789e-07
+    ],
+    [
+      -0.0123304002495081,
+      -0.005828322867079253,
+      8.232773633071676e-07
+    ]
+  ],
+  "peak_normal_force_N": 22.49933809256847,
+  "normal_impulse_Ns": 0.4499948735839582,
+  "reference_entry_s": 0.04,
+  "reference_peak_N": 22.5,
+  "reference_impulse_Ns": 0.45,
+  "reference_final_axial_velocities_m_s": [
+    -0.45,
+    0.0
+  ],
+  "force_rmse_N": 0.020151638702680816
+}

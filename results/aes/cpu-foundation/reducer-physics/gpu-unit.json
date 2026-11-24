@@ -1,0 +1,10 @@
+{
+  "both_orders_passed": [
+    "piercing",
+    "coplanar overlap",
+    "coplanar separated",
+    "shared vertex",
+    "shared edge",
+    "parallel gap"
+  ]
+}

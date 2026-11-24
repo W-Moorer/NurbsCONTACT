@@ -1,0 +1,1353 @@
+{
+  "force_threshold_N": 100000,
+  "matched_5s_exceedances": 96,
+  "original_5s_exceedances": 0,
+  "matched_5s_max_N": 371282.52965976694,
+  "original_5s_max_N": 8014.022655939544,
+  "point_export_end_s": 0.13000000000000003,
+  "exceptional_points": [
+    {
+      "time_s": 0.009200000000000002,
+      "native_depth_mm": 9.2770224,
+      "native_point_force_N": 1484323.6,
+      "native_pair_force_N": 370340.35391105415,
+      "normal_dot_shaft": 1.0,
+      "direct_shaft_torque_Nm": 0.0,
+      "surface_intercepts_mm": [
+        4.6384919428204325,
+        4.638511000000001
+      ],
+      "nearest_surface_distances_mm": [
+        1.613373728343362,
+        1.6413557379549826
+      ],
+      "material_winding_numbers": [
+        1.0,
+        -1.358361895208377e-16
+      ],
+      "previous_native_mesh_pair_force_N": 1589.8164005796866
+    },
+    {
+      "time_s": 0.03350000000000001,
+      "native_depth_mm": 9.2816801,
+      "native_point_force_N": 1485068.8,
+      "native_pair_force_N": 370622.9438311881,
+      "normal_dot_shaft": 1.0,
+      "direct_shaft_torque_Nm": 0.0,
+      "surface_intercepts_mm": [
+        4.640847870865398,
+        4.640840000000003
+      ],
+      "nearest_surface_distances_mm": [
+        1.6104855104636482,
+        1.642122302582613
+      ],
+      "material_winding_numbers": [
+        1.0,
+        -7.951386703658792e-17
+      ],
+      "previous_native_mesh_pair_force_N": 3629.5085158353413
+    },
+    {
+      "time_s": 0.07590000000000002,
+      "native_depth_mm": 9.2823057,
+      "native_point_force_N": 1485168.9,
+      "native_pair_force_N": 370594.816350538,
+      "normal_dot_shaft": 1.0,
+      "direct_shaft_torque_Nm": 0.0,
+      "surface_intercepts_mm": [
+        4.641144250773435,
+        4.641152999999998
+      ],
+      "nearest_surface_distances_mm": [
+        1.6133981457985376,
+        1.6422853532117836
+      ],
+      "material_winding_numbers": [
+        1.0000000000000002,
+        1.0187714214062828e-16
+      ],
+      "previous_native_mesh_pair_force_N": 1649.2173312577816
+    },
+    {
+      "time_s": 0.10010000000000002,
+      "native_depth_mm": 9.2671995,
+      "native_point_force_N": 1482751.9,
+      "native_pair_force_N": 369914.468919184,
+      "normal_dot_shaft": 1.0,
+      "direct_shaft_torque_Nm": 0.0,
+      "surface_intercepts_mm": [
+        4.633605923244683,
+        4.633600000000001
+      ],
+      "nearest_surface_distances_mm": [
+        1.6101617325728863,
+        1.639264723311824
+      ],
+      "material_winding_numbers": [
+        0.9999999999999999,
+        -5.300924469105861e-17
+      ],
+      "previous_native_mesh_pair_force_N": 3902.929051370712
+    }
+  ],
+  "radial_translation_trials_um": [
+    0.0,
+    25.0,
+    50.0,
+    100.0,
+    200.0,
+    400.0,
+    800.0
+  ],
+  "separation_checks": [
+    {
+      "output_step": 92,
+      "hits": [
+        230,
+        220,
+        179,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 335,
+      "hits": [
+        228,
+        212,
+        147,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 759,
+      "hits": [
+        232,
+        222,
+        173,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 1001,
+      "hits": [
+        230,
+        232,
+        187,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 1668,
+      "hits": [
+        228,
+        232,
+        191,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 2092,
+      "hits": [
+        232,
+        230,
+        191,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 2335,
+      "hits": [
+        230,
+        220,
+        189,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 3001,
+      "hits": [
+        228,
+        201,
+        117,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 4092,
+      "hits": [
+        226,
+        218,
+        175,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 4334,
+      "hits": [
+        228,
+        197,
+        59,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 5001,
+      "hits": [
+        226,
+        213,
+        145,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 5425,
+      "hits": [
+        226,
+        223,
+        151,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 5668,
+      "hits": [
+        232,
+        210,
+        151,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 6092,
+      "hits": [
+        228,
+        206,
+        139,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 7001,
+      "hits": [
+        226,
+        222,
+        159,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 7425,
+      "hits": [
+        226,
+        217,
+        143,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 7668,
+      "hits": [
+        230,
+        206,
+        123,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 8092,
+      "hits": [
+        228,
+        207,
+        137,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 8334,
+      "hits": [
+        226,
+        203,
+        93,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 9001,
+      "hits": [
+        228,
+        201,
+        115,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 10092,
+      "hits": [
+        226,
+        212,
+        155,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 11001,
+      "hits": [
+        226,
+        218,
+        165,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 11425,
+      "hits": [
+        232,
+        199,
+        30,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 11668,
+      "hits": [
+        228,
+        222,
+        173,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 12092,
+      "hits": [
+        228,
+        199,
+        117,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 12334,
+      "hits": [
+        226,
+        225,
+        153,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 13001,
+      "hits": [
+        226,
+        203,
+        131,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 14092,
+      "hits": [
+        226,
+        214,
+        153,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 14334,
+      "hits": [
+        226,
+        205,
+        77,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 15001,
+      "hits": [
+        226,
+        213,
+        145,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 15425,
+      "hits": [
+        226,
+        219,
+        165,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 15668,
+      "hits": [
+        232,
+        210,
+        155,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 16092,
+      "hits": [
+        228,
+        214,
+        145,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 17001,
+      "hits": [
+        226,
+        218,
+        165,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 17425,
+      "hits": [
+        226,
+        205,
+        121,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 17668,
+      "hits": [
+        228,
+        204,
+        123,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 18092,
+      "hits": [
+        228,
+        201,
+        125,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 18334,
+      "hits": [
+        226,
+        203,
+        113,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 19001,
+      "hits": [
+        228,
+        201,
+        115,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 20092,
+      "hits": [
+        226,
+        218,
+        165,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 21001,
+      "hits": [
+        226,
+        218,
+        165,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 21425,
+      "hits": [
+        226,
+        213,
+        143,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 21668,
+      "hits": [
+        226,
+        218,
+        173,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 22092,
+      "hits": [
+        226,
+        214,
+        145,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 22334,
+      "hits": [
+        226,
+        223,
+        151,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 23001,
+      "hits": [
+        226,
+        203,
+        117,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 24092,
+      "hits": [
+        226,
+        218,
+        169,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 24334,
+      "hits": [
+        228,
+        199,
+        65,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 25001,
+      "hits": [
+        226,
+        213,
+        145,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 25425,
+      "hits": [
+        226,
+        223,
+        153,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 25668,
+      "hits": [
+        230,
+        208,
+        155,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 26092,
+      "hits": [
+        228,
+        212,
+        139,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 27001,
+      "hits": [
+        226,
+        222,
+        159,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 27425,
+      "hits": [
+        230,
+        201,
+        71,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 27668,
+      "hits": [
+        230,
+        206,
+        123,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 28092,
+      "hits": [
+        226,
+        207,
+        139,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 28334,
+      "hits": [
+        226,
+        203,
+        93,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 29001,
+      "hits": [
+        228,
+        201,
+        115,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 30092,
+      "hits": [
+        226,
+        212,
+        155,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 31001,
+      "hits": [
+        226,
+        218,
+        165,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 31425,
+      "hits": [
+        226,
+        219,
+        151,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 31668,
+      "hits": [
+        228,
+        222,
+        173,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 32092,
+      "hits": [
+        226,
+        216,
+        153,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 32334,
+      "hits": [
+        226,
+        221,
+        153,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 33001,
+      "hits": [
+        226,
+        203,
+        137,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 34092,
+      "hits": [
+        226,
+        218,
+        161,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 34334,
+      "hits": [
+        226,
+        205,
+        77,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 35001,
+      "hits": [
+        226,
+        213,
+        145,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 35425,
+      "hits": [
+        226,
+        219,
+        165,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 35668,
+      "hits": [
+        232,
+        210,
+        155,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 36092,
+      "hits": [
+        228,
+        214,
+        145,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 37001,
+      "hits": [
+        226,
+        218,
+        165,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 37425,
+      "hits": [
+        226,
+        203,
+        113,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 37668,
+      "hits": [
+        228,
+        204,
+        123,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 38092,
+      "hits": [
+        228,
+        205,
+        137,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 38334,
+      "hits": [
+        226,
+        211,
+        131,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 39001,
+      "hits": [
+        228,
+        201,
+        115,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 40092,
+      "hits": [
+        226,
+        212,
+        155,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 41001,
+      "hits": [
+        226,
+        218,
+        165,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 41425,
+      "hits": [
+        226,
+        213,
+        143,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 41668,
+      "hits": [
+        226,
+        218,
+        173,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 42092,
+      "hits": [
+        226,
+        216,
+        153,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 42334,
+      "hits": [
+        226,
+        223,
+        151,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 43001,
+      "hits": [
+        228,
+        199,
+        117,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 44092,
+      "hits": [
+        228,
+        208,
+        139,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 44334,
+      "hits": [
+        228,
+        197,
+        59,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 45001,
+      "hits": [
+        226,
+        213,
+        145,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 45425,
+      "hits": [
+        226,
+        223,
+        153,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 45668,
+      "hits": [
+        230,
+        208,
+        155,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 46092,
+      "hits": [
+        230,
+        201,
+        115,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 47001,
+      "hits": [
+        226,
+        222,
+        153,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 47425,
+      "hits": [
+        230,
+        201,
+        71,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 47668,
+      "hits": [
+        230,
+        206,
+        123,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 48092,
+      "hits": [
+        228,
+        207,
+        137,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 48334,
+      "hits": [
+        226,
+        203,
+        93,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    },
+    {
+      "output_step": 49001,
+      "hits": [
+        228,
+        201,
+        115,
+        0,
+        0,
+        0,
+        0
+      ],
+      "disjoint_translation_bound_um": 100.0
+    }
+  ]
+}

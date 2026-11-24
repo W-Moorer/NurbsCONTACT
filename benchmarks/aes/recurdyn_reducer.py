@@ -96,7 +96,7 @@ def connect():
     return rd.IApplication(wrapper.RecurDynApplication), rd
 
 
-def simulate(work, duration, h, output, patch_scale=None):
+def simulate(work, duration, h, output, patch_scale=None, contact_point_output=False):
     app, rd = connect()
     setup_start = perf_counter()
     with np.load(work / "assembly.npz") as d:
@@ -181,6 +181,9 @@ def simulate(work, duration, h, output, patch_scale=None):
             prop.UseStiffnessExponent = True
             prop.StiffnessExponent.Value = 1
             prop.DampingCoefficient.Value = 0
+            if contact_point_output:
+                contact.OutputMarker=ground.MarkerCollection.Item(0)
+                contact.UseContactOutputFile=True
             if patch_scale is not None:
                 for patch in (contact.BasePatchOption, contact.ActionPatchOption):
                     factor = patch.PlaneToleranceFactor.Value
@@ -249,10 +252,12 @@ if __name__ == "__main__":
     p.add_argument(
         "--plot", type=Path, help="Extract direct joint angle and contact channels from a completed .rplt"
     )
+    p.add_argument("--contact-point-output",action="store_true",
+                   help="Write native solid-contact points in the ground frame")
     args = p.parse_args()
     if args.plot:
         extract_plot(*connect(), args.plot, args.output)
     else:
         if args.patch_scale is not None and not (0 < args.patch_scale <= 1):
             p.error("Patch scale must be in (0, 1]")
-        simulate(args.work, args.duration, args.step_us * 1e-6, args.output, args.patch_scale)
+        simulate(args.work, args.duration, args.step_us * 1e-6, args.output, args.patch_scale,args.contact_point_output)

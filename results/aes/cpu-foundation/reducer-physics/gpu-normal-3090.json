@@ -1,0 +1,95 @@
+{
+  "device": "NVIDIA GeForce RTX 3090",
+  "cases": [
+    {
+      "laws": [
+        0,
+        0
+      ],
+      "sweeps": 1,
+      "max_impulse_error_Ns": 0,
+      "residual_m_s": 0,
+      "mean_device_us": 4.104
+    },
+    {
+      "laws": [
+        0,
+        1
+      ],
+      "sweeps": 1,
+      "max_impulse_error_Ns": 0,
+      "residual_m_s": 1.11022302463e-16,
+      "mean_device_us": 4.132
+    },
+    {
+      "laws": [
+        0,
+        2
+      ],
+      "sweeps": 16,
+      "max_impulse_error_Ns": 4.20494750131e-11,
+      "residual_m_s": 7.00823843403e-11,
+      "mean_device_us": 68.219997
+    },
+    {
+      "laws": [
+        1,
+        0
+      ],
+      "sweeps": 1,
+      "max_impulse_error_Ns": 0,
+      "residual_m_s": 5.55111512313e-17,
+      "mean_device_us": 4.132
+    },
+    {
+      "laws": [
+        1,
+        1
+      ],
+      "sweeps": 1,
+      "max_impulse_error_Ns": 0,
+      "residual_m_s": 0,
+      "mean_device_us": 3.808
+    },
+    {
+      "laws": [
+        1,
+        2
+      ],
+      "sweeps": 17,
+      "max_impulse_error_Ns": 4.36557456851e-11,
+      "residual_m_s": 6.54836185277e-11,
+      "mean_device_us": 69.812
+    },
+    {
+      "laws": [
+        2,
+        0
+      ],
+      "sweeps": 16,
+      "max_impulse_error_Ns": 2.26418883642e-11,
+      "residual_m_s": 3.7736480607e-11,
+      "mean_device_us": 68.219997
+    },
+    {
+      "laws": [
+        2,
+        1
+      ],
+      "sweeps": 17,
+      "max_impulse_error_Ns": 2.91038304567e-11,
+      "residual_m_s": 4.36557456851e-11,
+      "mean_device_us": 69.796003
+    },
+    {
+      "laws": [
+        2,
+        2
+      ],
+      "sweeps": 21,
+      "max_impulse_error_Ns": 5.97495386501e-11,
+      "residual_m_s": 5.97495386501e-11,
+      "mean_device_us": 86.304002
+    }
+  ]
+}

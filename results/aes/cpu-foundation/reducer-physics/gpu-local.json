@@ -1,0 +1,235 @@
+{
+  "device": "NVIDIA GeForce RTX 3070",
+  "stages": {
+    "1": {
+      "poses": [
+        {
+          "step": 0,
+          "cpu": 0,
+          "gpu": 0,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 0.0
+        },
+        {
+          "step": 1,
+          "cpu": 0,
+          "gpu": 0,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 0.0
+        },
+        {
+          "step": 25,
+          "cpu": 60,
+          "gpu": 60,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 1.5524059674132788e-15
+        },
+        {
+          "step": 100,
+          "cpu": 65,
+          "gpu": 65,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 7.841257136107864e-16
+        },
+        {
+          "step": 400,
+          "cpu": 63,
+          "gpu": 63,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 1.5536034693143085e-15
+        },
+        {
+          "step": 1019,
+          "cpu": 69,
+          "gpu": 69,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 1.3297535223456003e-16
+        },
+        {
+          "step": 1020,
+          "cpu": 67,
+          "gpu": 67,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 1.3947004136484323e-16
+        },
+        {
+          "step": 1021,
+          "cpu": 70,
+          "gpu": 70,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 1.3947004136484323e-16
+        },
+        {
+          "step": 1040,
+          "cpu": 77,
+          "gpu": 77,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 1.5593224665824852e-15
+        },
+        {
+          "step": 1090,
+          "cpu": 70,
+          "gpu": 70,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 1.368563798628543e-16
+        },
+        {
+          "step": 1140,
+          "cpu": 58,
+          "gpu": 58,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 2.3482928051198205e-17
+        },
+        {
+          "step": 1300,
+          "cpu": 77,
+          "gpu": 77,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 9.391905684124453e-16
+        }
+      ],
+      "dispatch_median_us": 733.1839799880981,
+      "dispatch_p95_us": 2394.5264577865596,
+      "graph_static_query_mean_us": 117.80800422032674
+    },
+    "2": {
+      "poses": [
+        {
+          "step": 0,
+          "cpu": 0,
+          "gpu": 0,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 0.0
+        },
+        {
+          "step": 1,
+          "cpu": 0,
+          "gpu": 0,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 0.0
+        },
+        {
+          "step": 25,
+          "cpu": 243,
+          "gpu": 243,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 1.496844477619979e-15
+        },
+        {
+          "step": 100,
+          "cpu": 230,
+          "gpu": 230,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 2.0612865846048803e-15
+        },
+        {
+          "step": 400,
+          "cpu": 237,
+          "gpu": 237,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 1.9176677577289983e-15
+        },
+        {
+          "step": 1019,
+          "cpu": 240,
+          "gpu": 240,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 1.8154790784945448e-15
+        },
+        {
+          "step": 1020,
+          "cpu": 231,
+          "gpu": 231,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 1.828709788134603e-15
+        },
+        {
+          "step": 1021,
+          "cpu": 231,
+          "gpu": 231,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 1.83390138389124e-15
+        },
+        {
+          "step": 1040,
+          "cpu": 229,
+          "gpu": 229,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 1.5712460777484618e-15
+        },
+        {
+          "step": 1090,
+          "cpu": 238,
+          "gpu": 238,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 1.1798137935906233e-15
+        },
+        {
+          "step": 1140,
+          "cpu": 240,
+          "gpu": 240,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 2.7072526618705827e-15
+        },
+        {
+          "step": 1300,
+          "cpu": 253,
+          "gpu": 253,
+          "missed": 0,
+          "extra": 0,
+          "unresolved_constructions": 0,
+          "max_intersection_vertex_distance_m": 1.9444023603439916e-15
+        }
+      ],
+      "dispatch_median_us": 1900.0320434570312,
+      "dispatch_p95_us": 2372.096037864685,
+      "graph_static_query_mean_us": 663.6639833450317
+    }
+  }
+}

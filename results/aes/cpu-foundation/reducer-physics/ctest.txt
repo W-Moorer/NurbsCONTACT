@@ -1,0 +1,24 @@
+Internal ctest changing into directory: G:/NurbsCONTACT/build/cpu-swept
+Test project G:/NurbsCONTACT/build/cpu-swept
+    Start 1: cpu_mesh_intersections
+1/9 Test #1: cpu_mesh_intersections ...........   Passed   11.47 sec
+    Start 2: safeguarded_tdib_envelopes
+2/9 Test #2: safeguarded_tdib_envelopes .......   Passed    0.46 sec
+    Start 3: surface_impulse_laws
+3/9 Test #3: surface_impulse_laws .............   Passed    0.47 sec
+    Start 4: geometry_and_queries
+4/9 Test #4: geometry_and_queries .............   Passed    0.61 sec
+    Start 5: hht_and_triangle_bvh
+5/9 Test #5: hht_and_triangle_bvh .............   Passed    0.48 sec
+    Start 6: cad_solid_contact
+6/9 Test #6: cad_solid_contact ................   Passed    3.77 sec
+    Start 7: chen_2026_step_events
+7/9 Test #7: chen_2026_step_events ............   Passed    1.79 sec
+    Start 8: chen_step_events
+8/9 Test #8: chen_step_events .................   Passed    6.67 sec
+    Start 9: step_round_trip
+9/9 Test #9: step_round_trip ..................   Passed    2.02 sec
+
+100% tests passed, 0 tests failed out of 9
+
+Total Test time (real) =  27.98 sec

@@ -1,0 +1,100 @@
+{
+  "100": {
+    "CPU": {
+      "mean_torque_Nm": 180.11468131038117,
+      "angular_impulse_Nms": 2.1613761757245786,
+      "peak_Nm": 477.35226454340693,
+      "min_speed_rad_s": 43.95815844719952,
+      "max_speed_rad_s": 50.12623295676513
+    },
+    "RecurDyn": {
+      "mean_torque_Nm": 179.05052869302034,
+      "angular_impulse_Nms": 2.1486063443162484,
+      "peak_Nm": 258.96246094737836,
+      "min_speed_rad_s": 46.338264220950585,
+      "max_speed_rad_s": 47.801200081897974
+    },
+    "between_solvers_torque_rms_Nm": 154.64053745959444
+  },
+  "50": {
+    "CPU": {
+      "mean_torque_Nm": 179.02772284284677,
+      "angular_impulse_Nms": 2.1483326741141657,
+      "peak_Nm": 258.0925645955532,
+      "min_speed_rad_s": 46.210815329260015,
+      "max_speed_rad_s": 47.99752403161523
+    },
+    "RecurDyn": {
+      "mean_torque_Nm": 179.57403029257577,
+      "angular_impulse_Nms": 2.1548883635109135,
+      "peak_Nm": 364.40934958523974,
+      "min_speed_rad_s": 45.28368587731151,
+      "max_speed_rad_s": 48.83191173071285
+    },
+    "between_solvers_torque_rms_Nm": 98.41713622092077
+  },
+  "25": {
+    "CPU": {
+      "mean_torque_Nm": 178.9474655438969,
+      "angular_impulse_Nms": 2.147369586526767,
+      "peak_Nm": 264.6507556514055,
+      "min_speed_rad_s": 45.97076692964688,
+      "max_speed_rad_s": 48.082259671578214
+    },
+    "RecurDyn": {
+      "mean_torque_Nm": 177.99375529304987,
+      "angular_impulse_Nms": 2.135925063516603,
+      "peak_Nm": 475.44783195465084,
+      "min_speed_rad_s": 44.25768774926337,
+      "max_speed_rad_s": 49.764496912684436
+    },
+    "between_solvers_torque_rms_Nm": 104.6381950504022
+  },
+  "12.5": {
+    "CPU": {
+      "mean_torque_Nm": 178.3400648384963,
+      "angular_impulse_Nms": 2.14008077806196,
+      "peak_Nm": 312.31040335936274,
+      "min_speed_rad_s": 45.449632660784225,
+      "max_speed_rad_s": 48.651472745633576
+    },
+    "RecurDyn": {
+      "mean_torque_Nm": 177.37891982910796,
+      "angular_impulse_Nms": 2.1285470379493,
+      "peak_Nm": 513.7674932110665,
+      "min_speed_rad_s": 43.882961870037306,
+      "max_speed_rad_s": 50.153227344256216
+    },
+    "between_solvers_torque_rms_Nm": 79.75626636694537
+  },
+  "within_solver_rms_on_100us_grid": {
+    "CPU": {
+      "100_to_50us": [
+        150.17736735595906,
+        1.857506141209693
+      ],
+      "50_to_25us": [
+        21.722792298073784,
+        0.22454611519479306
+      ],
+      "25_to_12.5us": [
+        46.471242809566526,
+        0.5117848869901773
+      ]
+    },
+    "RecurDyn": {
+      "100_to_50us": [
+        68.03284100756551,
+        0.7265870025106518
+      ],
+      "50_to_25us": [
+        75.36722092405834,
+        0.8563964268111036
+      ],
+      "25_to_12.5us": [
+        32.12523765495404,
+        0.3024822930075842
+      ]
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "1": {
+    "loaded_points": 223,
+    "unresolved": 0,
+    "rms_depth_difference_um": 0.008958751815833013,
+    "max_depth_difference_um": 0.024577805038099143
+  },
+  "2": {
+    "loaded_points": 315,
+    "unresolved": 0,
+    "rms_depth_difference_um": 0.007132734116971142,
+    "max_depth_difference_um": 0.02104370168187586
+  }
+}

@@ -1,6 +1,6 @@
 # 刚体网格接触的 CPU 基线
 
-两级减速器在相邻姿态间复用候选面片后的速度、载荷及计算耗时见[最新减速器实验](temporal-reducer/README.md)。本页其余数据保留各次运行的模型和实现条件。
+两级减速器的 5 s 同网格对照包括原始 RecurDyn 输出、制动峰值的步长试验、96 个高载荷姿态的分离检查，以及 GPU 上的三角形和法向力学算子验证。[同网格减速器实验](reducer-physics/README.md) · [候选面片跨步复用实验](temporal-reducer/README.md)
 
 完整运行表见 [RESULTS.md](RESULTS.md)。[解析基准](analytical.png)、[凸轮响应](cam-response.png)、[偏心碰撞](spatial-impact.png)、[齿轮响应](gear-response.png) 和 [减速器共同区间](reducer-prefix.png) 均由已接受的状态绘制。动画采用原网格与计算得到的姿态。[凸轮动画](cam.mp4) · [齿轮动画](gear.mp4) · [两级减速器已完成区间的动画](reducer-prefix.mp4)
 

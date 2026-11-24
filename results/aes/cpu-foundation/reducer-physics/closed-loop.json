@@ -1,0 +1,91 @@
+{
+  "physical_s": 5.000000000001686,
+  "samples": 50001,
+  "step_s": 0.0001,
+  "full": {
+    "samples": 50001,
+    "velocity_rms_rad_s": [
+      1.7514014120887211,
+      0.6519105051750147,
+      0.8955237434481104
+    ],
+    "transmission_error_difference_rms_mrad": [
+      0.03937794809738024,
+      0.17854707066247238
+    ],
+    "output_torque_difference_rms_Nm": 71.86786156891719,
+    "cpu_mean_output_Nm": 137.80404880802342,
+    "reference_mean_output_Nm": 138.06673474009287,
+    "cpu_peak_output_Nm": 586.8525049957507,
+    "reference_peak_output_Nm": 509.32494922780234,
+    "cpu_angular_impulse_Nms": 689.02613041802,
+    "reference_angular_impulse_Nms": 690.3409396484078,
+    "cpu_sampled_balance_residual_Nms": -0.0013599527682032304,
+    "reference_sampled_balance_residual_Nms": 1.3129549971032595,
+    "native_mesh_change_torque_rms_Nm": 74.39752049446233,
+    "cpu_vs_original_native_mesh": {
+      "samples": 50001,
+      "velocity_rms_rad_s": [
+        3.8568936667856946,
+        1.1596399129829182,
+        1.2765440649002107
+      ],
+      "transmission_error_difference_rms_mrad": [
+        0.46661179110549755,
+        0.4163331539983245
+      ],
+      "output_torque_difference_rms_Nm": 97.08597303378433,
+      "cpu_mean_output_Nm": 137.80404880802342,
+      "reference_mean_output_Nm": 137.9468732675683,
+      "cpu_peak_output_Nm": 586.8525049957507,
+      "reference_peak_output_Nm": 495.76243750837625,
+      "cpu_angular_impulse_Nms": 689.02613041802,
+      "reference_angular_impulse_Nms": 689.7428388502068,
+      "cpu_sampled_balance_residual_Nms": -0.0013599527682032304,
+      "reference_sampled_balance_residual_Nms": 0.7294131199371022
+    }
+  },
+  "brake": {
+    "samples": 121,
+    "velocity_rms_rad_s": [
+      3.7463995595266466,
+      1.376688364929396,
+      1.8840330251675401
+    ],
+    "transmission_error_difference_rms_mrad": [
+      0.09083651640961281,
+      0.3417719359736628
+    ],
+    "output_torque_difference_rms_Nm": 154.64053745959444,
+    "cpu_mean_output_Nm": 180.8489811599616,
+    "reference_mean_output_Nm": 179.13768882123566,
+    "cpu_peak_output_Nm": 477.35226454340693,
+    "reference_peak_output_Nm": 258.96246094737836,
+    "cpu_angular_impulse_Nms": 2.1613761757246475,
+    "reference_angular_impulse_Nms": 2.1486063443163106,
+    "cpu_sampled_balance_residual_Nms": -0.0001861351766531275,
+    "reference_sampled_balance_residual_Nms": -0.0044106104498947305,
+    "native_mesh_change_torque_rms_Nm": 87.48527964754994,
+    "cpu_vs_original_native_mesh": {
+      "samples": 121,
+      "velocity_rms_rad_s": [
+        5.066600800587828,
+        1.6926219923162245,
+        2.1442619003014243
+      ],
+      "transmission_error_difference_rms_mrad": [
+        0.48626669920358323,
+        0.5299561784401066
+      ],
+      "output_torque_difference_rms_Nm": 171.44095422965938,
+      "cpu_mean_output_Nm": 180.8489811599616,
+      "reference_mean_output_Nm": 176.71934835792635,
+      "cpu_peak_output_Nm": 477.35226454340693,
+      "reference_peak_output_Nm": 379.73128536144054,
+      "cpu_angular_impulse_Nms": 2.1613761757246475,
+      "reference_angular_impulse_Nms": 2.116216951419938,
+      "cpu_sampled_balance_residual_Nms": -0.0001861351766531275,
+      "reference_sampled_balance_residual_Nms": -0.01677084367405988
+    }
+  }
+}

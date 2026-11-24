@@ -1,0 +1,24 @@
+{
+  "device": "NVIDIA GeForce RTX 3090",
+  "nodes_built_on_host": true,
+  "poses_supplied": true,
+  "solver_included": false,
+  "intersection_vertices_included": true,
+  "kernel_hash": "df7a6889a638b216fac88a98b78beaca5cb5ee110d38e7b9ec09edf169c4bb21",
+  "stages": [
+    {
+      "poses": 12,
+      "cpu_pairs": 676,
+      "missing": 0,
+      "extra": 0,
+      "static_query_mean_us": 236.613
+    },
+    {
+      "poses": 12,
+      "cpu_pairs": 2372,
+      "missing": 0,
+      "extra": 0,
+      "static_query_mean_us": 407.363
+    }
+  ]
+}
