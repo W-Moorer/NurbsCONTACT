@@ -37,6 +37,42 @@ def profile(exe,scene,progress):
     return out
 
 
+def compare_temporal_mesh(exe, original, scene, progress):
+    bodies,pairs=read_model(scene)
+    states=np.genfromtxt(progress,names=True,delimiter=',',max_rows=12600)
+    result=dict(scene_sha256=digest(scene), source_sha256=digest(progress),
+                baseline_sha256=digest(original), current_sha256=digest(exe), windows=[])
+    for start in (1020,12400):
+        forward=np.arange(start,start+200)
+        # Jump to the other window and return to earlier poses to exercise invalidation.
+        jumps=np.array([12400 if start==1020 else 1020,start+12,start+6,start+199])
+        ids=np.concatenate([forward,jumps])
+        np.testing.assert_array_equal(states['step'][ids],ids)
+        for stage,(a,b,_,limit) in enumerate(pairs,1):
+            poses=np.column_stack([world_poses(bodies[i],states[ids]) for i in (a,b)])
+            rows=''.join(' '.join(format(x,'.17g') for x in row)+'\n' for row in poses)
+            meshes=[bodies[i][0].with_suffix('.msh') for i in (a,b)]
+            baseline=None
+            item=dict(stage=stage,start_step=start,forward_poses=len(forward),jump_poses=len(jumps),runs=[])
+            for binary,method in [(original,'mesh-obb'),(exe,'mesh-obb'),(exe,'mesh-aabb')]:
+                task=subprocess.run([binary,'--method',method,'--regions','finite','--max-depth-m',str(limit),*meshes],
+                                    input=rows,text=True,capture_output=True,check=True,timeout=1800)
+                queries=[json.loads(line) for line in task.stdout.splitlines()]
+                if len(queries)!=len(ids): raise ValueError('incomplete pose replay')
+                regions=[q['regions'] for q in queries]
+                if baseline is None: baseline=regions
+                for step,left,right in zip(ids,baseline,regions,strict=True):
+                    if left!=right: raise ValueError(f'changed contact geometry at step {step}, stage {stage}')
+                batch=queries[:len(forward)]
+                entry=dict(method=method,original=binary==original,query_s=sum(q['query_s'] for q in batch),
+                           regions=sum(len(q['regions']) for q in batch))
+                for key in ('pair_bvh_builds','pair_bvh_reuses','patch_builds','patch_reuses'):
+                    if key in batch[0]: entry[key]=sum(q[key] for q in batch)
+                item['runs'].append(entry)
+            result['windows'].append(item)
+    return result
+
+
 def compare_order(exe,scene,progress):
     bodies,[(a,b,_,limit)]=read_model(scene)
     states=np.genfromtxt(progress,names=True,delimiter=',')
@@ -113,7 +149,13 @@ if __name__=='__main__':
     for name in ('exe','scene','progress','out'): cli.add_argument(name,type=Path)
     cli.add_argument('--compare-order',action='store_true')
     cli.add_argument('--brake-reference',type=Path)
+    cli.add_argument('--compare-temporal-mesh',type=Path,metavar='ORIGINAL_NC_MESH')
     a=cli.parse_args()
     check=compare_order if a.compare_order else profile
-    result=brake_loads(a.exe.resolve(),a.scene,a.progress,a.brake_reference,a.out) if a.brake_reference else check(a.exe.resolve(),a.scene,a.progress)
+    if a.compare_temporal_mesh:
+        result=compare_temporal_mesh(a.exe.resolve(),a.compare_temporal_mesh.resolve(),a.scene,a.progress)
+    elif a.brake_reference:
+        result=brake_loads(a.exe.resolve(),a.scene,a.progress,a.brake_reference,a.out)
+    else:
+        result=check(a.exe.resolve(),a.scene,a.progress)
     a.out.write_text(json.dumps(result,indent=2)+'\n')

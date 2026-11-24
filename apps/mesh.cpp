@@ -97,6 +97,8 @@ int main(int argc, char** argv) {
                 const double seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
                 std::cout<<"{\"query_s\":"<<seconds<<",\"triangle_tests\":"<<work.mesh.triangles<<",\"node_pairs\":"<<work.mesh.nodes
                          <<",\"boolean_queries\":"<<work.boolean_queries<<",\"input_faces\":"<<work.boolean_input_faces<<",\"local_solids\":"<<work.local_solid_uses
+                         <<",\"pair_bvh_builds\":"<<work.mesh_pair_bvh_builds<<",\"pair_bvh_reuses\":"<<work.mesh_pair_bvh_reuses
+                         <<",\"patch_builds\":"<<work.mesh_patch_builds<<",\"patch_reuses\":"<<work.mesh_patch_reuses
                          <<",\"regions\":[";
                 for (std::size_t i=0;i<found.size();++i) {
                     if (i) std::cout<<',';

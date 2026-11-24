@@ -2,7 +2,13 @@
 
 #include <algorithm>
 #include <cmath>
+#include <chrono>
+#include <exception>
 #include <stdexcept>
+#include <unordered_set>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 namespace nc::dynamics {
 namespace {
@@ -155,15 +161,70 @@ bool evaluate_closest(Forces* forces, const ContactBodyState& a, const ContactBo
     return assemble_contact(forces, pair.material, sample, a, b, velocity, previous, differential);
 }
 
+struct RegionEvaluation {
+    std::vector<ContactRegion> regions;
+    ContactWork work;
+    std::exception_ptr error;
+};
+
+#ifdef _OPENMP
+// Only independent mesh geometries run concurrently. Material response and HHT
+// assembly keep their original per-pair and per-region accumulation order.
+std::vector<RegionEvaluation> batch_mesh_regions(std::span<const ContactBodyState> bodies,
+        std::span<const ContactPair> pairs,ContactWork& work) {
+    const int workers=std::min(omp_get_max_threads(),static_cast<int>(std::min<std::size_t>(4,pairs.size())));
+    if (workers<2 || omp_in_parallel()) return {};
+    std::unordered_set<const PairRegionQuery*> seen;
+    std::size_t faces=0;
+    for (const auto& pair:pairs) {
+        const auto* query=pair.regions.get();
+        if (!query || !query->independent_mesh_faces() || !seen.insert(query).second) return {};
+        faces+=query->independent_mesh_faces();
+    }
+    if (faces<1024) return {};
+    std::vector<RegionEvaluation> batch(pairs.size());
+    const auto start=std::chrono::steady_clock::now();
+    int team=1;
+#pragma omp parallel num_threads(workers)
+    {
+#pragma omp single
+        team=omp_get_num_threads();
+#pragma omp for schedule(dynamic,1)
+        for (std::ptrdiff_t i=0;i<static_cast<std::ptrdiff_t>(pairs.size());++i) {
+            const auto& pair=pairs[i];
+            auto& evaluation=batch[i];
+            try {
+                evaluation.regions=pair.regions->regions(bodies[pair.a].pose,bodies[pair.b].pose,evaluation.work);
+            } catch (...) {evaluation.error=std::current_exception();}
+        }
+    }
+    work.mesh_detection_s+=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
+    ++work.mesh_parallel_batches;
+    work.mesh_max_workers=std::max(work.mesh_max_workers,static_cast<std::size_t>(team));
+    for (const auto& entry:batch) {
+        work.mesh.nodes+=entry.work.mesh.nodes;
+        work.mesh.triangles+=entry.work.mesh.triangles;
+        work.mesh_pair_bvh_builds+=entry.work.mesh_pair_bvh_builds;
+        work.mesh_pair_bvh_reuses+=entry.work.mesh_pair_bvh_reuses;
+        work.mesh_patch_builds+=entry.work.mesh_patch_builds;
+        work.mesh_patch_reuses+=entry.work.mesh_patch_reuses;
+    }
+    return batch;
+}
+#endif
+
 bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState& b,
               const ContactPair& pair, const Vector& velocity,
               ContactWork& work, ContactSample& sample, bool observe,
-              const ImpactHistory& previous) {
+              const ImpactHistory& previous,RegionEvaluation* prepared) {
     ++work.pairs;
     if (pair.regions) {
         std::vector<ContactRegion> regions;
         try {
-            regions=pair.regions->regions(a.pose,b.pose,work);
+            if (prepared) {
+                if (prepared->error) std::rethrow_exception(prepared->error);
+                regions=std::move(prepared->regions);
+            } else regions=pair.regions->regions(a.pose,b.pose,work);
         } catch (const UnresolvedContact&) {
             ++work.unresolved_queries;
             return false;
@@ -379,11 +440,16 @@ bool add_contact_forces(Forces* forces, std::span<const ContactBodyState> bodies
         observations->clear();
         observations->reserve(pairs.size());
     }
+    std::vector<RegionEvaluation> prepared;
+#ifdef _OPENMP
+    if (pairs.size()>1) prepared=batch_mesh_regions(bodies,pairs,work);
+#endif
     for (std::size_t i=0; i<pairs.size(); ++i) {
         const auto& pair = pairs[i];
         ContactSample sample;
         const ImpactHistory start = previous.empty() ? ImpactHistory{} : previous[i];
-        if (!evaluate(forces,bodies[pair.a],bodies[pair.b],pair,velocity,work,sample,observations!=nullptr,start)) {
+        if (!evaluate(forces,bodies[pair.a],bodies[pair.b],pair,velocity,work,sample,observations!=nullptr,start,
+                      prepared.empty()?nullptr:&prepared[i])) {
             return false;
         }
         if (observations) observations->push_back(sample);

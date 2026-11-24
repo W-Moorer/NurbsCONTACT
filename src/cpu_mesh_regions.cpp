@@ -290,6 +290,9 @@ public:
         if (mode_==MeshRegionMode::finite) features_=std::make_unique<FiniteFeatures>(*meshes_[0],*meshes_[1],scene_,max_depth);
         if (features_ || mode_==MeshRegionMode::fcl) solids_={};
     }
+    std::size_t independent_mesh_faces() const override {
+        return features_ ? meshes_[0]->faces.size()+meshes_[1]->faces.size() : 0;
+    }
     std::vector<ContactRegion> regions(ContactPose a,ContactPose b,ContactWork& work) const override {
         using Clock=std::chrono::steady_clock;
         const auto start=Clock::now();

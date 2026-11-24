@@ -190,6 +190,22 @@ void check_crossed_edges() {
     for (std::size_t i=0;i<aa.size();++i)
         require(aa[i].point==bb[i].point && aa[i].normal==bb[i].normal && aa[i].depth_m==bb[i].depth_m,
                 "BVH traversal changed contact accumulation order");
+    // Revisit rejected poses and move different components into contact.
+    for (auto method:{MeshMethod::aabb,MeshMethod::obb}) {
+        auto warm=mesh_region_query(left,right,method,{},MeshRegionMode::finite,.03);
+        ContactWork cached;
+        for (double x:{0.,.001,.06,.061,2.,6.,0.,.001}) {
+            pose.origin[0]=x;
+            const auto current=warm->regions(base,pose,cached);
+            const auto cold=contacts(method);
+            require(current.size()==cold.size(),"stale contact candidate list");
+            for (std::size_t i=0;i<cold.size();++i)
+                require(current[i].point==cold[i].point && current[i].normal==cold[i].normal &&
+                        current[i].depth_m==cold[i].depth_m,"stale contact geometry after pose change");
+        }
+        require(cached.mesh_patch_reuses>0 && cached.mesh_pair_bvh_builds>1,
+                "test must exercise finite contact reuse and invalidation");
+    }
 }
 
 void check_local_regions() {
@@ -212,6 +228,27 @@ void check_local_regions() {
     }
     auto local=mesh_region_query(mesh,mesh,MeshMethod::obb);
     auto full=mesh_region_query(mesh,mesh,MeshMethod::obb,{},false);
+    {
+        std::array<ContactBodyState,3> states{};
+        states[1].pose.origin={.997,.01,.02};
+        states[2].pose.origin={.995,.02,.01};
+        std::array<ContactPair,2> pairs{};
+        for (unsigned i=0;i<2;++i) {
+            pairs[i].b=i+1;
+            pairs[i].material={1000.,1.,0.,0.,.01,.05};
+            pairs[i].regions=mesh_region_query(mesh,mesh,MeshMethod::obb,{},MeshRegionMode::finite,.05);
+        }
+        ContactWork independent,shared;
+        std::vector<ContactSample> batch,serial;
+        require(add_contact_forces(nullptr,states,pairs,{},independent,&batch),"independent mesh queries failed");
+        pairs[1].regions=pairs[0].regions;
+        require(add_contact_forces(nullptr,states,pairs,{},shared,&serial),"shared query failed");
+        require(shared.mesh_parallel_batches==0 && serial.size()==2 && batch.size()==2,
+                "queries sharing a geometry cache must execute serially");
+        for (int i=0;i<2;++i)
+            require(serial[i].normal_force>0 && serial[i].normal_force==batch[i].normal_force &&
+                    serial[i].gap==batch[i].gap,"batch assembly changed the mesh load");
+    }
     std::array<std::shared_ptr<const MeshData>,2> mesh_pair{mesh,mesh};
     {
         MeshScene sliding(mesh_pair,MeshMethod::obb);
@@ -247,6 +284,17 @@ void check_local_regions() {
             }
         }
         require(witnessed>0,"missing proximity fixture");
+        for (double shift:{.002,.012,.31,.005}) {
+            poses[1].origin={.997,shift,.003};
+            const auto pairs=geometry.near_pairs(poses,.01,near_work);
+            const std::set<std::array<std::size_t,2>> present(pairs.begin(),pairs.end());
+            const auto truth=geometry.intersect(poses);
+            require(!truth.intersections.empty(),"sliding boundary fixture lost contact");
+            for (const auto& hit:truth.intersections)
+                require(present.contains({hit.triangle_a,hit.triangle_b}),"cached surface window lost a new contact");
+        }
+        require(near_work.mesh_pair_bvh_reuses>0 && near_work.mesh_pair_bvh_builds>1,
+                "sliding surface window must reuse and refresh its candidates");
         for (int i=0;i<12;++i) {
             const double angle=.1*i;
             poses[1].origin={.98+.013*i,.025,.031};

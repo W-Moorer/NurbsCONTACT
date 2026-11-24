@@ -132,13 +132,20 @@ struct CandidateTriangle {
     int side;
 };
 
+struct SurfaceWindow {
+    X anchor=X::Identity();
+    double spare{};
+    std::array<std::vector<std::size_t>,2> faces;
+};
+
 // Each vertex of a possible intersection lies in the interval common to the
 // two solids along the centre line. Visit the two trees independently there,
 // then sweep tight boxes of the surviving triangles in world coordinates.
 template<class Box,class Visitor>
 std::optional<bool> visit_contact_window(const Body& a,const Body& b,std::span<const RigidPlacement> poses,
-        std::size_t& node_tests,std::size_t& triangle_tests,Visitor& visitor,double margin) {
-    if (a.mesh->faces.size()<128 || b.mesh->faces.size()<128) return {};
+        std::size_t& node_tests,std::size_t& triangle_tests,Visitor& visitor,double margin,
+        SurfaceWindow* cache=nullptr,dynamics::ContactWork* work=nullptr) {
+    if (!cache && (a.mesh->faces.size()<128 || b.mesh->faces.size()<128)) return {};
     const V ca=a.world*a.local.center(),cb=b.world*b.local.center();
     const double spacing=(cb-ca).norm();
     const double pad=4*(a.padding+b.padding)+margin;
@@ -150,21 +157,49 @@ std::optional<bool> visit_contact_window(const Body& a,const Body& b,std::span<c
     if (width<0) return false;
     if (width>.4*std::min(ra,rb)) return {};
 
-    std::vector<CandidateTriangle> candidates;
-    const auto gather=[&](const Body& body,const V& dir,double lower,int side) {
-        const auto& tree=*std::get<std::shared_ptr<Tree<Box>>>(body.tree);
-        std::vector<int> stack{0};
-        while (!stack.empty()) {
-            const auto& node=tree.getBV(stack.back());
-            stack.pop_back();
-            ++node_tests;
-            if (dir.dot(node.bv.center()-body.local.center())+projected_radius(node.bv,dir)<lower) continue;
-            if (!node.isLeaf()) {
-                stack.push_back(node.leftChild());
-                stack.push_back(node.rightChild());
-                continue;
+    const X relative=a.world.inverse()*b.world;
+    SurfaceWindow transient;
+    auto& window=cache ? *cache : transient;
+    const double radius_b=b.local.center().norm()+.5*(b.local.max_-b.local.min_).norm();
+    const double travel=(relative.translation()-window.anchor.translation()).norm()+
+        radius_b*(relative.linear()-window.anchor.linear()).norm();
+    if (!cache || travel+pad>=window.spare) {
+        // The motion allowance enlarges two sets of faces, not their Cartesian
+        // product. Every possible new contact is inside both anchor slabs.
+        const double spare=pad+(cache ? .30*std::min(ra,rb) : 0.);
+        window.spare=0;
+        const auto gather=[&](const Body& body,const V& dir,double lower,int side) {
+            auto& faces=window.faces[side];
+            faces.clear();
+            const auto& tree=*std::get<std::shared_ptr<Tree<Box>>>(body.tree);
+            std::vector<int> stack{0};
+            while (!stack.empty()) {
+                const auto& node=tree.getBV(stack.back());
+                stack.pop_back();
+                ++node_tests;
+                if (dir.dot(node.bv.center()-body.local.center())+projected_radius(node.bv,dir)<lower) continue;
+                if (node.isLeaf()) faces.push_back(static_cast<std::size_t>(node.primitiveId()));
+                else {
+                    stack.push_back(node.leftChild());
+                    stack.push_back(node.rightChild());
+                }
             }
-            const auto face=static_cast<std::size_t>(node.primitiveId());
+        };
+        gather(a,ua,spacing-rb-spare,0);
+        gather(b,-ub,spacing-ra-spare,1);
+        window.anchor=relative;
+        window.spare=spare;
+        if (work) ++work->mesh_pair_bvh_builds;
+    } else if (work) ++work->mesh_pair_bvh_reuses;
+
+    std::vector<CandidateTriangle> candidates;
+    const auto append=[&](const Body& body,const V& dir,double lower,int side) {
+        const double threshold=lower+dir.dot(body.local.center());
+        for (auto face:window.faces[side]) {
+            const auto& f=body.mesh->faces[face];
+            if (cache && dir.dot(vector(body.mesh->vertices[f[0]]))<threshold &&
+                         dir.dot(vector(body.mesh->vertices[f[1]]))<threshold &&
+                         dir.dot(vector(body.mesh->vertices[f[2]]))<threshold) continue;
             const auto t=triangle(*body.mesh,face,poses[body.proxy->index]);
             CandidateTriangle c{t,t[0],t[0],face,side};
             for (int k=0;k<3;++k) {
@@ -174,8 +209,8 @@ std::optional<bool> visit_contact_window(const Body& a,const Body& b,std::span<c
             candidates.push_back(c);
         }
     };
-    gather(a,ua,spacing-rb-pad,0);
-    gather(b,-ub,spacing-ra-pad,1);
+    append(a,ua,spacing-rb-pad,0);
+    append(b,-ub,spacing-ra-pad,1);
     if (candidates.empty()) return false;
     Vec lo=candidates.front().lo,hi=candidates.front().hi,width_sum{};
     for (const auto& c:candidates) for (int k=0;k<3;++k) {
@@ -310,6 +345,7 @@ struct MeshScene::Impl {
     std::vector<std::size_t> order;
     bool registered{};
     bool candidate_window{};
+    SurfaceWindow near_window;
     MeshMethod method;
     using Pair = std::pair<std::size_t,std::size_t>;
     std::map<Pair,Pair> last_triangle_pair;
@@ -352,7 +388,7 @@ struct MeshScene::Impl {
 MeshScene::MeshScene(std::span<const std::shared_ptr<const MeshData>> inputs, MeshMethod method, bool candidate_window)
     : impl_(std::make_unique<Impl>()) {
     impl_->method = method;
-    impl_->candidate_window = candidate_window && method!=MeshMethod::obb;
+    impl_->candidate_window = candidate_window;
     if (method == MeshMethod::sap) {
         impl_->order.resize(inputs.size());
         std::iota(impl_->order.begin(),impl_->order.end(),std::size_t{0});
@@ -491,9 +527,17 @@ std::vector<std::array<std::size_t,2>> MeshScene::near_pairs(std::span<const Rig
         result.push_back({i,j});
         return false;
     };
-    if (state.method==MeshMethod::obb)
-        visit_pair<Oriented>(a,b,poses,work.mesh.nodes,work.mesh.triangles,add,false,margin);
-    else visit_pair<Bounds>(a,b,poses,work.mesh.nodes,work.mesh.triangles,add,state.candidate_window,margin);
+    const auto search=[&]<class Box>() {
+        if (state.candidate_window) {
+            const auto used=visit_contact_window<Box>(a,b,poses,work.mesh.nodes,work.mesh.triangles,
+                                                      add,margin,&state.near_window,&work);
+            if (used.has_value()) return;
+        }
+        ++work.mesh_pair_bvh_builds;
+        visit_pair<Box>(a,b,poses,work.mesh.nodes,work.mesh.triangles,add,false,margin);
+    };
+    if (state.method==MeshMethod::obb) search.template operator()<Oriented>();
+    else search.template operator()<Bounds>();
     return result;
 }
 

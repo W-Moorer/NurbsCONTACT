@@ -47,6 +47,9 @@ struct ContactWork {
     std::size_t rejected_region_depths{};
     double last_rejected_depth_m{}, last_depth_limit_m{};
     std::array<std::size_t,2> last_depth_bodies{};
+    std::size_t mesh_pair_bvh_builds{}, mesh_pair_bvh_reuses{};
+    std::size_t mesh_patch_builds{}, mesh_patch_reuses{};
+    std::size_t mesh_parallel_batches{}, mesh_max_workers{};
 };
 
 struct ContactLineSample {
@@ -113,6 +116,8 @@ struct SurfaceTransition {
 class PairRegionQuery {
 public:
     virtual ~PairRegionQuery() = default;
+    // Finite mesh queries with private, pair-local mutable geometry return their face count.
+    virtual std::size_t independent_mesh_faces() const {return 0;}
     virtual std::vector<ContactRegion> regions(ContactPose a, ContactPose b, ContactWork& work) const = 0;
     // A sweep from a separated endpoint locates an entry or a release.
     virtual SurfaceTransition transition(ContactPose a0,ContactPose b0,ContactPose a1,ContactPose b1,

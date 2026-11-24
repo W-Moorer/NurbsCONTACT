@@ -3,6 +3,7 @@
 
 #include <numeric>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <algorithm>
 #include <map>
@@ -104,11 +105,47 @@ double motion_bound(const RigidPlacement& a,const RigidPlacement& b,double radiu
 struct Geometry {
     Triangle tri;
     Vec n;
+    Vec lo,hi;
+    unsigned u{},v{},drop{};
+    struct Side {double x,y,lower,edge_max,altitude,scale;};
+    std::array<Side,3> sides{};
 };
 Geometry facet(const SurfaceFeatures& s,std::size_t id,const RigidPlacement& p) {
     const auto& f=s.mesh.faces[id];
-    return {{p.point(s.mesh.vertices[f[0]]),p.point(s.mesh.vertices[f[1]]),p.point(s.mesh.vertices[f[2]])},
-            p.rotate(s.normals[id])};
+    Geometry g{{p.point(s.mesh.vertices[f[0]]),p.point(s.mesh.vertices[f[1]]),p.point(s.mesh.vertices[f[2]])},
+               p.rotate(s.normals[id]),{},{}};
+    for (unsigned k=0;k<3;++k) {
+        g.lo[k]=std::min({g.tri[0][k],g.tri[1][k],g.tri[2][k]});
+        g.hi[k]=std::max({g.tri[0][k],g.tri[1][k],g.tri[2][k]});
+        if (std::abs(g.n[k])>std::abs(g.n[g.drop])) g.drop=k;
+    }
+    g.u=(g.drop+1)%3; g.v=(g.drop+2)%3;
+    const double sign=g.n[g.drop]>=0 ? 1. : -1.;
+    for (int i=0;i<3;++i) {
+        const auto& a=g.tri[i]; const auto& b=g.tri[(i+1)%3];
+        const double x=sign*(a[g.v]-b[g.v]),y=sign*(b[g.u]-a[g.u]);
+        // Use the minimum over all three vertices, including very thin facets.
+        const auto project=[&](const Vec& p){return x*p[g.u]+y*p[g.v];};
+        const double p0=project(a),p1=project(b),p2=project(g.tri[(i+2)%3]);
+        const double edge_max=std::max(p0,p1);
+        g.sides[i]={x,y,std::min({p0,p1,p2}),edge_max,p2-edge_max,std::abs(x)+std::abs(y)};
+    }
+    return g;
+}
+
+// A separating edge in either two-dimensional projection also separates
+// the spatial triangles. Strict agreement in a shared coordinate plane proves
+// overlap there; touching and roundoff-sensitive cases use the exact predicate.
+int projected_relation(const Geometry& a,const Geometry& b,double allowance) {
+    bool strict=true;
+    for (const auto& side:a.sides) {
+        const auto project=[&](const Vec& p){return side.x*p[a.u]+side.y*p[a.v];};
+        const double upper=std::max({project(b.tri[0]),project(b.tri[1]),project(b.tri[2])});
+        const double tol=allowance*side.scale;
+        if (upper-side.lower < -tol) return -1;
+        if (side.altitude<=tol || upper-side.edge_max<=tol) strict=false;
+    }
+    return strict ? 1 : 0;
 }
 double segment_distance2(Vec p,Vec a,Vec b) {
     Vec ab=sub(b,a);
@@ -167,6 +204,37 @@ struct FeaturePair {
     std::size_t a,b;
     auto operator<=>(const FeaturePair&) const=default;
 };
+using FacePair=std::array<std::size_t,2>;
+using FaceGroup=std::vector<FacePair>;
+struct PatchTopology {
+    std::array<std::vector<std::size_t>,2> faces;
+    std::vector<FeaturePair> features;
+};
+
+// Mesh indices are dense. Only rows touched by this contact patch are reset.
+struct PairRows {
+    std::vector<std::vector<std::size_t>> rows;
+    std::vector<std::size_t> touched;
+    std::unordered_map<std::size_t,std::unordered_set<std::size_t>> large_rows;
+    bool insert(std::size_t a,std::size_t b) {
+        auto& row=rows[a];
+        if (row.size()<32) {
+            if (std::ranges::find(row,b)!=row.end()) return false;
+        } else {
+            auto [it,fresh]=large_rows.try_emplace(a);
+            if (fresh) it->second.insert(row.begin(),row.end());
+            if (!it->second.insert(b).second) return false;
+        }
+        if (row.empty()) touched.push_back(a);
+        row.push_back(b);
+        return true;
+    }
+    void clear() {
+        for (auto a:touched) rows[a].clear();
+        touched.clear();
+        large_rows.clear();
+    }
+};
 }
 
 struct FiniteFeatures::Data {
@@ -181,6 +249,9 @@ struct FiniteFeatures::Data {
     std::vector<std::size_t> versions;
     std::size_t version{};
     std::array<std::size_t,2> last_plane{};
+    PairRows face_rows;
+    std::array<PairRows,3> feature_rows;
+    std::map<FaceGroup,PatchTopology> previous_patches;
     Data(const MeshData& a,const MeshData& b,MeshScene& scene_,double maximum)
         :surfaces{SurfaceFeatures(a),SurfaceFeatures(b)},scene(scene_) {
         const double radius=std::min(surfaces[0].radius,surfaces[1].radius);
@@ -191,6 +262,11 @@ struct FiniteFeatures::Data {
         initial_reach=std::min(limit,radius*.006);
         reach=initial_reach;
         skin=std::max(radius*.006,initial_reach*.25);
+        if (!surfaces[0].convex || !surfaces[1].convex)
+            face_rows.rows.resize(a.faces.size());
+        feature_rows[0].rows.resize(a.vertices.size());
+        feature_rows[1].rows.resize(b.vertices.size());
+        feature_rows[2].rows.resize(surfaces[0].edges.size());
     }
     void rebuild(const std::array<RigidPlacement,2>& poses,const RigidPlacement& rel,ContactWork& work) {
         const double band=reach+skin;
@@ -198,28 +274,30 @@ struct FiniteFeatures::Data {
         const auto ids=scene.near_pairs(poses,band,work);
         const std::array<RigidPlacement,2> local{RigidPlacement{},rel};
         list.clear();
+        for (auto& rows:feature_rows) rows.clear();
         for (auto [a,b]:ids) {
             std::array<std::size_t,2> face{a,b};
             for (unsigned source=0;source<2;++source) {
                 const auto target=1-source;
-                const auto f=facet(surfaces[target],face[target],local[target]);
+                const auto& f=target ? moving(face[target],rel) : fixed_faces[face[target]];
                 for (auto id:surfaces[source].mesh.faces[face[source]]) {
-                    if (point_distance2(f,local[source].point(surfaces[source].mesh.vertices[id]))<=band2)
+                    if (feature_rows[source].insert(id,face[target]) &&
+                        point_distance2(f,local[source].point(surfaces[source].mesh.vertices[id]))<=band2)
                         list.push_back({source,id,face[target]});
                 }
             }
             for (auto i:surfaces[0].face_edges[a]) {
                 const auto seg=segment(surfaces[0],i,local[0]);
                 for (auto j:surfaces[1].face_edges[b])
-                    if (edges_distance2(seg,segment(surfaces[1],j,local[1]))<=band2) list.push_back({2,i,j});
+                    if (feature_rows[2].insert(i,j) && edges_distance2(seg,segment(surfaces[1],j,local[1]))<=band2)
+                        list.push_back({2,i,j});
             }
         }
         std::sort(list.begin(),list.end());
-        list.erase(std::unique(list.begin(),list.end()),list.end());
         saved=rel;
         initialized=true;
     }
-    ContactRegion witness(const RigidPlacement& rel,const std::vector<FeaturePair>& candidates,bool convex,double cutoff) const {
+    ContactRegion witness(const RigidPlacement& rel,const std::vector<FeaturePair>& candidates,bool convex,double cutoff) {
         std::array<RigidPlacement,2> local{RigidPlacement{},rel};
         ContactRegion best{};
         if (convex) best.depth_m=std::numeric_limits<double>::infinity();
@@ -231,7 +309,7 @@ struct FiniteFeatures::Data {
             if (f.kind<2) {
                 const unsigned s=f.kind,t=1-s;
                 const Vec p=local[s].point(surfaces[s].mesh.vertices[f.a]);
-                const auto face=facet(surfaces[t],f.b,local[t]);
+                const auto& face=t ? moving(f.b,rel) : fixed_faces[f.b];
                 const double d=dot3(sub(face.tri[0],p),face.n);
                 if (!acceptable(d) || !inside(face,p)) continue;
                 const Vec n=inverse_vector(local[s],face.n);
@@ -330,20 +408,24 @@ struct FiniteFeatures::Data {
         const double g2=dot3(a.n,sub(b.tri[2],a.tri[0]));
         return std::min({g0,g1,g2})>margin || std::max({g0,g1,g2}) < -margin;
     }
+    bool possible_pair(const Geometry& a,const Geometry& b,double margin) const {
+        for (int k=0;k<3;++k)
+            if (a.lo[k]>b.hi[k]+margin || b.lo[k]>a.hi[k]+margin) return false;
+        return !planes_separate(a,b,margin) && !planes_separate(b,a,margin);
+    }
     // Nodes are actual intersecting finite triangle pairs. Two neighboring
     // nodes are connected only if their common mesh edge also hits the other
     // triangle. Thus a shared triangle ID alone never merges separate patches.
     std::vector<std::vector<std::array<std::size_t,2>>> crossing_groups(
             const std::array<RigidPlacement,2>& poses,const RigidPlacement& rel,ContactWork& work) {
-        ++version;
         const double slack=1e-13*(surfaces[0].radius+surfaces[1].radius+length(rel.origin));
         if (!initialized || motion_bound(rel,saved,surfaces[1].radius)>skin) {
-            nearby.clear();
-            for (auto pair:scene.near_pairs(poses,skin,work)) {
-                const auto& a=fixed_faces[pair[0]];
-                const auto& b=moving(pair[1],rel);
-                if (!planes_separate(a,b,skin+slack) && !planes_separate(b,a,skin+slack)) nearby.push_back(pair);
-            }
+            nearby=scene.near_pairs(poses,skin,work);
+            std::erase_if(nearby,[&](FacePair p){
+                const auto& a=fixed_faces[p[0]]; const auto& b=moving(p[1],rel);
+                const double margin=skin+slack;
+                return !possible_pair(a,b,margin) || projected_relation(a,b,margin)<0 || projected_relation(b,a,margin)<0;
+            });
             initialized=true; saved=rel;
         }
         using Pair=std::array<std::size_t,2>;
@@ -351,11 +433,16 @@ struct FiniteFeatures::Data {
         std::unordered_map<std::uint64_t,std::size_t> index;
         const auto key=[](Pair p) {return (std::uint64_t(p[0])<<32)|p[1];};
         for (auto pair:nearby) {
-            const auto& a=fixed_faces[pair[0]];
-            const auto& b=moving(pair[1],rel);
-            if (planes_separate(a,b,slack) || planes_separate(b,a,slack)) continue;
+            const auto& a=fixed_faces[pair[0]]; const auto& b=moving(pair[1],rel);
+            if (!possible_pair(a,b,slack)) continue;
+            const int first=projected_relation(a,b,slack);
+            if (first<0) continue;
+            const int second=projected_relation(b,a,slack);
+            if (second<0) continue;
             ++work.mesh.triangles;
-            if (triangle_overlap(a.tri,b.tri)) hits.push_back(pair);
+            const bool planar_overlap=first && second && a.drop==b.drop && a.lo[a.drop]==a.hi[a.drop] &&
+                b.lo[a.drop]==a.lo[a.drop] && b.hi[a.drop]==a.hi[a.drop];
+            if (planar_overlap || triangle_overlap(a.tri,b.tri)) hits.push_back(pair);
         }
         // Contact forces are accumulated in component order. Make both the
         // representative triangle and the accumulation independent of BVH traversal.
@@ -383,6 +470,43 @@ struct FiniteFeatures::Data {
         for (auto& [id,group]:components) result.push_back(std::move(group));
         return result;
     }
+    PatchTopology build_patch(const FaceGroup& group) {
+        face_rows.clear();
+        for (auto& rows:feature_rows) rows.clear();
+        PatchTopology patch;
+        const auto add_faces=[&](std::size_t a,std::size_t b) {
+            if (!face_rows.insert(a,b)) return;
+            patch.faces[0].push_back(a);
+            patch.faces[1].push_back(b);
+            for (auto v:surfaces[0].mesh.faces[a]) feature_rows[0].insert(v,b);
+            for (auto v:surfaces[1].mesh.faces[b]) feature_rows[1].insert(v,a);
+            for (auto i:surfaces[0].face_edges[a])
+                for (auto j:surfaces[1].face_edges[b]) feature_rows[2].insert(i,j);
+        };
+        for (auto [a,b]:group) {
+            add_faces(a,b);
+            for (auto i:surfaces[0].face_edges[a]) {
+                const auto& e=surfaces[0].edges[i]; add_faces(e.first==a ? e.second : e.first,b);
+            }
+            for (auto j:surfaces[1].face_edges[b]) {
+                const auto& e=surfaces[1].edges[j]; add_faces(a,e.first==b ? e.second : e.first);
+            }
+        }
+        for (unsigned kind=0;kind<feature_rows.size();++kind) {
+            auto& rows=feature_rows[kind];
+            std::sort(rows.touched.begin(),rows.touched.end());
+            for (auto a:rows.touched) {
+                auto& partners=rows.rows[a];
+                std::sort(partners.begin(),partners.end());
+                for (auto b:partners) patch.features.push_back({kind,a,b});
+            }
+        }
+        for (auto& faces:patch.faces) {
+            std::sort(faces.begin(),faces.end());
+            faces.erase(std::unique(faces.begin(),faces.end()),faces.end());
+        }
+        return patch;
+    }
     std::vector<ContactRegion> partitioned(const std::array<RigidPlacement,2>& poses,const RigidPlacement& rel,
                                            ContactWork& work) {
         const auto groups=crossing_groups(poses,rel,work);
@@ -397,31 +521,18 @@ struct FiniteFeatures::Data {
                 throw UnresolvedContact("an enclosed mesh component has no boundary contact patch");
         }
         std::vector<ContactRegion> contacts;
-        std::vector<FeaturePair> candidates;
+        decltype(previous_patches) next_patches;
         for (const auto& group:groups) {
-            candidates.clear();
-            std::array<std::vector<std::size_t>,2> patch_faces;
-            const auto add_faces=[&](std::size_t a,std::size_t b) {
-                patch_faces[0].push_back(a);
-                patch_faces[1].push_back(b);
-                for (auto id:surfaces[0].mesh.faces[a]) candidates.push_back({0,id,b});
-                for (auto id:surfaces[1].mesh.faces[b]) candidates.push_back({1,id,a});
-                for (auto i:surfaces[0].face_edges[a])
-                    for (auto j:surfaces[1].face_edges[b]) candidates.push_back({2,i,j});
-            };
-            // Include the first adjacent facets: an extremal vertex or edge
-            // need not lie on a facet cut by the intersection curve itself.
-            for (auto [a,b]:group) {
-                add_faces(a,b);
-                for (auto i:surfaces[0].face_edges[a]) {
-                    const auto& e=surfaces[0].edges[i]; add_faces(e.first==a ? e.second : e.first,b);
-                }
-                for (auto j:surfaces[1].face_edges[b]) {
-                    const auto& e=surfaces[1].edges[j]; add_faces(a,e.first==b ? e.second : e.first);
-                }
+            auto node=previous_patches.extract(group);
+            decltype(next_patches)::iterator entry;
+            if (node.empty()) {
+                entry=next_patches.emplace(group,build_patch(group)).first;
+                ++work.mesh_patch_builds;
+            } else {
+                entry=next_patches.insert(std::move(node)).position;
+                ++work.mesh_patch_reuses;
             }
-            std::sort(candidates.begin(),candidates.end());
-            candidates.erase(std::unique(candidates.begin(),candidates.end()),candidates.end());
+            const auto& patch=entry->second;
             // Translating either local surface patch past the other along
             // a facet normal separates them. A longer witness (e.g. from
             // the front rim through the back of a tooth) cannot describe
@@ -429,10 +540,7 @@ struct FiniteFeatures::Data {
             std::array<std::vector<Vec>,2> patch_vertices;
             std::vector<Vec> axes;
             for (unsigned s=0;s<2;++s) {
-                auto& faces=patch_faces[s];
-                std::sort(faces.begin(),faces.end());
-                faces.erase(std::unique(faces.begin(),faces.end()),faces.end());
-                for (auto id:faces) {
+                for (auto id:patch.faces[s]) {
                     const auto& triangle=s?moving(id,rel):fixed_faces[id];
                     patch_vertices[s].insert(patch_vertices[s].end(),triangle.tri.begin(),triangle.tri.end());
                     if (std::ranges::none_of(axes,[&](Vec n){return std::abs(dot3(n,triangle.n))>1.-1e-12;}))
@@ -452,7 +560,7 @@ struct FiniteFeatures::Data {
                 bound=std::min({bound,hi[0]-lo[1],hi[1]-lo[0]});
             }
             const double roundoff=1e-12*(surfaces[0].radius+surfaces[1].radius+length(rel.origin));
-            auto region=witness(rel,candidates,false,bound+roundoff);
+            auto region=witness(rel,patch.features,false,bound+roundoff);
             if (region.depth_m<=roundoff && groups.size()==1) {
                 // A face ring can surround the deepest vertex without
                 // containing it. Flood only the part inside the other solid.
@@ -494,9 +602,11 @@ struct FiniteFeatures::Data {
                         throw UnresolvedContact("intersecting patch has no finite feature witness");
             }
         }
+        previous_patches.swap(next_patches);
         return contacts;
     }
     std::vector<ContactRegion> query(const std::array<RigidPlacement,2>& poses,ContactWork& work) {
+        ++version;
         const auto hit=scene.overlaps(poses);
         work.mesh.nodes+=hit.node_pairs;
         work.mesh.triangles+=hit.triangle_tests;

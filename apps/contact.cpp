@@ -1129,6 +1129,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         progress<<"step,time_s,integration_s,mesh_triangle_tests,mesh_booleans,cad_booleans,"
                     "mesh_detection_s,mesh_placement_s,mesh_boolean_s";
         for (std::size_t i=0;i<n;++i) progress<<",q"<<i<<",v"<<i;
+        progress<<",mesh_pair_bvh_builds,mesh_pair_bvh_reuses,mesh_patch_builds,mesh_patch_reuses";
         progress<<std::endl;
     }
     const auto progress_step=[&](std::size_t step,const State& accepted) {
@@ -1137,6 +1138,8 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                 <<','<<work.mesh.triangles<<','<<work.boolean_queries<<','<<work.cad_boolean_queries
                 <<','<<work.mesh_detection_s<<','<<work.mesh_placement_s<<','<<work.mesh_boolean_s;
         for (std::size_t i=0;i<n;++i) progress<<','<<accepted.q[i]<<','<<accepted.v[i];
+        progress<<','<<work.mesh_pair_bvh_builds<<','<<work.mesh_pair_bvh_reuses
+                <<','<<work.mesh_patch_builds<<','<<work.mesh_patch_reuses;
         progress<<std::endl;
     };
     std::size_t impulse_solves=0,impulse_regions=0,impulse_iterations=0;
@@ -1305,7 +1308,8 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             "mesh_detection_s,mesh_placement_s,mesh_boolean_s,cad_boolean_queries,cad_event_distances,chen_patch_queries,chen_confirmed_candidates,event_tolerance_s,"
             "solver,impulse_solves,impulse_regions,impulse_iterations,impulse_residual_m_s,ccd_refinements,ccd_refined_clear,"
             "tdib_cells,tdib_candidates,tdib_unresolved,cad_box_tests,cad_extrema,cad_classifications,"
-            "cad_region_cache_hits,cad_distance_cache_hits,cad_witness_tests,cad_witness_improvements\n"
+            "cad_region_cache_hits,cad_distance_cache_hits,cad_witness_tests,cad_witness_improvements,"
+            "mesh_pair_bvh_builds,mesh_pair_bvh_reuses,mesh_patch_builds,mesh_patch_reuses,mesh_parallel_batches,mesh_max_workers\n"
         <<(n || surface.impulse_law ? wall : replay_s)<<','<<setup_s<<','<<steps<<','<<stats.accepted_steps<<','<<stats.subdivisions<<','<<stats.evaluations
         <<','<<stats.maximum_residual<<','<<work.pairs<<','<<work.culled<<','<<work.rays<<','<<work.missing
         <<','<<work.mesh.triangles<<','<<work.closest_queries<<','<<work.unresolved_queries<<','<<work.native_nodes
@@ -1317,7 +1321,9 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         <<','<<impulse_solves<<','<<impulse_regions<<','<<impulse_iterations<<','<<impulse_residual
         <<','<<spatial_refinements<<','<<refined_clear<<','<<tdib_cells<<','<<tdib_candidates<<','<<tdib_unresolved
         <<','<<cad_box_tests<<','<<cad_extrema<<','<<cad_classifications<<','<<work.cad_region_cache_hits
-        <<','<<cad_distance_hits<<','<<cad_witness_tests<<','<<cad_witness_improvements<<'\n';
+        <<','<<cad_distance_hits<<','<<cad_witness_tests<<','<<cad_witness_improvements
+        <<','<<work.mesh_pair_bvh_builds<<','<<work.mesh_pair_bvh_reuses
+        <<','<<work.mesh_patch_builds<<','<<work.mesh_patch_reuses<<','<<work.mesh_parallel_batches<<','<<work.mesh_max_workers<<'\n';
     if (!trace || !report) throw std::runtime_error("failed to write contact run");
 }
 

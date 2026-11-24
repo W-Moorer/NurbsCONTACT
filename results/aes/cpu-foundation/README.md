@@ -8,7 +8,10 @@
 
 本项目的 C++ 基线提交为 `97ba52e`，接触区累加顺序修复为 `b4ddcc2`。实验记录逐次保存可执行文件、场景和网格的 SHA-256。为兼顾在途长时计算和编译，开发期间的前后对照使用了独立的 Release 可执行文件。
 
-- NexDyn 源码版本为 `aaac2df14037bf4687c8d1974d757c78923e950e`。其 `src/Contact/Algorithms/Generic/GenericMeshContactPipeline.cpp` 的 `findCandidatePairs` 调用 AABB 或 OBB 粗检测，其后共用 Möller 三角形相交、交线图与区域划分。接触几何经过区域和面片构造后，传统罚力与雅可比由 `src/Contact/Solver/GenericLegacyPenaltyRuntimeAdapter.cpp` 等路径组装。隐式试步失败时，`src/Integrator/HhtI3Integrator.cpp` 恢复求解状态。本项目沿用几何查询、接触定律、残差求解分层的设计，使用自己的坐标表示、三角形谓词与 HHT 实现。
+- NexDyn 源码版本为 `aaac2df14037bf4687c8d1974d757c78923e950e`。`src/Contact/Algorithms/Generic/GenericMeshContactPipeline.cpp` 展示单次查询的 AABB/OBB、Möller 三角形相交、交线图与区域划分。跨步逻辑要看 `src/Contact/Runtime/Geometry/TriMeshContactInteraction.cpp`。在该运行时启用时间相干分支时，第 4274 行先尝试沿用历史，再按需执行完整粗检测。第 4831 行合并上一次活动面片对和候选面片对，邻面扩展在插入时按两个面片编号去重。位移、候选数量与接触模式共同限制复用。第 8715 行附近保存活动面片和接触点，第 13134、13207 行附近分别保存和恢复试步历史。
+- 本后端在固定 Gmsh 拓扑上按面片对编号去重，再扩展一圈邻面。每个连通接触区单独收集唯一的顶点—面和边—边组合。当前真实相交面片组成的区域与上次完全一致时，直接复用其拓扑，按当前姿态重新计算法向、深度和力矩。外围候选面片有运动余量，当前相对位姿相对建表姿态的位移界一旦耗尽就从 BVH 补全。HHT 回退或反向运动同样检查位姿。此设计保留本项目的接触深度定义，NexDyn 的历史接触点回放和罚力模型有各自的实现。
+- 对外侧局部接触，BVH 分别找出两侧可能进入接触区域的面片，只缓存这两份面片编号。在运动余量内，先按当前姿态收紧区域，再扫描局部面片包围盒，最后做有限三角形细检测。间距与投影范围不适合这种筛选时，直接遍历两棵 BVH。三角形在投影中有明确分离时提前剔除，临界情况仍交给几何谓词。
+- 启用 OpenMP 的 CPU 构建可并行查询相互独立的有限网格物体对。共享同一个可变查询对象时采用串行。总接触力、力矩和 HHT 矩阵始终按原来的物体对与接触区顺序组装。设置 `OMP_NUM_THREADS=1` 可以复现串行计算。并行时 `mesh_detection_s` 记录等待整批接触几何完成的墙钟时间。
 - Drake 源码版本为 `707bed92ece0f92b859a198fd4ad6ef464e62d20`。`multibody/plant/sap_driver.cc` 准备自由运动速度和接触问题，`multibody/contact_solvers/sap/sap_solver.cc` 求速度空间的凸优化问题，`sap_friction_cone_constraint.cc` 处理摩擦锥投影与导数。本项目的 `--solver sap` 通过相同几何接口取得接触点，组装正则化摩擦锥问题，用 Newton 方向和代价线搜索求解离散冲量。`--method mesh-sap` 中的 SAP 指粗检测的 sweep-and-prune，两个选项各有独立作用。
 
 ## 每个隐式试步计算什么
