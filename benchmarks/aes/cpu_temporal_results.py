@@ -45,6 +45,19 @@ def collect(root, out):
         result["comparisons"][method] = compared
 
     result["recurdyn"] = reducer_prefix(root, "validated-reducer-current-obb", out)
+    # Compare elapsed time at the same physical state, including the run-in.
+    fig, ax = plt.subplots(figsize=(7, 4.3), layout="constrained")
+    for method, label, colour in (("original-obb", "Original OBB", "#945422"),
+                                  ("current-aabb", "Updated AABB", "#287c68"),
+                                  ("current-obb", "Updated OBB", "#254b82")):
+        data = progress[method]
+        ax.plot(data["time_s"], data["integration_s"] / 60, label=label, color=colour, lw=1.6)
+        ax.plot(data["time_s"][-1], data["integration_s"][-1] / 60, "o", color=colour, ms=4)
+    ax.set(xlabel="Simulated time (s)", ylabel="Elapsed integration time (min)", xlim=(0, 5.08))
+    ax.grid(alpha=.18)
+    ax.legend(frameon=False)
+    fig.savefig(out / "integration-time.png", dpi=160)
+    plt.close(fig)
     if "current-obb" in responses:
         d = responses["current-obb"]
         t = d["time_s"]
@@ -76,6 +89,12 @@ def collect(root, out):
                             speed_rad_s=np.column_stack([d[f"v{i}"] for i in range(3)]),
                             active=np.column_stack([d[f"p{i}_hit"].astype(bool) for i in range(2)]))
         result["peak_normal_load_N"] = np.max(loads,axis=0).tolist()
+        loaded = loads > 0
+        result["body_pair_load_switches"] = np.count_nonzero(loaded[1:] != loaded[:-1], axis=0).tolist()
+        if "current-aabb" in responses:
+            second = np.column_stack([responses["current-aabb"][f"p{i}_normal_N"] > 0 for i in range(2)])
+            result["comparisons"]["current-aabb"]["load_state_mismatch_count"] = np.count_nonzero(
+                loaded != second, axis=0).tolist()
     (out / "summary.json").write_text(json.dumps(result,indent=2,allow_nan=False)+"\n",encoding="utf8")
     return result
 

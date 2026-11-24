@@ -1,0 +1,144 @@
+{
+  "scene_sha256": "9442ddc28cf48fbfd7b0611b298a6fba3cef07ca91bb4981866b04f1aaf85736",
+  "source_sha256": "c0d624f6fdffc7b37b669887313504c270551622abea3b8bc392f81d1c312f6d",
+  "baseline_sha256": "328e06ede8fa078a24da4ef808563013a27d32b282aa45d7016c7be6faadfaad",
+  "current_sha256": "381c6741f30816571b95f63711b56b9403d08817d5dc65582d0031f544ba1361",
+  "windows": [
+    {
+      "stage": 1,
+      "start_step": 1020,
+      "forward_poses": 200,
+      "jump_poses": 4,
+      "runs": [
+        {
+          "method": "mesh-obb",
+          "original": true,
+          "query_s": 1.6977473,
+          "regions": 370
+        },
+        {
+          "method": "mesh-obb",
+          "original": false,
+          "query_s": 0.7818031,
+          "regions": 370,
+          "pair_bvh_builds": 100,
+          "pair_bvh_reuses": 100,
+          "patch_builds": 370,
+          "patch_reuses": 0
+        },
+        {
+          "method": "mesh-aabb",
+          "original": false,
+          "query_s": 1.1567578,
+          "regions": 370,
+          "pair_bvh_builds": 100,
+          "pair_bvh_reuses": 100,
+          "patch_builds": 370,
+          "patch_reuses": 0
+        }
+      ]
+    },
+    {
+      "stage": 2,
+      "start_step": 1020,
+      "forward_poses": 200,
+      "jump_poses": 4,
+      "runs": [
+        {
+          "method": "mesh-obb",
+          "original": true,
+          "query_s": 3.4119431000000002,
+          "regions": 2145
+        },
+        {
+          "method": "mesh-obb",
+          "original": false,
+          "query_s": 2.8198705,
+          "regions": 2145,
+          "pair_bvh_builds": 50,
+          "pair_bvh_reuses": 150,
+          "patch_builds": 1772,
+          "patch_reuses": 373
+        },
+        {
+          "method": "mesh-aabb",
+          "original": false,
+          "query_s": 2.8355893,
+          "regions": 2145,
+          "pair_bvh_builds": 50,
+          "pair_bvh_reuses": 150,
+          "patch_builds": 1772,
+          "patch_reuses": 373
+        }
+      ]
+    },
+    {
+      "stage": 1,
+      "start_step": 12400,
+      "forward_poses": 200,
+      "jump_poses": 4,
+      "runs": [
+        {
+          "method": "mesh-obb",
+          "original": true,
+          "query_s": 1.4183431,
+          "regions": 360
+        },
+        {
+          "method": "mesh-obb",
+          "original": false,
+          "query_s": 0.7856957,
+          "regions": 360,
+          "pair_bvh_builds": 100,
+          "pair_bvh_reuses": 100,
+          "patch_builds": 360,
+          "patch_reuses": 0
+        },
+        {
+          "method": "mesh-aabb",
+          "original": false,
+          "query_s": 0.9737657,
+          "regions": 360,
+          "pair_bvh_builds": 100,
+          "pair_bvh_reuses": 100,
+          "patch_builds": 360,
+          "patch_reuses": 0
+        }
+      ]
+    },
+    {
+      "stage": 2,
+      "start_step": 12400,
+      "forward_poses": 200,
+      "jump_poses": 4,
+      "runs": [
+        {
+          "method": "mesh-obb",
+          "original": true,
+          "query_s": 4.9177681,
+          "regions": 2063
+        },
+        {
+          "method": "mesh-obb",
+          "original": false,
+          "query_s": 4.0397243,
+          "regions": 2063,
+          "pair_bvh_builds": 50,
+          "pair_bvh_reuses": 150,
+          "patch_builds": 1691,
+          "patch_reuses": 372
+        },
+        {
+          "method": "mesh-aabb",
+          "original": false,
+          "query_s": 2.7659102,
+          "regions": 2063,
+          "pair_bvh_builds": 50,
+          "pair_bvh_reuses": 150,
+          "patch_builds": 1691,
+          "patch_reuses": 372
+        }
+      ]
+    }
+  ]
+}

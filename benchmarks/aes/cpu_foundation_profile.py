@@ -92,6 +92,50 @@ def compare_order(exe,scene,progress):
             poses_with_different_feature_sets=[int(i) for i,x,y in zip(ids,left,right,strict=True) if sorted(x)!=sorted(y)])
 
 
+def replay_saved_loads(exe, scene, response, *, native_axes=False):
+    """Recompute accepted scalar loads with a separate finite-feature mesh executable."""
+    bodies, pairs = read_model(scene)
+    states = np.genfromtxt(response, names=True, delimiter=',')
+    result = dict(executable_sha256=digest(exe), scene_sha256=digest(scene), response_sha256=digest(response),
+                  pose_format='saved origin, body axis, saved angle' if native_axes else 'quaternion round trip',
+                  full_samples=len(states), last_time_s=float(states['time_s'][-1]), stages=[])
+    for stage, (a, b, stiffness, limit) in enumerate(pairs):
+        load = states[f'p{stage}_normal_N']
+        switches = np.flatnonzero((load[1:] > 0) != (load[:-1] > 0)) + 1
+        selected = switches
+        if len(selected) > 512:
+            selected = switches[np.linspace(0, len(switches)-1, 512, dtype=int)]
+        # Regular samples cover the duty cycle. Explicitly include both sides of
+        # the selected switches and the exact step of the maximum saved load.
+        ids = np.unique(np.concatenate((np.arange(0, len(states), 100), selected-1, selected,
+                                        [np.argmax(load), len(states)-1])))
+        if native_axes:
+            columns = []
+            for i in (a,b):
+                columns.extend(states[f'b{i}_{axis}_m'][ids] for axis in 'xyz')
+                columns.extend([np.broadcast_to(bodies[i][2], (len(ids),3)), states[f'b{i}_angle_rad'][ids]])
+            poses = np.column_stack(columns)
+        else:
+            poses = np.column_stack([world_poses(bodies[i], states[ids]) for i in (a,b)])
+        rows = ''.join(' '.join(format(x,'.17g') for x in row)+'\n' for row in poses)
+        task = subprocess.run([exe, '--method', 'mesh-obb', '--regions', 'finite', '--max-depth-m', str(limit),
+                               *(['--axis-angle'] if native_axes else []),
+                               *[bodies[i][0].with_suffix('.msh') for i in (a,b)]],
+                              input=rows, text=True, capture_output=True, check=True, timeout=1800)
+        replay = np.array([sum(stiffness * region[6] for region in json.loads(line)['regions'])
+                           for line in task.stdout.splitlines()])
+        if len(replay) != len(ids) or not np.isfinite(replay).all():
+            raise ValueError('Incomplete or nonfinite load replay')
+        diff = replay - load[ids]
+        result['stages'].append(dict(stage=stage+1, total_switches=len(switches), checked_switches=len(selected),
+                                     samples=len(ids), peak_step=int(np.argmax(load)),
+                                     max_abs_difference_N=float(np.max(abs(diff))),
+                                     rms_difference_N=float(np.sqrt(np.mean(diff**2))),
+                                     load_state_mismatches=int(np.count_nonzero((replay>0) != (load[ids]>0))),
+                                     steps=ids.tolist(), saved_load_N=load[ids].tolist(), replay_load_N=replay.tolist()))
+    return result
+
+
 def brake_loads(exe,scene,progress,ref_file,out):
     import matplotlib
     matplotlib.use('Agg')
@@ -150,10 +194,14 @@ if __name__=='__main__':
     cli.add_argument('--compare-order',action='store_true')
     cli.add_argument('--brake-reference',type=Path)
     cli.add_argument('--compare-temporal-mesh',type=Path,metavar='ORIGINAL_NC_MESH')
+    cli.add_argument('--replay-saved-loads',action='store_true',help='use an accepted response CSV as the input')
+    cli.add_argument('--native-axes',action='store_true',help='pass the saved body angles directly to the load replay')
     a=cli.parse_args()
     check=compare_order if a.compare_order else profile
     if a.compare_temporal_mesh:
         result=compare_temporal_mesh(a.exe.resolve(),a.compare_temporal_mesh.resolve(),a.scene,a.progress)
+    elif a.replay_saved_loads:
+        result=replay_saved_loads(a.exe.resolve(),a.scene,a.progress,native_axes=a.native_axes)
     elif a.brake_reference:
         result=brake_loads(a.exe.resolve(),a.scene,a.progress,a.brake_reference,a.out)
     else:

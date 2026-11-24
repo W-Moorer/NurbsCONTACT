@@ -1,5 +1,7 @@
 # 刚体网格接触的 CPU 基线
 
+两级减速器在相邻姿态间复用候选面片后的速度、载荷及计算耗时见[最新减速器实验](temporal-reducer/README.md)。本页其余数据保留各次运行的模型和实现条件。
+
 完整运行表见 [RESULTS.md](RESULTS.md)。[解析基准](analytical.png)、[凸轮响应](cam-response.png)、[偏心碰撞](spatial-impact.png)、[齿轮响应](gear-response.png) 和 [减速器共同区间](reducer-prefix.png) 均由已接受的状态绘制。动画采用原网格与计算得到的姿态。[凸轮动画](cam.mp4) · [齿轮动画](gear.mp4) · [两级减速器已完成区间的动画](reducer-prefix.mp4)
 
 同一个 `.scene` 保存质量和惯量、自由度、初始状态、载荷以及材料。两种 BVH 接收相同的 Gmsh 表面网格。`--method bvh-aabb` 与 `--method bvh-obb` 直接选择两种有限三角形接触基线，`--solver penalty` 选取罚力和 HHT 隐式积分。记录中的等价长写法是 `--method mesh-aabb|mesh-obb --mesh-region-scope finite`。工业测试与基础测试调用同一个 `nc_contact`。

@@ -1,0 +1,72 @@
+{
+  "case": "head-on",
+  "method": "mesh-obb",
+  "solver": "penalty",
+  "dt_s": 0.0001,
+  "duration_s": 5.0,
+  "mesh_region_scope": "finite",
+  "event_tolerance_s": 0.0,
+  "step_sha256": "b1b75a633d5f5de9267246c3faa9457f22615bc8b742d4cc9f297e9df2e81d2c",
+  "mesh_sha256": "3795e94baf6025aef289fe17a3294fff6abd98c9cbfc53f8f842307b618c0161",
+  "scene_sha256": "14b03f3a07d6e9d3f8ad79d228d8f9d20558a94d167ba71bb0789686408a2488",
+  "trace_sha256": "6ce793ddd78e046945f0693bedaba4e9d80bd0f220815128b2ed99bfb59efd31",
+  "frames": 50001,
+  "process_s": 24.639823800011072,
+  "integration_s": 5.7148659,
+  "subdivisions": 0,
+  "evaluations": 99916,
+  "step_checks": 0,
+  "event_rejections": 0,
+  "cad_boolean_queries": 0,
+  "cad_event_distances": 0,
+  "chen_patch_queries": 0,
+  "chen_confirmed_candidates": 0,
+  "tdib_cells": 0,
+  "tdib_candidates": 0,
+  "tdib_unresolved": 0,
+  "impulse_residual_m_s": 0.0,
+  "impulse_solves": 0,
+  "impulse_regions": 0,
+  "impulse_iterations": 0,
+  "ccd_refinements": 0,
+  "ccd_refined_clear": 0,
+  "ccd_unresolved": 0,
+  "max_linear_momentum_drift_kg_m_s": 1.0547118733938987e-15,
+  "max_angular_momentum_drift_kg_m2_s": 1.0820274091983767e-09,
+  "initial_kinetic_energy_J": 0.10125,
+  "final_kinetic_energy_J": 0.10124984614013899,
+  "final_velocities_m_s": [
+    [
+      -0.0030041700815892974,
+      3.0082210934909704e-05,
+      -0.44984328964416315
+    ],
+    [
+      0.0030041700815892974,
+      -3.0082210934909704e-05,
+      -0.00015671035583592427
+    ]
+  ],
+  "final_angular_velocities_rad_s": [
+    [
+      0.08293567356187073,
+      0.08297537187680713,
+      0.007157457281522284
+    ],
+    [
+      -0.08828981585245958,
+      -0.40089534534089066,
+      -0.007128454747387952
+    ]
+  ],
+  "peak_normal_force_N": 22.452646979956057,
+  "normal_impulse_Ns": 0.45006706443536615,
+  "reference_entry_s": 0.04,
+  "reference_peak_N": 22.5,
+  "reference_impulse_Ns": 0.45,
+  "reference_final_axial_velocities_m_s": [
+    -0.45,
+    0.0
+  ],
+  "force_rmse_N": 0.02088562225136989
+}

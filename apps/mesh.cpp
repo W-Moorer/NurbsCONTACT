@@ -11,7 +11,7 @@ using namespace nc::cpu;
 int main(int argc, char** argv) {
     try {
         if (argc < 5 || std::string_view(argv[1]) != "--method")
-            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--contours|--any [--same-face-only] [--candidate-window]|--regions local|full|fcl|finite] [--tolerance-m metres] [--max-depth-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz per body");
+            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--contours|--any [--same-face-only] [--candidate-window]|--regions local|full|fcl|finite [--axis-angle]] [--tolerance-m metres] [--max-depth-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz, or xyz axis_x axis_y axis_z radians per body");
         const auto method = mesh_method(argv[2]);
         int first_mesh=3;
         bool continuous=false;
@@ -19,12 +19,14 @@ int main(int argc, char** argv) {
         bool any=false;
         bool candidate_window=false;
         bool follow_adjacent=true;
+        bool axis_angle=false;
         std::optional<MeshRegionMode> region_mode;
         double tolerance=1e-7,max_depth=0.;
         while (first_mesh < argc && std::string_view(argv[first_mesh]).starts_with("--")) {
             const std::string_view option=argv[first_mesh++];
             if (option=="--contours") { contours=true; continue; }
             if (option=="--any") { any=true; continue; }
+            if (option=="--axis-angle") { axis_angle=true; continue; }
             if (option=="--candidate-window") { candidate_window=true; continue; }
             if (option=="--same-face-only") { follow_adjacent=false; continue; }
             if (first_mesh==argc) throw std::invalid_argument("missing option value");
@@ -46,6 +48,7 @@ int main(int argc, char** argv) {
             } else throw std::invalid_argument("unknown mesh option");
         }
         if (argc-first_mesh<2) throw std::invalid_argument("expected at least two contact meshes");
+        if (axis_angle && !region_mode) throw std::invalid_argument("--axis-angle requires --regions");
         if (continuous && contours) throw std::invalid_argument("contours require a discrete query");
         if (any && (continuous || contours)) throw std::invalid_argument("--any requires discrete overlap detection");
         if (!follow_adjacent && !any) throw std::invalid_argument("--same-face-only requires --any");
@@ -76,6 +79,14 @@ int main(int argc, char** argv) {
             std::vector<RigidPlacement> poses(bodies.size());
             std::array<nc::dynamics::ContactPose,2> contact_poses;
             for (std::size_t i=0;i<poses.size();++i) {
+                if (axis_angle) {
+                    auto& p=contact_poses[i];
+                    if (!(row>>p.origin[0]>>p.origin[1]>>p.origin[2]>>p.axis[0]>>p.axis[1]>>p.axis[2]>>p.angle)
+                        || !std::isfinite(p.origin[0]) || !std::isfinite(p.origin[1]) || !std::isfinite(p.origin[2])
+                        || !std::isfinite(p.angle) || !(std::abs(std::hypot(p.axis[0],p.axis[1],p.axis[2])-1)<=1e-12))
+                        throw std::runtime_error("expected a finite origin, unit axis and angle per body");
+                    continue;
+                }
                 auto& pose=poses[i];
                 double w, x, y, z;
                 if (!(row >> pose.origin[0] >> pose.origin[1] >> pose.origin[2] >> w >> x >> y >> z) ||

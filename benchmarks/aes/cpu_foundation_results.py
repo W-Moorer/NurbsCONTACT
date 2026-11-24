@@ -185,8 +185,10 @@ def trace(path,max_rows=None):
 
 
 def write_summary(result,out):
-    rows=['# CPU 刚体基线实测结果','',
-          '主步长为 0.1 ms。耗时为单次独立进程墙钟时间，含初始化和轨迹输出。','',
+    rows=['# CPU 刚体基线实测结果','']
+    if (out/'temporal-reducer/summary.json').is_file():
+        rows+=['两级减速器在相邻姿态间复用候选面片后的独立长时对照见[最新减速器实验](temporal-reducer/README.md)。以下保留原各版本计时。','']
+    rows+=['主步长为 0.1 ms。耗时为单次独立进程墙钟时间，含初始化和轨迹输出。','',
           '| 模型 | 仿真时长 | AABB 耗时 | OBB 耗时 | 对照量 |',
           '|---|---:|---:|---:|---|']
     def row(name,duration,left,right,note):
