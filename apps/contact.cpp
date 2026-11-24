@@ -414,7 +414,7 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
             } else {
 #ifdef NC_WITH_CPU_MESH
                 pair.regions=cpu::mesh_region_query(meshes[pair.a],meshes[pair.b],cpu::mesh_method(surface_options.method),
-                                                    centers,cpu::mesh_region_mode(surface_options.mesh_regions));
+                                                    centers,cpu::mesh_region_mode(surface_options.mesh_regions),pair.material.maximum_depth);
 #endif
             }
         }
@@ -1390,8 +1390,8 @@ int main(int argc,char** argv) {
         if (argc<7 || (!named && argc>11)) {
             std::cerr<<"nc_contact SCENE DEFLECTION_M DT_S DURATION_S OUTPUT_STRIDE OUTPUT_PREFIX "
                         "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
-                        "  or append --method mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
-                        "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl]\n"
+                        "  or append --method bvh-aabb|bvh-obb|mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
+                        "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl|finite]\n"
                         "  or append --method cad-occt|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
                         "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp [--progress FILE]\n";
             return 2;
@@ -1401,7 +1401,7 @@ int main(int argc,char** argv) {
         SurfaceOptions surface;
         double event_tolerance=0.;
         if (named) {
-            bool event_specified=false;
+            bool event_specified=false,region_specified=false;
             for (int i=7;i<argc;i+=2) {
                 if (i+1==argc) throw std::invalid_argument("missing method, solver or mesh directory value");
                 const std::string_view key=argv[i], value=argv[i+1];
@@ -1409,8 +1409,9 @@ int main(int argc,char** argv) {
                 else if (key=="--progress") surface.progress_file=argv[i+1];
                 else if (key=="--mesh-dir") surface.mesh_directory=argv[i+1];
                 else if (key=="--mesh-region-scope") {
-                    if (value!="local" && value!="full" && value!="fcl")
-                        throw std::invalid_argument("expected local, full or fcl mesh contact geometry");
+                    region_specified=true;
+                    if (value!="local" && value!="full" && value!="fcl" && value!="finite")
+                        throw std::invalid_argument("expected local, full, fcl or finite mesh contact geometry");
                     surface.mesh_regions=value;
                 }
                 else if (key=="--event-tol-s") {
@@ -1423,6 +1424,10 @@ int main(int argc,char** argv) {
                     else surface.impulse_law=parse_impulse_law(value);
                 }
                 else throw std::invalid_argument("unsupported surface option or solver");
+            }
+            if (surface.method=="bvh-aabb" || surface.method=="bvh-obb") {
+                surface.method=surface.method=="bvh-aabb" ? "mesh-aabb" : "mesh-obb";
+                if (!region_specified) surface.mesh_regions="finite";
             }
             if (!surface.cad() && surface.method!="mesh-aabb" && surface.method!="mesh-obb" && surface.method!="mesh-sap")
                 throw std::invalid_argument("unknown surface contact method");

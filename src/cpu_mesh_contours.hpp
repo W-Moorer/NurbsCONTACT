@@ -4,6 +4,7 @@
 
 namespace nc::cpu {
 int oriented_plane_side(const Triangle& t,Vec p);
+bool segment_hits_face(Vec a,Vec b,const Triangle& t);
 bool triangle_overlap(const Triangle& a,const Triangle& b);
 
 // One instance per body pair. Exact witness coordinates join triangle hits

@@ -104,10 +104,68 @@ void check_triangle_force_geometry() {
     require(hits.size()==1 && std::abs(hits[0].depth_m-.02)<1e-12 &&
             length(sub(hits[0].normal,{0,0,1}))<1e-12 && length(sub(hits[0].point,{.65,.25,.98}))<1e-12,
             "FCL tip-plane depth, normal or contact point");
+    const auto finite=mesh_region_query(block,tip,MeshMethod::obb,{},MeshRegionMode::finite,.03);
+    const auto bounded=finite->regions(base,pose,work);
+    require(bounded.size()==1 && std::abs(bounded[0].depth_m-.02)<1e-12 &&
+            length(sub(bounded[0].normal,{0,0,1}))<1e-10,"finite vertex-face penetration");
+    auto separated=pose;
+    separated.origin[2]=1.05;
+    require(finite->regions(base,separated,work).empty(),"stale finite contact on separation");
+    const auto reverse=mesh_region_query(tip,block,MeshMethod::obb,{},MeshRegionMode::finite,.03)->regions(pose,base,work);
+    require(reverse.size()==1 && length(add(reverse[0].normal,bounded[0].normal))<1e-10 &&
+            std::abs(reverse[0].depth_m-bounded[0].depth_m)<1e-12,"finite contact body reversal");
+    auto twin=std::make_shared<MeshData>(*tip);
+    for (auto v:tip->vertices) {v[0]-=.4; twin->vertices.push_back(v);}
+    for (auto f:tip->faces) {
+        for (auto& i:f) i+=tip->vertices.size();
+        twin->faces.push_back(f);
+    }
+    for (auto method:{MeshMethod::aabb,MeshMethod::obb}) {
+        auto caps=mesh_region_query(block,twin,method,{},MeshRegionMode::finite,.03);
+        auto regions=caps->regions(base,pose,work);
+        require(regions.size()==2 && std::abs(regions[0].depth_m-.02)<1e-12 &&
+                std::abs(regions[1].depth_m-.02)<1e-12 &&
+                std::abs(length(sub(regions[0].point,regions[1].point))-.4)<1e-12,"disconnected finite support caps");
+        auto enclosed=pose;
+        enclosed.origin[2]=.4;
+        bool rejected=false;
+        try {caps->regions(base,enclosed,work);} catch (const UnresolvedContact&) {rejected=true;}
+        require(rejected,"fully enclosed components must not be loaded at an arbitrary planar face");
+    }
     const auto inverse=mesh_region_query(tip,block,MeshMethod::obb,{},MeshRegionMode::fcl)->regions(pose,base,work);
     require(inverse.size()==1 && std::abs(hits[0].depth_m-inverse[0].depth_m)<1e-12 &&
             length(add(hits[0].normal,inverse[0].normal))<1e-12 && work.boolean_queries==0,
             "FCL body-order symmetry or unintended solid intersection");
+}
+
+void check_crossed_edges() {
+    using namespace nc::dynamics;
+    const auto ridge=[](std::vector<nc::Vec> vertices) {
+        auto mesh=std::make_shared<MeshData>();
+        mesh->vertices=std::move(vertices);
+        for (std::size_t i=0;i<4;++i) {
+            std::array<std::size_t,3> f{(i+1)%4,(i+2)%4,(i+3)%4};
+            const auto& v=mesh->vertices;
+            if (dot3(cross3(sub(v[f[1]],v[f[0]]),sub(v[f[2]],v[f[0]])),sub(v[i],v[f[0]]))>0)
+                std::swap(f[0],f[1]);
+            mesh->faces.push_back(f);
+        }
+        return mesh;
+    };
+    auto a=ridge({{-1,0,0},{1,0,0},{0,-.4,-1},{0,.4,-1}});
+    auto b=ridge({{0,-1,0},{0,1,0},{-.4,0,1},{.4,0,1}});
+    for (auto method:{MeshMethod::aabb,MeshMethod::obb}) {
+        auto query=mesh_region_query(a,b,method,{},MeshRegionMode::finite,.03);
+        ContactPose base,pose;
+        ContactWork work;
+        pose.origin[2]=-.02;
+        const auto contacts=query->regions(base,pose,work);
+        require(contacts.size()==1 && std::abs(contacts[0].depth_m-.02)<1e-12 &&
+                length(sub(contacts[0].point,{0,0,-.01}))<1e-12 &&
+                length(sub(contacts[0].normal,{0,0,1}))<1e-12,"interior edge-edge contact witness");
+        pose.origin[2]=.02;
+        require(query->regions(base,pose,work).empty(),"separated crossed edges produced a load");
+    }
 }
 
 void check_local_regions() {
@@ -148,6 +206,23 @@ void check_local_regions() {
     for (auto method:{MeshMethod::aabb,MeshMethod::obb,MeshMethod::sap}) {
         MeshScene geometry(mesh_pair,method,true);
         std::array<RigidPlacement,2> poses{};
+        poses[1].origin={1.007,0,0};
+        ContactWork near_work;
+        const auto candidates=geometry.near_pairs(poses,.01,near_work);
+        const std::set<std::array<std::size_t,2>> nearby(candidates.begin(),candidates.end());
+        std::size_t witnessed{};
+        for (std::size_t a=0;a<mesh->faces.size();++a) {
+            const auto i=mesh->faces[a][0];
+            const auto p=mesh->vertices[i];
+            if (p[0]!=1.) continue;
+            for (std::size_t b=0;b<mesh->faces.size();++b) {
+                const auto q=poses[1].point(mesh->vertices[mesh->faces[b][0]]);
+                if (length(sub(p,q))>.01) continue;
+                ++witnessed;
+                require(nearby.contains({a,b}),"positive-margin window discarded a close vertex pair");
+            }
+        }
+        require(witnessed>0,"missing proximity fixture");
         for (int i=0;i<12;++i) {
             const double angle=.1*i;
             poses[1].origin={.98+.013*i,.025,.031};
@@ -177,6 +252,7 @@ int main() {
     try {
         check_penalty_regions();
         check_triangle_force_geometry();
+        check_crossed_edges();
         check_local_regions();
         Triangle a{{{0,0,0},{1,0,0},{0,1,0}}};
         Triangle cross{{{.25,.25,-1},{.25,.25,1},{.75,.25,0}}};
@@ -264,6 +340,16 @@ int main() {
                 const auto patches=connected.intersect(contact,true);
                 require(patches.contours.size()==1 && patches.contours[0].triangles.size()==patches.intersections.size(),
                         "artificial face split divided a connected intersection");
+            }
+            {
+                std::array<std::shared_ptr<const MeshData>,2> forward{data,split},backward{split,data};
+                MeshScene left(forward,m),right(backward,m);
+                auto reverse_pose=contact;
+                std::swap(reverse_pose[0],reverse_pose[1]);
+                std::set<std::pair<std::size_t,std::size_t>> left_faces,right_faces;
+                for (const auto& p:left.intersect(contact).intersections) left_faces.emplace(p.triangle_a,p.triangle_b);
+                for (const auto& p:right.intersect(reverse_pose).intersections) right_faces.emplace(p.triangle_b,p.triangle_a);
+                require(!left_faces.empty() && left_faces==right_faces,"mixed-resolution BVH changed original face identities");
             }
             auto split_loaded=std::make_shared<MeshData>(*data);
             split_loaded->vertices.push_back({.25,.25,.5});

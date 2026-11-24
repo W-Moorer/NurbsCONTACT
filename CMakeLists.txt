@@ -27,7 +27,7 @@ if(NC_WITH_CPU_MESH)
     find_package(fcl CONFIG REQUIRED)
     find_package(CGAL 6 CONFIG REQUIRED)
     add_library(nurbscontact_mesh STATIC src/cpu_mesh_io.cpp src/cpu_mesh_intersection.cpp src/cpu_mesh_scene.cpp
-        src/cpu_mesh_solid.cpp src/cpu_mesh_regions.cpp)
+        src/cpu_mesh_solid.cpp src/cpu_mesh_regions.cpp src/cpu_mesh_features.cpp)
     target_link_libraries(nurbscontact_mesh PUBLIC nurbscontact PRIVATE fcl CGAL::CGAL)
     if(NC_WITH_MESH_CCD)
         find_package(Eigen3 CONFIG REQUIRED)

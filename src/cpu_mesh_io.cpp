@@ -17,8 +17,9 @@ MeshMethod mesh_method(std::string_view name) {
 MeshRegionMode mesh_region_mode(std::string_view name) {
     if (name=="local") return MeshRegionMode::local_volume;
     if (name=="full") return MeshRegionMode::full_volume;
+    if (name=="finite") return MeshRegionMode::finite;
     if (name=="fcl") return MeshRegionMode::fcl;
-    throw std::invalid_argument("expected local, full or fcl mesh contact geometry");
+    throw std::invalid_argument("expected local, full, fcl or finite mesh contact geometry");
 }
 
 MeshData read_gmsh(const std::filesystem::path& file) {

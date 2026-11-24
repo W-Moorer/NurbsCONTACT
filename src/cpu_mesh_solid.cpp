@@ -12,6 +12,7 @@ using Side = CGAL::Side_of_triangle_mesh<Surface,K>;
 
 struct SolidBoundary::Data {
     Surface surface;
+    std::unique_ptr<Side::AABB_tree> tree;
     std::unique_ptr<Side> side;
     std::vector<std::size_t> representatives;
     std::vector<std::size_t> face_components;
@@ -57,11 +58,18 @@ SolidBoundary::SolidBoundary(const MeshData& mesh) : data_(std::make_unique<Data
             if (mesh.vertices[i][axis]>mesh.vertices[ends[2*axis+1]][axis]) ends[2*axis+1]=i;
         }
     }
-    data_->side = std::make_unique<Side>(data_->surface);
+    auto faces=data_->surface.faces();
+    data_->tree=std::make_unique<Side::AABB_tree>(faces.begin(),faces.end(),data_->surface);
+    data_->side=std::make_unique<Side>(*data_->tree);
 }
 SolidBoundary::~SolidBoundary() = default;
 bool SolidBoundary::contains(Vec p) const {
     return (*data_->side)(K::Point_3{p[0],p[1],p[2]}) == CGAL::ON_BOUNDED_SIDE;
+}
+std::optional<Vec> SolidBoundary::interior_projection(Vec p) const {
+    if (!contains(p)) return {};
+    auto q=data_->tree->closest_point(K::Point_3(p[0],p[1],p[2]));
+    return Vec{q.x(),q.y(),q.z()};
 }
 std::span<const std::size_t> SolidBoundary::representatives() const { return data_->representatives; }
 const std::array<std::size_t,6>& SolidBoundary::extreme_vertices(std::size_t component) const {

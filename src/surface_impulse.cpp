@@ -140,6 +140,121 @@ void solve_blocks(std::vector<Block>& blocks,SurfaceImpulseResult& result,Impuls
     throw UnresolvedContact("contact impulse iteration did not converge");
 }
 
+// Project onto the Coulomb cone in the R metric and differentiate the impulse
+// w.r.t. minus contact velocity. Contact coordinates are (t1,t2,n).
+struct SapProjection {
+    Vec impulse{};
+    std::array<Vec,3> hessian{};
+};
+SapProjection sap_projection(const Block& b,Vec velocity) {
+    SapProjection p;
+    const double rt=b.reg[0],rn=b.reg[2],mu=b.mu;
+    if (mu==0) {
+        if (velocity[2]<0) {p.impulse[2]=-velocity[2]/rn; p.hessian[2][2]=1/rn;}
+        return p;
+    }
+    const Vec y{-velocity[0]/rt,-velocity[1]/rt,-velocity[2]/rn};
+    p.impulse=project_cone(y,b.reg,mu);
+    if (p.impulse[2]<=0) return p;
+    const double r=std::hypot(y[0],y[1]);
+    if (r<=mu*y[2]) {
+        for (int i=0;i<3;++i) p.hessian[i][i]=1/b.reg[i];
+        return p;
+    }
+    const double den=rn+mu*mu*rt;
+    const Vec direction{mu*y[0]/r,mu*y[1]/r,1};
+    for (int i=0;i<3;++i) for (int j=0;j<3;++j) p.hessian[i][j]=direction[i]*direction[j]/den;
+    const Vec perpendicular{-y[1]/r,y[0]/r,0};
+    for (int i=0;i<2;++i) for (int j=0;j<2;++j)
+        p.hessian[i][j]+=mu*p.impulse[2]/(rt*r)*perpendicular[i]*perpendicular[j];
+    return p;
+}
+void axpy(Vector& target,double factor,const Vector& x) {
+    for (std::size_t i=0;i<x.size();++i) target[i]+=factor*x[i];
+}
+struct SapEvaluation {
+    double cost{};
+    Vector gradient;
+    std::vector<SapProjection> contacts;
+};
+SapEvaluation sap_evaluate(const std::vector<Block>& blocks,const Vector& momentum,const Vector& dv) {
+    SapEvaluation e{.5*product(momentum,dv),momentum,{}};
+    for (const auto& b:blocks) {
+        if (b.reg[0]==0) {e.contacts.push_back({b.impulse,{}}); continue;}
+        Vec vc=b.bias;
+        for (int k=0;k<3;++k) vc[k]+=product(b.jacobian[k],dv);
+        const auto p=sap_projection(b,vc);
+        for (int k=0;k<3;++k) {
+            e.cost+=.5*b.reg[k]*p.impulse[k]*p.impulse[k];
+            axpy(e.gradient,-p.impulse[k],b.jacobian[k]);
+        }
+        e.contacts.push_back(p);
+    }
+    return e;
+}
+
+// The velocity Hessian is M + J' G J. Carry the momentum and velocity
+// direction together so the same inverse-mass operator supports coupled bodies.
+Vector sap_newton_momentum(const std::vector<Block>& blocks,const SapEvaluation& e,const InverseMass& inverse) {
+    Vector r=e.gradient;
+    for (double& v:r) v=-v;
+    Vector z=inverse(r),p=r,step(r.size());
+    double rz=product(r,z);
+    const double stop=1e-22*rz;
+    for (std::size_t it=0;it<2*r.size()+2 && rz>stop;++it) {
+        Vector hz=p;
+        for (std::size_t b=0;b<blocks.size();++b) {
+            const auto& jac=blocks[b].jacobian;
+            Vec jz{product(jac[0],z),product(jac[1],z),product(jac[2],z)};
+            for (int k=0;k<3;++k) axpy(hz,dot3(e.contacts[b].hessian[k],jz),jac[k]);
+        }
+        const double curvature=product(z,hz);
+        if (!(curvature>0)) throw UnresolvedContact("SAP velocity Hessian has nonpositive curvature");
+        const double alpha=rz/curvature;
+        axpy(step,alpha,p);
+        axpy(r,-alpha,hz);
+        Vector next=inverse(r);
+        const double norm=product(r,next);
+        if (norm<=stop) break;
+        const double beta=norm/rz;
+        for (std::size_t i=0;i<r.size();++i) {p[i]=r[i]+beta*p[i]; z[i]=next[i]+beta*z[i];}
+        rz=norm;
+    }
+    return step;
+}
+void solve_sap(std::vector<Block>& blocks,SurfaceImpulseResult& result,const InverseMass& inverse,double tol) {
+    Vector momentum(result.velocity_change.size()),dv(momentum);
+    auto e=sap_evaluate(blocks,momentum,dv);
+    for (unsigned it=0;it<100;++it) {
+        // Verify the cone fixed point after reconstructing the actual momentum
+        // transfer. This also handles contacts with zero dynamic mobility.
+        Vector response(dv.size());
+        for (std::size_t b=0;b<blocks.size();++b) {
+            blocks[b].impulse=e.contacts[b].impulse;
+            for (int k=0;k<3;++k) axpy(response,blocks[b].impulse[k],blocks[b].response[k]);
+        }
+        result.residual_m_s=natural_residual(blocks,response,ImpulseLaw::sap);
+        if (result.residual_m_s<=tol) {result.velocity_change=std::move(response); return;}
+        const auto dp=sap_newton_momentum(blocks,e,inverse);
+        const auto direction=inverse(dp);
+        const double slope=product(e.gradient,direction);
+        if (!(slope<0)) throw UnresolvedContact("SAP Newton direction is not descending");
+        bool accepted=false;
+        for (double a=1;a>=1./65536;a*=.5) {
+            auto next_m=momentum,next_v=dv;
+            axpy(next_m,a,dp); axpy(next_v,a,direction);
+            auto next=sap_evaluate(blocks,next_m,next_v);
+            const double roundoff=8*std::numeric_limits<double>::epsilon()*std::abs(e.cost);
+            if (next.cost<=e.cost+1e-4*a*slope+roundoff) {
+                momentum=std::move(next_m); dv=std::move(next_v); e=std::move(next); accepted=true; break;
+            }
+        }
+        ++result.iterations;
+        if (!accepted) throw UnresolvedContact("SAP cost line search failed");
+    }
+    throw UnresolvedContact("SAP velocity Newton solve did not converge");
+}
+
 void augmented_solve(std::vector<Block>& blocks,SurfaceImpulseResult& result,double tol) {
     // A proximal dual solve is the unilateral normal augmented-Lagrangian
     // update p_next = max(0, p_old - rho*w_next). Use the disk update for
@@ -273,7 +388,8 @@ SurfaceImpulseResult surface_impulses(ImpulseLaw law,std::span<const ContactBody
     auto& dv=result.velocity_change;
     result.regions=blocks.size();
     if (!blocks.empty()) {
-        if (law==ImpulseLaw::augmented_lagrange) augmented_solve(blocks,result,tolerance);
+        if (law==ImpulseLaw::sap) solve_sap(blocks,result,inverse_mass,tolerance);
+        else if (law==ImpulseLaw::augmented_lagrange) augmented_solve(blocks,result,tolerance);
         else solve_blocks(blocks,result,law,tolerance);
     }
     for (const auto& block:blocks) {

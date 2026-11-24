@@ -79,6 +79,12 @@ int oriented_plane_side(const Triangle& t,Vec p) {
     return static_cast<int>(CGAL::orientation(tri[0],tri[1],tri[2],K::Point_3(p[0],p[1],p[2])));
 }
 
+bool segment_hits_face(Vec a,Vec b,const Triangle& t) {
+    using K=CGAL::Exact_predicates_inexact_constructions_kernel;
+    const K::Point_3 x(a[0],a[1],a[2]),y(b[0],b[1],b[2]);
+    return CGAL::do_intersect(K::Segment_3(x,y),triangle<K>(t));
+}
+
 bool triangle_overlap(const Triangle& a,const Triangle& b) {
     using Predicate = CGAL::Exact_predicates_inexact_constructions_kernel;
     const auto left = triangle<Predicate>(a), right = triangle<Predicate>(b);

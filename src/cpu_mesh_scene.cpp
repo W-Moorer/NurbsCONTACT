@@ -137,11 +137,11 @@ struct CandidateTriangle {
 // then sweep tight boxes of the surviving triangles in world coordinates.
 template<class Box,class Visitor>
 std::optional<bool> visit_contact_window(const Body& a,const Body& b,std::span<const RigidPlacement> poses,
-        std::size_t& node_tests,std::size_t& triangle_tests,Visitor& visitor) {
+        std::size_t& node_tests,std::size_t& triangle_tests,Visitor& visitor,double margin) {
     if (a.mesh->faces.size()<128 || b.mesh->faces.size()<128) return {};
     const V ca=a.world*a.local.center(),cb=b.world*b.local.center();
     const double spacing=(cb-ca).norm();
-    const double pad=4*(a.padding+b.padding);
+    const double pad=4*(a.padding+b.padding)+margin;
     if (spacing<=pad) return {};
     const V axis=(cb-ca)/spacing;
     const V ua=a.world.linear().transpose()*axis,ub=b.world.linear().transpose()*axis;
@@ -265,16 +265,18 @@ void enclosed(const Body& a, const Body& b, std::span<const Intersection> hits, 
 
 template<class Box,class Visitor>
 bool visit_pair(const Body& a, const Body& b, std::span<const RigidPlacement> poses,
-                std::size_t& node_tests,std::size_t& triangle_tests,Visitor& visitor,bool window) {
+                std::size_t& node_tests,std::size_t& triangle_tests,Visitor& visitor,bool window,double margin=0.) {
     if (window)
-        if (auto hit=visit_contact_window<Box>(a,b,poses,node_tests,triangle_tests,visitor)) return *hit;
-    const auto i = a.proxy->index, j = b.proxy->index;
-    const auto& first = *std::get<std::shared_ptr<Tree<Box>>>(a.tree);
-    const auto& second = *std::get<std::shared_ptr<Tree<Box>>>(b.tree);
-    // Traverse in the second body's frame. Its tree is already positioned
-    // there, and its AABBs retain their original tightness as the body turns.
-    const X relative = b.world.inverse() * a.world;
-    const double padding = 4 * (a.padding + b.padding);
+        if (auto hit=visit_contact_window<Box>(a,b,poses,node_tests,triangle_tests,visitor,margin)) return *hit;
+    // Keep the coarser AABBs in their own frame. Rotating a large flat leaf
+    // into the frame of a refined mesh otherwise encloses many distant leaves.
+    const bool flip=std::is_same_v<Box,Bounds> && a.mesh->faces.size()<b.mesh->faces.size();
+    const auto& left=flip?b:a;
+    const auto& right=flip?a:b;
+    const auto& first = *std::get<std::shared_ptr<Tree<Box>>>(left.tree);
+    const auto& second = *std::get<std::shared_ptr<Tree<Box>>>(right.tree);
+    const X relative = right.world.inverse() * left.world;
+    const double padding = margin + 4 * (a.padding + b.padding);
     std::vector<std::pair<int,int>> pending{{0,0}};
     while (!pending.empty()) {
         const auto [ia, ib] = pending.back();
@@ -287,8 +289,9 @@ bool visit_pair(const Body& a, const Body& b, std::span<const RigidPlacement> po
             const auto fa = static_cast<std::size_t>(na.primitiveId());
             const auto fb = static_cast<std::size_t>(nb.primitiveId());
             ++triangle_tests;
-            const auto ta=triangle(*a.mesh,fa,poses[i]), tb=triangle(*b.mesh,fb,poses[j]);
-            if (visitor(fa,fb,ta,tb)) return true;
+            const auto ta=triangle(*left.mesh,fa,poses[left.proxy->index]);
+            const auto tb=triangle(*right.mesh,fb,poses[right.proxy->index]);
+            if (flip ? visitor(fb,fa,tb,ta) : visitor(fa,fb,ta,tb)) return true;
         } else if (nb.isLeaf() || (!na.isLeaf() && na.num_primitives >= nb.num_primitives)) {
             pending.emplace_back(na.leftChild(), ib);
             pending.emplace_back(na.rightChild(), ib);
@@ -473,6 +476,29 @@ std::vector<dynamics::ContactRegion> MeshScene::fcl_contacts(std::span<const Rig
             throw dynamics::UnresolvedContact("crossing loop has no positive FCL depth");
     }
     return result;
+}
+
+std::vector<std::array<std::size_t,2>> MeshScene::near_pairs(std::span<const RigidPlacement> poses,double margin,
+                                                             dynamics::ContactWork& work) {
+    auto& state=*impl_;
+    if (poses.size()!=2 || margin<0) throw std::invalid_argument("invalid mesh proximity pair");
+    state.place(poses);
+    const Body& a=state.bodies[0];
+    const Body& b=state.bodies[1];
+    std::vector<std::array<std::size_t,2>> result;
+    if (!placed(a.local,a.world,a.padding+margin).overlap(b.proxy->getAABB())) return result;
+    auto add=[&](std::size_t i,std::size_t j,const Triangle&,const Triangle&) {
+        result.push_back({i,j});
+        return false;
+    };
+    if (state.method==MeshMethod::obb)
+        visit_pair<Oriented>(a,b,poses,work.mesh.nodes,work.mesh.triangles,add,false,margin);
+    else visit_pair<Bounds>(a,b,poses,work.mesh.nodes,work.mesh.triangles,add,state.candidate_window,margin);
+    return result;
+}
+
+std::optional<Vec> MeshScene::interior_projection(std::size_t body,Vec local) const {
+    return impl_->bodies.at(body).boundary->interior_projection(local);
 }
 
 OverlapResult MeshScene::overlaps(std::span<const RigidPlacement> poses, bool follow_adjacent) {

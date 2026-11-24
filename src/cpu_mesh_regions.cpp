@@ -1,4 +1,5 @@
 #include "nurbscontact/cpu_mesh.hpp"
+#include "cpu_mesh_features.hpp"
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
@@ -280,20 +281,21 @@ std::vector<ContactRegion> overlap_regions(Surface& a,Surface& b) {
 class MeshRegions final : public PairRegionQuery {
 public:
     MeshRegions(std::shared_ptr<const MeshData> a,std::shared_ptr<const MeshData> b,MeshMethod method,
-                std::array<Vec,2> centers,MeshRegionMode mode)
-        : meshes_{std::move(a),std::move(b)},centers_(centers),mode_(mode),scene_(meshes_,method) {
+                std::array<Vec,2> centers,MeshRegionMode mode,double max_depth)
+        : meshes_{std::move(a),std::move(b)},centers_(centers),mode_(mode),scene_(meshes_,method,mode==MeshRegionMode::finite) {
         solids_[0]=std::make_shared<Surface>(solid(*meshes_[0]));
         solids_[1]=meshes_[0]==meshes_[1] ? solids_[0] : std::make_shared<Surface>(solid(*meshes_[1]));
         // The same one-time orientation and self-intersection checks apply to
         // leaf contact normals. Their query needs only the prepared mesh scene.
-        if (mode_==MeshRegionMode::fcl) solids_={};
+        if (mode_==MeshRegionMode::finite) features_=std::make_unique<FiniteFeatures>(*meshes_[0],*meshes_[1],scene_,max_depth);
+        if (features_ || mode_==MeshRegionMode::fcl) solids_={};
     }
     std::vector<ContactRegion> regions(ContactPose a,ContactPose b,ContactWork& work) const override {
         using Clock=std::chrono::steady_clock;
         const auto start=Clock::now();
         const auto poses=placements(a,b);
-        if (mode_==MeshRegionMode::fcl) {
-            auto contacts=scene_.fcl_contacts(poses,work);
+        if (features_ || mode_==MeshRegionMode::fcl) {
+            auto contacts=features_ ? features_->query(poses,work) : scene_.fcl_contacts(poses,work);
             work.mesh_detection_s+=std::chrono::duration<double>(Clock::now()-start).count();
             return contacts;
         }
@@ -366,6 +368,7 @@ private:
     mutable std::array<WorldMesh,2> world_;
     mutable std::array<LocalCache,2> cache_;
     mutable MeshScene scene_;
+    std::unique_ptr<FiniteFeatures> features_;
     std::array<std::shared_ptr<const Surface>,2> solids_;
 };
 }
@@ -377,7 +380,7 @@ std::shared_ptr<const dynamics::PairRegionQuery> mesh_region_query(std::shared_p
 }
 
 std::shared_ptr<const dynamics::PairRegionQuery> mesh_region_query(std::shared_ptr<const MeshData> a,
-    std::shared_ptr<const MeshData> b,MeshMethod method,std::array<Vec,2> centers,MeshRegionMode mode) {
+    std::shared_ptr<const MeshData> b,MeshMethod method,std::array<Vec,2> centers,MeshRegionMode mode,double max_depth) {
     const auto recenter=[](std::shared_ptr<const MeshData> mesh,Vec center) -> std::shared_ptr<const MeshData> {
         if (center==Vec{}) return mesh;
         auto local=std::make_shared<MeshData>(*mesh);
@@ -386,6 +389,6 @@ std::shared_ptr<const dynamics::PairRegionQuery> mesh_region_query(std::shared_p
     };
     auto first=recenter(a,centers[0]);
     auto second=(a==b && centers[0]==centers[1]) ? first : recenter(b,centers[1]);
-    return std::make_shared<MeshRegions>(std::move(first),std::move(second),method,centers,mode);
+    return std::make_shared<MeshRegions>(std::move(first),std::move(second),method,centers,mode,max_depth);
 }
 } // namespace nc::cpu
