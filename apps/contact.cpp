@@ -124,8 +124,9 @@ struct SurfaceOptions {
     std::string method;
     std::optional<ImpulseLaw> impulse_law;
     Path mesh_directory;
+    Path progress_file;
     double distance_tolerance{1e-7};
-    bool localize{true};
+    std::string mesh_regions{"local"};
     bool chen() const { return method=="chen-2024" || method=="chen-2026"; }
     bool cad() const { return method=="cad-occt" || chen(); }
 };
@@ -413,7 +414,7 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
             } else {
 #ifdef NC_WITH_CPU_MESH
                 pair.regions=cpu::mesh_region_query(meshes[pair.a],meshes[pair.b],cpu::mesh_method(surface_options.method),
-                                                    centers,surface_options.localize);
+                                                    centers,cpu::mesh_region_mode(surface_options.mesh_regions));
 #endif
             }
         }
@@ -1122,6 +1123,22 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         }
     };
     const auto start=Clock::now();
+    std::ofstream progress;
+    if (!surface.progress_file.empty()) {
+        progress=open_output(surface.progress_file);
+        progress<<"step,time_s,integration_s,mesh_triangle_tests,mesh_booleans,cad_booleans,"
+                    "mesh_detection_s,mesh_placement_s,mesh_boolean_s";
+        for (std::size_t i=0;i<n;++i) progress<<",q"<<i<<",v"<<i;
+        progress<<std::endl;
+    }
+    const auto progress_step=[&](std::size_t step,const State& accepted) {
+        if (!progress.is_open()) return;
+        progress<<step<<','<<accepted.time<<','<<std::chrono::duration<double>(Clock::now()-start).count()
+                <<','<<work.mesh.triangles<<','<<work.boolean_queries<<','<<work.cad_boolean_queries
+                <<','<<work.mesh_detection_s<<','<<work.mesh_placement_s<<','<<work.mesh_boolean_s;
+        for (std::size_t i=0;i<n;++i) progress<<','<<accepted.q[i]<<','<<accepted.v[i];
+        progress<<std::endl;
+    };
     std::size_t impulse_solves=0,impulse_regions=0,impulse_iterations=0;
     double impulse_residual=0.;
     if (surface.impulse_law) {
@@ -1145,6 +1162,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         }
         samples.push_back(state);
         observed_contacts.push_back(previous);
+        progress_step(0,state);
         ImpulseSteps integrator{*surface.impulse_law,input,mass,smooth ? &*smooth : nullptr,accept_step,work,stats};
         for (std::size_t s=1;s<=steps;++s) {
             Vector normal(input.pairs.size());
@@ -1158,6 +1176,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                     observations[i].friction=scale(friction[i],1/dt);
                 }
                 observed_contacts.push_back(std::move(observations));
+                progress_step(s,state);
             }
         }
         stats.evaluations=smooth_evaluations;
@@ -1174,23 +1193,35 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             return evaluate_force(q_,v_,time,{});
         };
         Hht solver(mass,std::move(force),options,{},std::move(historical_force),{},std::move(accept_step));
+        std::size_t depth_rejections_before=work.rejected_region_depths;
         try {
             auto state=solver.initialize(q,v);
             save_state(state);
+            progress_step(0,state);
             for (std::size_t s=1;s<=steps;++s) {
                 const bool save=s%stride==0 || s==steps;
                 record_sample=reuse_mesh_samples && save;
+                depth_rejections_before=work.rejected_region_depths;
                 solver.step(state,dt,stats);
                 for (const auto& body:input.bodies) if (body.free) body.free->normalize(state);
-                if (save) save_state(state);
+                if (save) {
+                    save_state(state);
+                    progress_step(s,state);
+                }
             }
         } catch (const std::exception& error) {
-            if (!work.unresolved_queries && !unresolved_events) throw;
+            const auto depth_rejections=work.rejected_region_depths-depth_rejections_before;
+            if (!work.unresolved_queries && !unresolved_events && !depth_rejections) throw;
             std::ostringstream detail;
             detail<<error.what()<<" ("<<work.unresolved_queries<<" unresolved pair force evaluations, "
                   <<unresolved_events<<" unresolved step sweeps)";
             if (const auto bound=work.last_unresolved_distance) {
                 detail<<", last distance interval ["<<std::setprecision(9)<<bound->lo<<", "<<bound->hi<<"] m";
+            }
+            if (depth_rejections) {
+                detail<<", "<<depth_rejections<<" trial depths exceeded the model limit during the failed step"
+                      <<", last "<<work.last_rejected_depth_m*1e6<<" um versus "<<work.last_depth_limit_m*1e6
+                      <<" um for bodies "<<work.last_depth_bodies[0]<<"/"<<work.last_depth_bodies[1];
             }
             throw std::runtime_error(detail.str());
         }
@@ -1360,9 +1391,9 @@ int main(int argc,char** argv) {
             std::cerr<<"nc_contact SCENE DEFLECTION_M DT_S DURATION_S OUTPUT_STRIDE OUTPUT_PREFIX "
                         "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
                         "  or append --method mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
-                        "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full]\n"
+                        "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl]\n"
                         "  or append --method cad-occt|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
-                        "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp\n";
+                        "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp [--progress FILE]\n";
             return 2;
         }
         std::optional<PairBackend> pair_backend;
@@ -1375,10 +1406,12 @@ int main(int argc,char** argv) {
                 if (i+1==argc) throw std::invalid_argument("missing method, solver or mesh directory value");
                 const std::string_view key=argv[i], value=argv[i+1];
                 if (key=="--method") surface.method=value;
+                else if (key=="--progress") surface.progress_file=argv[i+1];
                 else if (key=="--mesh-dir") surface.mesh_directory=argv[i+1];
                 else if (key=="--mesh-region-scope") {
-                    if (value!="local" && value!="full") throw std::invalid_argument("expected local or full mesh region scope");
-                    surface.localize=value=="local";
+                    if (value!="local" && value!="full" && value!="fcl")
+                        throw std::invalid_argument("expected local, full or fcl mesh contact geometry");
+                    surface.mesh_regions=value;
                 }
                 else if (key=="--event-tol-s") {
                     event_tolerance=std::stod(argv[i+1]);

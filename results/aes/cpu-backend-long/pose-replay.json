@@ -1,0 +1,91 @@
+{
+  "scene_sha256": "9442ddc28cf48fbfd7b0611b298a6fba3cef07ca91bb4981866b04f1aaf85736",
+  "progress_sha256": "981942b656477b1cab2653c0efcecc2cc7b6dbe1e3db979906f210678a79b215",
+  "mesh_executable_sha256": "60967fde96807824c9a09c8bdc28bf38ea2800c5fe5f75ae37aebc379bf52a51",
+  "parts": [
+    {
+      "asset": "reducer-1a",
+      "step_sha256": "90a5180ba1d3cd2b6e603de00a80c94cded07bfdccdf13f26e8a693845920035",
+      "mesh_sha256": "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+      "triangles": 10216
+    },
+    {
+      "asset": "reducer-1b",
+      "step_sha256": "f0b5c19d140b2817f00ba29a3cadcd042141df5e2700e860dff7b9aedd37bf7b",
+      "mesh_sha256": "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+      "triangles": 10240
+    },
+    {
+      "asset": "reducer-2a",
+      "step_sha256": "9037e0d52ca2550e2251621d46a6781b9b698722842b4178b9758858ee8f14a9",
+      "mesh_sha256": "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+      "triangles": 27934
+    },
+    {
+      "asset": "reducer-2b",
+      "step_sha256": "93b72d60ebd26f3e94faedd22be00aa5d80dda5936605541ae3646ace82aee01",
+      "mesh_sha256": "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0",
+      "triangles": 17342
+    }
+  ],
+  "queries": [
+    {
+      "stage": 1,
+      "scope": "local",
+      "accepted_poses": 98,
+      "error": null
+    },
+    {
+      "stage": 1,
+      "scope": "fcl",
+      "accepted_poses": 98,
+      "error": null
+    },
+    {
+      "stage": 2,
+      "scope": "local",
+      "accepted_poses": 98,
+      "error": null
+    },
+    {
+      "stage": 2,
+      "scope": "fcl",
+      "accepted_poses": 98,
+      "error": null
+    }
+  ],
+  "first_depth_exceedance": [
+    {
+      "stage": 1,
+      "step": 12,
+      "triangles_zero_based": [
+        72,
+        4426
+      ],
+      "opposite_surface": 0,
+      "depth_um": 275.76900075047183,
+      "foot_barycentric": [
+        -0.40393053578483973,
+        1.4039305357848397,
+        0.0
+      ],
+      "foot_outside_um": 170.16653863446592
+    },
+    {
+      "stage": 2,
+      "step": 4,
+      "triangles_zero_based": [
+        20781,
+        387
+      ],
+      "opposite_surface": 0,
+      "depth_um": 112.13535845671728,
+      "foot_barycentric": [
+        -1.985079918076206,
+        0.18783828182314724,
+        2.7972416362530588
+      ],
+      "foot_outside_um": 5768.310482333057
+    }
+  ]
+}

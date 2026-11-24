@@ -10,6 +10,7 @@
 #include <fcl/geometry/bvh/BVH_model.h>
 #include <fcl/geometry/shape/box.h>
 #include <fcl/math/bv/OBB.h>
+#include <fcl/narrowphase/detail/traversal/collision/intersect.h>
 
 #include <climits>
 #include <map>
@@ -404,6 +405,73 @@ IntersectionResult MeshScene::intersect(std::span<const RigidPlacement> poses, b
     std::sort(result.intersections.begin(), result.intersections.end(), [](const Intersection& a, const Intersection& b) {
         return std::tie(a.body_a,a.body_b,a.triangle_a,a.triangle_b) < std::tie(b.body_a,b.body_b,b.triangle_a,b.triangle_b);
     });
+    return result;
+}
+
+std::vector<dynamics::ContactRegion> MeshScene::fcl_contacts(std::span<const RigidPlacement> poses,
+                                                             dynamics::ContactWork& work) {
+    if (poses.size()!=2) throw std::invalid_argument("FCL contact reduction expects two bodies");
+    const auto crossings=intersect(poses,true);
+    work.mesh.nodes+=crossings.node_pairs;
+    work.mesh.triangles+=crossings.triangle_tests;
+    if (!crossings.enclosed.empty())
+        throw dynamics::UnresolvedContact("fully enclosed component has no triangle contact witness");
+    std::vector<dynamics::ContactRegion> result;
+    for (const auto& loop:crossings.contours) {
+        std::optional<dynamics::ContactRegion> deepest;
+        for (const auto& [i,j]:loop.triangles) {
+            const auto ta=triangle(*impl_->bodies[0].mesh,i,poses[0]);
+            const auto tb=triangle(*impl_->bodies[1].mesh,j,poses[1]);
+            // FCL's leaf routine has absolute length tolerances. Use a local
+            // origin and scale its smaller triangle to unit double area.
+            const auto area=[](const Triangle& t) {
+                return dynamics::length(dynamics::cross3(dynamics::sub(t[1],t[0]),dynamics::sub(t[2],t[0])));
+            };
+            const double unit=std::sqrt(std::min(area(ta),area(tb)));
+            if (!(unit>0)) throw dynamics::UnresolvedContact("degenerate placed FCL triangle");
+            const V origin=vector(ta[0]);
+            auto local=[&](Vec p)->V {return (vector(p)-origin)/unit;};
+            V points[2],normal;
+            unsigned count=0;
+            double depth=0;
+            const bool hit=fcl::detail::Intersect<double>::intersect_Triangle(
+                local(ta[0]),local(ta[1]),local(ta[2]),local(tb[0]),local(tb[1]),local(tb[2]),
+                points,&count,&depth,&normal);
+            if (!hit || !count || depth<=0) continue;
+            depth*=unit;
+            if (deepest && deepest->depth_m>=depth) continue;
+            V center=points[0];
+            if (count==2) center=(points[0]+points[1])*.5;
+            center=origin+unit*center;
+            if (!center.allFinite() || !normal.allFinite() || !std::isfinite(depth) ||
+                std::abs(normal.squaredNorm()-1)>1e-8)
+                throw dynamics::UnresolvedContact("invalid FCL triangle contact");
+            deepest=dynamics::ContactRegion{{center.x(),center.y(),center.z()},
+                                            {normal.x(),normal.y(),normal.z()},depth};
+        }
+        if (deepest && !loop.vector_area_a_m2) {
+            // A coplanar face contact can produce positive leaf depths at its
+            // rim. A supporting plane of both complete meshes proves zero load.
+            for (const auto& [i,j]:loop.triangles) {
+                const auto ta=triangle(*impl_->bodies[0].mesh,i,poses[0]);
+                const auto tb=triangle(*impl_->bodies[1].mesh,j,poses[1]);
+                const V n=(vector(ta[1])-vector(ta[0])).cross(vector(ta[2])-vector(ta[0]));
+                const V m=(vector(tb[1])-vector(tb[0])).cross(vector(tb[2])-vector(tb[0]));
+                if (n.dot(m)>=0 || n.cross(m).squaredNorm()>1e-24*n.squaredNorm()*m.squaredNorm()) continue;
+                const auto height=[&](Vec p) {return oriented_plane_side(ta,p);};
+                if (!std::ranges::all_of(tb,[&](Vec p) {return height(p)==0;})) continue;
+                const auto supports=[&](unsigned body,int side) {
+                    return std::ranges::all_of(impl_->bodies[body].mesh->vertices,[&](Vec p) {
+                        return side*height(poses[body].point(p))>=0;
+                    });
+                };
+                if (supports(0,-1) && supports(1,1)) return {};
+            }
+        }
+        if (deepest) result.push_back(*deepest);
+        else if (loop.vector_area_a_m2 && dynamics::squared(*loop.vector_area_a_m2)>0)
+            throw dynamics::UnresolvedContact("crossing loop has no positive FCL depth");
+    }
     return result;
 }
 

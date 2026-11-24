@@ -174,7 +174,13 @@ bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState&
         for (const auto& region : regions) {
             ContactSample item;
             item.gap=-region.depth_m;
-            if (region.depth_m>pair.material.maximum_depth) return false;
+            if (region.depth_m>pair.material.maximum_depth) {
+                ++work.rejected_region_depths;
+                work.last_rejected_depth_m=region.depth_m;
+                work.last_depth_limit_m=pair.material.maximum_depth;
+                work.last_depth_bodies={pair.a,pair.b};
+                return false;
+            }
             const Vec ra=sub(region.point,a.pose.origin), rb=sub(region.point,b.pose.origin);
             const auto differential=[&](const Twist& da,const Twist& db) {
                 const Vec relative=sub(db.at(rb),da.at(ra));

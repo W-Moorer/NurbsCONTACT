@@ -16,6 +16,8 @@ using nc::Vec;
 
 enum class MeshMethod { aabb, obb, sap };
 MeshMethod mesh_method(std::string_view name);
+enum class MeshRegionMode { local_volume, full_volume, fcl };
+MeshRegionMode mesh_region_mode(std::string_view name);
 
 struct MeshData {
     std::vector<Vec> vertices;
@@ -76,6 +78,9 @@ public:
     MeshScene(MeshScene&&) noexcept;
     MeshScene& operator=(MeshScene&&) noexcept;
     IntersectionResult intersect(std::span<const RigidPlacement> poses, bool collect_contours = false);
+    // Diagnostic triangle-plane depths, reduced to one contact per intersection contour.
+    std::vector<dynamics::ContactRegion> fcl_contacts(std::span<const RigidPlacement> poses,
+                                                      dynamics::ContactWork& work);
     OverlapResult overlaps(std::span<const RigidPlacement> poses, bool follow_adjacent=true);
 #ifdef NC_WITH_MESH_CCD
     // Straight translation and shortest-arc orientation per body.
@@ -90,9 +95,12 @@ private:
 
 std::vector<Vec> intersect_triangles(const Triangle& a, const Triangle& b);
 
-// Each connected overlap volume supplies one unilateral penalty region.
+// The default uses one unilateral penalty region per connected overlap volume.
 std::shared_ptr<const dynamics::PairRegionQuery> mesh_region_query(
     std::shared_ptr<const MeshData> a, std::shared_ptr<const MeshData> b, MeshMethod method,
     std::array<Vec,2> local_motion_centers = {}, bool localize = true);
+std::shared_ptr<const dynamics::PairRegionQuery> mesh_region_query(
+    std::shared_ptr<const MeshData> a, std::shared_ptr<const MeshData> b, MeshMethod method,
+    std::array<Vec,2> local_motion_centers, MeshRegionMode mode);
 
 } // namespace nc::cpu

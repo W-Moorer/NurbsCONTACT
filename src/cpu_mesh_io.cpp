@@ -14,6 +14,13 @@ MeshMethod mesh_method(std::string_view name) {
     throw std::invalid_argument("unknown CPU mesh method");
 }
 
+MeshRegionMode mesh_region_mode(std::string_view name) {
+    if (name=="local") return MeshRegionMode::local_volume;
+    if (name=="full") return MeshRegionMode::full_volume;
+    if (name=="fcl") return MeshRegionMode::fcl;
+    throw std::invalid_argument("expected local, full or fcl mesh contact geometry");
+}
+
 MeshData read_gmsh(const std::filesystem::path& file) {
     std::ifstream input(file);
     input.imbue(std::locale::classic());

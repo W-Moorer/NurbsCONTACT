@@ -11,7 +11,7 @@ using namespace nc::cpu;
 int main(int argc, char** argv) {
     try {
         if (argc < 5 || std::string_view(argv[1]) != "--method")
-            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--contours|--any [--same-face-only] [--candidate-window]|--regions local|full] [--tolerance-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz per body");
+            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--contours|--any [--same-face-only] [--candidate-window]|--regions local|full|fcl] [--tolerance-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz per body");
         const auto method = mesh_method(argv[2]);
         int first_mesh=3;
         bool continuous=false;
@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
         bool any=false;
         bool candidate_window=false;
         bool follow_adjacent=true;
-        std::optional<bool> local_regions;
+        std::optional<MeshRegionMode> region_mode;
         double tolerance=1e-7;
         while (first_mesh < argc && std::string_view(argv[first_mesh]).starts_with("--")) {
             const std::string_view option=argv[first_mesh++];
@@ -33,8 +33,7 @@ int main(int argc, char** argv) {
                 if (value!="continuous" && value!="discrete") throw std::invalid_argument("unknown detection mode");
                 continuous=value=="continuous";
             } else if (option=="--regions") {
-                if (value!="local" && value!="full") throw std::invalid_argument("expected local or full region scope");
-                local_regions=value=="local";
+                region_mode=mesh_region_mode(value);
             } else if (option=="--tolerance-m") {
                 std::size_t used{};
                 tolerance=std::stod(value,&used);
@@ -48,8 +47,8 @@ int main(int argc, char** argv) {
         if (!follow_adjacent && !any) throw std::invalid_argument("--same-face-only requires --any");
         if (candidate_window && (!any || method==MeshMethod::obb))
             throw std::invalid_argument("--candidate-window requires --any and mesh-aabb or mesh-sap");
-        if (local_regions && (any || continuous || contours || argc-first_mesh!=2))
-            throw std::invalid_argument("--regions takes two closed meshes for a discrete volume query");
+        if (region_mode && (any || continuous || contours || argc-first_mesh!=2))
+            throw std::invalid_argument("--regions takes two closed meshes for a discrete contact query");
 #ifndef NC_WITH_MESH_CCD
         if (continuous) throw std::invalid_argument("build with NC_WITH_MESH_CCD for continuous detection");
 #endif
@@ -63,7 +62,7 @@ int main(int argc, char** argv) {
         }
         std::optional<MeshScene> scene;
         std::shared_ptr<const nc::dynamics::PairRegionQuery> regions;
-        if (local_regions) regions=mesh_region_query(bodies[0],bodies[1],method,{},*local_regions);
+        if (region_mode) regions=mesh_region_query(bodies[0],bodies[1],method,{},*region_mode);
         else scene.emplace(bodies,method,candidate_window);
         std::string line;
         std::vector<RigidPlacement> previous;
@@ -91,7 +90,7 @@ int main(int argc, char** argv) {
             if (regions) {
                 nc::dynamics::ContactWork work;
                 const auto found=regions->regions(contact_poses[0],contact_poses[1],work);
-                std::cout<<"{\"input_faces\":"<<work.boolean_input_faces<<",\"local_solids\":"<<work.local_solid_uses
+                std::cout<<"{\"boolean_queries\":"<<work.boolean_queries<<",\"input_faces\":"<<work.boolean_input_faces<<",\"local_solids\":"<<work.local_solid_uses
                          <<",\"regions\":[";
                 for (std::size_t i=0;i<found.size();++i) {
                     if (i) std::cout<<',';

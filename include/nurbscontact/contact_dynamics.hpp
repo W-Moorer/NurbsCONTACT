@@ -44,6 +44,9 @@ struct ContactWork {
     double mesh_detection_s{}, mesh_placement_s{}, mesh_boolean_s{};
     std::size_t cad_boolean_queries{};
     std::size_t cad_region_cache_hits{};
+    std::size_t rejected_region_depths{};
+    double last_rejected_depth_m{}, last_depth_limit_m{};
+    std::array<std::size_t,2> last_depth_bodies{};
 };
 
 struct ContactLineSample {

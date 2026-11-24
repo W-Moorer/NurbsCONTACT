@@ -3,6 +3,7 @@
 #include "nurbscontact/cpu_mesh.hpp"
 
 namespace nc::cpu {
+int oriented_plane_side(const Triangle& t,Vec p);
 bool triangle_overlap(const Triangle& a,const Triangle& b);
 
 // One instance per body pair. Exact witness coordinates join triangle hits

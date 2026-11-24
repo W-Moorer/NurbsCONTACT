@@ -73,6 +73,12 @@ TriangleTime translated_triangle_ccd(const Triangle& a, const Triangle& b,
 }
 #endif
 
+int oriented_plane_side(const Triangle& t,Vec p) {
+    using K=CGAL::Exact_predicates_inexact_constructions_kernel;
+    const auto tri=triangle<K>(t);
+    return static_cast<int>(CGAL::orientation(tri[0],tri[1],tri[2],K::Point_3(p[0],p[1],p[2])));
+}
+
 bool triangle_overlap(const Triangle& a,const Triangle& b) {
     using Predicate = CGAL::Exact_predicates_inexact_constructions_kernel;
     const auto left = triangle<Predicate>(a), right = triangle<Predicate>(b);

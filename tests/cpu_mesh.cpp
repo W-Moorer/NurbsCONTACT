@@ -82,6 +82,34 @@ void check_penalty_regions() {
             "two disconnected overlap volumes must carry separate loads");
 }
 
+void check_triangle_force_geometry() {
+    using namespace nc::dynamics;
+    auto block=std::make_shared<MeshData>(),tip=std::make_shared<MeshData>();
+    append_box(*block,0,1);
+    tip->vertices={{.65,.25,0},{.60,.20,.20},{.70,.20,.20},{.65,.30,.20}};
+    tip->faces={{0,2,1},{0,3,2},{0,1,3},{1,2,3}};
+    ContactPose base,pose;
+    ContactWork work;
+    auto query=mesh_region_query(block,tip,MeshMethod::obb,{},MeshRegionMode::fcl);
+    ContactPose face_touch;
+    face_touch.origin[2]=1;
+    auto cubes=mesh_region_query(block,block,MeshMethod::obb,{},MeshRegionMode::fcl);
+    require(cubes->regions(base,face_touch,work).empty(),"coplanar faces must not load their common rim");
+    pose.origin[2]=1.03;
+    require(query->regions(base,pose,work).empty(),"disjoint FCL pair produced a force");
+    pose.origin[2]=1;
+    require(query->regions(base,pose,work).empty(),"touching FCL tip produced a force");
+    pose.origin[2]=.98;
+    const auto hits=query->regions(base,pose,work);
+    require(hits.size()==1 && std::abs(hits[0].depth_m-.02)<1e-12 &&
+            length(sub(hits[0].normal,{0,0,1}))<1e-12 && length(sub(hits[0].point,{.65,.25,.98}))<1e-12,
+            "FCL tip-plane depth, normal or contact point");
+    const auto inverse=mesh_region_query(tip,block,MeshMethod::obb,{},MeshRegionMode::fcl)->regions(pose,base,work);
+    require(inverse.size()==1 && std::abs(hits[0].depth_m-inverse[0].depth_m)<1e-12 &&
+            length(add(hits[0].normal,inverse[0].normal))<1e-12 && work.boolean_queries==0,
+            "FCL body-order symmetry or unintended solid intersection");
+}
+
 void check_local_regions() {
     using namespace nc::dynamics;
     auto mesh=std::make_shared<MeshData>();
@@ -148,6 +176,7 @@ void check_local_regions() {
 int main() {
     try {
         check_penalty_regions();
+        check_triangle_force_geometry();
         check_local_regions();
         Triangle a{{{0,0,0},{1,0,0},{0,1,0}}};
         Triangle cross{{{.25,.25,-1},{.25,.25,1},{.75,.25,0}}};
