@@ -9,7 +9,7 @@ endif()
 
 include(CTest)
 # Optional synchronous host/GPU benchmark. The exchange helper has no CUDA link dependency.
-add_library(nc_hinge_exchange SHARED EXCLUDE_FROM_ALL benchmarks/aes/hinge_exchange.cpp)
+add_library(nc_hinge_exchange SHARED EXCLUDE_FROM_ALL nurbscontact_gpu/native/hinge_exchange.cpp)
 target_compile_features(nc_hinge_exchange PRIVATE cxx_std_20)
 
 option(NC_WITH_OCCT "Build STEP import and CAD benchmarks with Open CASCADE" ON)

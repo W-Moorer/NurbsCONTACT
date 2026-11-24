@@ -4,32 +4,12 @@ import argparse
 import csv
 import json
 from pathlib import Path
-import shlex
 import subprocess
 
 import numpy as np
 
+from _gpu_source import read_model
 from cpu_backend_run import digest
-
-
-def read_model(scene):
-    bodies, pairs = [], []
-    for line in scene.read_text().splitlines():
-        if line.startswith("body "):
-            fields = shlex.split(line)
-            source = (scene.parent / fields[1]).resolve()
-            origin = np.array(fields[3:6], dtype=float)
-            axis = np.array(fields[6:9], dtype=float)
-            if (len(fields) != 18 or fields[17] != "0" or not np.array_equal(origin, np.array(fields[14:17], dtype=float))
-                    or np.linalg.norm(axis) != 1 or int(fields[13]) < 0):
-                raise ValueError("This diagnostic expects a single centered revolute joint per body")
-            bodies.append((source, origin, axis, float(fields[9]), int(fields[13])))
-        if line.startswith("surface "):
-            _, a, b, k, exponent, damping, friction, _, limit = line.split()
-            if (float(exponent), float(damping), float(friction)) != (1., 0., 0.):
-                raise ValueError("Force replay requires linear undamped frictionless contact")
-            pairs.append((int(a), int(b), float(k), float(limit)))
-    return bodies, pairs
 
 
 def world_poses(body, progress):
