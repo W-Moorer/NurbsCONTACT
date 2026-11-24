@@ -11,7 +11,7 @@ using namespace nc::cpu;
 int main(int argc, char** argv) {
     try {
         if (argc < 5 || std::string_view(argv[1]) != "--method")
-            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--contours|--any [--same-face-only] [--candidate-window]|--regions local|full|fcl|finite [--axis-angle]] [--tolerance-m metres] [--max-depth-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz, or xyz axis_x axis_y axis_z radians per body");
+            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--contours|--any [--same-face-only] [--candidate-window]|--regions local|full|fcl|finite|contour-ray [--axis-angle]] [--tolerance-m metres] [--max-depth-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz, or xyz axis_x axis_y axis_z radians per body");
         const auto method = mesh_method(argv[2]);
         int first_mesh=3;
         bool continuous=false;

@@ -232,7 +232,7 @@ bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState&
         if (regions.empty()) { ++work.culled; return true; }
         if (pair.material.approach_floor>0 && regions.size()>1)
             throw std::runtime_error("incidence-dependent damping needs per-region impact histories");
-        const bool shared=pair.share_penalty_stiffness && regions.size()>1;
+        const bool shared=pair.share_penalty_stiffness && (regions.size()>1 || pair.regions->predictor_slots()>1);
         Forces local;
         if (shared && forces) {
             local.value.resize(velocity.size());
@@ -267,6 +267,7 @@ bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState&
             sample.normal_force+=item.normal_force;
             sample.friction=add(sample.friction,item.friction);
         }
+        if (const auto predicted=pair.regions->predictor_slots(); predicted) loaded=predicted;
         if (shared && loaded) {
             const double weight=1./static_cast<double>(loaded);
             sample.normal_force*=weight;

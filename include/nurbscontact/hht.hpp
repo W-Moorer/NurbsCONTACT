@@ -69,7 +69,7 @@ class Hht {
 public:
     Hht(Vector diagonal_mass, ForceFunction forces, HhtOptions options = {}, ClearanceFunction clearance = {},
         HistoryForceFunction historical_forces = {}, BoundedForceFunction bounded_forces = {},
-        StepAcceptanceFunction accept_step = {});
+        StepAcceptanceFunction accept_step = {}, std::function<void()> begin_trial = {});
 
     State initialize(Vector q, Vector v, double time = 0) const;
     void step(State& state, double dt, HhtStats& statistics) const;
@@ -85,6 +85,7 @@ private:
     HistoryForceFunction historical_forces_;
     BoundedForceFunction bounded_forces_;
     StepAcceptanceFunction accept_step_;
+    std::function<void()> begin_trial_;
 };
 
 }  // namespace nc::dynamics

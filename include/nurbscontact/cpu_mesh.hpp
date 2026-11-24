@@ -16,7 +16,7 @@ using nc::Vec;
 
 enum class MeshMethod { aabb, obb, sap };
 MeshMethod mesh_method(std::string_view name);
-enum class MeshRegionMode { local_volume, full_volume, fcl, finite };
+enum class MeshRegionMode { local_volume, full_volume, fcl, finite, contour_ray };
 MeshRegionMode mesh_region_mode(std::string_view name);
 
 struct MeshData {

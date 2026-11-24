@@ -204,6 +204,41 @@ Geometry facet(const SurfaceFeatures& s,std::size_t id,const RigidPlacement& p) 
     return g;
 }
 
+// The narrow phase already established intersection. Extract the common segment
+// from the overlap of the two finite triangle/plane slices.
+std::optional<std::pair<Vec,Vec>> transverse_segment(const Geometry& a,const Geometry& b,double eps) {
+    Vec direction=cross3(a.n,b.n);
+    const double norm=length(direction);
+    // Coincident planar caps have area overlap. Their internal triangulation
+    // does not contribute to the length of a transverse contact boundary.
+    // Purely tangent or coplanar groups use the finite support fallback.
+    if (norm<1e-10) return {};
+    direction=scale(direction,1/norm);
+    const auto slice=[&](const Geometry& f,const Geometry& plane) {
+        std::array<double,3> heights;
+        for (int i=0;i<3;++i) heights[i]=dot3(sub(f.tri[i],plane.tri[0]),plane.n);
+        std::pair<double,double> band{INFINITY,-INFINITY};
+        const auto include=[&](Vec p) {
+            const double t=dot3(sub(p,a.tri[0]),direction);
+            band={std::min(band.first,t),std::max(band.second,t)};
+        };
+        for (int i=0;i<3;++i) {
+            const int j=(i+1)%3;
+            if (std::abs(heights[i])<=eps) include(f.tri[i]);
+            if ((heights[i]<0)!=(heights[j]<0))
+                include(add(f.tri[i],scale(sub(f.tri[j],f.tri[i]),heights[i]/(heights[i]-heights[j]))));
+        }
+        return band;
+    };
+    const auto u=slice(a,b),v=slice(b,a);
+    const double lo=std::max(u.first,v.first),hi=std::min(u.second,v.second);
+    if (hi-lo<=eps) return {};
+    const Vec transverse=cross3(direction,a.n);
+    const double offset=dot3(sub(b.tri[0],a.tri[0]),b.n)/dot3(transverse,b.n);
+    const Vec line=add(a.tri[0],scale(transverse,offset));
+    return std::pair{add(line,scale(direction,lo)),add(line,scale(direction,hi))};
+}
+
 // A separating edge in either two-dimensional projection also separates
 // the spatial triangles. Strict agreement in a shared coordinate plane proves
 // overlap there; touching and roundoff-sensitive cases use the exact predicate.
@@ -311,6 +346,7 @@ struct PairRows {
 struct FiniteFeatures::Data {
     std::array<SurfaceFeatures,2> surfaces;
     MeshScene& scene;
+    std::array<std::unique_ptr<TriangleBvh>,2> ray_trees;
     double reach,skin,limit,initial_reach;
     bool initialized{};
     RigidPlacement saved;
@@ -323,10 +359,19 @@ struct FiniteFeatures::Data {
     PairRows face_rows;
     std::array<PairRows,3> feature_rows;
     std::map<FaceGroup,PatchTopology> previous_patches;
-    Data(const MeshData& a,const MeshData& b,MeshScene& scene_,double maximum)
+    Data(const MeshData& a,const MeshData& b,MeshScene& scene_,double maximum,bool contour_ray)
         :surfaces{SurfaceFeatures(a),SurfaceFeatures(b)},scene(scene_) {
         const double radius=std::min(surfaces[0].radius,surfaces[1].radius);
         for (std::size_t i=0;i<a.faces.size();++i) fixed_faces.push_back(facet(surfaces[0],i,{}));
+        if (contour_ray) {
+            for (unsigned s=0;s<2;++s) {
+                const auto& mesh=surfaces[s].mesh;
+                std::vector<Triangle> triangles;
+                triangles.reserve(mesh.faces.size());
+                for (auto f:mesh.faces) triangles.push_back({mesh.vertices[f[0]],mesh.vertices[f[1]],mesh.vertices[f[2]]});
+                ray_trees[s]=std::make_unique<TriangleBvh>(std::move(triangles));
+            }
+        }
         moving_faces.resize(b.faces.size());
         versions.resize(b.faces.size());
         limit=maximum>0 && std::isfinite(maximum) ? 4*maximum : radius*.08;
@@ -656,6 +701,56 @@ struct FiniteFeatures::Data {
         }
         return patch;
     }
+    std::optional<ContactRegion> contour_contact(const FaceGroup& group,const RigidPlacement& rel,ContactWork& work) {
+        const double eps=1e-12*(surfaces[0].radius+surfaces[1].radius+length(rel.origin));
+        // If all opposed facets share a tangent, their intersection can be
+        // split at coplanar end caps without splitting the physical line
+        // support. Resolve that support with the finite feature witnesses.
+        Vec first_normal{},tangent{};
+        bool spans_space=false;
+        for (auto [ia,ib]:group) {
+            const Vec a=fixed_faces[ia].n,b=moving(ib,rel).n;
+            if (dot3(a,b)>=-.8) continue;
+            for (Vec n:{a,b}) {
+                if (squared(first_normal)==0) first_normal=n;
+                if (squared(tangent)==0) {
+                    const auto c=cross3(first_normal,n);
+                    if (length(c)>1e-7) tangent=scale(c,1/length(c));
+                } else if (std::abs(dot3(tangent,n))>1e-7) spans_space=true;
+            }
+            if (spans_space) break;
+        }
+        if (!spans_space) return {};
+        double perimeter=0;
+        Vec center{},normal{};
+        for (auto [ia,ib]:group) {
+            const auto& a=fixed_faces[ia];
+            const auto& b=moving(ib,rel);
+            const auto interval=transverse_segment(a,b,eps);
+            if (!interval) continue;
+            const double weight=length(sub(interval->second,interval->first));
+            center=add(center,scale(add(interval->first,interval->second),.5*weight));
+            perimeter+=weight;
+            if (dot3(a.n,b.n)<-.8) normal=add(normal,scale(sub(a.n,b.n),weight));
+        }
+        if (perimeter<=eps || length(normal)<=eps) return {};
+        center=scale(center,1/perimeter);
+        normal=scale(normal,1/length(normal));
+        std::array<double,2> offsets;
+        for (unsigned s=0;s<2;++s) {
+            const Vec local_point=s?inverse_vector(rel,sub(center,rel.origin)):center;
+            const Vec outward=s?inverse_vector(rel,scale(normal,-1)):normal;
+            Vec hit_normal{};
+            // Start outside the contact slab and trace inward to this material's surface.
+            const auto t=ray_trees[s]->ray_first(add(local_point,scale(outward,limit)),scale(outward,-1),
+                                                  2*limit,work.mesh,&hit_normal);
+            if (!t || dot3(hit_normal,outward)<=0) return {};
+            offsets[s]=limit-*t;
+        }
+        const double depth=offsets[0]+offsets[1];
+        if (depth<=eps || depth>limit) return {};
+        return ContactRegion{add(center,scale(normal,.5*(offsets[0]-offsets[1]))),normal,depth};
+    }
     std::vector<ContactRegion> partitioned(const std::array<RigidPlacement,2>& poses,const RigidPlacement& rel,
                                            ContactWork& work) {
         const auto groups=crossing_groups(poses,rel,work);
@@ -672,6 +767,12 @@ struct FiniteFeatures::Data {
         std::vector<ContactRegion> contacts;
         decltype(previous_patches) next_patches;
         for (const auto& group:groups) {
+            if (ray_trees[0]) {
+                if (const auto contact=contour_contact(group,rel,work)) {
+                    contacts.push_back(*contact);
+                    continue;
+                }
+            }
             auto node=previous_patches.extract(group);
             decltype(next_patches)::iterator entry;
             if (node.empty()) {
@@ -784,8 +885,8 @@ struct FiniteFeatures::Data {
         return {world(region,poses[0])};
     }
 };
-FiniteFeatures::FiniteFeatures(const MeshData& a,const MeshData& b,MeshScene& scene,double max_depth)
-    :data_(std::make_unique<Data>(a,b,scene,max_depth)) {}
+FiniteFeatures::FiniteFeatures(const MeshData& a,const MeshData& b,MeshScene& scene,double max_depth,bool contour_ray)
+    :data_(std::make_unique<Data>(a,b,scene,max_depth,contour_ray)) {}
 FiniteFeatures::~FiniteFeatures()=default;
 std::vector<dynamics::ContactRegion> FiniteFeatures::query(const std::array<RigidPlacement,2>& poses,
                                                            dynamics::ContactWork& work) {

@@ -116,6 +116,7 @@ struct SurfaceTransition {
 class PairRegionQuery {
 public:
     virtual ~PairRegionQuery() = default;
+    virtual std::size_t predictor_slots() const {return 0;}
     // Finite mesh queries with private, pair-local mutable geometry return their face count.
     virtual std::size_t independent_mesh_faces() const {return 0;}
     virtual std::vector<ContactRegion> regions(ContactPose a, ContactPose b, ContactWork& work) const = 0;

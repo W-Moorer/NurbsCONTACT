@@ -187,6 +187,13 @@ void check_crossed_edges() {
     };
     const auto aa=contacts(MeshMethod::aabb),bb=contacts(MeshMethod::obb);
     require(aa.size()==3 && bb.size()==3,"missing disconnected edge contacts");
+    for (auto method:{MeshMethod::aabb,MeshMethod::obb}) {
+        const auto rays=mesh_region_query(left,right,method,{},MeshRegionMode::contour_ray,.03)->regions(base,pose,work);
+        require(rays.size()==3,"contour-ray combined independent supports");
+        for (const auto& region:rays)
+            require(std::abs(region.depth_m-.02)<1e-10 && std::abs(region.point[2]+.01)<1e-10 &&
+                    length(sub(region.normal,{0,0,1}))<1e-9,"crossing ridges changed the analytic wrench");
+    }
     for (std::size_t i=0;i<aa.size();++i)
         require(aa[i].point==bb[i].point && aa[i].normal==bb[i].normal && aa[i].depth_m==bb[i].depth_m,
                 "BVH traversal changed contact accumulation order");

@@ -120,6 +120,52 @@ void expect(std::istream& in,std::string_view expected) {
     if (take<std::string>(in)!=expected) throw std::invalid_argument("expected "+std::string(expected));
 }
 
+// Freeze the material anchors at the HHT endpoint predictor for one Newton
+// solve. A retry at a different duration always discovers its contacts again.
+class PredictorRegions final : public PairRegionQuery {
+    struct Anchors {Vec a,b,normal_a,normal_b;};
+    std::shared_ptr<const PairRegionQuery> exact_;
+    mutable std::vector<Anchors> anchors_;
+    mutable bool ready_{};
+public:
+    explicit PredictorRegions(std::shared_ptr<const PairRegionQuery> exact):exact_(std::move(exact)) {}
+    void reset() {ready_=false;anchors_.clear();}
+    std::size_t predictor_slots() const override {return anchors_.size();}
+    std::size_t independent_mesh_faces() const override {return ready_ ? 0 : exact_->independent_mesh_faces();}
+    std::vector<ContactRegion> regions(ContactPose a,ContactPose b,ContactWork& work) const override {
+        if (!ready_) {
+            const auto points=exact_->regions(a,b,work);
+            anchors_.clear();
+            for (const auto& p:points) {
+                const auto half=scale(p.normal,.5*p.depth_m);
+                anchors_.push_back({a.inverse_rotate(sub(add(p.point,half),a.origin)),
+                    b.inverse_rotate(sub(sub(p.point,half),b.origin)),
+                    a.inverse_rotate(p.normal),b.inverse_rotate(p.normal)});
+            }
+            ready_=true;
+            return points;
+        }
+        std::vector<ContactRegion> points;
+        points.reserve(anchors_.size());
+        for (const auto& p:anchors_) {
+            const auto pa=a.point(p.a),pb=b.point(p.b);
+            Vec n=add(a.rotate(p.normal_a),b.rotate(p.normal_b));
+            const double norm=length(n);
+            if (norm<1.) throw UnresolvedContact("predictor contact frame rotated out of range");
+            n=scale(n,1/norm);
+            const double depth=dot3(sub(pa,pb),n);
+            if (depth>0) points.push_back({scale(add(pa,pb),.5),n,depth});
+        }
+        return points;
+    }
+    SurfaceTransition transition(ContactPose a,ContactPose b,ContactPose c,ContactPose d,double eps) const override {
+        return exact_->transition(a,b,c,d,eps);
+    }
+    SurfaceTransition transition(ContactPose a,ContactPose b,ContactPose c,ContactPose d,double eps,double time_eps) const override {
+        return exact_->transition(a,b,c,d,eps,time_eps);
+    }
+};
+
 struct SurfaceOptions {
     std::string method;
     std::optional<ImpulseLaw> impulse_law;
@@ -128,6 +174,7 @@ struct SurfaceOptions {
     double distance_tolerance{1e-7};
     std::string mesh_regions{"local"};
     bool share_penalty_stiffness{};
+    bool predictor_geometry{};
     bool chen() const { return method=="chen-2024" || method=="chen-2026"; }
     bool cad() const { return method=="cad-occt" || chen(); }
 };
@@ -948,7 +995,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     const double roundoff=8*std::numeric_limits<double>::epsilon()*step_count;
     const auto steps=static_cast<std::size_t>(std::ceil(step_count-roundoff));
     const auto setup=Clock::now();
-    const Input input=read_scene(scene,deflection,pair_backend,pair_options,event_tolerance>0,surface);
+    Input input=read_scene(scene,deflection,pair_backend,pair_options,event_tolerance>0,surface);
     for (const auto& body:input.bodies) {
         const auto* table=std::get_if<std::vector<TranslationSample>>(&body.drive);
         if (table && steps*dt>table->back().time+1e-12)
@@ -957,6 +1004,15 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     for (const auto& table:input.loads) {
         if (!table.empty() && steps*dt>table.back().time+1e-12)
             throw std::invalid_argument("simulation extends beyond prescribed coordinate load table");
+    }
+    std::vector<std::shared_ptr<PredictorRegions>> predictors;
+    if (surface.predictor_geometry && input.coordinates.empty())
+        throw std::invalid_argument("predictor geometry requires integrated coordinates");
+    if (surface.predictor_geometry) for (auto& pair:input.pairs) {
+        if (!pair.regions) throw std::invalid_argument("predictor updates require surface regions");
+        auto proxy=std::make_shared<PredictorRegions>(pair.regions);
+        predictors.push_back(proxy);
+        pair.regions=std::move(proxy);
     }
     const double setup_s=std::chrono::duration<double>(Clock::now()-setup).count();
     const auto n=input.coordinates.size();
@@ -1118,9 +1174,15 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     std::vector<std::vector<ContactSample>> observed_contacts;
     const auto save_state=[&](const State& state) {
         samples.push_back(state);
-        if (reuse_mesh_samples) {
-            if (state.time==last_sample_time && state.q==last_sample_q && state.v==last_sample_v)
+        if (reuse_mesh_samples || !predictors.empty()) {
+            if (reuse_mesh_samples && state.time==last_sample_time && state.q==last_sample_q && state.v==last_sample_v)
                 observed_contacts.push_back(std::move(last_contacts));
+            else if (!predictors.empty()) {
+                auto& sample=observed_contacts.emplace_back();
+                const auto poses=kinematics(input,state.q,state.time);
+                if (!add_contact_forces(nullptr,poses,input.pairs,state.v,work,&sample,impact_history(state.history)))
+                    throw std::runtime_error("invalid accepted predictor contact");
+            }
             else observed_contacts.emplace_back();
         }
     };
@@ -1197,7 +1259,8 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         else force=[&](const Vector& q_,const Vector& v_,double time) {
             return evaluate_force(q_,v_,time,{});
         };
-        Hht solver(mass,std::move(force),options,{},std::move(historical_force),{},std::move(accept_step));
+        Hht solver(mass,std::move(force),options,{},std::move(historical_force),{},std::move(accept_step),
+                   [&] {for (auto& proxy:predictors) proxy->reset();});
         std::size_t depth_rejections_before=work.rejected_region_depths;
         try {
             auto state=solver.initialize(q,v);
@@ -1256,6 +1319,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                 trace<<",p"<<p<<"_gap_rate_m_s,p"<<p<<"_impact_speed_m_s";
         }
     }
+    if (!predictors.empty()) for (std::size_t i=0;i<n;++i) trace<<",generalized_force"<<i;
     trace<<'\n';
     ContactWork audit;
     std::vector<ContactSample> values;
@@ -1301,6 +1365,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                     trace<<','<<values[p].gap_rate<<','<<values[p].impact_speed;
             }
         }
+        if (!predictors.empty()) for (double f:item.force) trace<<','<<f;
         trace<<'\n';
     }
     auto report=open_output(output.string()+".stats.csv");
@@ -1399,7 +1464,7 @@ int main(int argc,char** argv) {
             std::cerr<<"nc_contact SCENE DEFLECTION_M DT_S DURATION_S OUTPUT_STRIDE OUTPUT_PREFIX "
                         "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
                         "  or append --method bvh-aabb|bvh-obb|mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
-                        "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl|finite] [--penalty-stiffness per-region|shared]\n"
+                        "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl|finite|contour-ray] [--penalty-stiffness per-region|shared] [--geometry-update newton|predictor]\n"
                         "  or append --method cad-occt|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
                         "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp [--progress FILE]\n";
             return 2;
@@ -1416,14 +1481,18 @@ int main(int argc,char** argv) {
                 if (key=="--method") surface.method=value;
                 else if (key=="--progress") surface.progress_file=argv[i+1];
                 else if (key=="--mesh-dir") surface.mesh_directory=argv[i+1];
+                else if (key=="--geometry-update") {
+                    if (value!="newton" && value!="predictor") throw std::invalid_argument("expected newton or predictor geometry");
+                    surface.predictor_geometry=value=="predictor";
+                }
                 else if (key=="--penalty-stiffness") {
                     if (value!="per-region" && value!="shared") throw std::invalid_argument("expected per-region or shared stiffness");
                     surface.share_penalty_stiffness=value=="shared";
                 }
                 else if (key=="--mesh-region-scope") {
                     region_specified=true;
-                    if (value!="local" && value!="full" && value!="fcl" && value!="finite")
-                        throw std::invalid_argument("expected local, full, fcl or finite mesh contact geometry");
+                    if (value!="local" && value!="full" && value!="fcl" && value!="finite" && value!="contour-ray")
+                        throw std::invalid_argument("expected local, full, fcl, finite or contour-ray mesh contact geometry");
                     surface.mesh_regions=value;
                 }
                 else if (key=="--event-tol-s") {
@@ -1441,6 +1510,8 @@ int main(int argc,char** argv) {
                 surface.method=surface.method=="bvh-aabb" ? "mesh-aabb" : "mesh-obb";
                 if (!region_specified) surface.mesh_regions="finite";
             }
+            if (surface.predictor_geometry && (surface.impulse_law || surface.cad()))
+                throw std::invalid_argument("predictor geometry requires a mesh penalty method");
             if (surface.share_penalty_stiffness && surface.impulse_law)
                 throw std::invalid_argument("shared penalty stiffness requires the penalty solver");
             if (!surface.cad() && surface.method!="mesh-aabb" && surface.method!="mesh-obb" && surface.method!="mesh-sap")

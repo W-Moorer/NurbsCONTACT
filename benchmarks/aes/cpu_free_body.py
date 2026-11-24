@@ -205,6 +205,8 @@ def run(args):
     ]
     if args.event_tol:
         cmd.extend(["--event-tol-s", str(args.event_tol)])
+    if getattr(args,"geometry_update",None):
+        cmd.extend(["--geometry-update",args.geometry_update])
     start = time.perf_counter()
     subprocess.run(cmd, check=True, timeout=1800, capture_output=True, text=True)
     elapsed = time.perf_counter() - start
@@ -220,6 +222,7 @@ def run(args):
         dt_s=args.dt,
         duration_s=duration,
         mesh_region_scope=getattr(args,"mesh_region_scope",None),
+        geometry_update=getattr(args,"geometry_update",None),
         event_tolerance_s=float(stats.get("event_tolerance_s",args.event_tol)),
         **geometry,
         scene_sha256=hashlib.sha256(model.read_bytes()).hexdigest(),
@@ -250,7 +253,8 @@ if __name__ == "__main__":
     parser.add_argument("--method", choices=["mesh-aabb", "mesh-obb", "mesh-sap","cad-occt","chen-2024","chen-2026"], default="mesh-obb")
     parser.add_argument("--dt", type=float, required=True)
     parser.add_argument("--duration",type=float)
-    parser.add_argument("--mesh-region-scope",choices=("local","full","fcl","finite"))
+    parser.add_argument("--mesh-region-scope",choices=("local","full","fcl","finite","contour-ray"))
+    parser.add_argument("--geometry-update",choices=("newton","predictor"))
     parser.add_argument("--solver", choices=("penalty","sap","lagrange","augmented-lagrange","lcp","ncp","soccp"),
                         default="penalty")
     parser.add_argument("--event-tol", type=float, default=0.0)

@@ -282,12 +282,13 @@ class MeshRegions final : public PairRegionQuery {
 public:
     MeshRegions(std::shared_ptr<const MeshData> a,std::shared_ptr<const MeshData> b,MeshMethod method,
                 std::array<Vec,2> centers,MeshRegionMode mode,double max_depth)
-        : meshes_{std::move(a),std::move(b)},centers_(centers),mode_(mode),scene_(meshes_,method,mode==MeshRegionMode::finite) {
+        : meshes_{std::move(a),std::move(b)},centers_(centers),mode_(mode),scene_(meshes_,method,mode==MeshRegionMode::finite || mode==MeshRegionMode::contour_ray) {
         solids_[0]=std::make_shared<Surface>(solid(*meshes_[0]));
         solids_[1]=meshes_[0]==meshes_[1] ? solids_[0] : std::make_shared<Surface>(solid(*meshes_[1]));
         // The same one-time orientation and self-intersection checks apply to
         // leaf contact normals. Their query needs only the prepared mesh scene.
-        if (mode_==MeshRegionMode::finite) features_=std::make_unique<FiniteFeatures>(*meshes_[0],*meshes_[1],scene_,max_depth);
+        if (mode_==MeshRegionMode::finite || mode_==MeshRegionMode::contour_ray)
+            features_=std::make_unique<FiniteFeatures>(*meshes_[0],*meshes_[1],scene_,max_depth,mode_==MeshRegionMode::contour_ray);
         if (features_ || mode_==MeshRegionMode::fcl) solids_={};
     }
     std::size_t independent_mesh_faces() const override {

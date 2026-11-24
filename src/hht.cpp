@@ -99,10 +99,10 @@ struct Trial {
 
 Hht::Hht(Vector diagonal_mass, ForceFunction forces, HhtOptions options, ClearanceFunction clearance,
          HistoryForceFunction historical_forces, BoundedForceFunction bounded_forces,
-         StepAcceptanceFunction accept_step)
+         StepAcceptanceFunction accept_step, std::function<void()> begin_trial)
     : mass_(std::move(diagonal_mass)), forces_(std::move(forces)),
       options_(options), clearance_(std::move(clearance)), historical_forces_(std::move(historical_forces)),
-      bounded_forces_(std::move(bounded_forces)), accept_step_(std::move(accept_step)) {
+      bounded_forces_(std::move(bounded_forces)), accept_step_(std::move(accept_step)),begin_trial_(std::move(begin_trial)) {
     if ((!forces_ && !historical_forces_ && !bounded_forces_) || mass_.empty() || !finite(mass_) ||
         std::any_of(mass_.begin(), mass_.end(), [](double m) { return m <= 0; }) ||
         !(options.alpha >= -1.0 / 3 && options.alpha <= 0) ||
@@ -204,6 +204,7 @@ bool Hht::solve(const State& start, double dt, State& result, HhtStats& statisti
         return bounded_forces_ && std::isfinite(scale)
             ? force_fraction * std::max(options_.absolute_tolerance, scale) / residual_scale : 0;
     };
+    if (begin_trial_) begin_trial_();
     Trial current = evaluate(start.a, request_force_error(max_norm(start.force)));
     for (unsigned iteration = 0; iteration <= options_.max_iterations; ++iteration) {
         double tolerance = options_.absolute_tolerance + options_.relative_tolerance *

@@ -4,7 +4,7 @@
 namespace nc::cpu {
 class FiniteFeatures {
 public:
-    FiniteFeatures(const MeshData& a,const MeshData& b,MeshScene& scene,double max_depth);
+    FiniteFeatures(const MeshData& a,const MeshData& b,MeshScene& scene,double max_depth,bool contour_ray);
     ~FiniteFeatures();
     std::vector<dynamics::ContactRegion> query(const std::array<RigidPlacement,2>& poses,dynamics::ContactWork& work);
 private:
