@@ -1,0 +1,219 @@
+{
+  "closed_loop": {
+    "wall_s": 29.233985400001984,
+    "stage_measures": [
+      {
+        "mesh_a_faces": 10216,
+        "queries": 3251,
+        "rebuilds": 481,
+        "candidate_pairs_scanned": 8012135,
+        "intersecting_face_pairs": 162013,
+        "features_before_unique": 17011365,
+        "features_after_unique": 4362231,
+        "connected_regions": 5633,
+        "first_s": 0.3287841,
+        "planar_shortcuts_s": 0.0012638,
+        "rebuild_s": 2.2603921,
+        "test_pairs_s": 2.1622957,
+        "component_grouping_s": 0.1895753,
+        "expand_deduplicate_s": 2.6874116,
+        "depth_bounds_s": 0.1901755,
+        "local_witness_s": 0.6102932,
+        "fallback_s": 0.0026504
+      },
+      {
+        "mesh_a_faces": 27934,
+        "queries": 3251,
+        "rebuilds": 477,
+        "candidate_pairs_scanned": 20510826,
+        "intersecting_face_pairs": 388305,
+        "features_before_unique": 40772025,
+        "features_after_unique": 11722863,
+        "connected_regions": 33391,
+        "first_s": 0.5001319,
+        "planar_shortcuts_s": 0.0011911,
+        "rebuild_s": 5.0975559,
+        "test_pairs_s": 2.7850085,
+        "component_grouping_s": 0.4253934,
+        "expand_deduplicate_s": 5.9937243,
+        "depth_bounds_s": 0.8564776,
+        "local_witness_s": 1.5669418,
+        "fallback_s": 0.0116739
+      }
+    ],
+    "stats": {
+      "wall_s": "25.841094500000001",
+      "setup_s": "2.1771634999999998",
+      "steps": "400",
+      "accepted": "447",
+      "subdivisions": "47",
+      "force_evaluations": "3250",
+      "max_residual": "8.3338426737356031e-07",
+      "pairs": "6502",
+      "culled": "184",
+      "rays": "0",
+      "missing": "0",
+      "triangle_tests": "10052251",
+      "closest_queries": "0",
+      "unresolved_queries": "0",
+      "native_nodes": "0",
+      "ccd_checks": "0",
+      "ccd_rejected": "0",
+      "ccd_nodes": "0",
+      "ccd_unresolved": "0",
+      "saved_contact_reuses": "401",
+      "mesh_boolean_queries": "0",
+      "mesh_boolean_input_faces": "0",
+      "mesh_local_solid_uses": "0",
+      "mesh_local_solid_builds": "0",
+      "mesh_detection_s": "25.744052500000045",
+      "mesh_placement_s": "0",
+      "mesh_boolean_s": "0",
+      "cad_boolean_queries": "0",
+      "cad_event_distances": "0",
+      "chen_patch_queries": "0",
+      "chen_confirmed_candidates": "0",
+      "event_tolerance_s": "0",
+      "solver": "penalty",
+      "impulse_solves": "0",
+      "impulse_regions": "0",
+      "impulse_iterations": "0",
+      "impulse_residual_m_s": "0",
+      "ccd_refinements": "0",
+      "ccd_refined_clear": "0",
+      "tdib_cells": "0",
+      "tdib_candidates": "0",
+      "tdib_unresolved": "0",
+      "cad_box_tests": "0",
+      "cad_extrema": "0",
+      "cad_classifications": "0",
+      "cad_region_cache_hits": "0",
+      "cad_distance_cache_hits": "0",
+      "cad_witness_tests": "0",
+      "cad_witness_improvements": "0"
+    },
+    "matches_long_trace_states": 401
+  },
+  "pose_replay": [
+    {
+      "wall_s": 2.6485315000172704,
+      "stage_measures": [
+        {
+          "mesh_a_faces": 10216,
+          "queries": 200,
+          "rebuilds": 200,
+          "candidate_pairs_scanned": 505460,
+          "intersecting_face_pairs": 9764,
+          "features_before_unique": 1025220,
+          "features_after_unique": 266454,
+          "connected_regions": 360,
+          "first_s": 0.0328159,
+          "planar_shortcuts_s": 0.0001178,
+          "rebuild_s": 1.0524601,
+          "test_pairs_s": 0.1453343,
+          "component_grouping_s": 0.0136428,
+          "expand_deduplicate_s": 0.1935568,
+          "depth_bounds_s": 0.0144704,
+          "local_witness_s": 0.0434323,
+          "fallback_s": 0.0002266
+        }
+      ]
+    },
+    {
+      "wall_s": 4.747987299982924,
+      "stage_measures": [
+        {
+          "mesh_a_faces": 27934,
+          "queries": 200,
+          "rebuilds": 200,
+          "candidate_pairs_scanned": 1294773,
+          "intersecting_face_pairs": 22244,
+          "features_before_unique": 2335620,
+          "features_after_unique": 677771,
+          "connected_regions": 2063,
+          "first_s": 0.0453277,
+          "planar_shortcuts_s": 0.0001172,
+          "rebuild_s": 2.2386889,
+          "test_pairs_s": 0.1845919,
+          "component_grouping_s": 0.0272325,
+          "expand_deduplicate_s": 0.3728652,
+          "depth_bounds_s": 0.0524412,
+          "local_witness_s": 0.0975646,
+          "fallback_s": 0.0010052
+        }
+      ]
+    }
+  ],
+  "timing_note": "Closed loop from 0 to 0.04 s (400 main steps); accepted-pose replay from 1.2400 through 1.2599 s (200 poses per stage). Timings are exclusive per stage. Short diagnostic runs, not completion timings. Geometry and HHT use the same computations as the production CPU baseline.",
+  "instrumented_source_sha256": "53f777546c4be8c65b4bc9fa1f4c9f189927af7603374d8fd7e6b327b170dde7",
+  "long_progress_sha256": "c0d624f6fdffc7b37b669887313504c270551622abea3b8bc392f81d1c312f6d",
+  "scene_sha256": "9442ddc28cf48fbfd7b0611b298a6fba3cef07ca91bb4981866b04f1aaf85736",
+  "production_control": {
+    "executable_sha256": "892fdcbe991988ea243d7649942665958ee0fbce1cb61fd96c6a6f85b0a6846c",
+    "standalone_process_wall_s": 31.294656799989752,
+    "standalone_integration_400_s": 28.6613768,
+    "long_run_integration_400_s": 73.9746838,
+    "state_and_triangle_count_verified_samples": 401,
+    "force_evaluations": 3250,
+    "subdivisions": 47
+  },
+  "recurdyn_model": {
+    "rmd_sha256": "f541b2166bcf548100eda7ab8ee1e763bd4ca0f83306773f1019e0a04804d488",
+    "msg_sha256": "edf6f161eba9062a82999aee3e915c740cf066adb66935488e73ecf32fb00a84",
+    "patches": [
+      2200,
+      3596,
+      8548,
+      6292
+    ],
+    "configured_threads": 4,
+    "final_NJAC": 100530,
+    "final_NRES": 150848,
+    "record": {
+      "version": "10.1.40231.2023 x64",
+      "steps": 50000,
+      "h": 9.999999999999999e-05,
+      "physical_s": 5.0,
+      "setup_s": 248.07659950002562,
+      "online_s": 1044.3948958999827,
+      "speed_initial": [
+        188.495559215388,
+        -94.2477796076938,
+        47.1238898038469
+      ],
+      "peak_force": [
+        5221.156775951392,
+        12760.006785392206
+      ],
+      "patch_plane_tolerance_scale": null
+    }
+  },
+  "cpu_mesh_triangles": {
+    "reducer/reducer-1a.quality.json": 10216,
+    "reducer/reducer-1b.quality.json": 10240,
+    "reducer/reducer-2a.quality.json": 27934,
+    "reducer/reducer-2b.quality.json": 17342
+  },
+  "baseline_git_revision": "47b75d047574bd9ddade0de1bf40589967019409",
+  "buckets": {
+    "first_s": "locate any overlap, including broad phase",
+    "rebuild_s": "rebuild the motion-buffered list of neighboring faces when needed; includes the cache validity check",
+    "test_pairs_s": "test current members of that list for actual triangle intersections",
+    "component_grouping_s": "sort true hits and build their connectivity",
+    "expand_deduplicate_s": "expand to adjacent facets, generate vertex/face and edge/edge combinations, sort and remove duplicates",
+    "depth_bounds_s": "compute the local directional depth bound",
+    "local_witness_s": "evaluate the remaining feature pairs to choose the contact point/normal/depth",
+    "fallback_s": "additional recovery and contact emission after witness evaluation"
+  },
+  "measured_scope": "The same workstation previously ran multiple benchmark processes concurrently. The standalone production control traces the identical first 400 steps with the unmodified executable and is independent of the instrumented run. The native solver log does not give time for its internal geometric subroutines. Per-step comparisons use output/main-step counts rather than internal adaptive-step counts.",
+  "closed_loop_shares_of_geometry_time": {
+    "first_s": 0.032198349502278185,
+    "rebuild_s": 0.285811567545552,
+    "test_pairs_s": 0.19217270474413425,
+    "component_grouping_s": 0.02388779699699567,
+    "expand_deduplicate_s": 0.33720937680654534,
+    "depth_bounds_s": 0.04065611270797393,
+    "local_witness_s": 0.08457234928339259,
+    "fallback_s": 0.0005564120101137913
+  }
+}
