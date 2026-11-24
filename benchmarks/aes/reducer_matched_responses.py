@@ -40,6 +40,67 @@ def read_run(csv, deck):
                 normal=np.column_stack([x[f"p{i}_normal_N"] for i in range(2)]),ratio=ratio)
 
 
+def plot_full_history(t, cpu, rd, out):
+    """Show raw same-mesh responses on the full common time axis."""
+    series = (("CPU", cpu, "#006d77"), ("RecurDyn", rd, "#bd542b"))
+    with plt.rc_context({"font.size": 9, "pdf.fonttype": 42, "path.simplify": False,
+                         "axes.spines.top": False, "axes.spines.right": False}):
+        fig, axes = plt.subplots(3, 1, figsize=(8.3, 6.4), sharex=True, layout="constrained",
+                                 height_ratios=(1, 1, .76))
+        axes[1].sharey(axes[0])
+        # Use each recorded interval once, including the final sample at t[-1].
+        dt = np.diff(t)
+        stride = max(1, round(.010 / np.median(dt)))
+        endpoints = np.r_[np.arange(0, len(t)-1, stride), len(t)-1]
+        edges = t[endpoints]
+        for ax, (name, run, color) in zip(axes[:2], series, strict=True):
+            y = run["torque"]
+            ax.plot(t, y, color=color, lw=.38)
+            peak = np.argmax(y)
+            ax.scatter(t[peak], y[peak], s=18, facecolor="white", edgecolor=color, zorder=3, clip_on=False)
+            ax.annotate(f"{y[peak]:.2f} N·m at {t[peak]*1000:.1f} ms",
+                        xy=(t[peak], y[peak]), xytext=(.12, .93), textcoords="axes fraction",
+                        ha="left", va="top", color=color, fontsize=8,
+                        arrowprops={"arrowstyle": "-", "color": color, "lw": .7})
+            ax.set_title(f"{name}   ·   recorded torque", loc="left", fontsize=10)
+            impulse = .5 * (y[:-1] + y[1:]) * dt
+            means = np.add.reduceat(impulse, endpoints[:-1]) / np.diff(edges)
+            axes[2].stairs(means, edges, baseline=None, color=color, lw=1.05,
+                           linestyle="-" if name == "CPU" else "--", label=name)
+        axes[2].set_title("Mean torque over consecutive 10 ms intervals", loc="left", fontsize=10)
+        axes[2].legend(loc="upper right", ncol=2, frameon=False, fontsize=8)
+        for ax in axes:
+            ax.set_ylabel("Torque (N·m)")
+            ax.grid(axis="y", alpha=.18)
+            ax.set_axisbelow(True)
+        axes[-1].set(xlim=(t[0], t[-1]), xlabel="Simulation time (s)")
+        fig.suptitle("Output shaft contact torque over the full simulation", fontsize=13)
+        for fmt in ("png", "pdf"):
+            fig.savefig(out/f"full-output-torque.{fmt}", dpi=240)
+        plt.close(fig)
+
+        fig, axes = plt.subplots(5, 2, figsize=(8.3, 8.6), sharex=True, sharey="row",
+                                 layout="constrained")
+        rows = [("speed", 0, "Input shaft\n(rad/s)"), ("speed", 1, "Intermediate shaft\n(rad/s)"),
+                ("speed", 2, "Output shaft\n(rad/s)"), ("te", 0, "Stage 1 error\n(mrad)"),
+                ("te", 1, "Stage 2 error\n(mrad)")]
+        for i, (key, index, label) in enumerate(rows):
+            axes[i, 0].set_ylabel(label)
+            for j, (name, run, color) in enumerate(series):
+                ax = axes[i, j]
+                ax.plot(t, run[key][:, index], color=color, lw=.38)
+                ax.grid(axis="y", alpha=.18)
+                ax.set_axisbelow(True)
+                if i == 0:
+                    ax.set_title(name, color=color, loc="left", weight="bold")
+        for ax in axes[-1]:
+            ax.set(xlim=(t[0], t[-1]), xlabel="Simulation time (s)")
+        fig.suptitle("Shaft angular speeds and transmission errors", fontsize=13)
+        for fmt in ("png", "pdf"):
+            fig.savefig(out/f"full-shaft-responses.{fmt}", dpi=240)
+        plt.close(fig)
+
+
 def compare(trace, deck, matched, original, out, animation=False):
     out.mkdir(parents=True,exist_ok=True)
     cpu=read_run(trace,deck)
@@ -81,6 +142,7 @@ def compare(trace, deck, matched, original, out, animation=False):
                         original_rd_speed=original_rd["speed"],original_rd_te_mrad=original_rd["te"],
                         cpu_sum_normal_load_N=cpu["normal"],rd_resultant_force_N=rd["normal"],
                         original_rd_resultant_force_N=original_rd["normal"])
+    plot_full_history(t, dict(speed=cpu["speed"], te=cpu["te"], torque=cpu["torque"][:, 2]), rd, out)
     colors=("#006d77","#c35a25")
     fig,axes=plt.subplots(3,2,figsize=(12,9),layout="constrained")
     take=brake
