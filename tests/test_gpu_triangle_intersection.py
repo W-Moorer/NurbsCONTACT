@@ -35,8 +35,13 @@ class TriangleIntersectionTest(unittest.TestCase):
             for a,b in ((first,other),(other,first)):
                 with self.subTest(name=name):
                     query=IntersectionQuery(TriangleMesh(a,[[0,1,2]]),TriangleMesh(b,[[0,1,2]]))
-                    query.enqueue(transform)
+                    sizes,points,normals=query.enqueue(transform,geometry=True)
                     self.assertEqual(query.read().tolist(),[[0,0]] if hit else [])
+                    if hit:
+                        n=int(sizes[0].get())
+                        self.assertEqual(n,{"transverse":2,"coplanar overlap":3,"shared vertex":1,"shared edge":2}[name])
+                        np.testing.assert_allclose(points[0,:n,2].get(),0,atol=1e-14)
+                        np.testing.assert_allclose(np.linalg.norm(normals[0].get(),axis=1),1.,atol=1e-14)
 
 
 if __name__=="__main__":

@@ -1,8 +1,6 @@
 // Traverse target AABBs for each source leaf, then test the finite triangles in each surviving pair.
 #include <cuda_runtime.h>
 
-
-
 namespace {
 using V = double3;
 __device__ V minus_v(V a,V b) {return make_double3(a.x-b.x,a.y-b.y,a.z-b.z);}
@@ -90,4 +88,86 @@ extern "C" __global__ void intersect_leaves(const V* source,const int* source_id
             if(index<capacity) hits[index]=make_int2(source_ids[i],target_ids[j]);
         }
     }
+}
+
+namespace {
+__device__ V plus_v(V a,V b){return make_double3(a.x+b.x,a.y+b.y,a.z+b.z);}
+__device__ V times_v(V a,double s){return make_double3(a.x*s,a.y*s,a.z*s);}
+__device__ V lerp_v(V a,V b,double t){return plus_v(a,times_v(minus_v(b,a),t));}
+__device__ double norm_v(V a){return sqrt(proj(a,a));}
+
+// Return the finite edge/plane intersections. Keep the signs of sub-ulp
+// offsets around planar end caps; snapping them can turn a point into an edge.
+__device__ int plane_slice(const V tri[3],V pivot,V plane_normal,V* out) {
+    double height[3];
+    for(int i=0;i<3;++i)height[i]=proj(minus_v(tri[i],pivot),plane_normal);
+    if(height[0]==0 && height[1]==0 && height[2]==0)return 3;
+    int count=0;
+    for(int i=0;i<3;++i) {
+        const int j=(i+1)%3;
+        const double u=height[i],v=height[j];
+        if(u==0)out[count++]=tri[i];
+        if((u<0 && v>0)||(u>0 && v<0))out[count++]=lerp_v(tri[i],tri[j],u/(u-v));
+    }
+    return count;
+}
+__device__ double component(V p,int k){return k==0?p.x:(k==1?p.y:p.z);}
+__device__ int coplanar_polygon(const V a[3],const V b[3],V normal,double eps,V* result) {
+    V polygon[10],next[10];
+    int n=3;
+    for(int i=0;i<3;++i) polygon[i]=a[i];
+    for(int edge=0;edge<3 && n;++edge) {
+        const V o=b[edge],axis=cross_v(normal,minus_v(b[(edge+1)%3],o));
+        const double tol=eps*norm_v(axis);
+        int count=0;
+        for(int i=0;i<n;++i) {
+            const V p=polygon[i],q=polygon[(i+1)%n];
+            double u=proj(minus_v(p,o),axis),v=proj(minus_v(q,o),axis);
+            if(fabs(u)<=tol)u=0;
+            if(fabs(v)<=tol)v=0;
+            if(u>=0)next[count++]=p;
+            if((u<0 && v>0)||(u>0 && v<0))next[count++]=lerp_v(p,q,u/(u-v));
+        }
+        n=count;
+        for(int i=0;i<n;++i)polygon[i]=next[i];
+    }
+    int count=0;
+    for(int i=0;i<n;++i) {
+        bool duplicate=false;
+        for(int j=0;j<count;++j) if(norm_v(minus_v(result[j],polygon[i]))<=eps)duplicate=true;
+        if(!duplicate){if(count==6)return -1;result[count++]=polygon[i];}
+    }
+    return count ? count : -1;
+}
+}
+// Counts give point, segment, or polygon size. A negative count flags an
+// ill-conditioned construction. Hit IDs and both winding normals are preserved.
+extern "C" __global__ void intersection_geometry(const V* source,const int* source_lookup,
+        const V* target,const int* target_lookup,const double* pose,const int2* pairs,const int* totals,
+        int capacity,int* sizes,V* points,V* normals) {
+    const int i=blockIdx.x*blockDim.x+threadIdx.x;
+    if(i>=totals[0] || i>=capacity)return;
+    const int2 hit=pairs[i];V a[3];const V* b=target+3*target_lookup[hit.y];
+    for(int j=0;j<3;++j)a[j]=transform(pose,source[3*source_lookup[hit.x]+j]);
+    V na=cross_v(minus_v(a[1],a[0]),minus_v(a[2],a[0]));
+    V nb=cross_v(minus_v(b[1],b[0]),minus_v(b[2],b[0]));
+    normals[2*i]=times_v(na,1/norm_v(na));normals[2*i+1]=times_v(nb,1/norm_v(nb));
+    const double eps=64*2.2204460492503131e-16*(norm_v(a[0])+norm_v(b[0])+
+                           norm_v(minus_v(a[1],a[0]))+norm_v(minus_v(b[1],b[0])));
+    V* out=points+6*i;
+    V x[3],y[3];
+    const int nx=plane_slice(a,b[0],nb,x),ny=plane_slice(b,a[0],na,y);
+    if(nx==3 && ny==3) {sizes[i]=coplanar_polygon(a,b,normals[2*i+1],eps,out);return;}
+    if(nx<1 || ny<1 || nx==3 || ny==3) {sizes[i]=-1;return;}
+    if(nx==1 || ny==1){out[0]=nx==1?x[0]:y[0];sizes[i]=1;return;}
+    const V dx=minus_v(x[1],x[0]),dy=minus_v(y[1],y[0]);
+    const V axis=proj(dx,dx)>proj(dy,dy)?dx:dy;
+    int k=fabs(axis.x)>fabs(axis.y)?0:1;
+    if(fabs(axis.z)>fabs(component(axis,k)))k=2;
+    int ix=component(x[0],k)<component(x[1],k)?0:1;
+    int iy=component(y[0],k)<component(y[1],k)?0:1;
+    out[0]=component(x[ix],k)>component(y[iy],k)?x[ix]:y[iy];
+    out[1]=component(x[1-ix],k)<component(y[1-iy],k)?x[1-ix]:y[1-iy];
+    if(component(out[0],k)>component(out[1],k)+eps){sizes[i]=-1;return;}
+    sizes[i]=norm_v(minus_v(out[0],out[1]))>eps?2:1;
 }

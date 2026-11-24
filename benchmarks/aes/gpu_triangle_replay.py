@@ -39,12 +39,23 @@ def validate(deck, physics, exe, out):
         cpu=subprocess.run([exe,'--method','mesh-obb',*files],input='\n'.join(cpu_inputs)+'\n',text=True,capture_output=True,check=True,timeout=1800)
         rows=[]
         for idx,transform,line in zip(steps,transforms,cpu.stdout.splitlines(),strict=True):
-            expected={(ia,ib) for _,_,ia,ib,_ in json.loads(line)['hits']}
-            query.enqueue(transform)
+            reference_points={(ia,ib):np.asarray(points) for _,_,ia,ib,points in json.loads(line)['hits']}
+            expected=set(reference_points)
+            sizes,points,_=query.enqueue(transform,geometry=True)
             found=list(map(tuple,query.read().tolist()))
             if len(found)!=len(set(found)): raise ValueError('Repeated GPU triangle pair')
+            sizes=sizes[:len(found)].get()
+            points=points[:len(found)].get()
+            unresolved=int(np.count_nonzero(sizes<1))
+            max_vertex_distance=0.
+            for pair,size,vertices in zip(found,sizes,points,strict=True):
+                if pair not in expected or size<1: continue
+                delta=reference_points[pair][:,None,:]-vertices[None,:size,:]
+                distance=np.linalg.norm(delta,axis=2)
+                max_vertex_distance=max(max_vertex_distance,float(distance.min(axis=1).max()),float(distance.min(axis=0).max()))
             found=set(found)
-            rows.append(dict(step=int(idx),cpu=len(expected),gpu=len(found),missed=len(expected-found),extra=len(found-expected)))
+            rows.append(dict(step=int(idx),cpu=len(expected),gpu=len(found),missed=len(expected-found),extra=len(found-expected),
+                             unresolved_constructions=unresolved,max_intersection_vertex_distance_m=max_vertex_distance))
         # GPU event times for one geometry query. No integration or force evaluation in this metric.
         events=[]
         for _ in range(4):

@@ -57,6 +57,7 @@ class TriangleMesh:
         node(np.arange(len(tri)),0)
         self.triangles=cp.asarray(np.ascontiguousarray(tri[order]))
         self.ids=cp.asarray(order,dtype=cp.int32)
+        self.packed_indices=cp.asarray(np.argsort(order),dtype=cp.int32)
         self.bounds=cp.asarray(bounds,dtype=cp.float64)
         self.links=cp.asarray(links,dtype=cp.int32)
         self.leaves=cp.asarray([i for i,v in enumerate(links) if v[2]],dtype=cp.int32)
@@ -75,9 +76,11 @@ class IntersectionQuery:
         module=cp.RawModule(code=src.read_text(),options=("--std=c++14","--fmad=false"))
         self.broad=module.get_function("leaf_candidates")
         self.narrow=module.get_function("intersect_leaves")
+        self.geometry=module.get_function("intersection_geometry")
+        self.geometry_buffers=None
 
-    def enqueue(self, relative):
-        """relative is a row-major 3x4 matrix mapping the first mesh into the second."""
+    def enqueue(self, relative, *, geometry=False):
+        """Query a device 3x4 relative pose. Optionally return sizes, vertices and face normals."""
         if relative.dtype!=cp.float64 or relative.shape!=(3,4) or not relative.flags.c_contiguous:
             raise ValueError("Expected a contiguous FP64 3 by 4 device transform")
         a,b=self.first,self.second
@@ -88,9 +91,20 @@ class IntersectionQuery:
         self.narrow((128,),(128,),
                     (a.triangles,a.ids,a.links,b.triangles,b.ids,b.links,relative,
                      self.candidates,np.int32(len(self.candidates)),self.pairs,np.int32(len(self.pairs)),self.count))
+        if geometry: return self._construct(relative)
 
     def read(self):
         n,leaves=self.count.get()
         if leaves>len(self.candidates): raise OverflowError(f"Query needs {leaves} leaf slots")
         if n>len(self.pairs): raise OverflowError(f"Query needs {n} hit slots")
         return self.pairs[:n].get()
+
+    def _construct(self, relative):
+        if self.geometry_buffers is None:
+            n=len(self.pairs)
+            self.geometry_buffers=(cp.empty(n,dtype=cp.int32),cp.empty((n,6,3)),cp.empty((n,2,3)))
+        a,b=self.first,self.second
+        self.geometry(((len(self.pairs)+127)//128,),(128,),
+                      (a.triangles,a.packed_indices,b.triangles,b.packed_indices,relative,self.pairs,self.count,
+                       np.int32(len(self.pairs)),*self.geometry_buffers))
+        return self.geometry_buffers
