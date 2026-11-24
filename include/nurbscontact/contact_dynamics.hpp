@@ -157,6 +157,7 @@ struct ContactPair {
     double activation{};
     std::shared_ptr<const PairContactQuery> closest{};
     std::shared_ptr<const PairRegionQuery> regions{};
+    bool share_penalty_stiffness{}; // Distribute the pair law equally over positively loaded contacts.
 };
 
 struct ContactSample {

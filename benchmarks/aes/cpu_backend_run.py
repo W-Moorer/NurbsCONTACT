@@ -16,7 +16,7 @@ def digest(path):
         return hashlib.file_digest(f, "sha256").hexdigest()
 
 
-def run(exe, scene, directory, method, scope, solver):
+def run(exe, scene, directory, method, scope, solver, penalty_stiffness=None):
     directory.mkdir(parents=True, exist_ok=False)
     prefix = directory / "response"
     progress = directory / "progress.csv"
@@ -24,6 +24,8 @@ def run(exe, scene, directory, method, scope, solver):
             "--solver", solver, "--progress", progress]
     if method.startswith("mesh"):
         args += ["--mesh-region-scope", scope]
+    if penalty_stiffness:
+        args += ["--penalty-stiffness", penalty_stiffness]
     tic = perf_counter()
     status = "complete"
     exit_code = None
@@ -46,6 +48,7 @@ def run(exe, scene, directory, method, scope, solver):
     report = dict(method=method, solver=solver, scope=scope if method.startswith("mesh") else None,
                   executable_sha256=digest(exe), scene_sha256=digest(scene), requested_s=5, dt_s=.0001,
                   budget_s=1800, process_s=wall, status=status, exit_code=exit_code, last_accepted=last)
+    if penalty_stiffness: report["penalty_stiffness"]=penalty_stiffness
     lines = (directory / "process.log").read_text(errors="replace").splitlines()
     if exit_code:
         report["error"] = lines[-1] if lines else "No diagnostic"
@@ -78,5 +81,6 @@ if __name__ == "__main__":
     p.add_argument("--method", required=True, choices=("mesh-obb", "mesh-aabb", "mesh-sap", "cad-occt"))
     p.add_argument("--scope", choices=("local", "full", "fcl", "finite"), default="local")
     p.add_argument("--solver", default="penalty")
+    p.add_argument("--penalty-stiffness", choices=("per-region","shared"))
     a = p.parse_args()
-    run(a.exe.resolve(), a.scene.resolve(), a.out.resolve(), a.method, a.scope, a.solver)
+    run(a.exe.resolve(), a.scene.resolve(), a.out.resolve(), a.method, a.scope, a.solver,a.penalty_stiffness)

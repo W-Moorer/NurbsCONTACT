@@ -16,6 +16,42 @@ void require(bool condition, const char* message) {
     if (!condition) throw std::runtime_error(message);
 }
 
+void check_shared_pair_stiffness() {
+    struct FixedPatch final : PairRegionQuery {
+        std::vector<ContactRegion> points;
+        std::vector<ContactRegion> regions(ContactPose,ContactPose,ContactWork&) const override {return points;}
+        SurfaceTransition transition(ContactPose,ContactPose,ContactPose,ContactPose,double) const override {return {};}
+    };
+    const auto geometry=std::make_shared<FixedPatch>();
+    const std::array<ContactBodyState,2> bodies{{
+        {nullptr,{},{{},{}}},
+        {nullptr,{},{{{0.,1.,0.},{}},{{1.,0.,0.},{}}}}
+    }};
+    ContactPair pair{0,1,{},{},ContactDirection::world,{},{100.,1.,2.,.25,.01,1.}};
+    pair.regions=geometry;
+    const auto evaluate=[&](bool shared) {
+        pair.share_penalty_stiffness=shared;
+        Forces force{Vector(2),Vector(4),Vector(4)};
+        ContactWork work;
+        std::vector<ContactSample> samples;
+        require(add_contact_forces(&force,bodies,std::span(&pair,1),{.5,.2},work,&samples),
+                "pair penalty assembly failed");
+        return std::pair{force,samples.at(0)};
+    };
+    // The third penetrating point has a separating damping force exceeding its elastic load.
+    geometry->points={{{},{0,1,0},.1},{{},{0,1,0},.2},{{},{0,1,0},.001}};
+    const auto [sum,old_sample]=evaluate(false);
+    const auto [shared,sample]=evaluate(true);
+    require(std::abs(sample.normal_force-14.)<1e-12 && std::abs(old_sample.normal_force-28.)<1e-12,
+            "inactive point consumed part of the pair stiffness");
+    require(length(sub(scale(old_sample.friction,.5),sample.friction))<1e-12,"shared friction output");
+    for (std::size_t i=0;i<2;++i)
+        require(std::abs(shared.value[i]-.5*sum.value[i])<1e-12,"shared force did not enter the residual");
+    for (std::size_t i=0;i<4;++i)
+        require(std::abs(shared.stiffness[i]-.5*sum.stiffness[i])<1e-12 &&
+                std::abs(shared.damping[i]-.5*sum.damping[i])<1e-12,"inconsistent shared penalty tangent");
+}
+
 void check_spatial_wrench() {
     FreeRigidBody body(0,{2.,3.,4.},{.2,-.15,.1});
     ContactPose reference{{.3,.7,-.2},{0,.6,.8},.72};
@@ -267,6 +303,7 @@ void check_triangle_bvh() {
 int main() {
     try {
         check_oscillator();
+        check_shared_pair_stiffness();
         check_spatial_wrench();
         check_bounded_force_decisions();
         check_rollback();

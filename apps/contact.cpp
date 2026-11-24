@@ -127,6 +127,7 @@ struct SurfaceOptions {
     Path progress_file;
     double distance_tolerance{1e-7};
     std::string mesh_regions{"local"};
+    bool share_penalty_stiffness{};
     bool chen() const { return method=="chen-2024" || method=="chen-2026"; }
     bool cad() const { return method=="cad-occt" || chen(); }
 };
@@ -217,6 +218,7 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         ContactPair pair{a,b,{},{},ContactDirection::world,{},{}};
         if (type=="surface") {
             if (surface_options.method.empty()) throw std::invalid_argument("surface pair requires a surface method");
+            pair.share_penalty_stiffness=surface_options.share_penalty_stiffness;
         } else if (type=="closest") {
             if (!has_drives || !pair_backend) throw std::invalid_argument("closest requires a v2 scene and a pair backend");
             pair.activation=number(in);
@@ -1397,7 +1399,7 @@ int main(int argc,char** argv) {
             std::cerr<<"nc_contact SCENE DEFLECTION_M DT_S DURATION_S OUTPUT_STRIDE OUTPUT_PREFIX "
                         "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
                         "  or append --method bvh-aabb|bvh-obb|mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
-                        "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl|finite]\n"
+                        "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl|finite] [--penalty-stiffness per-region|shared]\n"
                         "  or append --method cad-occt|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
                         "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp [--progress FILE]\n";
             return 2;
@@ -1414,6 +1416,10 @@ int main(int argc,char** argv) {
                 if (key=="--method") surface.method=value;
                 else if (key=="--progress") surface.progress_file=argv[i+1];
                 else if (key=="--mesh-dir") surface.mesh_directory=argv[i+1];
+                else if (key=="--penalty-stiffness") {
+                    if (value!="per-region" && value!="shared") throw std::invalid_argument("expected per-region or shared stiffness");
+                    surface.share_penalty_stiffness=value=="shared";
+                }
                 else if (key=="--mesh-region-scope") {
                     region_specified=true;
                     if (value!="local" && value!="full" && value!="fcl" && value!="finite")
@@ -1435,6 +1441,8 @@ int main(int argc,char** argv) {
                 surface.method=surface.method=="bvh-aabb" ? "mesh-aabb" : "mesh-obb";
                 if (!region_specified) surface.mesh_regions="finite";
             }
+            if (surface.share_penalty_stiffness && surface.impulse_law)
+                throw std::invalid_argument("shared penalty stiffness requires the penalty solver");
             if (!surface.cad() && surface.method!="mesh-aabb" && surface.method!="mesh-obb" && surface.method!="mesh-sap")
                 throw std::invalid_argument("unknown surface contact method");
             if (surface.chen() && !event_specified) event_tolerance=.2*std::stod(argv[3]);

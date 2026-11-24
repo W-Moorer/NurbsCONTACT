@@ -22,6 +22,11 @@ struct SurfaceFeatures {
     std::vector<Vec> normals;
     std::vector<Edge> edges;
     std::vector<Face> face_edges;
+    std::vector<std::size_t> panel;
+    std::vector<std::vector<std::size_t>> panel_faces;
+    std::vector<std::vector<std::size_t>> ridges_at;
+    std::vector<std::size_t> edge_ridge;
+    std::vector<std::array<std::size_t,2>> ridges;
     std::vector<std::vector<Vec>> rays;
     std::vector<std::vector<std::size_t>> neighbors;
     std::vector<std::size_t> surface_vertices;
@@ -85,6 +90,72 @@ struct SurfaceFeatures {
                 planes.push_back(i);
             // A direct half-space check is economical only for few-plane hulls.
             if (planes.size()>32) {planes.clear(); break;}
+        }
+    }
+    void build_support_topology() {
+        // A panel is one connected, coplanar piece. Parallel faces separated by
+        // a gap retain different IDs, even if their supporting planes coincide.
+        panel.assign(mesh.faces.size(),mesh.faces.size());
+        for (std::size_t f=0;f<mesh.faces.size();++f) {
+            if (panel[f]!=mesh.faces.size()) continue;
+            const auto id=panel_faces.size();
+            auto& members=panel_faces.emplace_back();
+            members.push_back(f); panel[f]=id;
+            const Vec origin=mesh.vertices[mesh.faces[f][0]];
+            for (std::size_t j=0;j<members.size();++j) {
+                const auto current=members[j];
+                for (auto index:face_edges[current]) {
+                    const auto& edge=edges[index];
+                    const auto adj=edge.first==current?edge.second:edge.first;
+                    if (panel[adj]!=mesh.faces.size() || squared(sub(normals[f],normals[adj]))>1e-18) continue;
+                    if (std::ranges::any_of(mesh.faces[adj],[&](auto v){
+                        return std::abs(dot3(sub(mesh.vertices[v],origin),normals[f]))>radius*1e-12;
+                    })) continue;
+                    panel[adj]=id; members.push_back(adj);
+                }
+            }
+        }
+        std::vector<std::vector<std::size_t>> incident(mesh.vertices.size());
+        for (std::size_t i=0;i<edges.size();++i) {
+            const auto& e=edges[i];
+            if (panel[e.first]==panel[e.second]) continue;
+            incident[e.a].push_back(i); incident[e.b].push_back(i);
+        }
+        // Edges between the same two nonparallel planes lie on their common
+        // line. Subdivision along that line must not create additional springs.
+        ridges_at.resize(mesh.vertices.size());
+        edge_ridge.assign(edges.size(),edges.size());
+        std::vector<char> assigned(edges.size());
+        for (std::size_t i=0;i<edges.size();++i) {
+            const auto& seed=edges[i];
+            const auto sides=std::minmax(panel[seed.first],panel[seed.second]);
+            if (assigned[i] || sides.first==sides.second ||
+                squared(cross3(normals[seed.first],normals[seed.second]))<1e-18) continue;
+            const Vec origin=mesh.vertices[seed.a], dir=sub(mesh.vertices[seed.b],origin);
+            std::vector<std::size_t> stack{i},vertices;
+            assigned[i]=1;
+            std::array<std::size_t,2> ends{seed.a,seed.b};
+            double lo=0, hi=squared(dir);
+            while (!stack.empty()) {
+                edge_ridge[stack.back()]=ridges.size();
+                const auto e=edges[stack.back()]; stack.pop_back();
+                for (auto v:{e.a,e.b}) {
+                    vertices.push_back(v);
+                    const double t=dot3(dir,sub(mesh.vertices[v],origin));
+                    if (t<lo) {lo=t; ends[0]=v;}
+                    if (t>hi) {hi=t; ends[1]=v;}
+                    for (auto index:incident[v]) {
+                        const auto& other=edges[index];
+                        if (!assigned[index] && sides==std::minmax(panel[other.first],panel[other.second])) {
+                            assigned[index]=1;stack.push_back(index);
+                        }
+                    }
+                }
+            }
+            std::sort(vertices.begin(),vertices.end());
+            vertices.erase(std::unique(vertices.begin(),vertices.end()),vertices.end());
+            for (auto v:vertices) ridges_at[v].push_back(ridges.size());
+            ridges.push_back(ends);
         }
     }
 };
@@ -262,8 +333,10 @@ struct FiniteFeatures::Data {
         initial_reach=std::min(limit,radius*.006);
         reach=initial_reach;
         skin=std::max(radius*.006,initial_reach*.25);
-        if (!surfaces[0].convex || !surfaces[1].convex)
+        if (!surfaces[0].convex || !surfaces[1].convex) {
             face_rows.rows.resize(a.faces.size());
+            for (auto& surface:surfaces) surface.build_support_topology();
+        }
         feature_rows[0].rows.resize(a.vertices.size());
         feature_rows[1].rows.resize(b.vertices.size());
         feature_rows[2].rows.resize(surfaces[0].edges.size());
@@ -297,9 +370,53 @@ struct FiniteFeatures::Data {
         saved=rel;
         initialized=true;
     }
+    // Locate the connected part of a straight support ridge over one planar
+    // target panel. Gaps in a nonconvex panel split the parameter intervals.
+    std::optional<Vec> line_center(unsigned s,std::size_t ridge,std::size_t face,Vec on_source,
+                                   const RigidPlacement& rel,double depth) {
+        const unsigned t=1-s;
+        const auto& source=surfaces[s]; const auto& target=surfaces[t];
+        const auto ends=source.ridges[ridge];
+        const RigidPlacement local=s?rel:RigidPlacement{};
+        const Vec first=local.point(source.mesh.vertices[ends[0]]);
+        const Vec delta=local.rotate(sub(source.mesh.vertices[ends[1]],source.mesh.vertices[ends[0]]));
+        const double len=length(delta);
+        const auto& plane=t?moving(face,rel):fixed_faces[face];
+        const double tol=1e-12*(source.radius+target.radius+length(rel.origin));
+        if (len<=tol || std::abs(dot3(delta,plane.n))>tol) return {};
+        const double parameter=dot3(sub(on_source,first),delta)/(len*len);
+        const Vec projected=add(first,scale(plane.n,depth));
+        std::vector<std::pair<double,double>> intervals;
+        for (auto member:target.panel_faces[target.panel[face]]) {
+            const auto& tri=t?moving(member,rel):fixed_faces[member];
+            double lo=0,hi=1;
+            for (unsigned j=0;j<3 && lo<=hi;++j) {
+                const Vec edge=sub(tri.tri[(j+1)%3],tri.tri[j]);
+                const Vec inward=cross3(tri.n,edge);
+                const double h=dot3(inward,sub(projected,tri.tri[j]));
+                const double slope=dot3(inward,delta);
+                const double eps=tol*length(edge);
+                if (std::abs(slope)<=eps) {if(h < -eps) hi=-1;}
+                else if (slope>0) lo=std::max(lo,-h/slope);
+                else hi=std::min(hi,-h/slope);
+            }
+            if (lo<=hi) intervals.emplace_back(lo,hi);
+        }
+        std::sort(intervals.begin(),intervals.end());
+        const double eps=tol/len;
+        for (std::size_t i=0;i<intervals.size();) {
+            auto [lo,hi]=intervals[i++];
+            while (i<intervals.size() && intervals[i].first<=hi+eps)
+                hi=std::max(hi,intervals[i++].second);
+            if (lo-eps<=parameter && parameter<=hi+eps && (hi-lo)*len>tol)
+                return add(add(first,scale(delta,.5*(lo+hi))),scale(plane.n,.5*depth));
+        }
+        return {};
+    }
     ContactRegion witness(const RigidPlacement& rel,const std::vector<FeaturePair>& candidates,bool convex,double cutoff) {
         std::array<RigidPlacement,2> local{RigidPlacement{},rel};
         ContactRegion best{};
+        FeaturePair winner{};
         if (convex) best.depth_m=std::numeric_limits<double>::infinity();
         const double epsilon=1e-13*std::min(surfaces[0].radius,surfaces[1].radius);
         const auto acceptable=[&](double d) {
@@ -315,6 +432,7 @@ struct FiniteFeatures::Data {
                 const Vec n=inverse_vector(local[s],face.n);
                 if (std::ranges::any_of(surfaces[s].rays[f.a],[&](Vec edge){return dot3(n,edge)<-1e-9;})) continue;
                 best={add(p,scale(face.n,.5*d)),scale(face.n,s?1.:-1.),d};
+                winner=f;
             } else {
                 const auto q=common_normal(segment(surfaces[0],f.a,local[0]),segment(surfaces[1],f.b,local[1]));
                 if (!q.interior) continue;
@@ -324,6 +442,37 @@ struct FiniteFeatures::Data {
                 if (!supports_edge(surfaces[0],f.a,n) ||
                     !supports_edge(surfaces[1],f.b,inverse_vector(rel,scale(n,-1)))) continue;
                 best={scale(add(q.x,q.y),.5),n,d};
+                winner=f;
+            }
+        }
+        if (!convex && best.depth_m>epsilon) {
+            if (winner.kind<2) {
+                const unsigned s=winner.kind;
+                const Vec p=local[s].point(surfaces[s].mesh.vertices[winner.a]);
+                std::optional<Vec> center;
+                for (auto ridge:surfaces[s].ridges_at[winner.a]) {
+                    const auto point=line_center(s,ridge,winner.b,p,rel,best.depth_m);
+                    if (!point) continue;
+                    if (center) return best; // A corner can support two independent line directions.
+                    center=point;
+                }
+                if (center) best.point=*center;
+            } else {
+                for (unsigned s=0;s<2;++s) {
+                    const unsigned t=1-s;
+                    const auto edge=s?winner.b:winner.a;
+                    const auto ridge=surfaces[s].edge_ridge[edge];
+                    if (ridge>=surfaces[s].ridges.size()) continue;
+                    const auto& target=surfaces[t].edges[s?winner.a:winner.b];
+                    const Vec outward=scale(best.normal,s?1.:-1.);
+                    const Vec p=sub(best.point,scale(outward,.5*best.depth_m));
+                    for (auto face:{target.first,target.second}) {
+                        if (squared(sub(local[t].rotate(surfaces[t].normals[face]),outward))>1e-18) continue;
+                        if (const auto center=line_center(s,ridge,face,p,rel,best.depth_m)) {
+                            best.point=*center; return best;
+                        }
+                    }
+                }
             }
         }
         return best;
@@ -592,8 +741,14 @@ struct FiniteFeatures::Data {
                         for (auto v:surfaces[s].neighbors[queue[i]]) visit(v);
                 }
             }
-            if (region.depth_m>1e-13*std::min(surfaces[0].radius,surfaces[1].radius))
-                contacts.push_back(world(region,poses[0]));
+            if (region.depth_m>1e-13*std::min(surfaces[0].radius,surfaces[1].radius)) {
+                const auto same=[&](const ContactRegion& p) {
+                    return std::abs(p.depth_m-region.depth_m)<=roundoff &&
+                           squared(sub(p.point,region.point))<=roundoff*roundoff &&
+                           squared(sub(p.normal,region.normal))<=1e-18;
+                };
+                if (std::ranges::none_of(contacts,same)) contacts.push_back(region);
+            }
             else {
                 const auto exact=scene.intersect(poses,true);
                 for (const auto& c:exact.contours)
@@ -603,6 +758,7 @@ struct FiniteFeatures::Data {
             }
         }
         previous_patches.swap(next_patches);
+        for (auto& contact:contacts) contact=world(contact,poses[0]);
         return contacts;
     }
     std::vector<ContactRegion> query(const std::array<RigidPlacement,2>& poses,ContactWork& work) {

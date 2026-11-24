@@ -232,6 +232,14 @@ bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState&
         if (regions.empty()) { ++work.culled; return true; }
         if (pair.material.approach_floor>0 && regions.size()>1)
             throw std::runtime_error("incidence-dependent damping needs per-region impact histories");
+        const bool shared=pair.share_penalty_stiffness && regions.size()>1;
+        Forces local;
+        if (shared && forces) {
+            local.value.resize(velocity.size());
+            local.stiffness.resize(velocity.size()*velocity.size());
+            local.damping.resize(local.stiffness.size());
+        }
+        std::size_t loaded=0;
         for (const auto& region : regions) {
             ContactSample item;
             item.gap=-region.depth_m;
@@ -247,7 +255,8 @@ bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState&
                 const Vec relative=sub(db.at(rb),da.at(ra));
                 return std::pair{dot3(region.normal,relative),tangential(relative,region.normal)};
             };
-            if (!assemble_contact(forces,pair.material,item,a,b,velocity,previous,differential)) return false;
+            if (!assemble_contact(shared && forces ? &local : forces,pair.material,item,a,b,velocity,previous,differential)) return false;
+            loaded+=item.normal_force>0;
             if (!sample.resolved || item.gap<sample.gap) {
                 sample.gap=item.gap;
                 sample.gap_rate=item.gap_rate;
@@ -257,6 +266,18 @@ bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState&
             sample.resolved=true;
             sample.normal_force+=item.normal_force;
             sample.friction=add(sample.friction,item.friction);
+        }
+        if (shared && loaded) {
+            const double weight=1./static_cast<double>(loaded);
+            sample.normal_force*=weight;
+            sample.friction=scale(sample.friction,weight);
+            if (forces) {
+                for (std::size_t i=0;i<local.value.size();++i) forces->value[i]+=weight*local.value[i];
+                for (std::size_t i=0;i<local.stiffness.size();++i) {
+                    forces->stiffness[i]+=weight*local.stiffness[i];
+                    forces->damping[i]+=weight*local.damping[i];
+                }
+            }
         }
         return true;
     }
