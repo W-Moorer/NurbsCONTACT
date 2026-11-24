@@ -50,6 +50,7 @@ struct ContactWork {
     std::size_t mesh_pair_bvh_builds{}, mesh_pair_bvh_reuses{};
     std::size_t mesh_patch_builds{}, mesh_patch_reuses{};
     std::size_t mesh_parallel_batches{}, mesh_max_workers{};
+    double cad_region_index_s{}, cad_region_select_s{}, cad_region_common_s{}, cad_region_extract_s{};
 };
 
 struct ContactLineSample {

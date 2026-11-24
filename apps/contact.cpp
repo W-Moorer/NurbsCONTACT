@@ -1333,7 +1333,8 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             "solver,impulse_solves,impulse_regions,impulse_iterations,impulse_residual_m_s,ccd_refinements,ccd_refined_clear,"
             "tdib_cells,tdib_candidates,tdib_unresolved,cad_box_tests,cad_extrema,cad_classifications,"
             "cad_region_cache_hits,cad_distance_cache_hits,cad_witness_tests,cad_witness_improvements,"
-            "mesh_pair_bvh_builds,mesh_pair_bvh_reuses,mesh_patch_builds,mesh_patch_reuses,mesh_parallel_batches,mesh_max_workers\n"
+            "mesh_pair_bvh_builds,mesh_pair_bvh_reuses,mesh_patch_builds,mesh_patch_reuses,mesh_parallel_batches,mesh_max_workers,"
+            "cad_region_index_s,cad_region_select_s,cad_region_common_s,cad_region_extract_s\n"
         <<(n || surface.impulse_law ? wall : replay_s)<<','<<setup_s<<','<<steps<<','<<stats.accepted_steps<<','<<stats.subdivisions<<','<<stats.evaluations
         <<','<<stats.maximum_residual<<','<<work.pairs<<','<<work.culled<<','<<work.rays<<','<<work.missing
         <<','<<work.mesh.triangles<<','<<work.closest_queries<<','<<work.unresolved_queries<<','<<work.native_nodes
@@ -1347,7 +1348,8 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         <<','<<cad_box_tests<<','<<cad_extrema<<','<<cad_classifications<<','<<work.cad_region_cache_hits
         <<','<<cad_distance_hits<<','<<cad_witness_tests<<','<<cad_witness_improvements
         <<','<<work.mesh_pair_bvh_builds<<','<<work.mesh_pair_bvh_reuses
-        <<','<<work.mesh_patch_builds<<','<<work.mesh_patch_reuses<<','<<work.mesh_parallel_batches<<','<<work.mesh_max_workers<<'\n';
+        <<','<<work.mesh_patch_builds<<','<<work.mesh_patch_reuses<<','<<work.mesh_parallel_batches<<','<<work.mesh_max_workers
+        <<','<<work.cad_region_index_s<<','<<work.cad_region_select_s<<','<<work.cad_region_common_s<<','<<work.cad_region_extract_s<<'\n';
     if (!trace || !report) throw std::runtime_error("failed to write contact run");
 }
 

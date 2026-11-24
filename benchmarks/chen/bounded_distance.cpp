@@ -3,7 +3,10 @@
 #include "../../src/cad_rigid_path.hpp"
 #include "nurbscontact/occt.hpp"
 #include <BRepExtrema_DistShapeShape.hxx>
+#include <BRepClass3d_SolidClassifier.hxx>
 #include <BRep_Builder.hxx>
+#include <IntCurvesFace_ShapeIntersector.hxx>
+#include <gp_Lin.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS_Compound.hxx>
 #include <chrono>
@@ -49,6 +52,90 @@ int regions(const TopoDS_Shape& a,const TopoDS_Shape& b) {
                          <<','<<r.normal[0]<<','<<r.normal[1]<<','<<r.normal[2]<<','<<r.depth_m<<'\n';
         };
         write("full",full); write("local",local);
+    }
+    return 0;
+}
+
+// Time the fixed-pose geometry used by nc_contact, without CCD or the integrator.
+int profile_regions(const TopoDS_Shape& a,const TopoDS_Shape& b) {
+    const auto query=cad_solid_region_query(a,b,{},CadEventMethod::conservative_advancement);
+    std::cout<<std::setprecision(17);
+    while ((std::cin>>std::ws).peek()!=std::char_traits<char>::eof()) {
+        const auto pa=read_pose(),pb=read_pose();
+        dynamics::ContactWork work;
+        const auto start=Clock::now();
+        std::vector<dynamics::ContactRegion> found;
+        bool resolved=true;
+        try {
+            found=query->regions(pa,pb,work);
+        } catch (const dynamics::UnresolvedContact& error) {
+            resolved=false;
+            std::cerr<<error.what()<<'\n';
+        }
+        const auto seconds=elapsed(start);
+        std::cout<<"{\"query_s\":"<<seconds<<",\"resolved\":"<<std::boolalpha<<resolved
+                 <<",\"index_s\":"<<work.cad_region_index_s<<",\"select_s\":"<<work.cad_region_select_s
+                 <<",\"common_s\":"<<work.cad_region_common_s<<",\"extract_s\":"<<work.cad_region_extract_s
+                 <<",\"boolean_queries\":"<<work.cad_boolean_queries
+                 <<",\"cache_hits\":"<<work.cad_region_cache_hits<<",\"regions\":[";
+        for (std::size_t i=0;i<found.size();++i) {
+            const auto& r=found[i];
+            if (i) std::cout<<',';
+            std::cout<<'['<<r.point[0]<<','<<r.point[1]<<','<<r.point[2]<<','
+                     <<r.normal[0]<<','<<r.normal[1]<<','<<r.normal[2]<<','<<r.depth_m<<']';
+        }
+        std::cout<<"]}"<<std::endl;
+    }
+    return 0;
+}
+
+// Independent local thickness check at a supplied point and normal, in SI units.
+// Reject ambiguous edge/tangent hits and require material on the inside of both exit faces.
+int normal_chords(const TopoDS_Shape& a,const TopoDS_Shape& b) {
+    std::array<BRepClass3d_SolidClassifier,2> inside;
+    std::array<IntCurvesFace_ShapeIntersector,2> rays;
+    const double tolerance=Precision::Confusion(); // OCCT lengths are mm.
+    for (int j=0;j<2;j++) {
+        const auto& shape=j==0 ? a : b;
+        inside[j].Load(shape);
+        rays[j].Load(shape,tolerance);
+    }
+    std::cout<<std::setprecision(17);
+    while ((std::cin>>std::ws).peek()!=std::char_traits<char>::eof()) {
+        const std::array poses{read_pose(),read_pose()};
+        Vec point{},normal{};
+        double reach;
+        for (double& x:point) std::cin>>x;
+        for (double& x:normal) std::cin>>x;
+        if (!(std::cin>>reach) || !(reach>0) || std::abs(dynamics::length(normal)-1)>1e-8)
+            throw std::invalid_argument("expected point, unit normal and positive reach");
+        const auto start=Clock::now();
+        double depth=0;
+        const char* status="resolved";
+        for (int j=0;j<2;j++) {
+            const auto& pose=poses[j];
+            const auto origin=cad::point(dynamics::scale(pose.inverse_rotate(dynamics::sub(point,pose.origin)),1000));
+            const auto d=pose.inverse_rotate(dynamics::scale(normal,j==0 ? 1. : -1.));
+            const gp_Dir direction(d[0],d[1],d[2]);
+            inside[j].Perform(origin,tolerance);
+            if (inside[j].State()!=TopAbs_IN) {status="seed_not_strictly_inside"; break;}
+            auto& ray=rays[j];
+            ray.Perform(gp_Lin(origin,direction),0,1000*reach);
+            if (!ray.IsDone() || !ray.NbPnt()) {status="no_boundary_hit"; break;}
+            int first=1;
+            for (int k=2;k<=ray.NbPnt();k++) if (ray.WParameter(k)<ray.WParameter(first)) first=k;
+            if (ray.State(first)!=TopAbs_IN || ray.Transition(first)==IntCurveSurface_Tangent) {
+                status="ambiguous_boundary_hit"; break;
+            }
+            inside[j].Perform(ray.Pnt(first).Translated(gp_Vec(direction)*(10*tolerance)),tolerance);
+            if (inside[j].State()!=TopAbs_OUT) {status="exit_not_verified"; break;}
+            depth+=.001*ray.WParameter(first);
+        }
+        const auto seconds=elapsed(start);
+        std::cout<<"{\"status\":\""<<status<<"\",\"query_s\":"<<seconds<<",\"depth_m\":";
+        if (std::string_view(status)=="resolved") std::cout<<depth;
+        else std::cout<<"null";
+        std::cout<<"}"<<std::endl;
     }
     return 0;
 }
@@ -107,9 +194,11 @@ int entry(const TopoDS_Shape& a,const TopoDS_Shape& b) {
 int main(int argc,char** argv) {
     try {
         const bool local=argc==5 && std::string_view(argv[4])=="--local";
-        if (argc!=4 && !local) throw std::invalid_argument("nc_cad_distance_benchmark A.step B.step CAP_MM [--local] | --regions | --entry < poses.txt");
+        if (argc!=4 && !local) throw std::invalid_argument("nc_cad_distance_benchmark A.step B.step CAP_MM [--local] | --regions | --profile-regions | --normal-chords | --entry < poses.txt");
         const auto a=read_step_shape(argv[1]),b=read_step_shape(argv[2]);
         if (std::string_view(argv[3])=="--regions") return regions(a,b);
+        if (std::string_view(argv[3])=="--profile-regions") return profile_regions(a,b);
+        if (std::string_view(argv[3])=="--normal-chords") return normal_chords(a,b);
         if (std::string_view(argv[3])=="--entry") return entry(a,b);
         const double cap=std::stod(argv[3]),tol=1e-6;
         if (!(std::isfinite(cap) && cap>tol)) throw std::invalid_argument("invalid cap");

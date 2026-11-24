@@ -1,6 +1,7 @@
 #include "cad_rigid_path.hpp"
 #include "cad_boundary_distance.hpp"
 #include "cad_local_solid.hpp"
+#include <chrono>
 #include <mutex>
 #include <deque>
 #include <BRepAdaptor_Curve.hxx>
@@ -20,6 +21,13 @@ namespace nc {
 namespace {
 using namespace dynamics;
 using namespace cad;
+
+// Accumulate elapsed wall time even when OCCT reports a failure and the caller retries.
+struct RegionTimer {
+    double& total;
+    std::chrono::steady_clock::time_point start=std::chrono::steady_clock::now();
+    ~RegionTimer() { total+=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count(); }
+};
 
 using TransformKey=std::array<double,12>;
 TransformKey key(const gp_Trsf& pose) {
@@ -117,7 +125,11 @@ std::vector<dynamics::ContactRegion> solid_regions(const TopoDS_Shape& first,con
     op.SetArguments(args);
     op.SetTools(tools);
     op.SetNonDestructive(true);
-    op.Build();
+    {
+        RegionTimer timer{work.cad_region_common_s};
+        op.Build();
+    }
+    RegionTimer extraction{work.cad_region_extract_s};
     if (!op.IsDone() || op.HasErrors() || op.HasWarnings())
         throw UnresolvedContact("CAD solid intersection failed or reported incomplete geometry");
     TopExp_Explorer solids(op.Shape(),TopAbs_SOLID);
@@ -184,9 +196,15 @@ public:
                 return entry.regions;
             }
         }
-        initialize_search();
+        {
+            RegionTimer timer{work.cad_region_index_s};
+            initialize_search();
+        }
         LocalSolidPair pair{{a_.shape,{}},{b_.shape,{}},false};
-        if (local_) pair=local_->select(tb.Inverted()*ta,100*Precision::Confusion());
+        if (local_) {
+            RegionTimer timer{work.cad_region_select_s};
+            pair=local_->select(tb.Inverted()*ta,100*Precision::Confusion());
+        }
         std::vector<ContactRegion> answer;
         if (!pair.separated) {
             try {
