@@ -5,6 +5,7 @@ import csv
 import hashlib
 import json
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import time
@@ -165,6 +166,8 @@ def collision(eccentric, solver="penalty"):
 
 def run(args):
     scene, duration, compare = top() if args.case == "top" else collision(args.case == "eccentric", args.solver)
+    if getattr(args,"duration",None) is not None:
+        duration=args.duration
     args.work.mkdir(parents=True, exist_ok=True)
     geometry = {"step_sha256": hashlib.sha256(SPHERE.read_bytes()).hexdigest()}
     mesh_args = []
@@ -177,6 +180,8 @@ def run(args):
         if any(quality[k] != v for k,v in geometry.items()):
             raise ValueError("the geometry differs from the mesh quality report")
         mesh_args = ["--mesh-dir", mesh.parent]
+        if getattr(args,"mesh_region_scope",None):
+            mesh_args+=["--mesh-region-scope",args.mesh_region_scope]
     else:
         destination = args.work / SPHERE.name
         if destination.resolve() != SPHERE:
@@ -201,7 +206,7 @@ def run(args):
     if args.event_tol:
         cmd.extend(["--event-tol-s", str(args.event_tol)])
     start = time.perf_counter()
-    subprocess.run(cmd, check=True, timeout=1800)
+    subprocess.run(cmd, check=True, timeout=1800, capture_output=True, text=True)
     elapsed = time.perf_counter() - start
     trace = np.genfromtxt(prefix.with_suffix(".csv"), delimiter=",", names=True)
     if abs(trace["time_s"][-1] - duration) > 1e-9 or len(trace) != round(duration / args.dt) + 1:
@@ -214,6 +219,7 @@ def run(args):
         solver=args.solver,
         dt_s=args.dt,
         duration_s=duration,
+        mesh_region_scope=getattr(args,"mesh_region_scope",None),
         event_tolerance_s=float(stats.get("event_tolerance_s",args.event_tol)),
         **geometry,
         scene_sha256=hashlib.sha256(model.read_bytes()).hexdigest(),
@@ -243,10 +249,25 @@ if __name__ == "__main__":
     parser.add_argument("--case", choices=["top", "head-on", "eccentric"], required=True)
     parser.add_argument("--method", choices=["mesh-aabb", "mesh-obb", "mesh-sap","cad-occt","chen-2024","chen-2026"], default="mesh-obb")
     parser.add_argument("--dt", type=float, required=True)
+    parser.add_argument("--duration",type=float)
+    parser.add_argument("--mesh-region-scope",choices=("local","full","fcl","finite"))
     parser.add_argument("--solver", choices=("penalty","sap","lagrange","augmented-lagrange","lcp","ncp","soccp"),
                         default="penalty")
     parser.add_argument("--event-tol", type=float, default=0.0)
     args = parser.parse_args()
-    report = run(args)
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    started=time.perf_counter()
+    try:
+        report = run(args)
+    except (subprocess.CalledProcessError,subprocess.TimeoutExpired) as error:
+        message=error.stderr or error.stdout or str(error)
+        if isinstance(message,bytes): message=message.decode(errors='replace')
+        match=re.search(r'\bt=([.0-9eE+-]+)',message)
+        failure=dict(case=args.case,method=args.method,mesh_region_scope=args.mesh_region_scope,
+                     solver=args.solver,dt_s=args.dt,requested_s=args.duration,
+                     status="timeout" if isinstance(error,subprocess.TimeoutExpired) else "failed",
+                     runner_elapsed_s=time.perf_counter()-started,message=message.strip(),
+                     failure_time_s=float(match[1]) if match else None)
+        args.output.write_text(json.dumps(failure,indent=2)+'\n',encoding='utf-8')
+        raise
     args.output.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")

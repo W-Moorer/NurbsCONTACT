@@ -34,7 +34,7 @@ def compare(trace, step):
     with trace.with_suffix(".stats.csv").open() as stream:
         stats = next(csv.DictReader(stream))
     if stats["solver"] != "sap" or float(stats["event_tolerance_s"]) != 0 or int(stats["subdivisions"]):
-        raise ValueError("expected fixed steps and SAP on the STEP side")
+        raise ValueError("expected fixed steps and SAP in the native trace")
     native_q = np.column_stack([native["q0"], native["q1"]])
     native_v = np.column_stack([native["v0"], native["v1"]])
     if not (np.isfinite(q).all() and np.isfinite(v).all() and v[-1, 0] < -.4):
@@ -55,11 +55,13 @@ def compare(trace, step):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path)
+    parser.add_argument("--native-method",default="cad-occt")
+    parser.add_argument("--native-geometry",default="STEP solid overlap")
     parser.add_argument("--run", nargs=2, action="append", required=True, metavar=("STEP_S", "NATIVE_TRACE"))
     args = parser.parse_args()
     result = dict(drake_version=version("drake"), duration_s=DURATION, sphere_radius_m=.041,
                   mass_per_body_kg=1., pair_stiffness_N_m=5000., relaxation_s=0., friction=0.,
-                  geometry=["Drake Sphere", "STEP solid overlap"], native_method="cad-occt", solver="sap",
+                  geometry=["Drake Sphere", args.native_geometry], native_method=args.native_method, solver="sap",
                   runs=[compare(Path(trace), float(step)) for step, trace in args.run])
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")

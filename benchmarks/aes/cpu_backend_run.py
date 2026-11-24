@@ -52,11 +52,20 @@ def run(exe, scene, directory, method, scope, solver):
     if status == "complete":
         values = np.genfromtxt(prefix.with_suffix(".csv"), names=True, delimiter=",")
         np.testing.assert_allclose(values["time_s"], np.arange(50001)*.0001, atol=1e-10, rtol=0)
-        if not all(np.isfinite(values[c]).all() for c in values.dtype.names) or not last or last["step"] != 50000:
+        for column in values.dtype.names:
+            data = values[column]
+            if column.endswith("_gap_m"):
+                pair = column.removesuffix("_gap_m")
+                hit = values[pair+"_hit"].astype(bool)
+                if np.isinf(data).any() or not np.isfinite(data[hit]).all() or np.any(values[pair+"_normal_N"][~hit] != 0):
+                    raise ValueError(f"Invalid gap or load in {pair}")
+            elif not np.isfinite(data).all():
+                raise ValueError(f"Nonfinite CPU output in {column}")
+        if not last or last["step"] != 50000:
             raise ValueError("Incomplete CPU response")
         with prefix.with_suffix(".stats.csv").open(newline="") as f:
             report["statistics"] = next(csv.DictReader(f))
-        report["peak_load_N"] = [float(values[f"p{i}_normal_N"].max()) for i in range(2)]
+        report["peak_load_N"] = [float(values[c].max()) for c in values.dtype.names if c.endswith("_normal_N")]
         report["response_sha256"] = digest(prefix.with_suffix(".csv"))
     (directory/"run.json").write_text(json.dumps(report, indent=2, allow_nan=False)+"\n")
     print(json.dumps(report, ensure_ascii=True), flush=True)
@@ -67,7 +76,7 @@ if __name__ == "__main__":
     for name in ("exe", "scene", "out"):
         p.add_argument(name, type=Path)
     p.add_argument("--method", required=True, choices=("mesh-obb", "mesh-aabb", "mesh-sap", "cad-occt"))
-    p.add_argument("--scope", choices=("local", "full", "fcl"), default="local")
+    p.add_argument("--scope", choices=("local", "full", "fcl", "finite"), default="local")
     p.add_argument("--solver", default="penalty")
     a = p.parse_args()
     run(a.exe.resolve(), a.scene.resolve(), a.out.resolve(), a.method, a.scope, a.solver)

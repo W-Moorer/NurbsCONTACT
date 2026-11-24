@@ -1,0 +1,24 @@
+{
+  "scene_sha256": "9442ddc28cf48fbfd7b0611b298a6fba3cef07ca91bb4981866b04f1aaf85736",
+  "reference_sha256": "abd6a26ce99108051660af48d3b1aef3652f492dae71de3e1cb242c5eb5c4294",
+  "pose_sha256": [
+    "47670d0dd64983d2251dfb2c415168e99177155f3748d70db0e2f9973ea4460e",
+    "2640ff2e70476ec12d2f74042e86279d6b707ddb9bd0ab33fefeb53169e1f253"
+  ],
+  "start_s": 0.10200000000000141,
+  "end_s": 0.11400000000000149,
+  "samples": 121,
+  "cpu_peak_resultant_N": [
+    2763.9637334694635,
+    5883.579124255038
+  ],
+  "recur_dyn_peak_resultant_N": [
+    3324.4120814072744,
+    6139.010190963569
+  ],
+  "resultant_difference_rms_N": [
+    842.546105762353,
+    1729.4989886149529
+  ],
+  "output_torque_difference_rms_Nm": 107.2241588775451
+}
