@@ -1,0 +1,37 @@
+{
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "trace_sha256": "fbee6ade00d1a762c840ab45aacd2bbafad1cc9cb6990152a1b8775d31b791ed",
+  "mesh_exe_sha256": "941fad060eede2e98c75fc13cdf69b2ca4bd8e7a00d630d5c1c7e918edcad125",
+  "steps": 50000,
+  "step_s": 0.0001,
+  "stages": {
+    "1": {
+      "recorded_zero": 82,
+      "unresolved_accepted_steps": [],
+      "accepted_with_positive_depth": 0,
+      "first_trial_empty": 0,
+      "first_trial_empty_per_second": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "positive_depth_records": []
+    },
+    "2": {
+      "recorded_zero": 592,
+      "unresolved_accepted_steps": [],
+      "accepted_with_positive_depth": 0,
+      "first_trial_empty": 0,
+      "first_trial_empty_per_second": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "positive_depth_records": []
+    }
+  }
+}

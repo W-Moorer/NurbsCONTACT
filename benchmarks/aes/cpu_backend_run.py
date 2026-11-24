@@ -16,11 +16,15 @@ def digest(path):
         return hashlib.file_digest(f, "sha256").hexdigest()
 
 
-def run(exe, scene, directory, method, scope, solver, penalty_stiffness=None, geometry_update=None):
+def run(exe, scene, directory, method, scope, solver, penalty_stiffness=None, geometry_update=None,
+        spectral_radius=None, substeps_per_output=1):
+    if not isinstance(substeps_per_output, int) or substeps_per_output < 1:
+        raise ValueError("Expected a positive integer number of integration steps per output")
+    dt=.0001/substeps_per_output
     directory.mkdir(parents=True, exist_ok=False)
     prefix = directory / "response"
     progress = directory / "progress.csv"
-    args = [exe, scene, "0", ".0001", "5", "1", prefix, "--method", method,
+    args = [exe, scene, "0", str(dt), "5", str(substeps_per_output), prefix, "--method", method,
             "--solver", solver, "--progress", progress]
     if method.startswith("mesh"):
         args += ["--mesh-region-scope", scope]
@@ -28,6 +32,8 @@ def run(exe, scene, directory, method, scope, solver, penalty_stiffness=None, ge
         args += ["--penalty-stiffness", penalty_stiffness]
     if geometry_update:
         args += ["--geometry-update", geometry_update]
+    if spectral_radius is not None:
+        args += ["--spectral-radius", str(spectral_radius)]
     tic = perf_counter()
     status = "complete"
     exit_code = None
@@ -48,10 +54,11 @@ def run(exe, scene, directory, method, scope, solver, penalty_stiffness=None, ge
             rows.pop()
     last = {k: float(v) for k, v in rows[-1].items()} if rows else None
     report = dict(method=method, solver=solver, scope=scope if method.startswith("mesh") else None,
-                  executable_sha256=digest(exe), scene_sha256=digest(scene), requested_s=5, dt_s=.0001,
+                  executable_sha256=digest(exe), scene_sha256=digest(scene), requested_s=5, dt_s=dt, output_dt_s=.0001,
                   budget_s=1800, process_s=wall, status=status, exit_code=exit_code, last_accepted=last)
     if penalty_stiffness: report["penalty_stiffness"]=penalty_stiffness
     if geometry_update: report["geometry_update"]=geometry_update
+    if spectral_radius is not None: report["spectral_radius"]=spectral_radius
     lines = (directory / "process.log").read_text(errors="replace").splitlines()
     if exit_code:
         report["error"] = lines[-1] if lines else "No diagnostic"
@@ -67,7 +74,7 @@ def run(exe, scene, directory, method, scope, solver, penalty_stiffness=None, ge
                     raise ValueError(f"Invalid gap or load in {pair}")
             elif not np.isfinite(data).all():
                 raise ValueError(f"Nonfinite CPU output in {column}")
-        if not last or last["step"] != 50000:
+        if not last or last["step"] != 50000*substeps_per_output:
             raise ValueError("Incomplete CPU response")
         with prefix.with_suffix(".stats.csv").open(newline="") as f:
             report["statistics"] = next(csv.DictReader(f))
@@ -86,5 +93,8 @@ if __name__ == "__main__":
     p.add_argument("--solver", default="penalty")
     p.add_argument("--penalty-stiffness", choices=("per-region","shared"))
     p.add_argument("--geometry-update", choices=("newton","predictor"))
+    p.add_argument("--spectral-radius", type=float)
+    p.add_argument("--substeps-per-output", type=int, default=1)
     a = p.parse_args()
-    run(a.exe.resolve(), a.scene.resolve(), a.out.resolve(), a.method, a.scope, a.solver,a.penalty_stiffness,a.geometry_update)
+    run(a.exe.resolve(), a.scene.resolve(), a.out.resolve(), a.method, a.scope, a.solver,
+        a.penalty_stiffness,a.geometry_update,a.spectral_radius,a.substeps_per_output)

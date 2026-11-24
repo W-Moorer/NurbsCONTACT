@@ -106,6 +106,7 @@ Hht::Hht(Vector diagonal_mass, ForceFunction forces, HhtOptions options, Clearan
     if ((!forces_ && !historical_forces_ && !bounded_forces_) || mass_.empty() || !finite(mass_) ||
         std::any_of(mass_.begin(), mass_.end(), [](double m) { return m <= 0; }) ||
         !(options.alpha >= -1.0 / 3 && options.alpha <= 0) ||
+        (options.spectral_radius && !(*options.spectral_radius >= 0 && *options.spectral_radius <= 1)) ||
         !(std::isfinite(options.absolute_tolerance) && options.absolute_tolerance > 0) ||
         !(std::isfinite(options.relative_tolerance) && options.relative_tolerance >= 0) ||
         !std::isfinite(options.minimum_clearance) || !options.max_iterations || options.max_subdivisions > 20) {
@@ -136,9 +137,16 @@ State Hht::initialize(Vector q, Vector v, double time) const {
 
 bool Hht::solve(const State& start, double dt, State& result, HhtStats& statistics) const {
     const std::size_t n = mass_.size();
-    const double alpha = options_.alpha;
-    const double beta = 0.25 * (1 - alpha) * (1 - alpha);
-    const double gamma = 0.5 - alpha;
+    double alpha = options_.alpha;  // Negative of the usual force weight alpha_f.
+    double alpha_m = 0;
+    if (options_.spectral_radius) {
+        const double rho = *options_.spectral_radius;
+        alpha = -rho / (1 + rho);
+        alpha_m = (2 * rho - 1) / (1 + rho);
+    }
+    const double shift = -alpha - alpha_m;
+    const double beta = 0.25 * (1 + shift) * (1 + shift);
+    const double gamma = 0.5 + shift;
     const double position_scale = beta * dt * dt;
     const double velocity_scale = gamma * dt;
     const double residual_scale = 1 + alpha;
@@ -164,7 +172,8 @@ bool Hht::solve(const State& start, double dt, State& result, HhtStats& statisti
         validate(trial.forces, n);
         trial.residual.resize(n);
         for (std::size_t i = 0; i < n; ++i) {
-            trial.residual[i] = mass_[i] * trial.state.a[i] - residual_scale * trial.forces.value[i] +
+            const double weighted_acceleration = (1-alpha_m)*trial.state.a[i] + alpha_m*start.a[i];
+            trial.residual[i] = mass_[i] * weighted_acceleration - residual_scale * trial.forces.value[i] +
                                 alpha * start.force[i];
         }
         trial.error = finite(trial.residual) ? max_norm(trial.residual) : std::numeric_limits<double>::infinity();
@@ -175,7 +184,8 @@ bool Hht::solve(const State& start, double dt, State& result, HhtStats& statisti
             const Interval current_error{-trial.forces.error_bound, trial.forces.error_bound};
             const Interval start_error{-start.force_error, start.force_error};
             for (std::size_t i = 0; i < n; ++i) {
-                const Interval ri = Interval{mass_[i]} * trial.state.a[i]
+                const Interval weighted_acceleration = (Interval{1}-alpha_m)*trial.state.a[i] + Interval{alpha_m}*start.a[i];
+                const Interval ri = Interval{mass_[i]} * weighted_acceleration
                     - residual_scale * (Interval{trial.forces.value[i]} + current_error)
                     + alpha * (Interval{start.force[i]} + start_error);
                 const double lower = ri.contains(0) ? 0 : std::min(std::abs(ri.lo), std::abs(ri.hi));
@@ -230,7 +240,7 @@ bool Hht::solve(const State& start, double dt, State& result, HhtStats& statisti
                                           velocity_scale * current.forces.damping[i]);
         }
         for (std::size_t i = 0; i < n; ++i) {
-            tangent[i * n + i] += mass_[i];
+            tangent[i * n + i] += (1-alpha_m)*mass_[i];
             correction[i] = -current.residual[i];
         }
         const auto solve_tangent = options_.nonsymmetric_tangent ? solve_pivoted : solve_positive_definite;

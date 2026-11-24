@@ -1,0 +1,43 @@
+{
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "trace_sha256": "422068b9d21aeb562bb8203c6313e469c245d4cb8f42d939d08186fc1d90595f",
+  "mesh_exe_sha256": "941fad060eede2e98c75fc13cdf69b2ca4bd8e7a00d630d5c1c7e918edcad125",
+  "steps": 50000,
+  "step_s": 0.0001,
+  "stages": {
+    "1": {
+      "recorded_zero": 2,
+      "unresolved_accepted_steps": [],
+      "accepted_with_positive_depth": 0,
+      "first_trial_empty": 0,
+      "first_trial_empty_per_second": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "positive_depth_records": []
+    },
+    "2": {
+      "recorded_zero": 8,
+      "unresolved_accepted_steps": [],
+      "accepted_with_positive_depth": 0,
+      "first_trial_empty": 0,
+      "first_trial_empty_per_second": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "positive_depth_records": []
+    }
+  },
+  "spectral_radius": 0.0,
+  "sampled_output_torque": {
+    "samples": 501,
+    "unresolved_steps": [],
+    "rms_difference_Nm": 1.3994421951143028
+  }
+}

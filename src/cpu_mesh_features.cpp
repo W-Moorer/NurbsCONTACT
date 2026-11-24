@@ -7,6 +7,8 @@
 
 #include <algorithm>
 #include <map>
+#include <list>
+#include <cstdint>
 #include <ranges>
 #include <tuple>
 
@@ -352,6 +354,76 @@ struct FiniteFeatures::Data {
     RigidPlacement saved;
     std::vector<FeaturePair> list;
     std::vector<std::array<std::size_t,2>> nearby;
+    // Recurring poses can reuse the conservative skin search as well as the
+    // immediately preceding pose. Store triangle IDs only, never hits or forces.
+    struct SearchWindow {
+        RigidPlacement anchor;
+        std::vector<std::uint8_t> deltas;
+        std::size_t bin;
+    };
+    std::list<SearchWindow> windows;
+    std::unordered_multimap<std::size_t,decltype(windows)::iterator> window_bins;
+    std::size_t window_bytes{};
+    std::size_t pose_bin(const RigidPlacement& pose) const {
+        std::size_t key=0;
+        const auto mix=[&](double value) {
+            key ^= std::hash<double>{}(std::floor(value)) + 0x9e3779b9u + (key<<6) + (key>>2);
+        };
+        const double cell=16*skin;
+        for (double x:pose.origin) mix(x/cell);
+        for (const auto& axis:pose.basis) for (double x:axis) mix(x*surfaces[1].radius/cell);
+        return key;
+    }
+    bool restore_window(const RigidPlacement& pose,std::size_t bin) {
+        const auto [first,last]=window_bins.equal_range(bin);
+        for (auto i=first;i!=last;++i) {
+            const auto it=i->second;
+            if (motion_bound(pose,it->anchor,surfaces[1].radius)>skin) continue;
+            nearby.clear();
+            std::uint64_t previous=0, delta=0;
+            unsigned shift=0;
+            for (auto byte:it->deltas) {
+                delta |= std::uint64_t(byte & 127u)<<shift;
+                if (byte & 128u) {shift+=7; continue;}
+                previous+=delta;
+                nearby.push_back({static_cast<std::uint32_t>(previous>>32),static_cast<std::uint32_t>(previous)});
+                delta=0;
+                shift=0;
+            }
+            saved=it->anchor;
+            windows.splice(windows.begin(),windows,it);
+            return true;
+        }
+        return false;
+    }
+    void save_window(std::size_t bin) {
+        constexpr std::size_t budget=64u*1024u*1024u;
+        std::sort(nearby.begin(),nearby.end());
+        std::vector<std::uint8_t> deltas;
+        std::uint64_t previous=0;
+        for (auto ids:nearby) {
+            const auto packed=(std::uint64_t(ids[0])<<32)|ids[1];
+            auto delta=packed-previous;
+            previous=packed;
+            while (delta>=128) {
+                deltas.push_back(static_cast<std::uint8_t>((delta & 127u)|128u));
+                delta>>=7;
+            }
+            deltas.push_back(static_cast<std::uint8_t>(delta));
+        }
+        deltas.shrink_to_fit();
+        if (deltas.capacity()>budget) return;
+        while (!windows.empty() && (window_bytes+deltas.capacity()>budget || windows.size()>=16384)) {
+            const auto it=std::prev(windows.end());
+            const auto [first,last]=window_bins.equal_range(it->bin);
+            for (auto i=first;i!=last;++i) if (i->second==it) {window_bins.erase(i); break;}
+            window_bytes-=it->deltas.capacity();
+            windows.erase(it);
+        }
+        window_bytes+=deltas.capacity();
+        windows.emplace_front(SearchWindow{saved,std::move(deltas),bin});
+        window_bins.emplace(bin,windows.begin());
+    }
     std::vector<Geometry> fixed_faces,moving_faces;
     std::vector<std::size_t> versions;
     std::size_t version{};
@@ -614,13 +686,18 @@ struct FiniteFeatures::Data {
             const std::array<RigidPlacement,2>& poses,const RigidPlacement& rel,ContactWork& work) {
         const double slack=1e-13*(surfaces[0].radius+surfaces[1].radius+length(rel.origin));
         if (!initialized || motion_bound(rel,saved,surfaces[1].radius)>skin) {
-            nearby=scene.near_pairs(poses,skin,work);
-            std::erase_if(nearby,[&](FacePair p){
-                const auto& a=fixed_faces[p[0]]; const auto& b=moving(p[1],rel);
-                const double margin=skin+slack;
-                return !possible_pair(a,b,margin) || projected_relation(a,b,margin)<0 || projected_relation(b,a,margin)<0;
-            });
-            initialized=true; saved=rel;
+            const auto bin=pose_bin(rel);
+            if (!restore_window(rel,bin)) {
+                nearby=scene.near_pairs(poses,skin,work);
+                std::erase_if(nearby,[&](FacePair p){
+                    const auto& a=fixed_faces[p[0]]; const auto& b=moving(p[1],rel);
+                    const double margin=skin+slack;
+                    return !possible_pair(a,b,margin) || projected_relation(a,b,margin)<0 || projected_relation(b,a,margin)<0;
+                });
+                saved=rel;
+                save_window(bin);
+            }
+            initialized=true;
         }
         using Pair=std::array<std::size_t,2>;
         std::vector<Pair> hits;
@@ -755,6 +832,12 @@ struct FiniteFeatures::Data {
                                            ContactWork& work) {
         const auto groups=crossing_groups(poses,rel,work);
         if (groups.empty()) {
+            // The bounded triangle search was already performed. Only an
+            // enclosure or degeneracy can still require a boundary check.
+            const auto hit=scene.overlaps(poses);
+            work.mesh.nodes+=hit.node_pairs;
+            work.mesh.triangles+=hit.triangle_tests;
+            if (!hit.overlap) return {};
             const auto exact=scene.intersect(poses,true);
             if (!exact.enclosed.empty() || !exact.contours.empty())
                 throw UnresolvedContact("enclosed or unresolved mesh intersection without a finite boundary patch");
@@ -864,11 +947,14 @@ struct FiniteFeatures::Data {
     }
     std::vector<ContactRegion> query(const std::array<RigidPlacement,2>& poses,ContactWork& work) {
         ++version;
+        const auto rel=relative(poses[0],poses[1]);
+        if ((!surfaces[0].convex || !surfaces[1].convex) &&
+            surfaces[0].planes.empty() && surfaces[1].planes.empty())
+            return partitioned(poses,rel,work);
         const auto hit=scene.overlaps(poses);
         work.mesh.nodes+=hit.node_pairs;
         work.mesh.triangles+=hit.triangle_tests;
         if (!hit.overlap) return {};
-        const auto rel=relative(poses[0],poses[1]);
         if (!surfaces[0].convex || !surfaces[1].convex) {
             for (unsigned i=0;i<2;++i) if (auto cap=planar_cap(i,poses)) return *cap;
             return partitioned(poses,rel,work);

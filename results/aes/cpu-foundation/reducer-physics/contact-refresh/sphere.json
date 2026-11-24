@@ -1,0 +1,74 @@
+{
+  "case": "head-on",
+  "spectral_radius": 0.0,
+  "method": "mesh-obb",
+  "solver": "penalty",
+  "dt_s": 0.0001,
+  "duration_s": 5.0,
+  "mesh_region_scope": "contour-ray",
+  "geometry_update": "predictor",
+  "event_tolerance_s": 0.0,
+  "step_sha256": "b1b75a633d5f5de9267246c3faa9457f22615bc8b742d4cc9f297e9df2e81d2c",
+  "mesh_sha256": "3795e94baf6025aef289fe17a3294fff6abd98c9cbfc53f8f842307b618c0161",
+  "scene_sha256": "14b03f3a07d6e9d3f8ad79d228d8f9d20558a94d167ba71bb0789686408a2488",
+  "trace_sha256": "e471afed6771589540751a19504c268e79810325fe3b6703d329f55eb8a16dca",
+  "frames": 50001,
+  "process_s": 100.82048320001923,
+  "integration_s": 4.7369387,
+  "subdivisions": 0,
+  "evaluations": 53418,
+  "step_checks": 0,
+  "event_rejections": 0,
+  "cad_boolean_queries": 0,
+  "cad_event_distances": 0,
+  "chen_patch_queries": 0,
+  "chen_confirmed_candidates": 0,
+  "tdib_cells": 0,
+  "tdib_candidates": 0,
+  "tdib_unresolved": 0,
+  "impulse_residual_m_s": 0.0,
+  "impulse_solves": 0,
+  "impulse_regions": 0,
+  "impulse_iterations": 0,
+  "ccd_refinements": 0,
+  "ccd_refined_clear": 0,
+  "ccd_unresolved": 0,
+  "max_linear_momentum_drift_kg_m_s": 1.3322676295501878e-15,
+  "max_angular_momentum_drift_kg_m2_s": 2.4689723134136426e-10,
+  "initial_kinetic_energy_J": 0.10125,
+  "final_kinetic_energy_J": 0.1012474471038054,
+  "final_velocities_m_s": [
+    [
+      -8.562130338054162e-05,
+      0.00021877998768197313,
+      -0.44999394622145533
+    ],
+    [
+      8.562130338054162e-05,
+      -0.00021877998768197313,
+      -6.053778545449963e-06
+    ]
+  ],
+  "final_angular_velocities_rad_s": [
+    [
+      -0.012066538462831655,
+      -0.0037243528619441977,
+      -8.309794681607816e-07
+    ],
+    [
+      -0.01232151066872517,
+      -0.00582705203598266,
+      8.242243550297054e-07
+    ]
+  ],
+  "peak_normal_force_N": 22.498529553388998,
+  "normal_impulse_Ns": 0.4499945622169484,
+  "reference_entry_s": 0.04,
+  "reference_peak_N": 22.5,
+  "reference_impulse_Ns": 0.45,
+  "reference_final_axial_velocities_m_s": [
+    -0.45,
+    0.0
+  ],
+  "force_rmse_N": 0.02021961645296396
+}

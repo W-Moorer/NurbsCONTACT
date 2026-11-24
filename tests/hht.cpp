@@ -1,4 +1,5 @@
 #include "nurbscontact/hht.hpp"
+#include "nurbscontact/predictor_regions.hpp"
 #include "nurbscontact/contact_dynamics.hpp"
 #include "nurbscontact/free_rigid.hpp"
 #include "nurbscontact/triangle_bvh.hpp"
@@ -14,6 +15,37 @@ using namespace nc::dynamics;
 
 void require(bool condition, const char* message) {
     if (!condition) throw std::runtime_error(message);
+}
+
+void check_predictor_contact_switch() {
+    struct Pads final : PairRegionQuery {
+        mutable unsigned calls{};
+        std::vector<ContactRegion> regions(ContactPose a, ContactPose b, ContactWork&) const override {
+            ++calls;
+            std::vector<ContactRegion> out;
+            for (double pad:{0.,.001}) {
+                const double depth=a.origin[0]+pad-b.origin[0];
+                if (depth>0.) out.push_back({{b.origin[0]+depth*.5,pad,0},{1,0,0},depth});
+            }
+            return out;
+        }
+        SurfaceTransition transition(ContactPose,ContactPose,ContactPose,ContactPose,double) const override {return {};}
+    };
+    auto exact=std::make_shared<Pads>();
+    PredictorRegions query(exact);
+    ContactWork work;
+    const auto at=[&](double x) { ContactPose b; b.origin[0]=x; return query.regions({},b,work); };
+    require(at(.002).empty(),"separated predictor produced contact");
+    require(at(-.001).size()==2,"empty predictor suppressed a newly loaded contact");
+    require(at(.002).empty(),"rejected line-search trial left a contact behind");
+    query.reset();
+    require(at(-.001).size()==2,"two active pads expected");
+    const auto single=at(.0004);
+    require(single.size()==1 && std::abs(single[0].depth_m-.0006)<1e-14,
+            "opening pad did not refresh the shared support");
+    const auto calls=exact->calls;
+    at(.0004);
+    require(exact->calls==calls,"identical pose repeated an exact query");
 }
 
 void check_shared_pair_stiffness() {
@@ -87,10 +119,12 @@ void check_spatial_wrench() {
             "normalization changed physical angular velocity or acceleration");
 }
 
-void check_oscillator() {
+void check_oscillator(std::optional<double> rho={}) {
+    HhtOptions options;
+    options.spectral_radius=rho;
     Hht integrator({1},[](const Vector& q,const Vector&,double) {
         return Forces{{-100*q[0]},{100},{0}};
-    });
+    },options);
     double previous = infinity;
     for (double h : {0.02,0.01,0.005,0.0025}) {
         State state = integrator.initialize({1},{0});
@@ -303,6 +337,9 @@ void check_triangle_bvh() {
 int main() {
     try {
         check_oscillator();
+        check_oscillator(0.);
+        check_oscillator(1.);
+        check_predictor_contact_switch();
         check_shared_pair_stiffness();
         check_spatial_wrench();
         check_bounded_force_decisions();

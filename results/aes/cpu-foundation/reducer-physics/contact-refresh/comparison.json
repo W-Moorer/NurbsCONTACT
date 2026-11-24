@@ -1,0 +1,560 @@
+{
+  "samples": 50001,
+  "step_s": 0.0001,
+  "reference_and_previous_sha256": "a96b30a1c7daac7aab302a44f2d40b4241dcc83e5a6716684dddd7ec656c0500",
+  "revised_trace_sha256": "422068b9d21aeb562bb8203c6313e469c245d4cb8f42d939d08186fc1d90595f",
+  "method": {
+    "Previous CPU": {
+      "full": {
+        "samples": 50001,
+        "min_Nm": 0.0,
+        "peak_Nm": 586.8525049957507,
+        "peak_time_s": 0.002899999999999999,
+        "mean_Nm": 137.80404880802342,
+        "std_Nm": 67.29299552351584,
+        "torque_rms_difference_Nm": 71.86786156891719,
+        "speed_rms_difference_rad_s": [
+          1.7514014120887211,
+          0.6519105051750147,
+          0.8955237434481104
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.03937794809738024,
+          0.17854707066247238
+        ]
+      },
+      "0-1s": {
+        "samples": 10000,
+        "min_Nm": 0.0,
+        "peak_Nm": 586.8525049957507,
+        "peak_time_s": 0.002899999999999999,
+        "mean_Nm": 144.39333500064018,
+        "std_Nm": 75.03753866346254,
+        "torque_rms_difference_Nm": 78.01491062747755,
+        "speed_rms_difference_rad_s": [
+          1.9300963595854514,
+          0.7214284875065075,
+          0.9871039665495657
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.043994394465953664,
+          0.2022402609697567
+        ]
+      },
+      "1-2s": {
+        "samples": 10000,
+        "min_Nm": 0.0,
+        "peak_Nm": 463.31337450039024,
+        "peak_time_s": 1.1905999999998853,
+        "mean_Nm": 136.137313672178,
+        "std_Nm": 66.69390609697523,
+        "torque_rms_difference_Nm": 72.01518357886786,
+        "speed_rms_difference_rad_s": [
+          1.7570030768402884,
+          0.648345706259908,
+          0.8926907855418972
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.04022408121676765,
+          0.17596359206078246
+        ]
+      },
+      "2-3s": {
+        "samples": 10000,
+        "min_Nm": 0.0,
+        "peak_Nm": 502.5615241638689,
+        "peak_time_s": 2.169500000000154,
+        "mean_Nm": 136.1637304470243,
+        "std_Nm": 71.54173179532188,
+        "torque_rms_difference_Nm": 76.54899679151212,
+        "speed_rms_difference_rad_s": [
+          1.8603557240788124,
+          0.6955888757935024,
+          0.9565983335917093
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.040823710803280504,
+          0.18749122506047736
+        ]
+      },
+      "3-4s": {
+        "samples": 10000,
+        "min_Nm": 0.0,
+        "peak_Nm": 311.2187718963549,
+        "peak_time_s": 3.017700000001944,
+        "mean_Nm": 136.16427868492295,
+        "std_Nm": 31.90719128632156,
+        "torque_rms_difference_Nm": 42.78935005167334,
+        "speed_rms_difference_rad_s": [
+          0.9800462738251763,
+          0.3374917595809003,
+          0.46207373633730714
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.027012057083996746,
+          0.0839938079774829
+        ]
+      },
+      "4-5s": {
+        "samples": 10001,
+        "min_Nm": 0.0,
+        "peak_Nm": 529.421488251474,
+        "peak_time_s": 4.696800000002392,
+        "mean_Nm": 136.16175046518595,
+        "std_Nm": 79.82656621459957,
+        "torque_rms_difference_Nm": 82.83470069295268,
+        "speed_rms_difference_rad_s": [
+          2.025632016249071,
+          0.7657444787482621,
+          1.0535271665754837
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.042466206098442226,
+          0.2128889612077788
+        ]
+      }
+    },
+    "RecurDyn": {
+      "full": {
+        "samples": 50001,
+        "min_Nm": 0.0,
+        "peak_Nm": 509.32494922780234,
+        "peak_time_s": 0.0017000000000000006,
+        "mean_Nm": 138.06673474009287,
+        "std_Nm": 29.226226836766443,
+        "torque_rms_difference_Nm": 0.0,
+        "speed_rms_difference_rad_s": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.0,
+          0.0
+        ]
+      },
+      "0-1s": {
+        "samples": 10000,
+        "min_Nm": 0.0,
+        "peak_Nm": 509.32494922780234,
+        "peak_time_s": 0.0017000000000000006,
+        "mean_Nm": 144.50090656647583,
+        "std_Nm": 34.53632765117535,
+        "torque_rms_difference_Nm": 0.0,
+        "speed_rms_difference_rad_s": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.0,
+          0.0
+        ]
+      },
+      "1-2s": {
+        "samples": 10000,
+        "min_Nm": 32.323864671588005,
+        "peak_Nm": 237.19219852165782,
+        "peak_time_s": 1.14729999999989,
+        "mean_Nm": 136.47401985147428,
+        "std_Nm": 27.723849113720426,
+        "torque_rms_difference_Nm": 0.0,
+        "speed_rms_difference_rad_s": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.0,
+          0.0
+        ]
+      },
+      "2-3s": {
+        "samples": 10000,
+        "min_Nm": 59.42741274676095,
+        "peak_Nm": 241.17086427873411,
+        "peak_time_s": 2.631500000001129,
+        "mean_Nm": 136.37374398948484,
+        "std_Nm": 27.163919083976268,
+        "torque_rms_difference_Nm": 0.0,
+        "speed_rms_difference_rad_s": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.0,
+          0.0
+        ]
+      },
+      "3-4s": {
+        "samples": 10000,
+        "min_Nm": 32.53633505391478,
+        "peak_Nm": 251.15016055062787,
+        "peak_time_s": 3.0314000000019727,
+        "mean_Nm": 136.51922641673283,
+        "std_Nm": 27.650529946467962,
+        "torque_rms_difference_Nm": 0.0,
+        "speed_rms_difference_rad_s": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.0,
+          0.0
+        ]
+      },
+      "4-5s": {
+        "samples": 10001,
+        "min_Nm": 30.93430566629737,
+        "peak_Nm": 241.09585669768927,
+        "peak_time_s": 4.631500000002545,
+        "mean_Nm": 136.46593695607493,
+        "std_Nm": 27.482947451684367,
+        "torque_rms_difference_Nm": 0.0,
+        "speed_rms_difference_rad_s": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "Revised CPU": {
+      "full": {
+        "samples": 50001,
+        "min_Nm": 0.0,
+        "peak_Nm": 432.7064738330969,
+        "peak_time_s": 0.0006000000000000001,
+        "mean_Nm": 137.80435384864452,
+        "std_Nm": 15.18806504897461,
+        "torque_rms_difference_Nm": 29.1423846001526,
+        "speed_rms_difference_rad_s": [
+          0.5990254705760845,
+          0.2039660688336247,
+          0.27879400160025497
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.019513599822547235,
+          0.05655262544690377
+        ]
+      },
+      "0-1s": {
+        "samples": 10000,
+        "min_Nm": 0.0,
+        "peak_Nm": 432.7064738330969,
+        "peak_time_s": 0.0006000000000000001,
+        "mean_Nm": 144.38065040459045,
+        "std_Nm": 22.132500333926576,
+        "torque_rms_difference_Nm": 30.02925607288394,
+        "speed_rms_difference_rad_s": [
+          0.6394468583042059,
+          0.21526445327008586,
+          0.289462165886079
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.02165437828711394,
+          0.06035790343327687
+        ]
+      },
+      "1-2s": {
+        "samples": 10000,
+        "min_Nm": 88.58556627859087,
+        "peak_Nm": 174.13693017342902,
+        "peak_time_s": 1.2499999999998788,
+        "mean_Nm": 136.15998078575782,
+        "std_Nm": 12.390168928774106,
+        "torque_rms_difference_Nm": 29.26652243867483,
+        "speed_rms_difference_rad_s": [
+          0.5960616638088129,
+          0.20421093710729063,
+          0.2803935477476995
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.019122316898780536,
+          0.05609475676079936
+        ]
+      },
+      "2-3s": {
+        "samples": 10000,
+        "min_Nm": 86.0598932026389,
+        "peak_Nm": 173.6352879313484,
+        "peak_time_s": 2.4015000000006435,
+        "mean_Nm": 136.1598061712584,
+        "std_Nm": 12.346274968152992,
+        "torque_rms_difference_Nm": 28.51275219686812,
+        "speed_rms_difference_rad_s": [
+          0.5811977920204129,
+          0.19799663857761082,
+          0.2718349681701918
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.018801197830588246,
+          0.055069203703089174
+        ]
+      },
+      "3-4s": {
+        "samples": 10000,
+        "min_Nm": 89.29253545383342,
+        "peak_Nm": 173.88119406188164,
+        "peak_time_s": 3.1712000000022678,
+        "mean_Nm": 136.15998869387607,
+        "std_Nm": 12.34252002022042,
+        "torque_rms_difference_Nm": 29.04911616962419,
+        "speed_rms_difference_rad_s": [
+          0.5901457566344226,
+          0.20178072620768933,
+          0.2770524895464624
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.018948037047608137,
+          0.05556932818354194
+        ]
+      },
+      "4-5s": {
+        "samples": 10001,
+        "min_Nm": 89.42995185000308,
+        "peak_Nm": 172.49200869643792,
+        "peak_time_s": 4.62910000000255,
+        "mean_Nm": 136.16150747237754,
+        "std_Nm": 12.29646521706895,
+        "torque_rms_difference_Nm": 28.831943338210593,
+        "speed_rms_difference_rad_s": [
+          0.5864421408176655,
+          0.20012975582901246,
+          0.2748990238644591
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.01888960126962737,
+          0.055504443931339714
+        ]
+      }
+    },
+    "Contact repair with previous HHT": {
+      "full": {
+        "samples": 50001,
+        "min_Nm": 0.0,
+        "peak_Nm": 594.7673210970136,
+        "peak_time_s": 0.002899999999999999,
+        "mean_Nm": 137.80531639117189,
+        "std_Nm": 50.357301073662384,
+        "torque_rms_difference_Nm": 56.864438731532736,
+        "speed_rms_difference_rad_s": [
+          1.3718521087684903,
+          0.48860951057355256,
+          0.6718888173026257
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.03437505394352825,
+          0.12849485719746395
+        ]
+      },
+      "0-1s": {
+        "samples": 10000,
+        "min_Nm": 0.0,
+        "peak_Nm": 594.7673210970136,
+        "peak_time_s": 0.002899999999999999,
+        "mean_Nm": 144.3681799564768,
+        "std_Nm": 83.77238741930641,
+        "torque_rms_difference_Nm": 86.41594991678006,
+        "speed_rms_difference_rad_s": [
+          2.1983332556399007,
+          0.7980634788609308,
+          1.0921883517493134
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.05273528448207227,
+          0.21782316568257504
+        ]
+      },
+      "1-2s": {
+        "samples": 10000,
+        "min_Nm": 0.0,
+        "peak_Nm": 383.4456515331272,
+        "peak_time_s": 1.0328999999999027,
+        "mean_Nm": 136.18147578177528,
+        "std_Nm": 38.157969287124814,
+        "torque_rms_difference_Nm": 47.720683950565785,
+        "speed_rms_difference_rad_s": [
+          1.1041884677164056,
+          0.3869122972961009,
+          0.5329407821959795
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.028895386881078632,
+          0.09710542336931374
+        ]
+      },
+      "2-3s": {
+        "samples": 10000,
+        "min_Nm": 0.0,
+        "peak_Nm": 399.97562148007773,
+        "peak_time_s": 2.5541000000009655,
+        "mean_Nm": 136.15539600384642,
+        "std_Nm": 41.09410922922997,
+        "torque_rms_difference_Nm": 49.18593712929788,
+        "speed_rms_difference_rad_s": [
+          1.1339696533273897,
+          0.39719161192080765,
+          0.5518490712216021
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.028699194203843162,
+          0.10027239691373054
+        ]
+      },
+      "3-4s": {
+        "samples": 10000,
+        "min_Nm": 17.880371412056434,
+        "peak_Nm": 278.8788825537998,
+        "peak_time_s": 3.329200000002601,
+        "mean_Nm": 136.16377947486836,
+        "std_Nm": 31.119979254178787,
+        "torque_rms_difference_Nm": 41.923969633515036,
+        "speed_rms_difference_rad_s": [
+          0.9485521747185913,
+          0.3253773002361885,
+          0.4474156298215688
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.02620509516524146,
+          0.08147736992184976
+        ]
+      },
+      "4-5s": {
+        "samples": 10001,
+        "min_Nm": 0.0,
+        "peak_Nm": 300.0611325758143,
+        "peak_time_s": 4.851000000002033,
+        "mean_Nm": 136.1579154789838,
+        "std_Nm": 38.659170130604224,
+        "torque_rms_difference_Nm": 47.39266813920407,
+        "speed_rms_difference_rad_s": [
+          1.082784521190918,
+          0.3787714219436268,
+          0.5249486490983194
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.027963498776579537,
+          0.09479390269157158
+        ]
+      }
+    },
+    "Revised CPU at half step": {
+      "full": {
+        "samples": 50001,
+        "min_Nm": 0.0,
+        "peak_Nm": 479.58696322989545,
+        "peak_time_s": 0.0005,
+        "mean_Nm": 137.80209552390122,
+        "std_Nm": 19.6823040489235,
+        "torque_rms_difference_Nm": 32.6945204897347,
+        "speed_rms_difference_rad_s": [
+          0.6857787666900482,
+          0.24001952723196562,
+          0.3284810102418686
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.02091043141985631,
+          0.06350587172885643
+        ]
+      },
+      "0-1s": {
+        "samples": 10000,
+        "min_Nm": 0.0,
+        "peak_Nm": 479.58696322989545,
+        "peak_time_s": 0.0005,
+        "mean_Nm": 144.3867880361584,
+        "std_Nm": 27.708779921341744,
+        "torque_rms_difference_Nm": 34.44906070705397,
+        "speed_rms_difference_rad_s": [
+          0.7382385661292031,
+          0.25990600477539555,
+          0.3548496571970641
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.022574954562465905,
+          0.0697842227175333
+        ]
+      },
+      "1-2s": {
+        "samples": 10000,
+        "min_Nm": 76.08418607233071,
+        "peak_Nm": 187.15809736663755,
+        "peak_time_s": 1.1711999999998874,
+        "mean_Nm": 136.18527867373234,
+        "std_Nm": 16.730852049655283,
+        "torque_rms_difference_Nm": 32.34726047690484,
+        "speed_rms_difference_rad_s": [
+          0.6731929507586376,
+          0.23619209282609588,
+          0.32292827437554233
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.020521507055663232,
+          0.062146489866337626
+        ]
+      },
+      "2-3s": {
+        "samples": 10000,
+        "min_Nm": 79.83148055627497,
+        "peak_Nm": 187.27811386642077,
+        "peak_time_s": 2.1712000000001574,
+        "mean_Nm": 136.14241454888642,
+        "std_Nm": 16.60807366891375,
+        "torque_rms_difference_Nm": 31.93870880081325,
+        "speed_rms_difference_rad_s": [
+          0.667930945069743,
+          0.23246984828506068,
+          0.3186362327327197
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.020393670449429524,
+          0.06145766105139567
+        ]
+      },
+      "3-4s": {
+        "samples": 10000,
+        "min_Nm": 78.20949576827947,
+        "peak_Nm": 187.42153412865943,
+        "peak_time_s": 3.1712000000022678,
+        "mean_Nm": 136.15012350253545,
+        "std_Nm": 16.761413182668992,
+        "torque_rms_difference_Nm": 32.49029623838666,
+        "speed_rms_difference_rad_s": [
+          0.6757554781454765,
+          0.23650187539804068,
+          0.3239206086781193
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.0205180724232438,
+          0.06200900886837665
+        ]
+      },
+      "4-5s": {
+        "samples": 10001,
+        "min_Nm": 77.60462017813626,
+        "peak_Nm": 193.2979722224538,
+        "peak_time_s": 4.562100000002706,
+        "mean_Nm": 136.14603846389963,
+        "std_Nm": 16.68252888952796,
+        "torque_rms_difference_Nm": 32.185060853459824,
+        "speed_rms_difference_rad_s": [
+          0.6711947706346478,
+          0.23395288274595671,
+          0.3206942731056819
+        ],
+        "transmission_error_rms_difference_mrad": [
+          0.020459195044580006,
+          0.06173180470769688
+        ]
+      }
+    }
+  },
+  "contact_only_trace_sha256": "fbee6ade00d1a762c840ab45aacd2bbafad1cc9cb6990152a1b8775d31b791ed",
+  "refined_trace_sha256": "2e529bd3b7dc53416360eb293e76429fc2b5a683ab5cfca687f83e4c2cb64008"
+}

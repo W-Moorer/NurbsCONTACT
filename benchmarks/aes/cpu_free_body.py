@@ -207,6 +207,8 @@ def run(args):
         cmd.extend(["--event-tol-s", str(args.event_tol)])
     if getattr(args,"geometry_update",None):
         cmd.extend(["--geometry-update",args.geometry_update])
+    if getattr(args,"spectral_radius",None) is not None:
+        cmd.extend(["--spectral-radius",str(args.spectral_radius)])
     start = time.perf_counter()
     subprocess.run(cmd, check=True, timeout=1800, capture_output=True, text=True)
     elapsed = time.perf_counter() - start
@@ -217,6 +219,7 @@ def run(args):
         stats = next(csv.DictReader(file))
     return dict(
         case=args.case,
+        spectral_radius=getattr(args,"spectral_radius",None),
         method=args.method,
         solver=args.solver,
         dt_s=args.dt,
@@ -255,6 +258,7 @@ if __name__ == "__main__":
     parser.add_argument("--duration",type=float)
     parser.add_argument("--mesh-region-scope",choices=("local","full","fcl","finite","contour-ray"))
     parser.add_argument("--geometry-update",choices=("newton","predictor"))
+    parser.add_argument("--spectral-radius",type=float)
     parser.add_argument("--solver", choices=("penalty","sap","lagrange","augmented-lagrange","lcp","ncp","soccp"),
                         default="penalty")
     parser.add_argument("--event-tol", type=float, default=0.0)

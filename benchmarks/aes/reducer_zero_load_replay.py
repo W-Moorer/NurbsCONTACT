@@ -39,7 +39,7 @@ def regions_at(exe, bodies, pair, angles):
     return output
 
 
-def audit(exe, scene, trace, out):
+def audit(exe, scene, trace, out, spectral_radius=None, deck=None):
     bodies, pairs = read_model(scene)
     fields = ["time_s", *(f"{key}{i}" for key in ("q", "v", "a") for i in range(3)),
               *(f"p{i}_normal_N" for i in range(len(pairs)))]
@@ -49,13 +49,18 @@ def audit(exe, scene, trace, out):
     q, v, acc = [np.column_stack([data[f"{key}{i}"] for i in range(3)]) for key in ("q", "v", "a")]
     report = dict(scene_sha256=digest(scene), trace_sha256=digest(trace), mesh_exe_sha256=digest(exe),
                   steps=len(t)-1, step_s=.0001, stages={})
+    beta = .25*(1+.1)**2
+    if spectral_radius is not None:
+        if not 0 <= spectral_radius <= 1:
+            raise ValueError("Spectral radius must lie between zero and one")
+        beta = 1/(1+spectral_radius)**2
+        report["spectral_radius"] = spectral_radius
     for stage, pair in enumerate(pairs):
         rows = np.flatnonzero((data[f"p{stage}_normal_N"] == 0) & (t > 0))
         accepted = regions_at(exe, bodies, pair, q[rows])
         candidates = [(i, g) for i, g in zip(rows, accepted, strict=True) if g is not None and len(g)]
         indices = np.array([i for i, _ in candidates], dtype=int)
         h = .0001
-        beta = (1+.1)**2/4  # This recorded run used the default HHT alpha of -0.10.
         predictor = q[indices-1] + h*v[indices-1] + h*h*(.5-beta)*acc[indices-1]
         initial = predictor + (beta*h*h)*acc[indices-1]
         endpoint = predictor + (beta*h*h)*acc[indices]
@@ -77,6 +82,20 @@ def audit(exe, scene, trace, out):
             int(i) for i, g in zip(rows, accepted, strict=True) if g is None],
             accepted_with_positive_depth=len(records), first_trial_empty=len(confirmed),
             first_trial_empty_per_second=per_second.tolist(), positive_depth_records=records)
+    if deck is not None:
+        from reducer_matched_responses import read_run
+        solution=read_run(trace,deck)
+        ids=np.arange(0,len(t),100)
+        regions=regions_at(exe,bodies,pairs[-1],q[ids])
+        _,driven,k,_=pairs[-1]
+        _,origin,_,_,shaft_coordinate=bodies[driven]
+        moments=np.array([np.nan if g is None else
+            np.cross(g[:,:3]-origin,k*g[:,6:7]*g[:,3:6])[:,2].mean() if len(g) else 0.
+            for g in regions])
+        valid=np.isfinite(moments)
+        errors=moments[valid]-solution["torque"][ids[valid],shaft_coordinate]
+        report["sampled_output_torque"]=dict(samples=len(ids),unresolved_steps=ids[~valid].tolist(),
+            rms_difference_Nm=float(np.sqrt(np.mean(errors**2))) if len(errors) else None)
     out.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
 
 
@@ -84,4 +103,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     for field in ("exe", "scene", "trace", "out"):
         parser.add_argument(field, type=Path)
+    parser.add_argument("--spectral-radius", type=float)
+    parser.add_argument("--deck",type=Path,help="also compare fresh output-shaft torques every 100th accepted output")
     audit(**vars(parser.parse_args()))

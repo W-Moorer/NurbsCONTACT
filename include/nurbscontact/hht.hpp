@@ -37,6 +37,9 @@ struct HhtOptions {
     unsigned max_iterations{18};
     unsigned max_subdivisions{8};
     bool nonsymmetric_tangent{};
+    // Generalized-alpha spectral radius at infinite frequency. When unset,
+    // retain the HHT force weighting and its unweighted mass.
+    std::optional<double> spectral_radius{};
 };
 
 struct State {
