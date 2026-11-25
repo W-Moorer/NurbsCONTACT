@@ -2,6 +2,7 @@
 #include "nurbscontact/cad_contact_regions.hpp"
 #include "../src/cad_boundary_distance.hpp"
 #include "../src/cad_bezier_ray.hpp"
+#include "../src/cad_span_index.hpp"
 #include "../src/cad_patch_search.hpp"
 #include "../src/cad_local_solid.hpp"
 #include "../src/cad_planar_trim.hpp"
@@ -33,6 +34,26 @@ void close(double actual,double expected,double tol,const char* what) {
 }
 
 void bezier_rays() {
+    // No assumption about spatial order of consecutive knot spans. Each leaf
+    // may include extra candidates; it must preserve all overlapping spans.
+    struct TestBox {gp_XYZ lo,hi;};
+    std::vector<TestBox> boxes;
+    for (int j=0;j<52;++j) {
+        const double x=(j*7)%52;
+        boxes.push_back({{x,-1,-1},{x+1,1,1}});
+    }
+    cad::SpanIndex spans;
+    spans.build(boxes.size(),[&](auto i)->const TestBox& {return boxes[i];});
+    for (double x:{0.,7.25,29.,51.5,65.}) {
+        std::vector<std::size_t> expected,visited;
+        for (std::size_t j=0;j<boxes.size();++j)
+            if (boxes[j].lo.X()<=x && x<=boxes[j].hi.X()) expected.push_back(j);
+        spans.query({x,0,0},{x,0,0},[&](auto j){
+            if (boxes[j].lo.X()<=x && x<=boxes[j].hi.X()) visited.push_back(j);
+            return true;
+        });
+        require(visited==expected,"span hierarchy changed root-test coverage or order");
+    }
     TColgp_Array2OfPnt poles(1,3,1,3);
     TColStd_Array2OfReal weights(1,3,1,3);
     for (int i=1;i<=3;++i) for (int j=1;j<=3;++j) {
@@ -394,23 +415,30 @@ void local_solids() {
     const auto b=BRepPrimAPI_MakeBox(4.,6.,3.).Shape();
     LocalSolidSearch search(a,b);
     ContactWork work;
-    for (double x:{39.,39.2,-2.,8.,50.}) {
+    TopoDS_Shape first_clip;
+    for (double x:{39.,39.2,-2.,8.,50.,39.}) {
         gp_Trsf t;
         t.SetTranslationPart(gp_Vec(x,3,4));
         const auto pair=search.select(t.Inverted(),.1);
         const auto placed=b.Moved(TopLoc_Location(t));
         if (x==50.) { require(pair.separated,"envelopes failed to separate distant boxes"); continue; }
         require(!pair.separated && !pair.a.shape.IsSame(a),"expected retained local CAD solid");
+        if (x==39.) {
+            if (first_clip.IsNull()) first_clip=pair.a.shape;
+            else require(first_clip.IsSame(pair.a.shape),"returning pose rebuilt a retained pressure clip");
+        }
         SurfaceTransition stats;
         close(bounded_distance(pair.a.boundary,pair.b.boundary,t.Inverted(),.1,1e-7,stats),0,1e-8,
               "cropped solids lost containment or crossing");
         if (x==8.) continue; // complete containment has no unique force normal
-        const auto full=solid_regions(a,placed,work);
-        const auto cropped=solid_regions(pair.a.shape,pair.b.shape.Moved(TopLoc_Location(t)),work);
+        std::vector<Vec> full_arms,clipped_arms;
+        const auto full=solid_regions(a,placed,work,true,&full_arms);
+        const auto cropped=solid_regions(pair.a.shape,pair.b.shape.Moved(TopLoc_Location(t)),work,true,&clipped_arms,true);
         require(full.size()==1 && cropped.size()==1,"cropping changed the number of regions");
         close(length(sub(full[0].point,cropped[0].point)),0,1e-10,"local force point");
         close(length(sub(full[0].normal,cropped[0].normal)),0,1e-10,"local force direction");
         close(full[0].depth_m,cropped[0].depth_m,1e-10,"local depth");
+        close(length(sub(full_arms.at(0),clipped_arms.at(0))),0,1e-10,"local pressure moment arm");
     }
     // Two different off-center solids undergoing the same finite rigid motion.
     ContactPose p{},q{{.004,.005,.001},{1,2,3},.49};

@@ -1,4 +1,5 @@
 #include "cad_bezier_ray.hpp"
+#include "cad_span_index.hpp"
 #include <BRepAdaptor_Surface.hxx>
 #include <GeomConvert_BSplineSurfaceToBezierSurface.hxx>
 #include <Geom_BSplineSurface.hxx>
@@ -204,6 +205,7 @@ struct BezierRayAtlas::Part {
     std::vector<Span> spans;
     std::vector<Box> boxes;
     std::vector<std::size_t> offsets;
+    std::vector<SpanIndex> indices;
 };
 BezierRayAtlas::BezierRayAtlas(const TopoDS_Shape &shape, PatchAssets &assets) {
     TopTools_IndexedMapOfShape faces;
@@ -244,6 +246,11 @@ BezierRayAtlas::BezierRayAtlas(const TopoDS_Shape &shape, PatchAssets &assets) {
         part->boxes.push_back({span.lo, span.hi});
     }
     std::partial_sum(part->offsets.begin(), part->offsets.end(), part->offsets.begin());
+    part->indices.resize(faces.Extent());
+    for (std::size_t i=0;i<part->indices.size();++i) {
+        const auto first=part->offsets[i];
+        part->indices[i].build(part->offsets[i+1]-first,[&](auto j)->const Part::Box& {return part->boxes[first+j];});
+    }
     part_ = std::move(part);
 }
 bool BezierRayAtlas::query(std::size_t face, const gp_XYZ &point, const gp_XYZ &d, double end, double tol,
@@ -260,16 +267,15 @@ bool BezierRayAtlas::query(std::size_t face, const gp_XYZ &point, const gp_XYZ &
         lo[k] = std::min(p.Coord(k + 1), q.Coord(k + 1)) - margin;
         hi[k] = std::max(p.Coord(k + 1), q.Coord(k + 1)) + margin;
     }
-    for (auto i = first; i < last; ++i) {
+    return part_->indices[face-1].query({lo[0],lo[1],lo[2]}, {hi[0],hi[1],hi[2]}, [&](auto local) {
+        const auto i=first+local;
         const auto &box = part_->boxes[i];
         if (lo[0] > box.hi.X() || hi[0] < box.lo.X() || lo[1] > box.hi.Y() || hi[1] < box.lo.Y() ||
             lo[2] > box.hi.Z() || hi[2] < box.lo.Z())
-            continue;
+            return true;
         if (candidate_spans)
             ++*candidate_spans;
-        if (!part_->spans[i].intersect(point, d, end, margin, hit))
-            return false;
-    }
-    return true;
+        return part_->spans[i].intersect(point, d, end, margin, hit);
+    });
 }
 } // namespace nc::cad

@@ -1,0 +1,259 @@
+{
+  "cad-bezier": {
+    "process_s": 1256.9769467000006,
+    "boolean_steps": [
+      1860,
+      2741,
+      4226,
+      5741,
+      9317,
+      14226,
+      15741,
+      19317,
+      24226,
+      25741,
+      29317,
+      34226,
+      35741,
+      39317,
+      44226,
+      45741,
+      49317
+    ],
+    "wall_in_boolean_steps_s": 110.69749750000038,
+    "ordinary_steps": 49983,
+    "ordinary_mean_ms": 21.40795604705599,
+    "ordinary_p50_ms": 16.649900000004436,
+    "ordinary_p95_ms": 38.91754000001125,
+    "budget_per_ordinary_step_ms_for_300s": 2.2619074565352006,
+    "unchanged_trace_sha256": false,
+    "torque_minus_recurdyn_Nm": {
+      "rms": 42.094760875788914,
+      "max_abs": 254.7986381119975,
+      "peak_step": 24
+    }
+  },
+  "mesh-obb": {
+    "process_s": 712.1307717000018,
+    "boolean_steps": [],
+    "wall_in_boolean_steps_s": 0.0,
+    "ordinary_steps": 50000,
+    "ordinary_mean_ms": 13.685965048,
+    "ordinary_p50_ms": 3.8930999999990945,
+    "ordinary_p95_ms": 45.0168800000128,
+    "budget_per_ordinary_step_ms_for_300s": 5.443349613999964,
+    "unchanged_trace_sha256": true,
+    "torque_minus_recurdyn_Nm": {
+      "rms": 29.1423846001526,
+      "max_abs": 139.1397076410301,
+      "peak_step": 17
+    }
+  },
+  "torque_delta_from_previous_Nm": {
+    "rms": 0.02446198651668449,
+    "max_abs": 2.747984403752298,
+    "peak_step": 41709
+  },
+  "torque_delta_from_mesh_Nm": {
+    "rms": 21.953128267157435,
+    "max_abs": 201.45644567705762,
+    "peak_step": 24
+  },
+  "speed_delta_from_mesh_rad_s": [
+    {
+      "rms": 0.4985964145738767,
+      "max_abs": 4.227128265392167,
+      "peak_step": 25
+    },
+    {
+      "rms": 0.1692721787698698,
+      "max_abs": 1.7274824120845125,
+      "peak_step": 25
+    },
+    {
+      "rms": 0.22581598341752912,
+      "max_abs": 2.4265590887003583,
+      "peak_step": 25
+    }
+  ],
+  "loads_delta_from_previous_N": [
+    {
+      "rms": 1.0336207364215246,
+      "max_abs": 183.03556699503383,
+      "peak_step": 41707
+    },
+    {
+      "rms": 0.3927398873696853,
+      "max_abs": 44.315460372129564,
+      "peak_step": 41709
+    }
+  ],
+  "speed_delta_from_previous_rad_s": [
+    {
+      "rms": 0.001998853073090997,
+      "max_abs": 0.26671873262287704,
+      "peak_step": 41708
+    },
+    {
+      "rms": 0.000547833268548024,
+      "max_abs": 0.07702334795499155,
+      "peak_step": 41708
+    },
+    {
+      "rms": 0.00025360364717507566,
+      "max_abs": 0.02455378352743054,
+      "peak_step": 41711
+    }
+  ],
+  "switch_steps": {
+    "previous": [
+      [
+        3
+      ],
+      [
+        3,
+        9,
+        12,
+        20,
+        21
+      ]
+    ],
+    "cad-bezier": [
+      [
+        3
+      ],
+      [
+        3,
+        9,
+        12,
+        20,
+        21
+      ]
+    ],
+    "mesh-obb": [
+      [
+        3
+      ],
+      [
+        3,
+        10,
+        13,
+        21,
+        24
+      ]
+    ]
+  },
+  "changed_loaded_frames_vs_previous": [
+    0,
+    0
+  ],
+  "fallback_torque_delta_from_previous_Nm": [
+    {
+      "step": 1860,
+      "same_step_Nm": 0.0,
+      "max_over_next_10_steps_Nm": 0.0
+    },
+    {
+      "step": 2741,
+      "same_step_Nm": -6.457156587202917e-09,
+      "max_over_next_10_steps_Nm": 6.457156587202917e-09
+    },
+    {
+      "step": 4226,
+      "same_step_Nm": 4.394422603581916e-09,
+      "max_over_next_10_steps_Nm": 1.0880597756113275e-08
+    },
+    {
+      "step": 5741,
+      "same_step_Nm": -1.5512853224208811e-09,
+      "max_over_next_10_steps_Nm": 4.361538685770938e-09
+    },
+    {
+      "step": 9317,
+      "same_step_Nm": 4.18564809478994e-08,
+      "max_over_next_10_steps_Nm": 4.18564809478994e-08
+    },
+    {
+      "step": 14226,
+      "same_step_Nm": -5.6514863899792545e-09,
+      "max_over_next_10_steps_Nm": 3.489029154479795e-08
+    },
+    {
+      "step": 15741,
+      "same_step_Nm": -8.297433851112146e-09,
+      "max_over_next_10_steps_Nm": 3.491388156362518e-08
+    },
+    {
+      "step": 19317,
+      "same_step_Nm": -2.2768773533243802e-08,
+      "max_over_next_10_steps_Nm": 3.271532023063628e-08
+    },
+    {
+      "step": 24226,
+      "same_step_Nm": 1.0006203865486896e-08,
+      "max_over_next_10_steps_Nm": 2.624176431709202e-08
+    },
+    {
+      "step": 25741,
+      "same_step_Nm": 1.9184540178684983e-08,
+      "max_over_next_10_steps_Nm": 4.357679017630289e-08
+    },
+    {
+      "step": 29317,
+      "same_step_Nm": 1.5697617072873982e-07,
+      "max_over_next_10_steps_Nm": 1.5697617072873982e-07
+    },
+    {
+      "step": 34226,
+      "same_step_Nm": 4.922554808217683e-08,
+      "max_over_next_10_steps_Nm": 5.2554923968273215e-08
+    },
+    {
+      "step": 35741,
+      "same_step_Nm": 4.279968379705679e-08,
+      "max_over_next_10_steps_Nm": 5.162718252904597e-08
+    },
+    {
+      "step": 39317,
+      "same_step_Nm": -2.6404563868709374e-08,
+      "max_over_next_10_steps_Nm": 5.175132855583797e-08
+    },
+    {
+      "step": 44226,
+      "same_step_Nm": 5.743484621234529e-08,
+      "max_over_next_10_steps_Nm": 8.757699276884523e-08
+    },
+    {
+      "step": 45741,
+      "same_step_Nm": 4.171994305579574e-08,
+      "max_over_next_10_steps_Nm": 6.597602464353258e-08
+    },
+    {
+      "step": 49317,
+      "same_step_Nm": -9.56861754275451e-08,
+      "max_over_next_10_steps_Nm": 1.0513971915315778e-07
+    }
+  ],
+  "tracked_steps": {
+    "1860": {
+      "output_torque_Nm": 183.6221376513935,
+      "previous_output_torque_Nm": 183.6221376513935,
+      "mesh_output_torque_Nm": 189.39170060137695
+    },
+    "25377": {
+      "output_torque_Nm": 149.62495140096956,
+      "previous_output_torque_Nm": 149.6249513878422,
+      "mesh_output_torque_Nm": 128.19028449296573
+    },
+    "46015": {
+      "output_torque_Nm": 143.6053308562348,
+      "previous_output_torque_Nm": 143.6053308388577,
+      "mesh_output_torque_Nm": 144.92280272920175
+    }
+  },
+  "original_spike_window": {
+    "max_abs_vs_native_Nm": 0.06965355785558813,
+    "at_2_5377_s_vs_native_Nm": -0.0014846636103413857,
+    "checked": 41
+  }
+}

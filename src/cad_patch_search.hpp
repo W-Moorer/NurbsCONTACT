@@ -11,6 +11,7 @@ struct PatchDiscovery {
     double query_s,broad_s,group_s;
     int window_builds{},window_reuses{},reused_paths{};
 };
+enum class PressureFailure { none, no_columns, no_resultant, centroid_chord };
 class PatchSearch {
 public:
     PatchSearch(const TopoDS_Shape&,const TopoDS_Shape&,int grid,double reach,bool bezier=false);
@@ -24,7 +25,8 @@ public:
     std::optional<CadChord> chord(const std::array<dynamics::ContactPose,2>& poses,Vec p,Vec n,
                                   std::array<std::size_t,2> ids);
     std::optional<dynamics::ContactRegion> integrate(const std::array<dynamics::ContactPose,2>& poses,
-                                                   const std::vector<CadChord>& group,int order,int worker=0);
+                                                   const std::vector<CadChord>& group,int order,int worker=0,
+                                                   PressureFailure* failure=nullptr);
 private:
     struct Data;
     std::unique_ptr<Data> data_;

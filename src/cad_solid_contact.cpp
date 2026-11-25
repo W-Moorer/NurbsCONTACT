@@ -122,7 +122,7 @@ TopTools_IndexedMapOfShape source_faces(const TopoDS_Shape& shape,BRepAlgoAPI_Co
 namespace cad {
 std::vector<dynamics::ContactRegion> solid_regions(const TopoDS_Shape& first,const TopoDS_Shape& second,
                                                   dynamics::ContactWork& work,bool measure_span,
-                                                  std::vector<Vec>* pressure_moment_arms) try {
+                                                  std::vector<Vec>* pressure_moment_arms,bool parallel_oriented_boxes) try {
     ++work.cad_boolean_queries;
     BRepAlgoAPI_Common op;
     TopTools_ListOfShape args,tools;
@@ -130,6 +130,10 @@ std::vector<dynamics::ContactRegion> solid_regions(const TopoDS_Shape& first,con
     op.SetArguments(args);
     op.SetTools(tools);
     op.SetNonDestructive(true);
+    if (parallel_oriented_boxes) {
+        op.SetUseOBB(true);
+        op.SetRunParallel(true);
+    }
     {
         RegionTimer timer{work.cad_region_common_s};
         op.Build();

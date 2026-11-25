@@ -99,16 +99,56 @@ struct AreaNode {
 };
 struct NodeBlock {
     std::size_t begin, end;
-    Bnd_Box bounds;
+    gp_XYZ center;
+    std::array<gp_XYZ,3> axes;
+    cad::CompiledChart::ColumnBox placed(const gp_Trsf& pose) const {
+        cad::CompiledChart::ColumnBox box;
+        const auto r=pose.VectorialPart();
+        box.center=r*center+pose.TranslationPart();
+        for (int j=0;j<3;++j) box.axes[j]=r*axes[j];
+        for (int d=1;d<=3;++d) {
+            double half=4*Precision::Confusion();
+            for (const auto& axis:box.axes) half+=std::abs(axis.Coord(d));
+            box.lo.SetCoord(d,box.center.Coord(d)-half);
+            box.hi.SetCoord(d,box.center.Coord(d)+half);
+        }
+        return box;
+    }
 };
 struct FaceRule {
     std::vector<AreaNode> nodes;
     std::vector<NodeBlock> blocks;
-    void index() {
+    struct Column {gp_XYZ point; Vec inward;};
+    void index(double reach) {
+        std::vector<Column> columns;
+        columns.reserve(nodes.size());
+        for (const auto& node:nodes) {
+            const double weight=length(node.area);
+            columns.push_back({cad::point(scale(node.point,1000)).XYZ(),
+                               weight>0 ? scale(node.area,-1/weight) : Vec{}});
+        }
         for (std::size_t i = 0; i < nodes.size(); i += 8) {
-            NodeBlock block{i, std::min(i + 8, nodes.size()), {}};
-            for (auto j = i; j < block.end; ++j)
-                block.bounds.Add(cad::point(scale(nodes[j].point, 1000)));
+            NodeBlock block{i, std::min(i + 8, nodes.size()), {}, {}};
+            auto along=columns[block.end-1].point-columns[i].point;
+            if (along.SquareModulus()<1e-24) along=gp_XYZ(1,0,0);
+            along.Normalize();
+            auto across=along.Crossed(cad::point(columns[i].inward).XYZ());
+            if (across.SquareModulus()<1e-12)
+                across=along.Crossed(std::abs(along.X())<.8 ? gp_XYZ(1,0,0) : gp_XYZ(0,1,0));
+            across.Normalize();
+            const std::array axes{along,across,along.Crossed(across)};
+            const auto origin=columns[i].point;
+            block.center=origin;
+            for (int k=0;k<3;++k) {
+                double lo=0,hi=0;
+                for (auto j=i;j<block.end;++j) {
+                    const double start=(columns[j].point-origin).Dot(axes[k]);
+                    const double end=start+1000*reach*cad::point(columns[j].inward).XYZ().Dot(axes[k]);
+                    lo=std::min({lo,start,end}); hi=std::max({hi,start,end});
+                }
+                block.center+=axes[k]*(.5*(hi+lo));
+                block.axes[k]=axes[k]*(.5*(hi-lo));
+            }
             blocks.push_back(block);
         }
     }
@@ -132,14 +172,15 @@ struct Atlas {
     };
     std::deque<DenseRules> dense;
     std::vector<Bnd_Box> face_boxes;
+    double column_reach;
     struct StoredChart {
         Vec point, normal, lo, hi, bound_lo, bound_hi;
         std::uint64_t face, interior;
         double u, v;
     };
-    Atlas(const TopoDS_Shape& shape, int count, bool use_bezier=false)
+    Atlas(const TopoDS_Shape& shape, int count, bool use_bezier=false,double reach=0)
         :index(shape),assets(shape),bezier(use_bezier ? std::make_shared<cad::BezierRayAtlas>(shape,assets) : nullptr),
-         rays(index,bezier) {
+         rays(index,bezier),column_reach(reach) {
         TopTools_IndexedMapOfShape faces;
         TopExp::MapShapes(shape,TopAbs_FACE,faces);
         NCollection_UBTreeFiller<std::size_t,Bnd_Box> points(sites),boxes(tiles);
@@ -294,7 +335,7 @@ struct Atlas {
         for (const auto& row : nodes)
             base_rule.at(row.face).nodes.push_back(row.node);
         for (auto& rule : base_rule)
-            rule.index();
+            rule.index(column_reach);
     }
     FaceRule dense_rule(std::size_t face, int order) const {
         cad::PatchAssets cache(surfaces.at(face - 1)->surface.Face());
@@ -302,7 +343,7 @@ struct Atlas {
         result.nodes =
             cache.table<AreaNode>("quadrature-" + std::to_string(order), std::size_t(order) * order,
                                   [&] { return quadrature(face, order).nodes; });
-        result.index();
+        result.index(column_reach);
         return result;
     }
     const FaceRule& shared_rule(std::size_t face, int order) {
@@ -337,7 +378,6 @@ struct Atlas {
                 result.nodes.push_back({scale(cad::coordinates(p), .001),
                                         scale(Vec{n.X(), n.Y(), n.Z()}, sign * du * dv * 1e-6)});
             }
-        result.index();
         return result;
     }
 };
@@ -674,14 +714,17 @@ struct SurfaceQuadrature {
     const FaceRule& rule(std::size_t id) {
         if (order == 12 || order == 24 || order == 48 || order == 96) return body.shared_rule(id, order);
         auto [it,fresh]=saved.try_emplace(id);
-        if (fresh) it->second = body.quadrature(id, order);
+        if (fresh) {
+            it->second = body.quadrature(id, order);
+            it->second.index(body.column_reach);
+        }
         return it->second;
     }
 };
 struct PressurePatch {Vec center,normal,arm;double depth;};
 std::optional<PressurePatch> integrate_patch(std::array<SurfaceQuadrature,2>& grids,
     CadExitQuery& ray_a,CadExitQuery& ray_b,const std::array<ContactPose,2>& poses,
-    const std::vector<CadChord>& group,double reach) {
+    const std::vector<CadChord>& group,double reach,cad::PressureFailure* failure) {
     Vec area{},moment{},centroid{};
     const Vec origin=poses[0].origin;
     double volume=0;
@@ -698,38 +741,45 @@ std::optional<PressurePatch> integrate_patch(std::array<SurfaceQuadrature,2>& gr
         }
         for (const auto& [id, face_set] : faces) {
             const std::vector<std::size_t> targets(face_set.begin(),face_set.end());
+            std::vector<std::vector<std::size_t>> spans(targets.size());
+            std::vector<std::size_t> active;
             const auto& rule = grids[side].rule(id);
             for (const auto& block : rule.blocks) {
-                auto swept = block.bounds.Transformed(to_target);
-                swept.SetGap(swept.GetGap()+1000*reach+2*Precision::Confusion());
-                bool possible = false;
-                for (const auto face : targets) {
-                    const auto& bounds = grids[other].body.face_boxes[face - 1];
-                    if (!swept.IsOut(bounds) && grids[other].body.surfaces[face - 1]->block_possible(swept)) {
-                        possible = true;
-                        break;
-                    }
+                const auto swept=block.placed(to_target);
+                const Bnd_Box bounds(gp_Pnt(swept.lo),gp_Pnt(swept.hi));
+                active.clear();
+                for (std::size_t i=0;i<targets.size();++i) {
+                    const auto face=targets[i]-1;
+                    if (bounds.IsOut(grids[other].body.face_boxes[face])) continue;
+                    const auto& surface=*grids[other].body.surfaces[face];
+                    surface.block_spans(swept,spans[i]);
+                    if (surface.hulls.empty() || !spans[i].empty()) active.push_back(i);
                 }
-                if (!possible) {
+                if (active.empty()) {
                     grids[side].skipped += block.end - block.begin;
                     continue;
                 }
                 for (auto j = block.begin; j < block.end; ++j) {
                     const auto& sample = rule.nodes[j];
-                    const auto native = cad::point(scale(sample.point, 1000));
+                    const auto native=cad::point(scale(sample.point,1000));
                     const auto local = native.Transformed(to_target);
                     const auto weight=length(sample.area);
                     if (!(weight>0)) continue;
                     const auto ray=poses[side].rotate(scale(sample.area,-1/weight));
                     const auto direction=poses[other].inverse_rotate(ray);
                     const gp_XYZ segment(direction[0]*1000*reach,direction[1]*1000*reach,direction[2]*1000*reach);
-                    const auto hint=std::find_if(targets.begin(),targets.end(),[&](auto face){
+                    const auto hint=std::find_if(active.begin(),active.end(),[&](auto i){
+                        return grids[other].body.surfaces[targets[i]-1]->column_possible(local.XYZ(),segment,&spans[i]);
+                    });
+                    if (hint==active.end()) continue;
+                    // Keep the native face visitation order for coincident
+                    // hits, including conservative hints outside this block.
+                    const auto first=std::find_if(targets.begin(),targets.begin()+*hint,[&](auto face) {
                         return grids[other].body.surfaces[face-1]->column_possible(local.XYZ(),segment);
                     });
-                    if (hint==targets.end()) continue;
                     std::size_t tests=0;
                     const auto hit=(other ? ray_b : ray_a).first_exit(
-                        scale(cad::coordinates(local),.001),direction,reach,*hint,tests,targets);
+                        scale(cad::coordinates(local),.001),direction,reach,*first,tests,targets);
                     if (!hit.face || !(hit.distance_m>0)) continue;
                     const double depth=hit.distance_m;
                     const auto point = scale(cad::coordinates(native.Transformed(world)), .001);
@@ -745,12 +795,19 @@ std::optional<PressurePatch> integrate_patch(std::array<SurfaceQuadrature,2>& gr
         }
     }
     const double magnitude=length(area);
-    if (!(volume>0 && magnitude>0)) return {};
+    if (!(volume>0 && magnitude>0)) {
+        if (failure) *failure=volume>0 ? cad::PressureFailure::no_resultant : cad::PressureFailure::no_columns;
+        return {};
+    }
     const auto center=add(origin,scale(centroid,1/volume));
     const auto normal=scale(area,1/magnitude);
     std::size_t tests=0;
     auto chord=local_chord(ray_a,ray_b,poses,center,normal,reach,{},tests);
-    if (!chord) return {};
+    if (!chord) {
+        if (failure) *failure=cad::PressureFailure::centroid_chord;
+        return {};
+    }
+    if (failure) *failure=cad::PressureFailure::none;
     return PressurePatch{center,normal,sub(scale(moment,1/magnitude),cross3(sub(center,origin),normal)),
                          chord->region.depth_m};
 }
@@ -775,7 +832,7 @@ struct PatchSearch::Data {
     static constexpr int worker_limit=4;
     std::array<std::unique_ptr<Worker>,worker_limit> workers;
     Data(const TopoDS_Shape& first,const TopoDS_Shape& second,int grid,double reach,bool bezier):
-        a(first,grid,bezier),b(second,grid,bezier),grid(grid),reach(reach) {
+        a(first,grid,bezier,reach),b(second,grid,bezier,reach),grid(grid),reach(reach) {
         for (auto& w:workers) w=std::make_unique<Worker>(a,b);
     }
     PatchDiscovery discover(const std::array<ContactPose,2>& poses,bool indexed,bool group) {
@@ -952,15 +1009,16 @@ std::optional<CadChord> PatchSearch::chord(const std::array<ContactPose,2>& pose
     return local_chord(data_->a.rays,data_->b.rays,poses,p,n,data_->reach,ids,tests);
 }
 std::optional<ContactRegion> PatchSearch::integrate(const std::array<ContactPose,2>& poses,
-                                                    const std::vector<CadChord>& group,int order,int worker) {
+                                                    const std::vector<CadChord>& group,int order,int worker,
+                                                    PressureFailure* failure) {
     if (order==0) {
-        for (int level:{12,24,48,96}) if (auto r=integrate(poses,group,level,worker)) return r;
+        for (int level:{12,24,48,96}) if (auto r=integrate(poses,group,level,worker,failure)) return r;
         return {};
     }
     auto& w=*data_->workers.at(worker);
     auto& levels=w.levels;
     if (!levels.contains(order)) levels.emplace(order,std::array<SurfaceQuadrature,2>{{{data_->a,order,{}},{data_->b,order,{}}}});
-    const auto p=integrate_patch(levels.at(order),w.a,w.b,poses,group,data_->reach);
+    const auto p=integrate_patch(levels.at(order),w.a,w.b,poses,group,data_->reach,failure);
     if (!p) return {};
     return ContactRegion{p->center,p->normal,p->depth,p->arm};
 }
@@ -999,7 +1057,7 @@ public:
               catch (const Standard_Failure&) {}
             work.cad_patch_search_s+=std::chrono::duration<double>(Clock::now()-tic).count();
             if (separated) return {};
-            return whole_pressure(poses,work);
+            return boolean_pressure(poses,work,false);
         }
         std::map<int,std::vector<CadChord>> groups;
         for (std::size_t i=0;i<search.labels.size();++i) groups[search.labels[i]].push_back(*search.witnesses[i]);
@@ -1019,7 +1077,7 @@ public:
         for (const auto& patch:patches) {
             if (!patch) {
                 work.cad_patch_area_s+=std::chrono::duration<double>(Clock::now()-start).count();
-                return whole_pressure(poses,work);
+                return boolean_pressure(poses,work,true);
             }
             result.push_back(*patch);
         }
@@ -1033,10 +1091,30 @@ public:
         return events().transition(a,b,c,d,eps,dt);
     }
 private:
-    std::vector<ContactRegion> whole_pressure(const std::array<ContactPose,2>& poses,ContactWork& work) const {
+    std::vector<ContactRegion> boolean_pressure(const std::array<ContactPose,2>& poses,ContactWork& work,bool witnessed) const {
+        const auto ta=cad::placement(poses[0]),tb=cad::placement(poses[1]);
+        const auto begin=Clock::now();
+        std::optional<cad::LocalSolidPair> selected;
+        try {
+            if (!local_) local_=std::make_unique<cad::LocalSolidSearch>(a_,b_);
+            selected=local_->select(tb.Inverted()*ta,100*Precision::Confusion());
+        } catch (const UnresolvedContact&) {} catch (const Standard_Failure&) {}
+        work.cad_region_select_s+=std::chrono::duration<double>(Clock::now()-begin).count();
+        if (selected && selected->separated && !witnessed) return {};
+        if (selected && !selected->separated && (!selected->a.shape.IsSame(a_) || !selected->b.shape.IsSame(b_))) {
+            ++work.cad_pressure_clipped;
+            try {
+                auto regions=pressure_on(selected->a.shape,selected->b.shape,ta,tb,poses,work);
+                if (!regions.empty() || !witnessed) return regions;
+            } catch (const UnresolvedContact&) { /* Recheck on the original topology. */ }
+        }
+        ++work.cad_pressure_full;
+        return pressure_on(a_,b_,ta,tb,poses,work);
+    }
+    std::vector<ContactRegion> pressure_on(const TopoDS_Shape& a,const TopoDS_Shape& b,
+        const gp_Trsf& ta,const gp_Trsf& tb,const std::array<ContactPose,2>& poses,ContactWork& work) const {
         std::vector<Vec> arms;
-        auto result=cad::solid_regions(a_.Moved(TopLoc_Location(cad::placement(poses[0]))),
-                                       b_.Moved(TopLoc_Location(cad::placement(poses[1]))),work,false,&arms);
+        auto result=cad::solid_regions(a.Moved(TopLoc_Location(ta)),b.Moved(TopLoc_Location(tb)),work,false,&arms,true);
         for (std::size_t i=0;i<result.size();++i) {
             auto chord=search_.chord(poses,result[i].point,result[i].normal,{});
             if (chord) result[i].depth_m=chord->region.depth_m;
@@ -1073,6 +1151,7 @@ private:
     TopoDS_Shape a_,b_;
     mutable std::shared_ptr<const cad::BoundaryIndex> boundary_a_,boundary_b_;
     mutable cad::BoundaryWitness witness_;
+    mutable std::unique_ptr<cad::LocalSolidSearch> local_;
     mutable cad::PatchSearch search_;
     std::array<Vec,2> centers_;
     double maximum_;

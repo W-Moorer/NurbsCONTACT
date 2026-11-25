@@ -126,6 +126,7 @@ struct SurfaceOptions {
     std::optional<ImpulseLaw> impulse_law;
     Path mesh_directory;
     Path progress_file;
+    Path replay_file;
     double distance_tolerance{1e-7};
     std::string mesh_regions{"local"};
     bool share_penalty_stiffness{};
@@ -971,6 +972,8 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     std::vector<std::shared_ptr<PredictorRegions>> predictors;
     if (surface.predictor_geometry && input.coordinates.empty())
         throw std::invalid_argument("predictor geometry requires integrated coordinates");
+    if (!surface.replay_file.empty() && (!surface.predictor_geometry || surface.impulse_law))
+        throw std::invalid_argument("HHT step replay requires predictor penalty contact");
     if (surface.predictor_geometry) for (auto& pair:input.pairs) {
         if (!pair.regions) throw std::invalid_argument("predictor updates require surface regions");
         auto proxy=std::make_shared<PredictorRegions>(pair.regions);
@@ -1228,6 +1231,33 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         };
         Hht solver(mass,std::move(force),options,{},std::move(historical_force),{},std::move(accept_step),
                    [&] {for (auto& proxy:predictors) proxy->reset();});
+        if (!surface.replay_file.empty()) {
+            // Numerical audit of a single interval from a previously accepted
+            // state. Preserve absolute time, inertia history and applied loads.
+            if (has_history || predictors.empty())
+                throw std::invalid_argument("HHT step replay requires history-free predictor contact");
+            std::ifstream checkpoints(surface.replay_file);
+            if (!checkpoints) throw std::invalid_argument("cannot open HHT replay file");
+            auto log=open_output(output);
+            log<<"case,time_s,substeps,subdivisions,rejected_trials";
+            for (std::size_t i=0;i<n;++i) log<<",q"<<i<<",v"<<i<<",a"<<i<<",force"<<i;
+            log<<'\n';
+            for (std::size_t row=0;(checkpoints>>std::ws).peek()!=std::char_traits<char>::eof();++row) {
+                const double time=take<double>(checkpoints);
+                const auto count=take<int>(checkpoints);
+                if (!std::isfinite(time) || count<1 || count>1024)
+                    throw std::invalid_argument("invalid HHT replay interval");
+                State state{time,Vector(n),Vector(n),Vector(n),Vector(n)};
+                for (auto field:{&state.q,&state.v,&state.a,&state.force})
+                    for (auto& value:*field) value=take<double>(checkpoints);
+                HhtStats local;
+                for (int i=0;i<count;++i) solver.step(state,dt/count,local);
+                log<<row<<','<<state.time<<','<<count<<','<<local.subdivisions<<','<<local.rejected_trials;
+                for (std::size_t i=0;i<n;++i) log<<','<<state.q[i]<<','<<state.v[i]<<','<<state.a[i]<<','<<state.force[i];
+                log<<'\n';
+            }
+            return;
+        }
         std::size_t depth_rejections_before=work.rejected_region_depths;
         try {
             auto state=solver.initialize(q,v);
@@ -1345,7 +1375,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             "cad_region_cache_hits,cad_distance_cache_hits,cad_witness_tests,cad_witness_improvements,"
             "mesh_pair_bvh_builds,mesh_pair_bvh_reuses,mesh_patch_builds,mesh_patch_reuses,mesh_parallel_batches,mesh_max_workers,"
             "cad_region_index_s,cad_region_select_s,cad_region_common_s,cad_region_extract_s,"
-            "cad_patch_queries,cad_patch_batches,cad_patch_batch_s,cad_patch_broad_s,cad_patch_search_s,cad_patch_group_s,cad_patch_area_s,cad_window_builds,cad_window_reuses,cad_path_reuses,cad_skipped_area_nodes\n"
+            "cad_patch_queries,cad_patch_batches,cad_patch_batch_s,cad_patch_broad_s,cad_patch_search_s,cad_patch_group_s,cad_patch_area_s,cad_window_builds,cad_window_reuses,cad_path_reuses,cad_skipped_area_nodes,cad_pressure_clipped,cad_pressure_full\n"
         <<(n || surface.impulse_law ? wall : replay_s)<<','<<setup_s<<','<<steps<<','<<stats.accepted_steps<<','<<stats.subdivisions<<','<<stats.evaluations
         <<','<<stats.maximum_residual<<','<<work.pairs<<','<<work.culled<<','<<work.rays<<','<<work.missing
         <<','<<work.mesh.triangles<<','<<work.closest_queries<<','<<work.unresolved_queries<<','<<work.native_nodes
@@ -1362,7 +1392,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         <<','<<work.mesh_patch_builds<<','<<work.mesh_patch_reuses<<','<<work.mesh_parallel_batches<<','<<work.mesh_max_workers
         <<','<<work.cad_region_index_s<<','<<work.cad_region_select_s<<','<<work.cad_region_common_s<<','<<work.cad_region_extract_s
         <<','<<work.cad_patch_queries<<','<<work.cad_patch_batches<<','<<work.cad_patch_batch_s<<','<<work.cad_patch_broad_s
-        <<','<<work.cad_patch_search_s<<','<<work.cad_patch_group_s<<','<<work.cad_patch_area_s<<','<<work.cad_window_builds<<','<<work.cad_window_reuses<<','<<work.cad_path_reuses<<','<<work.cad_skipped_area_nodes<<'\n';
+        <<','<<work.cad_patch_search_s<<','<<work.cad_patch_group_s<<','<<work.cad_patch_area_s<<','<<work.cad_window_builds<<','<<work.cad_window_reuses<<','<<work.cad_path_reuses<<','<<work.cad_skipped_area_nodes<<','<<work.cad_pressure_clipped<<','<<work.cad_pressure_full<<'\n';
     if (!trace || !report) throw std::runtime_error("failed to write contact run");
 }
 
@@ -1452,6 +1482,7 @@ int main(int argc,char** argv) {
                 const std::string_view key=argv[i], value=argv[i+1];
                 if (key=="--method") surface.method=value;
                 else if (key=="--progress") surface.progress_file=argv[i+1];
+                else if (key=="--hht-replay") surface.replay_file=argv[i+1];
                 else if (key=="--mesh-dir") surface.mesh_directory=argv[i+1];
                 else if (key=="--spectral-radius") surface.spectral_radius=std::stod(argv[i+1]);
                 else if (key=="--geometry-update") {

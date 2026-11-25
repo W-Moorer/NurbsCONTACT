@@ -1,4 +1,5 @@
 #pragma once
+#include "cad_span_index.hpp"
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepTopAdaptor_FClass2d.hxx>
 #include <BRep_Tool.hxx>
@@ -29,6 +30,7 @@ struct CompiledChart {
     std::vector<Patch> patches;
     std::vector<Hull> hulls;
     std::vector<std::array<Hull,4>> column_hulls;
+    SpanIndex column_index;
     std::vector<double> ku,kv;
     mutable std::mutex adaptor_mutex;
     static Row polynomial(const Row& p) {
@@ -137,25 +139,36 @@ struct CompiledChart {
                 column_hulls.push_back(sub);
             }
         }
+        if (refine_columns)
+            column_index.build(hulls.size(),[&](auto i)->const Hull& {return hulls[i];});
     }
-    bool block_possible(const Bnd_Box& swept) const {
-        if (hulls.empty()) return true;
-        const auto lo = swept.CornerMin().XYZ(), hi = swept.CornerMax().XYZ();
-        const auto center = (lo + hi) * .5, half = (hi - lo) * .5;
-        for (const auto& h : hulls) {
+    // A rigidly placed box encloses both ends of every finite pressure column
+    // in one quadrature block. Test its projection in the hull's own slab.
+    struct ColumnBox {
+        gp_XYZ center;
+        std::array<gp_XYZ,3> axes;
+        gp_XYZ lo,hi;
+    };
+    void block_spans(const ColumnBox& box,std::vector<std::size_t>& spans) const {
+        spans.clear();
+        const auto& lo=box.lo;
+        const auto& hi=box.hi;
+        const auto possible=[&](const Hull& h) {
             if (hi.X() < h.lo.X() || lo.X() > h.hi.X() || hi.Y() < h.lo.Y() || lo.Y() > h.hi.Y() ||
                 hi.Z() < h.lo.Z() || lo.Z() > h.hi.Z())
-                continue;
-            const double mid = center.Dot(h.n);
-            const double radius =
-                std::abs(h.n.X()) * half.X() + std::abs(h.n.Y()) * half.Y() + std::abs(h.n.Z()) * half.Z();
-            if (mid + radius >= h.low - 2 * Precision::Confusion() &&
-                mid - radius <= h.high + 2 * Precision::Confusion())
-                return true;
-        }
-        return false;
+                return false;
+            const double mid=box.center.Dot(h.n);
+            const double radius=std::abs(box.axes[0].Dot(h.n))+std::abs(box.axes[1].Dot(h.n))+
+                                std::abs(box.axes[2].Dot(h.n))+4*Precision::Confusion();
+            return mid+radius>=h.low && mid-radius<=h.high;
+        };
+        column_index.query(lo,hi,[&](auto i) {
+            if (possible(hulls[i]) && (column_hulls.empty() ||
+                std::any_of(column_hulls[i].begin(),column_hulls[i].end(),possible))) spans.push_back(i);
+            return true;
+        });
     }
-    bool column_possible(const gp_XYZ& p,const gp_XYZ& segment) const {
+    bool column_possible(const gp_XYZ& p,const gp_XYZ& segment,const std::vector<std::size_t>* spans=nullptr) const {
         if (hulls.empty()) return true;
         const double tol=2*Precision::Confusion();
         const auto q=p+segment;
@@ -167,11 +180,12 @@ struct CompiledChart {
             const double x=p.Dot(h.n),y=q.Dot(h.n);
             return std::max(x,y)>=h.low-tol && std::min(x,y)<=h.high+tol;
         };
-        for (std::size_t i=0;i<hulls.size();++i) {
-            if (possible(hulls[i]) && (column_hulls.empty() ||
-                std::any_of(column_hulls[i].begin(),column_hulls[i].end(),possible))) return true;
-        }
-        return false;
+        const auto accepts=[&](auto i) {
+            return possible(hulls[i]) && (column_hulls.empty() ||
+                std::any_of(column_hulls[i].begin(),column_hulls[i].end(),possible));
+        };
+        if (spans) return std::any_of(spans->begin(),spans->end(),accepts);
+        return !column_index.query(low,high,[&](auto i){return !accepts(i);});
     }
     bool inside(double u,double v) const {
         if (rectangular && u>u0+eu && u<u1-eu && v>v0+ev && v<v1-ev) return true;

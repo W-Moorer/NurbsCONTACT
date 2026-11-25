@@ -130,13 +130,16 @@ int main(int argc,char** argv) try {
             for (std::size_t i=0;i<labels.size();++i) groups[labels[i]].push_back(*found[i]);
             std::vector<ContactRegion> regions;
             bool resolved=true;
+            PressureFailure failure{};
             for (const auto& [label,component]:groups) {
-                const auto region=search.integrate(poses,component,0);
+                const auto region=search.integrate(poses,component,0,0,&failure);
                 if (!region) { resolved=false; break; }
                 regions.push_back(*region);
             }
             const double loaded_s=result.query_s+std::chrono::duration<double>(Clock::now()-start_area).count();
-            std::cout<<",\"resolved\":"<<(resolved?"true":"false")<<",\"regions\":[";
+            const char* reasons[]{"none","no_columns","no_resultant","centroid_chord"};
+            std::cout<<",\"failure\":\""<<reasons[static_cast<int>(failure)]<<"\",\"resolved\":"
+                     <<(resolved?"true":"false")<<",\"regions\":[";
             for (std::size_t i=0;resolved && i<regions.size();++i) {
                 if (i) std::cout<<',';
                 std::cout<<'[';

@@ -1,0 +1,382 @@
+{
+  "comparison": {
+    "cad-bezier": {
+      "process_s": 963.0226305999968,
+      "boolean_steps": [
+        1860,
+        2741,
+        4226,
+        5741,
+        9317,
+        14226,
+        15741,
+        19317,
+        24226,
+        25741,
+        29317,
+        34226,
+        35741,
+        39317,
+        44226,
+        45741,
+        49317
+      ],
+      "wall_in_boolean_steps_s": 242.45397259999993,
+      "unchanged_trace_sha256": false,
+      "torque_minus_recurdyn_Nm": {
+        "rms": 42.09448884860618,
+        "max_abs": 254.7986381119975,
+        "peak_step": 24
+      }
+    },
+    "mesh-obb": {
+      "process_s": 289.3183960000024,
+      "boolean_steps": [],
+      "wall_in_boolean_steps_s": 0.0,
+      "unchanged_trace_sha256": true,
+      "torque_minus_recurdyn_Nm": {
+        "rms": 29.1423846001526,
+        "max_abs": 139.1397076410301,
+        "peak_step": 17
+      }
+    },
+    "torque_delta_from_previous_Nm": {
+      "rms": 0.05838492065478854,
+      "max_abs": 5.4926302933004365,
+      "peak_step": 45681
+    },
+    "loads_delta_from_previous_N": [
+      {
+        "rms": 1.0482284879124277,
+        "max_abs": 183.0355669931705,
+        "peak_step": 41707
+      },
+      {
+        "rms": 0.939585752050013,
+        "max_abs": 88.53634449120636,
+        "peak_step": 45681
+      }
+    ],
+    "speed_delta_from_previous_rad_s": [
+      {
+        "rms": 0.002244507974712,
+        "max_abs": 0.2667187316961872,
+        "peak_step": 41708
+      },
+      {
+        "rms": 0.0006640955955132716,
+        "max_abs": 0.07702334836388047,
+        "peak_step": 41708
+      },
+      {
+        "rms": 0.0005897536929570848,
+        "max_abs": 0.05390518826901314,
+        "peak_step": 45680
+      }
+    ],
+    "switch_steps": {
+      "previous": [
+        [
+          3
+        ],
+        [
+          3,
+          9,
+          12,
+          20,
+          21
+        ]
+      ],
+      "cad-bezier": [
+        [
+          3
+        ],
+        [
+          3,
+          9,
+          12,
+          20,
+          21
+        ]
+      ],
+      "mesh-obb": [
+        [
+          3
+        ],
+        [
+          3,
+          10,
+          13,
+          21,
+          24
+        ]
+      ]
+    },
+    "changed_loaded_frames_vs_previous": [
+      0,
+      0
+    ],
+    "tracked_steps": {
+      "1860": {
+        "output_torque_Nm": 183.62213765364572,
+        "previous_output_torque_Nm": 183.6221376513935,
+        "mesh_output_torque_Nm": 189.39170060137695
+      },
+      "25377": {
+        "output_torque_Nm": 149.62495141627807,
+        "previous_output_torque_Nm": 149.6249513878422,
+        "mesh_output_torque_Nm": 128.19028449296573
+      },
+      "46015": {
+        "output_torque_Nm": 143.6055495483597,
+        "previous_output_torque_Nm": 143.6053308388577,
+        "mesh_output_torque_Nm": 144.92280272920175
+      }
+    },
+    "original_spike_window": {
+      "max_abs_vs_native_Nm": 0.0696535493267163,
+      "at_2_5377_s_vs_native_Nm": -0.0014846483018402523,
+      "checked": 41
+    }
+  },
+  "cad-bezier-run": {
+    "method": "cad-bezier",
+    "solver": "penalty",
+    "scope": null,
+    "executable_sha256": "1c5f67a2149b17cb5ab79313c44015444b19af208b9356022407249851b04792",
+    "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+    "requested_s": 5,
+    "dt_s": 0.0001,
+    "output_dt_s": 0.0001,
+    "budget_s": 1800,
+    "process_s": 963.0226305999968,
+    "status": "complete",
+    "exit_code": 0,
+    "last_accepted": {
+      "step": 50000.0,
+      "time_s": 5.0000000000016795,
+      "integration_s": 913.0357614,
+      "mesh_triangle_tests": 0.0,
+      "mesh_booleans": 0.0,
+      "cad_booleans": 17.0,
+      "mesh_detection_s": 0.0,
+      "mesh_placement_s": 0.0,
+      "mesh_boolean_s": 0.0,
+      "q0": 942.4794349077565,
+      "v0": 188.2905378367406,
+      "q1": 471.23797147956867,
+      "v1": 94.40837392440035,
+      "q2": 235.61736160516315,
+      "v2": 47.18655215630071,
+      "mesh_pair_bvh_builds": 0.0,
+      "mesh_pair_bvh_reuses": 0.0,
+      "mesh_patch_builds": 0.0,
+      "mesh_patch_reuses": 0.0,
+      "cad_patch_queries": 101652.0,
+      "cad_patch_batches": 50091.0,
+      "cad_patch_broad_s": 65.14737870000044,
+      "cad_patch_search_s": 163.29928830000063,
+      "cad_patch_group_s": 173.66036640000112,
+      "cad_patch_area_s": 410.07530330000407
+    },
+    "penalty_stiffness": "shared",
+    "geometry_update": "predictor",
+    "spectral_radius": 0,
+    "statistics": {
+      "wall_s": "913.03588679999996",
+      "setup_s": "42.283932999999998",
+      "steps": "50000",
+      "accepted": "50045",
+      "subdivisions": "45",
+      "force_evaluations": "185728",
+      "max_residual": "9.1433717841482576e-07",
+      "pairs": "371458",
+      "culled": "27",
+      "rays": "0",
+      "missing": "0",
+      "triangle_tests": "0",
+      "closest_queries": "0",
+      "unresolved_queries": "0",
+      "native_nodes": "0",
+      "ccd_checks": "0",
+      "ccd_rejected": "0",
+      "ccd_nodes": "0",
+      "ccd_unresolved": "0",
+      "saved_contact_reuses": "50001",
+      "mesh_boolean_queries": "0",
+      "mesh_boolean_input_faces": "0",
+      "mesh_local_solid_uses": "0",
+      "mesh_local_solid_builds": "0",
+      "mesh_detection_s": "0",
+      "mesh_placement_s": "0",
+      "mesh_boolean_s": "0",
+      "cad_boolean_queries": "17",
+      "cad_event_distances": "0",
+      "chen_patch_queries": "0",
+      "chen_confirmed_candidates": "0",
+      "event_tolerance_s": "0",
+      "solver": "penalty",
+      "impulse_solves": "0",
+      "impulse_regions": "0",
+      "impulse_iterations": "0",
+      "impulse_residual_m_s": "0",
+      "ccd_refinements": "0",
+      "ccd_refined_clear": "0",
+      "tdib_cells": "0",
+      "tdib_candidates": "0",
+      "tdib_unresolved": "0",
+      "cad_box_tests": "0",
+      "cad_extrema": "0",
+      "cad_classifications": "0",
+      "cad_region_cache_hits": "0",
+      "cad_distance_cache_hits": "0",
+      "cad_witness_tests": "0",
+      "cad_witness_improvements": "0",
+      "mesh_pair_bvh_builds": "0",
+      "mesh_pair_bvh_reuses": "0",
+      "mesh_patch_builds": "0",
+      "mesh_patch_reuses": "0",
+      "mesh_parallel_batches": "0",
+      "mesh_max_workers": "0",
+      "cad_region_index_s": "0",
+      "cad_region_select_s": "0",
+      "cad_region_common_s": "211.08541519999997",
+      "cad_region_extract_s": "1.1266752000000002",
+      "cad_patch_queries": "101652",
+      "cad_patch_batches": "50091",
+      "cad_patch_batch_s": "860.06829020000225",
+      "cad_patch_broad_s": "65.147378700000445",
+      "cad_patch_search_s": "163.29928830000063",
+      "cad_patch_group_s": "173.66036640000112",
+      "cad_patch_area_s": "410.07530330000407",
+      "cad_window_builds": "14903",
+      "cad_window_reuses": "188401",
+      "cad_path_reuses": "0",
+      "cad_skipped_area_nodes": "114335864",
+      "cad_pressure_clipped": "17",
+      "cad_pressure_full": "0"
+    },
+    "peak_load_N": [
+      2852.132213974549,
+      6970.545215890321
+    ],
+    "response_sha256": "1ce50df3778371da0a64b849dd7159bdb3f6cf06acb75083b5618df0120e6e3e"
+  },
+  "mesh-obb-run": {
+    "method": "mesh-obb",
+    "solver": "penalty",
+    "scope": "contour-ray",
+    "executable_sha256": "1c5f67a2149b17cb5ab79313c44015444b19af208b9356022407249851b04792",
+    "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+    "requested_s": 5,
+    "dt_s": 0.0001,
+    "output_dt_s": 0.0001,
+    "budget_s": 1800,
+    "process_s": 289.3183960000024,
+    "status": "complete",
+    "exit_code": 0,
+    "last_accepted": {
+      "step": 50000.0,
+      "time_s": 5.000000000001682,
+      "integration_s": 279.2671305,
+      "mesh_triangle_tests": 420692832.0,
+      "mesh_booleans": 0.0,
+      "cad_booleans": 0.0,
+      "mesh_detection_s": 273.1293206999955,
+      "mesh_placement_s": 0.0,
+      "mesh_boolean_s": 0.0,
+      "q0": 942.4793758509334,
+      "v0": 188.57230417291717,
+      "q1": 471.2379391292232,
+      "v1": 94.4343927086922,
+      "q2": 235.61728515730368,
+      "v2": 47.119353817252104,
+      "mesh_pair_bvh_builds": 7530.0,
+      "mesh_pair_bvh_reuses": 12638.0,
+      "mesh_patch_builds": 91228.0,
+      "mesh_patch_reuses": 4.0
+    },
+    "penalty_stiffness": "shared",
+    "geometry_update": "predictor",
+    "spectral_radius": 0,
+    "statistics": {
+      "wall_s": "279.26718349999999",
+      "setup_s": "3.4768145000000001",
+      "steps": "50000",
+      "accepted": "50025",
+      "subdivisions": "25",
+      "force_evaluations": "151547",
+      "max_residual": "1.1308931675557687e-06",
+      "pairs": "303096",
+      "culled": "32",
+      "rays": "0",
+      "missing": "0",
+      "triangle_tests": "420692832",
+      "closest_queries": "0",
+      "unresolved_queries": "1",
+      "native_nodes": "0",
+      "ccd_checks": "0",
+      "ccd_rejected": "0",
+      "ccd_nodes": "0",
+      "ccd_unresolved": "0",
+      "saved_contact_reuses": "50001",
+      "mesh_boolean_queries": "0",
+      "mesh_boolean_input_faces": "0",
+      "mesh_local_solid_uses": "0",
+      "mesh_local_solid_builds": "0",
+      "mesh_detection_s": "273.1293206999955",
+      "mesh_placement_s": "0",
+      "mesh_boolean_s": "0",
+      "cad_boolean_queries": "0",
+      "cad_event_distances": "0",
+      "chen_patch_queries": "0",
+      "chen_confirmed_candidates": "0",
+      "event_tolerance_s": "0",
+      "solver": "penalty",
+      "impulse_solves": "0",
+      "impulse_regions": "0",
+      "impulse_iterations": "0",
+      "impulse_residual_m_s": "0",
+      "ccd_refinements": "0",
+      "ccd_refined_clear": "0",
+      "tdib_cells": "0",
+      "tdib_candidates": "0",
+      "tdib_unresolved": "0",
+      "cad_box_tests": "0",
+      "cad_extrema": "0",
+      "cad_classifications": "0",
+      "cad_region_cache_hits": "0",
+      "cad_distance_cache_hits": "0",
+      "cad_witness_tests": "0",
+      "cad_witness_improvements": "0",
+      "mesh_pair_bvh_builds": "7530",
+      "mesh_pair_bvh_reuses": "12638",
+      "mesh_patch_builds": "91228",
+      "mesh_patch_reuses": "4",
+      "mesh_parallel_batches": "50051",
+      "mesh_max_workers": "2",
+      "cad_region_index_s": "0",
+      "cad_region_select_s": "0",
+      "cad_region_common_s": "0",
+      "cad_region_extract_s": "0",
+      "cad_patch_queries": "0",
+      "cad_patch_batches": "0",
+      "cad_patch_batch_s": "0",
+      "cad_patch_broad_s": "0",
+      "cad_patch_search_s": "0",
+      "cad_patch_group_s": "0",
+      "cad_patch_area_s": "0",
+      "cad_window_builds": "0",
+      "cad_window_reuses": "0",
+      "cad_path_reuses": "0",
+      "cad_skipped_area_nodes": "0",
+      "cad_pressure_clipped": "0",
+      "cad_pressure_full": "0"
+    },
+    "peak_load_N": [
+      2722.531588265885,
+      6963.532063588927
+    ],
+    "response_sha256": "422068b9d21aeb562bb8203c6313e469c245d4cb8f42d939d08186fc1d90595f"
+  }
+}

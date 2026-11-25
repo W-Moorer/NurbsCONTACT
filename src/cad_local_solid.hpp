@@ -7,7 +7,8 @@ struct RigidPath;
 // Apply the original OCCT force-region construction to two already placed solids.
 std::vector<dynamics::ContactRegion> solid_regions(const TopoDS_Shape& first,const TopoDS_Shape& second,
                                                   dynamics::ContactWork& work,bool measure_span=true,
-                                                  std::vector<Vec>* pressure_moment_arms=nullptr);
+                                                  std::vector<Vec>* pressure_moment_arms=nullptr,
+                                                  bool parallel_oriented_boxes=false);
 
 struct LocalSolidGeometry {
     TopoDS_Shape shape;

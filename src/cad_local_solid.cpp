@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <deque>
 #include <limits>
 #include <mutex>
 #include <numbers>
@@ -97,7 +98,8 @@ public:
     Envelope envelope;
     LocalSolidGeometry full;
     LocalSolidGeometry select(const Box& required,double reach) {
-        if (clip && clip->bounds.contains(required)) return clip->piece;
+        for (auto it=clips.rbegin();it!=clips.rend();++it)
+            if (it->bounds.contains(required)) return it->piece;
         Box window=envelope.box;
         bool reduced=false;
         for (int k=0;k<3;++k) {
@@ -130,12 +132,13 @@ public:
             // A failed optional crop uses the original topology in this window.
         } catch (const dynamics::UnresolvedContact&) {
         }
-        clip=Clip{window,piece};
+        if (clips.size()==16) clips.pop_front();
+        clips.push_back({window,piece});
         return piece;
     }
 private:
     struct Clip { Box bounds; LocalSolidGeometry piece; };
-    std::optional<Clip> clip;
+    std::deque<Clip> clips;
 };
 }
 

@@ -1,0 +1,39 @@
+{
+  "probes_sha256": [
+    "080aa6ea0528483aedd40339d3e30fa135b7b5c71879a09269c67f56b140c84d",
+    "0c08629499b4770c34218a06f466d6b69bca2344eec576fd15c261d6dc5d5496"
+  ],
+  "trajectory_sha256": "33dfb97a3bdf7786746f0c706ae6392071a073a50c2666ec521a8255ca35d005",
+  "stages": [
+    {
+      "stage": 1,
+      "checked": 800,
+      "timed": 640,
+      "previous": {
+        "area_mean_ms": 3.005638125,
+        "area_median_ms": 2.44225,
+        "full_query_mean_ms": 6.1462746875
+      },
+      "current": {
+        "area_mean_ms": 2.7771790624999997,
+        "area_median_ms": 2.2127500000000007,
+        "full_query_mean_ms": 5.901288281249999
+      }
+    },
+    {
+      "stage": 2,
+      "checked": 800,
+      "timed": 640,
+      "current": {
+        "area_mean_ms": 15.82343109375,
+        "area_median_ms": 13.84085,
+        "full_query_mean_ms": 25.9856040625
+      },
+      "previous": {
+        "area_mean_ms": 14.304751562499998,
+        "area_median_ms": 13.185849999999999,
+        "full_query_mean_ms": 23.5504415625
+      }
+    }
+  ]
+}
