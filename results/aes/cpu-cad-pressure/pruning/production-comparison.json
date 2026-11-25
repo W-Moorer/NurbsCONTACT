@@ -1,0 +1,40 @@
+{
+  "old": {
+    "process_s": 519.7940455999997,
+    "first_2ms_s": 97.9057861,
+    "remaining_integration_s": 400.6702931,
+    "torque_0p5ms_Nm": 433.2724947902735,
+    "rms_vs_RecurDyn_Nm": 42.1638276732915
+  },
+  "repeat-old": {
+    "process_s": 445.1027372999961,
+    "first_2ms_s": 94.5961285,
+    "remaining_integration_s": 322.92287389999996,
+    "torque_0p5ms_Nm": 433.2724947902735,
+    "rms_vs_RecurDyn_Nm": 42.16421996531372
+  },
+  "distance-only": {
+    "process_s": 374.2207744999978,
+    "first_2ms_s": 19.6787858,
+    "remaining_integration_s": 331.778868,
+    "torque_0p5ms_Nm": 433.2724947902735,
+    "rms_vs_RecurDyn_Nm": 42.164128583584144
+  },
+  "production": {
+    "process_s": 379.9369822000008,
+    "first_2ms_s": 20.3714983,
+    "remaining_integration_s": 334.04789270000003,
+    "torque_0p5ms_Nm": 433.2724947902735,
+    "rms_vs_RecurDyn_Nm": 42.163730141649154,
+    "torque_rms_vs_previous_Nm": 0.10031748926640534,
+    "torque_max_abs_vs_previous_Nm": 10.265626250114678,
+    "time_of_max_s": 1.537699999999847
+  },
+  "mesh": {
+    "process_s": 134.8323831999951,
+    "first_2ms_s": 0.2743279,
+    "remaining_integration_s": 129.7371321,
+    "torque_0p5ms_Nm": 395.36754174056597,
+    "rms_vs_RecurDyn_Nm": 29.1423846001526
+  }
+}

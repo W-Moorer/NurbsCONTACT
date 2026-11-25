@@ -268,8 +268,9 @@ control hulls. For a bounded planar face it can also clip the opposing hull
 to the plane's distance band and classify its footprint against the face
 trims. A winding test is used only when the entire footprint clears the
 enclosures of the original trim curves. Remaining candidates use OCCT
-feature extrema. Ray queries share immutable spline-cell bounds and test
-the same clipped segment against each cell's box and normal slab.
+feature extrema. This optimization applies during separation checks. Once
+the search finds a loaded region, the default uses the existing area and
+moment integration and each worker's original ray intersector.
 [Implementation and CPU comparisons](../results/aes/cpu-cad-pressure/pruning/README.md)
 At a degenerate chart pole, two rings around the centroid ray must agree
 before the solver accepts the limiting depth.

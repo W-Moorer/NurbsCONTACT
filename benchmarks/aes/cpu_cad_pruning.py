@@ -87,7 +87,7 @@ def spheres(args):
     save(args.out / "sphere.json", results)
 
 
-def fixed_loads(args):
+def fixed_loads(args, filename="fixed-loads.json"):
     bodies, pairs = read_model(args.scene)
     archive = Path("results/aes/cpu-cad-pressure/wrenches.csv")
     with archive.open() as stream:
@@ -128,15 +128,25 @@ def fixed_loads(args):
             rows.append(row)
     if {(r["stage"], r["step"]) for r in rows} != set(previous):
         raise ValueError("Missing fixed-pose load audit")
-    save(args.out / "fixed-loads.json", rows)
+    save(args.out / filename, rows)
 
 
 def peak_poses(args):
     """Recompute the largest closed-loop discrepancy on each accepted pose with both builds."""
     bodies, pairs = read_model(args.scene)
     a, b, k, limit = pairs[1]
-    histories = {name: history(args.work / name / "response.csv", args.scene) for name in ("old", "new")}
-    step = int(np.argmax(abs(histories["old"]["output_torque_Nm"] - histories["new"]["output_torque_Nm"])))
+    histories = {
+        name: history(args.work / name / "response.csv", args.scene)
+        for name in (args.previous_run, args.current_run)
+    }
+    step = int(
+        np.argmax(
+            abs(
+                histories[args.previous_run]["output_torque_Nm"]
+                - histories[args.current_run]["output_torque_Nm"]
+            )
+        )
+    )
     rows = []
 
     def query(exe, options, source):
@@ -174,7 +184,7 @@ def peak_poses(args):
             )
             record[tag] = None if w is None else dict(regions=len(result["patches"]), shaft_Nm=w[-1])
         rows.append(record)
-    save(args.out / "peak-poses.json", rows)
+    save(args.out / args.peak_file, rows)
 
 
 def fixed_replay(previous, current):
@@ -300,6 +310,96 @@ def repeat_report(args):
         shutil.copyfile(folder / "run.json", args.out / "distance-only-run.json")
 
 
+def production_report(args):
+    """Compare the released distance-only build with its independent build and the mesh baseline."""
+    metrics = {}
+    series = {}
+    with np.load("results/aes/cpu-foundation/reducer-physics/closed-loop.npz") as rd:
+        t = rd["time_s"]
+        reference = rd["rd_output_torque_Nm"]
+    for key in ("old", "repeat-old", "distance-only", "production", "mesh"):
+        folder = args.work / key
+        manifest, start = verified_dynamics(args.scene, folder, "mesh-obb" if key == "mesh" else "cad-patch")
+        trace = history(folder / "response.csv", args.scene)
+        np.testing.assert_allclose(t, trace["time_s"], rtol=0, atol=1e-10)
+        shaft = trace["output_torque_Nm"]
+        series[key] = shaft
+        early = float(start["integration_s"])
+        metrics[key] = dict(
+            process_s=manifest["process_s"],
+            first_2ms_s=early,
+            remaining_integration_s=float(manifest["statistics"]["wall_s"]) - early,
+            torque_0p5ms_Nm=shaft[5],
+            rms_vs_RecurDyn_Nm=float(np.mean((shaft - reference) ** 2) ** 0.5),
+        )
+        if key == "production":
+            delta = shaft - series["repeat-old"]
+            peak = int(np.argmax(abs(delta)))
+            metrics[key].update(
+                torque_rms_vs_previous_Nm=float(np.mean(delta**2) ** 0.5),
+                torque_max_abs_vs_previous_Nm=float(abs(delta[peak])),
+                time_of_max_s=t[peak],
+            )
+            np.savez_compressed(args.out / "production-response.npz", **trace)
+            shutil.copyfile(folder / "run.json", args.out / "production-run.json")
+    save(args.out / "production-comparison.json", metrics)
+    fixed_loads(args, "production-fixed-loads.json")
+    save(args.out / "production-same-poses.json", fixed_replay(args.previous_replay, args.current_replay))
+
+    fig, axes = plt.subplots(2, 2, figsize=(10.6, 6.1), layout="constrained")
+    labels = ["Previous CAD", "Distance pruning (ours)", "CPU mesh OBB"]
+    samples = [
+        [
+            metrics["old"]["process_s"],
+            metrics["repeat-old"]["process_s"],
+        ],
+        [metrics["distance-only"]["process_s"], metrics["production"]["process_s"]],
+        [metrics["mesh"]["process_s"]],
+    ]
+    colors = ["#5e6978", "#167d75", "#b66a36"]
+    ax = axes[0, 0]
+    for y, (costs, color) in enumerate(zip(samples, colors, strict=True)):
+        for j, cost in enumerate(costs):
+            row = y + (0.15 if j else -0.15) if len(costs) > 1 else y
+            ax.scatter(cost, row, color=color, s=25)
+            ax.text(cost + 8, row, f"{cost:.1f}", va="center", fontsize=8)
+    ax.set_yticks(range(3), labels)
+    ax.set(
+        xlim=(0, max(max(c) for c in samples) * 1.18),
+        ylim=(2.6, -0.6),
+        xlabel="5 s simulation, wall time (s)",
+    )
+    ax = axes[0, 1]
+    ids = ["repeat-old", "distance-only", "production"]
+    left = np.zeros(3)
+    for field, label, color in [
+        ("first_2ms_s", "First 20 steps", "#bc7042"),
+        ("remaining_integration_s", "Next 49,980 steps", "#668b9e"),
+    ]:
+        vals = np.array([metrics[k][field] for k in ids])
+        ax.barh(range(3), vals, left=left, color=color, label=label)
+        left += vals
+    ax.set_yticks(range(3), ["Previous CAD", "Pruning · run 1", "Pruning · run 2"])
+    ax.invert_yaxis()
+    ax.set_xlabel("Time spent in integration (s)")
+    ax.legend(fontsize=8, loc="lower center", bbox_to_anchor=(0.5, 1), ncol=2, frameon=False)
+    ax = axes[1, 0]
+    for arr, color, label in [
+        (reference, colors[0], "RecurDyn"),
+        (series["mesh"], colors[2], labels[2]),
+        (series["production"], colors[1], "CAD (ours)"),
+    ]:
+        ax.plot(t, arr, color=color, lw=0.5, alpha=0.72, label=label)
+    ax.set(xlim=(0, 5), xlabel="Time (s)", ylabel="Output shaft torque (N m)")
+    ax.legend(fontsize=8, ncol=3, loc="upper right", frameon=False)
+    axes[1, 1].plot(t, delta, color=colors[1], lw=0.65)
+    axes[1, 1].set(xlim=(0, 5), xlabel="Time (s)", ylabel="Default minus previous torque (N m)")
+    for ax in axes.flat:
+        ax.spines[["right", "top"]].set_visible(False)
+    fig.savefig(args.out / "production.png", dpi=180)
+    plt.close(fig)
+
+
 def report(args):
     previous = None
     stats = {}
@@ -412,10 +512,15 @@ if __name__ == "__main__":
         ("peaks", ("scene", "work", "previous", "new", "out")),
         ("repeat-report", ("scene", "work", "out")),
         ("report", ("scene", "work", "previous_replay", "current_replay", "out")),
+        ("production", ("scene", "work", "previous_replay", "current_replay", "out")),
     ):
         cmd = subs.add_parser(action)
         for key in keys:
             cmd.add_argument(key, type=Path)
+        if action == "peaks":
+            cmd.add_argument("--previous-run", default="old")
+            cmd.add_argument("--current-run", default="new")
+            cmd.add_argument("--peak-file", default="peak-poses.json")
     args = p.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     if args.action == "spheres":
@@ -430,5 +535,7 @@ if __name__ == "__main__":
         static_checks(args)
     elif args.action == "repeat-report":
         repeat_report(args)
+    elif args.action == "production":
+        production_report(args)
     else:
         report(args)

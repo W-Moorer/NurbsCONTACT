@@ -1,0 +1,30 @@
+[
+  {
+    "trajectory": "repeat-old",
+    "step": 15377,
+    "time_s": 1.5376999999998489,
+    "integrated_shaft_Nm": 148.6091735807509,
+    "old": {
+      "regions": 3,
+      "shaft_Nm": 149.46797120281775
+    },
+    "new": {
+      "regions": 3,
+      "shaft_Nm": 149.46797120281775
+    }
+  },
+  {
+    "trajectory": "production",
+    "step": 15377,
+    "time_s": 1.5376999999998489,
+    "integrated_shaft_Nm": 138.34354733063623,
+    "old": {
+      "regions": 3,
+      "shaft_Nm": 138.3357038220512
+    },
+    "new": {
+      "regions": 3,
+      "shaft_Nm": 138.3357038220512
+    }
+  }
+]
