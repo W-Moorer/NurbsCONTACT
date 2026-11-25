@@ -74,7 +74,7 @@ if(NC_WITH_OCCT)
         set(NC_OCCT_STEP_TARGET TKSTEP)
     endif()
     add_library(nurbscontact_occt STATIC src/occt.cpp src/occt_contact.cpp src/cad_contact_regions.cpp
-        src/cad_solid_contact.cpp src/cad_patch_search.cpp src/chen_2026_step.cpp src/cad_boundary_distance.cpp src/cad_local_solid.cpp)
+        src/cad_solid_contact.cpp src/cad_patch_search.cpp src/cad_bezier_ray.cpp src/chen_2026_step.cpp src/cad_boundary_distance.cpp src/cad_local_solid.cpp)
     if(NC_CHEN_SOURCE_DIR)
         find_package(Eigen3 CONFIG REQUIRED)
         set(TDIB_SOURCE_DIR "${NC_CHEN_SOURCE_DIR}")

@@ -4,6 +4,7 @@
 #include "nurbscontact/occt.hpp"
 
 namespace nc {
+namespace cad { class BezierRayAtlas; }
 
 struct CadFaceWitness {
     std::size_t face{}; // One-based face index from TopExp::MapShapes.
@@ -95,7 +96,7 @@ struct CadExit {
 // Coordinates and unit direction are in the body's local frame.
 class CadExitQuery {
 public:
-    explicit CadExitQuery(const CadContactIndex& index);
+    explicit CadExitQuery(const CadContactIndex& index, std::shared_ptr<const cad::BezierRayAtlas> bezier = {});
     ~CadExitQuery();
     CadExit first_exit(Vec origin, Vec direction, double reach_m, std::size_t hint,
                        std::size_t& face_tests);
@@ -103,6 +104,7 @@ public:
     bool interior_segment(Vec a,Vec b,const CadExit* near_a=nullptr,const CadExit* near_b=nullptr);
     bool crosses_from_hints(Vec a,Vec b,const CadExit& near_a,const CadExit& near_b);
     Vec surface_point(std::size_t face,std::array<double,2> uv) const;
+    std::array<std::size_t,4> ray_counts() const;
 private:
     struct Data;
     std::unique_ptr<Data> data_;

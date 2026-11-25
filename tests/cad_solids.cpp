@@ -1,6 +1,7 @@
 #include "nurbscontact/cad_solid_contact.hpp"
 #include "nurbscontact/cad_contact_regions.hpp"
 #include "../src/cad_boundary_distance.hpp"
+#include "../src/cad_bezier_ray.hpp"
 #include "../src/cad_local_solid.hpp"
 #include "../src/cad_planar_trim.hpp"
 #include "../src/cad_rigid_path.hpp"
@@ -9,6 +10,8 @@
 #include <BRepExtrema_DistShapeShape.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRepBuilderAPI_NurbsConvert.hxx>
+#include <BRepBuilderAPI_MakeFace.hxx>
+#include <Geom_BezierSurface.hxx>
 #include <BRep_Builder.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <BRepPrimAPI_MakeCylinder.hxx>
@@ -28,6 +31,60 @@ void close(double actual,double expected,double tol,const char* what) {
     throw std::runtime_error(what);
 }
 
+void bezier_rays() {
+    TColgp_Array2OfPnt poles(1,3,1,3);
+    TColStd_Array2OfReal weights(1,3,1,3);
+    for (int i=1;i<=3;++i) for (int j=1;j<=3;++j) {
+        poles(i,j)=gp_Pnt(i-1,j-1,.12*(i-1)*(j-1));
+        weights(i,j)=1+.015*(i+j);
+    }
+    Handle(Geom_BezierSurface) surface=new Geom_BezierSurface(poles,weights);
+    const auto face=BRepBuilderAPI_MakeFace(surface,1.e-7).Face();
+    cad::PatchAssets assets(face);
+    auto atlas=std::make_shared<cad::BezierRayAtlas>(face,assets);
+    CadContactIndex index(face);
+    CadExitQuery old(index),fast(index,atlas);
+    const gp_XYZ dir=gp_Dir(.2,-.1,1).XYZ();
+    for (int i=1;i<=5;++i) for (int j=1;j<=5;++j) {
+        gp_Pnt q; gp_Vec a,b;
+        surface->D1(i/6.,j/6.,q,a,b);
+        const auto p=q.XYZ()-dir*.1;
+        Vec origin{p.X()*.001,p.Y()*.001,p.Z()*.001},d{dir.X(),dir.Y(),dir.Z()};
+        std::size_t count=0;
+        const auto reference=old.first_exit(origin,d,.0002,0,count);
+        const auto hit=fast.first_exit(origin,d,.0002,0,count);
+        require(reference.face==1 && hit.face==1,"rational curved face ray");
+        close(hit.distance_m,reference.distance_m,1e-10,"Bezier exit distance");
+        close(length(sub(reference.outward,hit.outward)),0.,1e-7,"rational Bezier normal");
+    }
+    require(fast.ray_counts()[1]>0,"rational test did not exercise the compiled intersection");
+    std::optional<cad::BezierRayHit> interior;
+    require(atlas->query(1,{100,100,100},dir,1,1e-7,interior) && !interior,"separated Bezier ray");
+    // A root at the UV boundary must go back to the shared-edge classifier.
+    const auto corner=surface->Value(0,0).XYZ()-dir*.1;
+    require(!atlas->query(1,corner,dir,.2,1e-7,interior),"Bezier corner treated as an isolated interior root");
+
+    // The supporting surface also exists outside the trimmed UV rectangle.
+    const auto trimmed=BRepBuilderAPI_MakeFace(surface,.25,.75,.25,.75,1e-7).Face();
+    cad::PatchAssets cut_assets(trimmed);
+    CadContactIndex cut_index(trimmed);
+    CadExitQuery cut(cut_index,std::make_shared<cad::BezierRayAtlas>(trimmed,cut_assets));
+    const auto outside=surface->Value(.1,.5).XYZ()-dir*.1;
+    std::size_t tests=0;
+    require(!cut.first_exit({outside.X()*.001,outside.Y()*.001,outside.Z()*.001},
+                            {dir.X(),dir.Y(),dir.Z()},.0002,0,tests).face,"ray entered removed CAD trim");
+
+    // Fold x=3(u-.5)^2, y=v, z=u. A vertical line can meet a single span twice.
+    for (int i=1;i<=3;++i) for (int j=1;j<=3;++j)
+        poles(i,j)=gp_Pnt(i==2 ? -.75 : .75,(j-1)*.5,(i-1)*.5);
+    const auto folded=BRepBuilderAPI_MakeFace(new Geom_BezierSurface(poles),1e-7).Face();
+    cad::PatchAssets folded_assets(folded);
+    cad::BezierRayAtlas fold(folded,folded_assets);
+    for (double x:{0.,.1875}) {
+        std::optional<cad::BezierRayHit> ambiguous;
+        require(!fold.query(1,{x,.4,-.1},{0,0,1},1.2,1e-7,ambiguous),"tangent or double root accepted");
+    }
+}
 void local_region_depths() {
     const auto ball=BRepPrimAPI_MakeSphere(10.).Shape();
     const ContactPose origin{},right{{.019,0,0}};
@@ -340,7 +397,7 @@ void local_solids() {
 }
 }
 int main(int argc,char** argv) {
-    try { if (argc==1) { local_region_depths(); pressure_moment(); planar_trim_bounds(); boundary_distances(); local_solids(); }
+    try { if (argc==1) { bezier_rays(); local_region_depths(); pressure_moment(); planar_trim_bounds(); boundary_distances(); local_solids(); }
           check(argc==1 ? CadEventMethod::conservative_advancement :
                 std::string_view(argv[1])=="--chen-2026" ? CadEventMethod::chen_2026 : CadEventMethod::chen_2024); }
     catch (const Standard_Failure& e) { std::cerr<<e.GetMessageString()<<'\n'; return 1; }

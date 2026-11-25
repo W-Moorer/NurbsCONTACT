@@ -3,7 +3,7 @@
 
 namespace nc::cad {
 // Prepare the standard CPU search grid and all four pressure integration rules.
-void prepare_patch_part(const TopoDS_Shape&);
+void prepare_patch_part(const TopoDS_Shape&,bool bezier=false);
 struct PatchDiscovery {
     std::vector<std::optional<CadChord>> witnesses;
     std::vector<int> labels;
@@ -13,11 +13,12 @@ struct PatchDiscovery {
 };
 class PatchSearch {
 public:
-    PatchSearch(const TopoDS_Shape&,const TopoDS_Shape&,int grid,double reach);
+    PatchSearch(const TopoDS_Shape&,const TopoDS_Shape&,int grid,double reach,bool bezier=false);
     ~PatchSearch();
     void prepare_dense() const;
     std::array<std::size_t,2> asset_counts() const;
     std::size_t skipped_nodes() const;
+    std::array<std::size_t,4> ray_counts() const;
     bool boxes_separate(const std::array<dynamics::ContactPose,2>& poses) const;
     PatchDiscovery discover(const std::array<dynamics::ContactPose,2>& poses,bool indexed,bool group);
     std::optional<CadChord> chord(const std::array<dynamics::ContactPose,2>& poses,Vec p,Vec n,

@@ -1,0 +1,70 @@
+[
+  {
+    "stage": 1,
+    "step": 46016,
+    "trajectory": "cad-patch",
+    "closed_loop_normal_N": 1301.2125120805304,
+    "closed_loop_output_torque_Nm": 118.21654832031234,
+    "cad-patch": {
+      "regions": 2,
+      "normal_N": 1298.662504127621,
+      "shaft_Nm": 72.68990558661753
+    },
+    "cad-bezier": {
+      "regions": 2,
+      "normal_N": 1298.662504126679,
+      "shaft_Nm": 72.68990558656503
+    }
+  },
+  {
+    "stage": 1,
+    "step": 46016,
+    "trajectory": "cad-bezier",
+    "closed_loop_normal_N": 1088.7394736236413,
+    "closed_loop_output_torque_Nm": 118.82010960791962,
+    "cad-patch": {
+      "regions": 2,
+      "normal_N": 1088.5477946974047,
+      "shaft_Nm": 60.93803301400257
+    },
+    "cad-bezier": {
+      "regions": 2,
+      "normal_N": 1088.5477946975088,
+      "shaft_Nm": 60.938033014008425
+    }
+  },
+  {
+    "stage": 2,
+    "step": 25377,
+    "trajectory": "cad-patch",
+    "closed_loop_normal_N": 2395.2443106043784,
+    "closed_loop_output_torque_Nm": 148.6091736242913,
+    "cad-patch": {
+      "regions": 3,
+      "normal_N": 2409.861860430984,
+      "shaft_Nm": 149.4679710870443
+    },
+    "cad-bezier": {
+      "regions": 3,
+      "normal_N": 2409.8618604328285,
+      "shaft_Nm": 149.46797108715924
+    }
+  },
+  {
+    "stage": 2,
+    "step": 25377,
+    "trajectory": "cad-bezier",
+    "closed_loop_normal_N": 2232.0812496197186,
+    "closed_loop_output_torque_Nm": 138.3435472781711,
+    "cad-patch": {
+      "regions": 3,
+      "normal_N": 2231.954770024104,
+      "shaft_Nm": 138.33570377207045
+    },
+    "cad-bezier": {
+      "regions": 3,
+      "normal_N": 2231.954770026393,
+      "shaft_Nm": 138.3357037722124
+    }
+  }
+]

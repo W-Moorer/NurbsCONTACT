@@ -1,0 +1,303 @@
+{
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "trajectory_sha256": "33dfb97a3bdf7786746f0c706ae6392071a073a50c2666ec521a8255ca35d005",
+  "binaries": {
+    "nc_cad_probes.exe": "24e3925dd3acd5d11b081a6acccbc8e91594cd801953fafffe05e32b530079da",
+    "nc_mesh.exe": "53f071ea2d5212e5df13f202566b4c3b4efeb54a5eb78022d6d0988d9a39b4f1"
+  },
+  "starts": [
+    0,
+    280,
+    10000,
+    16650,
+    24950,
+    33320,
+    46290,
+    49900
+  ],
+  "window_length": 100,
+  "warmup": 20,
+  "stages": [
+    {
+      "cad-patch": {
+        "process_s": 40.41021329999785,
+        "setup_log": "prepare_s 36.5516",
+        "mean_ms": 4.042920781249999,
+        "median_ms": 3.5012499999999998,
+        "p95_ms": 8.983964999999998,
+        "unresolved": 0,
+        "first_11": [
+          0,
+          0,
+          0,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "step5_shaft_Nm": 123.67440076527474,
+        "ray_counts": [
+          0,
+          0,
+          5885,
+          0
+        ],
+        "mean_candidate_face_pairs": 8.0203125,
+        "whole_step_comparison": {
+          "poses": 20,
+          "rms_torque_Nm": 3.9157823212839733,
+          "max_abs_torque_Nm": 8.945216275288729
+        }
+      },
+      "cad-bezier": {
+        "process_s": 40.61926669999957,
+        "setup_log": "prepare_s 37.0066",
+        "mean_ms": 3.9016042187499997,
+        "median_ms": 3.39055,
+        "p95_ms": 7.862419999999998,
+        "unresolved": 0,
+        "first_11": [
+          0,
+          0,
+          0,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "step5_shaft_Nm": 123.67440076527836,
+        "ray_counts": [
+          65,
+          2406,
+          3442,
+          7044
+        ],
+        "mean_candidate_face_pairs": 8.0203125,
+        "region_count_mismatches": 0,
+        "resolved_flag_mismatches": 0,
+        "max_resolved_torque_change_Nm": 1.1733902738342294e-10,
+        "torque_pairs": 800,
+        "face_partition_mismatches": 0,
+        "whole_step_comparison": {
+          "poses": 20,
+          "rms_torque_Nm": 3.9157823212830123,
+          "max_abs_torque_Nm": 8.945216275295422
+        }
+      },
+      "mesh-obb": {
+        "process_s": 4.263001500003156,
+        "setup_log": "",
+        "mean_ms": 3.86681078125,
+        "median_ms": 4.040100000000001,
+        "p95_ms": 4.948644999999999,
+        "unresolved": 0,
+        "first_11": [
+          0,
+          0,
+          0,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "step5_shaft_Nm": 124.3058322887097,
+        "ray_counts": null,
+        "region_count_mismatches": 5,
+        "resolved_flag_mismatches": 0,
+        "max_resolved_torque_change_Nm": 40.73746137728537,
+        "torque_pairs": 800,
+        "whole_step_comparison": {
+          "poses": 20,
+          "rms_torque_Nm": 5.9289348504806005,
+          "max_abs_torque_Nm": 9.065711675080507
+        }
+      }
+    },
+    {
+      "mesh-obb": {
+        "process_s": 14.36383579998801,
+        "setup_log": "intersecting patch has no finite feature witness",
+        "mean_ms": 14.87574703125,
+        "median_ms": 14.738199999999999,
+        "p95_ms": 17.321299999999997,
+        "unresolved": 1,
+        "first_11": [
+          0,
+          0,
+          0,
+          5,
+          3,
+          3,
+          3,
+          3,
+          3,
+          7,
+          0
+        ],
+        "step5_shaft_Nm": 411.9513224894861,
+        "ray_counts": null,
+        "region_count_mismatches": 35,
+        "resolved_flag_mismatches": 1,
+        "max_resolved_torque_change_Nm": 141.41283502247393,
+        "torque_pairs": 799,
+        "whole_step_comparison": {
+          "poses": 27,
+          "rms_torque_Nm": 63.61750949392341,
+          "max_abs_torque_Nm": 138.05485819599596
+        }
+      },
+      "cad-bezier": {
+        "process_s": 12.449252499995055,
+        "setup_log": "prepare_s 6.47504",
+        "mean_ms": 6.673087499999999,
+        "median_ms": 5.87725,
+        "p95_ms": 11.985195000000001,
+        "unresolved": 0,
+        "first_11": [
+          0,
+          0,
+          0,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          0
+        ],
+        "step5_shaft_Nm": 533.9526959532545,
+        "ray_counts": [
+          65391,
+          10451,
+          6621,
+          152125
+        ],
+        "mean_candidate_face_pairs": 22.4078125,
+        "region_count_mismatches": 0,
+        "resolved_flag_mismatches": 0,
+        "max_resolved_torque_change_Nm": 1.1869175864376302e-07,
+        "torque_pairs": 800,
+        "face_partition_mismatches": 0,
+        "whole_step_comparison": {
+          "poses": 27,
+          "rms_torque_Nm": 8.454993852337362,
+          "max_abs_torque_Nm": 27.79432742306534
+        }
+      },
+      "cad-patch": {
+        "process_s": 15.286121100012679,
+        "setup_log": "prepare_s 6.25303",
+        "mean_ms": 10.1256984375,
+        "median_ms": 9.18445,
+        "p95_ms": 15.835899999999983,
+        "unresolved": 0,
+        "first_11": [
+          0,
+          0,
+          0,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          0
+        ],
+        "step5_shaft_Nm": 533.9526959571834,
+        "ray_counts": [
+          0,
+          0,
+          20867,
+          0
+        ],
+        "mean_candidate_face_pairs": 22.4078125,
+        "whole_step_comparison": {
+          "poses": 27,
+          "rms_torque_Nm": 8.454993852253104,
+          "max_abs_torque_Nm": 27.794327423085292
+        }
+      }
+    }
+  ],
+  "bezier_tables": {
+    "parts": [
+      "reducer-1a.step",
+      "reducer-1b.step",
+      "reducer-2a.step",
+      "reducer-2b.step"
+    ],
+    "cold": {
+      "process_s": 6.610785700002452,
+      "by_part": [
+        {
+          "step_read_s": 0.962732,
+          "table_s": 0.103628,
+          "built": 1,
+          "loaded": 0
+        },
+        {
+          "step_read_s": 2.01686,
+          "table_s": 0.260128,
+          "built": 1,
+          "loaded": 0
+        },
+        {
+          "step_read_s": 0.963756,
+          "table_s": 0.111476,
+          "built": 1,
+          "loaded": 0
+        },
+        {
+          "step_read_s": 1.80488,
+          "table_s": 0.186811,
+          "built": 1,
+          "loaded": 0
+        }
+      ]
+    },
+    "warm": {
+      "process_s": 6.55058409999765,
+      "by_part": [
+        {
+          "step_read_s": 0.997895,
+          "table_s": 0.0628985,
+          "built": 0,
+          "loaded": 1
+        },
+        {
+          "step_read_s": 2.14737,
+          "table_s": 0.141728,
+          "built": 0,
+          "loaded": 1
+        },
+        {
+          "step_read_s": 0.906185,
+          "table_s": 0.0555343,
+          "built": 0,
+          "loaded": 1
+        },
+        {
+          "step_read_s": 1.8868,
+          "table_s": 0.112671,
+          "built": 0,
+          "loaded": 1
+        }
+      ]
+    },
+    "bytes": 51741305
+  }
+}

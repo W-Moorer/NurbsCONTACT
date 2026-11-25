@@ -1,5 +1,6 @@
 #include "nurbscontact/cad_contact_regions.hpp"
 #include "cad_compiled_chart.hpp"
+#include "cad_bezier_ray.hpp"
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepBndLib.hxx>
@@ -352,6 +353,22 @@ struct CadExitQuery::Data {
     std::vector<Handle(IntCurvesFace_Intersector)> rays;
     std::vector<std::optional<std::vector<Cell>>> cells;
     std::vector<std::unique_ptr<cad::CompiledChart>> charts;
+    std::shared_ptr<const cad::BezierRayAtlas> bezier;
+    std::array<std::size_t,4> counts{}; // Resolved misses, interior hits, OCCT calls, visited span candidates.
+    bool bezier_query(std::size_t i,const gp_Pnt& p,const gp_Dir& d,double end,std::optional<cad::BezierRayHit>& hit) {
+        if (!bezier) return false;
+        const auto& face=index.data_->faces[i].shape;
+        if (!bezier->query(i+1,p.XYZ(),d.XYZ(),end,std::max(Precision::Confusion(),BRep_Tool::Tolerance(face)),hit,&counts[3])) return false;
+        if (hit) {
+            auto& chart=charts[i];
+            if (!chart) chart=std::make_unique<cad::CompiledChart>(face);
+            // Leave trim curves, shared edges and seam ownership to OCCT.
+            if (!chart->rectangular || hit->u<=chart->u0+chart->eu || hit->u>=chart->u1-chart->eu ||
+                hit->v<=chart->v0+chart->ev || hit->v>=chart->v1-chart->ev) return false;
+        }
+        ++counts[hit ? 1 : 0];
+        return true;
+    }
     bool crosses(const gp_Pnt& p,const gp_Vec& direction,double span,const CadExit* hint) {
         if (!hint || !hint->face) return false;
         const gp_Vec outward(hint->outward[0],hint->outward[1],hint->outward[2]);
@@ -418,8 +435,10 @@ struct CadExitQuery::Data {
     }
 };
 
-CadExitQuery::CadExitQuery(const CadContactIndex& index) : data_(std::make_unique<Data>(index)) {}
+CadExitQuery::CadExitQuery(const CadContactIndex& index,std::shared_ptr<const cad::BezierRayAtlas> bezier)
+    :data_(std::make_unique<Data>(index)) {data_->bezier=std::move(bezier);}
 CadExitQuery::~CadExitQuery() = default;
+std::array<std::size_t,4> CadExitQuery::ray_counts() const {return data_->counts;}
 
 CadExit CadExitQuery::first_exit(Vec origin, Vec direction, double reach_m, std::size_t hint,
                                 std::size_t& face_tests) {
@@ -446,9 +465,27 @@ CadExit CadExitQuery::first_exit(Vec origin, Vec direction, double reach_m, std:
         const auto& face=geometry.faces[i];
         const double end=std::min(reach,nearest+tol);
         const auto box=segment(end);
-        if (face.bounds.IsOut(box) || face.bounds.IsOut(line) ||
-            !data_->possible(i,p.Translated(-gp_Vec(d)*tol),p.Translated(gp_Vec(d)*end),box)) return;
+        if (face.bounds.IsOut(box) || face.bounds.IsOut(line)) return;
+        std::optional<cad::BezierRayHit> direct;
+        if (data_->bezier_query(i,p,d,end,direct)) {
+            if (!direct) return;
+            ++face_tests;
+            const auto outward=direct->normal*(face.shape.Orientation()==TopAbs_REVERSED ? -1. : 1.);
+            if (hit.face && std::abs(direct->t-nearest)<=tol) {
+                ambiguous=true; // An interior hit cannot own a shared trim edge.
+                nearest=std::min(nearest,direct->t);
+                hit.distance_m=nearest*mm;
+            } else {
+                nearest=direct->t;
+                hit={i+1,nearest*mm,{outward.X(),outward.Y(),outward.Z()},{direct->u,direct->v}};
+                ambiguous=outward.Dot(d.XYZ())<=1e-8;
+                boundary=false; first_edge.Nullify();
+            }
+            return;
+        }
+        if (!data_->possible(i,p.Translated(-gp_Vec(d)*tol),p.Translated(gp_Vec(d)*end),box)) return;
         ++face_tests;
+        ++data_->counts[2];
         auto& ray=data_->rays[i];
         if (ray.IsNull()) ray=new IntCurvesFace_Intersector(face.shape,tol);
         ray->Perform(line,-tol,std::min(reach,nearest+tol));
@@ -527,9 +564,15 @@ bool CadExitQuery::interior_segment(Vec a,Vec b,const CadExit* near_a,const CadE
         const gp_Vec d(line.Direction());
         if (data_->crosses(p,d,span,near_a) || data_->crosses(q,-d,span,near_b)) return false;
         for (auto i:candidates.faces) {
-            if (geometry.faces[i].bounds.IsOut(line) ||
-                !data_->possible(i,p.Translated(-gp_Vec(line.Direction())*tol),
+            if (geometry.faces[i].bounds.IsOut(line)) continue;
+            std::optional<cad::BezierRayHit> direct;
+            if (data_->bezier_query(i,p,line.Direction(),span+tol,direct)) {
+                if (direct) return false;
+                continue;
+            }
+            if (!data_->possible(i,p.Translated(-gp_Vec(line.Direction())*tol),
                                  q.Translated(gp_Vec(line.Direction())*tol),box)) continue;
+            ++data_->counts[2];
             auto& ray=data_->rays[i];
             if (ray.IsNull()) ray=new IntCurvesFace_Intersector(geometry.faces[i].shape,tol);
             ray->Perform(line,-tol,span+tol);

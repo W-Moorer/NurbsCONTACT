@@ -1,4 +1,5 @@
 #include "../../src/cad_patch_search.hpp"
+#include "../../src/cad_bezier_ray.hpp"
 #include <chrono>
 #include <iomanip>
 #include <iostream>
@@ -54,21 +55,37 @@ void patch_replay(PatchSearch& search,int order) {
 }
 
 int main(int argc,char** argv) try {
+    if (argc>=3 && std::string_view(argv[1])=="--prepare-bezier") {
+        for (int i=2;i<argc;++i) {
+            const auto start=Clock::now();
+            const auto part=read_step_shape(argv[i]);
+            const auto loaded=Clock::now();
+            PatchAssets assets(part);
+            BezierRayAtlas atlas(part,assets);
+            std::cout<<"{\"step_read_s\":"<<std::chrono::duration<double>(loaded-start).count()
+                     <<",\"table_s\":"<<std::chrono::duration<double>(Clock::now()-loaded).count()
+                     <<",\"built\":"<<assets.built<<",\"loaded\":"<<assets.loaded<<"}"<<std::endl;
+        }
+        return 0;
+    }
+    const bool bezier=argc>=2 && std::string_view(argv[argc-1])=="--bezier";
+    if (bezier) --argc;
     if (argc>=3 && std::string_view(argv[1])=="--prepare-parts") {
-        for (int i=2;i<argc;++i) prepare_patch_part(read_step_shape(argv[i]));
+        for (int i=2;i<argc;++i) prepare_patch_part(read_step_shape(argv[i]),bezier);
         return 0;
     }
     const bool dense=argc==6 && std::string_view(argv[5])=="--prepare-all";
     const bool prepare=dense || (argc==6 && std::string_view(argv[5])=="--prepare");
-    const bool indexed=argc==6 && std::string_view(argv[5])=="--indexed-groups";
+    const bool loaded=argc==6 && std::string_view(argv[5])=="--loaded";
+    const bool indexed=loaded || (argc==6 && std::string_view(argv[5])=="--indexed-groups");
     const bool group=indexed || (argc==6 && std::string_view(argv[5])=="--groups");
     const bool patch=argc==7 && std::string_view(argv[5])=="--patch-wrench";
-    if (argc!=5 && !group && !patch && !prepare) throw std::invalid_argument("nc_cad_probes A.step B.step sites_per_uv_axis reach_m [--prepare|--prepare-all|--groups|--indexed-groups|--patch-wrench ORDER]");
+    if (argc!=5 && !group && !patch && !prepare) throw std::invalid_argument("nc_cad_probes A.step B.step sites_per_uv_axis reach_m [--prepare|--prepare-all|--groups|--indexed-groups|--loaded|--patch-wrench ORDER] [--bezier]");
     const int grid=std::stoi(argv[3]);
     const double reach=std::stod(argv[4]);
     if (grid<1 || grid>128 || !(reach>0 && std::isfinite(reach))) throw std::invalid_argument("invalid probe grid or reach");
     const auto start=Clock::now();
-    PatchSearch search(read_step_shape(argv[1]),read_step_shape(argv[2]),grid,reach);
+    PatchSearch search(read_step_shape(argv[1]),read_step_shape(argv[2]),grid,reach,bezier);
     std::cerr<<"prepare_s "<<std::chrono::duration<double>(Clock::now()-start).count()<<'\n';
     std::cout<<std::setprecision(17);
     if (prepare) {
@@ -106,6 +123,30 @@ int main(int argc,char** argv) try {
             std::cout<<",\"group_s\":"<<result.group_s<<",\"labels\":[";
             for (std::size_t i=0;i<labels.size();++i) {if (i) std::cout<<','; std::cout<<labels[i];}
             std::cout<<']';
+        }
+        if (loaded) {
+            const auto start_area=Clock::now();
+            std::map<int,std::vector<CadChord>> groups;
+            for (std::size_t i=0;i<labels.size();++i) groups[labels[i]].push_back(*found[i]);
+            std::vector<ContactRegion> regions;
+            bool resolved=true;
+            for (const auto& [label,component]:groups) {
+                const auto region=search.integrate(poses,component,0);
+                if (!region) { resolved=false; break; }
+                regions.push_back(*region);
+            }
+            const double loaded_s=result.query_s+std::chrono::duration<double>(Clock::now()-start_area).count();
+            std::cout<<",\"resolved\":"<<(resolved?"true":"false")<<",\"regions\":[";
+            for (std::size_t i=0;resolved && i<regions.size();++i) {
+                if (i) std::cout<<',';
+                std::cout<<'[';
+                for (const auto& vec:{regions[i].point,regions[i].normal,regions[i].pressure_arm})
+                    for (const double x:vec) std::cout<<x<<',';
+                std::cout<<regions[i].depth_m<<']';
+            }
+            const auto counts=search.ray_counts();
+            std::cout<<"],\"ray_counts\":["<<counts[0]<<','<<counts[1]<<','<<counts[2]<<','<<counts[3]
+                     <<"],\"loaded_s\":"<<loaded_s;
         }
         std::cout<<"}"<<std::endl;
     }

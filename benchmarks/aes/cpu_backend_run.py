@@ -88,7 +88,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__)
     for name in ("exe", "scene", "out"):
         p.add_argument(name, type=Path)
-    p.add_argument("--method", required=True, choices=("mesh-obb", "mesh-aabb", "mesh-sap", "cad-occt", "cad-patch"))
+    p.add_argument("--method", required=True, choices=("mesh-obb", "mesh-aabb", "mesh-sap", "cad-occt", "cad-patch", "cad-bezier"))
     p.add_argument("--scope", choices=("local", "full", "fcl", "finite", "contour-ray"), default="local")
     p.add_argument("--solver", default="penalty")
     p.add_argument("--penalty-stiffness", choices=("per-region","shared"))

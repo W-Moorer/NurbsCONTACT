@@ -133,6 +133,13 @@ For a pair with constant orientations, exact rational separating-axis projection
 
 ## Last verified against
 
+On 2026-11-25, the Release CAD solid tests compared the Bézier finite-ray kernel
+with OCCT on a positive-weight rational face and checked a removed trim,
+a UV corner, tangency and a two-root span. The reducer replay covers the
+two gear pairs with identical input poses. The dynamics comparison advances
+each method independently for 50,000 steps.
+[Regression cases](../tests/cad_solids.cpp) · [Benchmark](../results/aes/cpu-bezier/README.md)
+
 `tests/test_contact_mesh.py` checks sphere size and volume in the written file, convergence of the sampled surface error, narrow-face refinement, topology failures and preservation of previous outputs after a quality rejection. The native tests check the discrete search against exhaustive triangle pairs and cover coplanar intersections, full containment, translation through a solid, rotating contact with clear endpoints and a separated rotating path.
 
 The [two-sphere replay](../benchmarks/aes/cpu_mesh_spheres.py) uses all 641 poses of the legacy 250 µs HHT trace and its 41 mm radius contact surfaces. It checks every discrete intersection witness across all three search methods, then sweeps the entry interval forward and the exit interval backward. On the same interpolated motion, smooth spheres enter at 40.000 ms and separate at 71.418 ms.
@@ -282,6 +289,25 @@ a bound on the relative displacement exceeds the list margin. Each integration
 block is tested against the opposing faces before individual quadrature.
 Search and integration still use the existing finite witness and pressure rules.
 [Timing, cache sizes and fixed-pose checks](../results/aes/cpu-cad-offline/README.md)
+
+`--method cad-bezier` uses that same CPU patch search, shared penalty law and pressure integration.
+It also persists a table of rational Bézier spans for each part. The table contains homogeneous
+control points, parameter ranges, position bounds and derivative ranges. Nonperiodic B-spline
+surfaces and Bézier faces up to degree three in each direction can use the compiled ray kernel.
+All workers share the immutable table in body coordinates. The optional offline command is
+`nc_cad_probes --prepare-parts part1.step part2.step --bezier`.
+[Bézier ray kernel](../src/cad_bezier_ray.cpp)
+
+The kernel tests candidate spans against the finite ray, bounds the two projected equations
+and recovers a single interior root with its oriented normal. A poorly conditioned projection,
+an ambiguous span, a hit near a span boundary, an irregular trim or an unsupported surface
+can require the native OCCT intersector. This path handles exits and segment queries during
+contact discovery, grouping and centroid-depth evaluation. The simulation retains the existing
+finite seed grid and its limitations for finding small disconnected regions. Step-interior
+collision detection remains a separate option.
+[CPU replay and dynamics measurements](../results/aes/cpu-bezier/README.md)
+
+#### Known limitations
 
 At a degenerate chart pole, two rings around the centroid ray must agree
 before the solver accepts the limiting depth.

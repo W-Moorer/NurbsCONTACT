@@ -132,7 +132,8 @@ struct SurfaceOptions {
     bool predictor_geometry{};
     std::optional<double> spectral_radius;
     bool chen() const { return method=="chen-2024" || method=="chen-2026"; }
-    bool cad() const { return method=="cad-occt" || method=="cad-local" || method=="cad-patch" || chen(); }
+    bool patch() const { return method=="cad-patch" || method=="cad-bezier"; }
+    bool cad() const { return method=="cad-occt" || method=="cad-local" || patch() || chen(); }
 };
 
 Input read_scene(const Path& path,double deflection,std::optional<PairBackend> pair_backend,
@@ -412,9 +413,9 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         };
         for (auto& pair:input.pairs) {
             const std::array centers{center(pair.a),center(pair.b)};
-            if (surface_options.method=="cad-patch") {
+            if (surface_options.patch()) {
                 pair.regions=cad_patch_region_query(shapes.at(files[pair.a]),shapes.at(files[pair.b]),centers,
-                                                    pair.material.maximum_depth);
+                                                    pair.material.maximum_depth,surface_options.method=="cad-bezier");
             } else if (surface_options.method=="cad-local") {
                 pair.regions=cad_local_region_query(shapes.at(files[pair.a]),shapes.at(files[pair.b]),centers,
                                                     pair.material.maximum_depth);
@@ -1157,7 +1158,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                     "mesh_detection_s,mesh_placement_s,mesh_boolean_s";
         for (std::size_t i=0;i<n;++i) progress<<",q"<<i<<",v"<<i;
         progress<<",mesh_pair_bvh_builds,mesh_pair_bvh_reuses,mesh_patch_builds,mesh_patch_reuses";
-        if (surface.method=="cad-patch") progress<<",cad_patch_queries,cad_patch_batches,cad_patch_broad_s,cad_patch_search_s,cad_patch_group_s,cad_patch_area_s";
+        if (surface.patch()) progress<<",cad_patch_queries,cad_patch_batches,cad_patch_broad_s,cad_patch_search_s,cad_patch_group_s,cad_patch_area_s";
         progress<<std::endl;
     }
     const auto progress_step=[&](std::size_t step,const State& accepted) {
@@ -1168,7 +1169,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         for (std::size_t i=0;i<n;++i) progress<<','<<accepted.q[i]<<','<<accepted.v[i];
         progress<<','<<work.mesh_pair_bvh_builds<<','<<work.mesh_pair_bvh_reuses
                 <<','<<work.mesh_patch_builds<<','<<work.mesh_patch_reuses;
-        if (surface.method=="cad-patch") progress<<','<<work.cad_patch_queries<<','<<work.cad_patch_batches
+        if (surface.patch()) progress<<','<<work.cad_patch_queries<<','<<work.cad_patch_batches
             <<','<<work.cad_patch_broad_s<<','<<work.cad_patch_search_s<<','<<work.cad_patch_group_s<<','<<work.cad_patch_area_s;
         progress<<std::endl;
     };
@@ -1436,7 +1437,7 @@ int main(int argc,char** argv) {
                         "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
                         "  or append --method bvh-aabb|bvh-obb|mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
                         "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl|finite|contour-ray] [--penalty-stiffness per-region|shared] [--geometry-update newton|predictor] [--spectral-radius RHO]\n"
-                        "  or append --method cad-occt|cad-local|cad-patch|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
+                        "  or append --method cad-occt|cad-local|cad-patch|cad-bezier|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
                         "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp [--progress FILE]\n";
             return 2;
         }
@@ -1482,9 +1483,9 @@ int main(int argc,char** argv) {
                 surface.method=surface.method=="bvh-aabb" ? "mesh-aabb" : "mesh-obb";
                 if (!region_specified) surface.mesh_regions="finite";
             }
-            if (surface.method=="cad-patch" && surface.impulse_law)
+            if (surface.patch() && surface.impulse_law)
                 throw std::invalid_argument("distributed CAD pressure requires the penalty solver");
-            if (surface.predictor_geometry && (surface.impulse_law || (surface.cad() && surface.method!="cad-patch")))
+            if (surface.predictor_geometry && (surface.impulse_law || (surface.cad() && !surface.patch())))
                 throw std::invalid_argument("predictor geometry requires a mesh or cad-patch penalty method");
             if (surface.share_penalty_stiffness && surface.impulse_law)
                 throw std::invalid_argument("shared penalty stiffness requires the penalty solver");
