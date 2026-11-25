@@ -20,6 +20,8 @@
 #include <map>
 #include <memory>
 #include <numeric>
+#include <set>
+#include <unordered_map>
 
 namespace {
 using namespace nc;
@@ -149,7 +151,7 @@ struct Atlas {
             face_boxes.push_back(bounds);
             body_box.Add(bounds);
             const auto face=TopoDS::Face(faces(f));
-            surfaces.emplace_back(std::make_unique<Face>(face));
+            surfaces.emplace_back(std::make_unique<Face>(face,true));
         }
         const auto stored = assets.table<StoredChart>(
             "charts-" + std::to_string(count), std::size_t(faces.Extent()) * count * count, [&] {
@@ -347,13 +349,62 @@ struct Proposal {
 using FacePair=std::array<std::size_t,2>;
 using Proposals=std::map<FacePair,std::vector<Proposal>>;
 
+// Each table bounds a neighbourhood of one relative rigid transformation.
+struct ChartWindow {
+    gp_Trsf anchor;
+    std::size_t bin;
+    std::vector<unsigned char> leaves;
+    void append(std::size_t delta) {
+        while (delta>=128) {
+            leaves.push_back(static_cast<unsigned char>((delta&127)|128));delta>>=7;
+        }
+        leaves.push_back(static_cast<unsigned char>(delta));
+    }
+    std::size_t read(std::size_t& offset) const {
+        std::size_t value=0;
+        for (unsigned shift=0;;shift+=7) {
+            const auto byte=leaves[offset++];
+            value|=std::size_t(byte&127)<<shift;
+            if (!(byte&128)) return value;
+        }
+    }
+};
 struct CandidateWindow {
-    std::optional<gp_Trsf> anchor, last;
-    std::vector<std::pair<int, int>> frontier;
-    std::vector<Box> placed;
-    std::vector<std::uint64_t> generation;
-    std::uint64_t step{};
-    double margin{};
+    std::deque<ChartWindow> saved;
+    std::unordered_multimap<std::size_t,const ChartWindow*> bins;
+    const ChartWindow* active{};
+    std::size_t bytes{};
+    static std::size_t key(const Box& box,const gp_Trsf& pose,double margin) {
+        std::size_t bin=0;
+        const auto mix=[&](double x) {
+            bin ^= std::hash<double>{}(std::floor(x/(8*margin))) + 0x9e3779b9u + (bin<<6) + (bin>>2);
+        };
+        const auto center=cad::point(box.center).Transformed(pose);
+        for (int i=1;i<=3;++i) {
+            mix(center.Coord(i));
+            for (int j=1;j<=3;++j) mix(pose.Value(i,j)*box.half[j-1]);
+        }
+        return bin;
+    }
+    void insert(ChartWindow window) {
+        constexpr std::size_t budget=32u*1024u*1024u;
+        const auto size=[](const ChartWindow& x) {
+            return sizeof(ChartWindow)+x.leaves.capacity()*sizeof(x.leaves.front())+64;
+        };
+        const auto extra=size(window);
+        while (!saved.empty() && bytes+extra>budget) {
+            const auto& old=saved.front();
+            const auto [first,last]=bins.equal_range(old.bin);
+            const auto it=std::find_if(first,last,[&](const auto& item){return item.second==&old;});
+            bins.erase(it);
+            bytes-=size(old);
+            saved.pop_front();
+        }
+        saved.push_back(std::move(window));
+        active=&saved.back();
+        bins.emplace(active->bin,active);
+        bytes+=extra;
+    }
 };
 // Bound displacement in each source-body coordinate for all points of the
 // target root box. Also bounds movement of every transformed child AABB.
@@ -375,75 +426,107 @@ bool collect_indexed(const Atlas& source, const Atlas& target, const gp_Trsf& po
     const auto& tiles=target.tile_index.nodes;
     if (sites.empty() || tiles.empty()) return false;
     const auto& root = tiles.front().box;
-    const bool rebuild = !cache.anchor || box_motion(root, pose, *cache.anchor) > cache.margin;
-    if (rebuild) {
-        const double advance = cache.last ? box_motion(root, pose, *cache.last) : 0.;
-        cache.margin = std::clamp(4 * advance, reach, std::max(reach, .05 * length(root.half)));
-        cache.anchor = pose;
-        cache.frontier.clear();
-    }
-    cache.last = pose;
-    const auto m=pose.VectorialPart();
-    auto window=source.body_box.Transformed(pose.Inverted()); window.Enlarge(reach);
-    if (cache.placed.empty()) {
-        cache.placed.resize(tiles.size());
-        cache.generation.resize(tiles.size());
-    }
-    ++cache.step;
-    const auto visit_tile = [&](auto&& self, int t, int s, bool expand) -> void {
-        const auto& tile=tiles[t];
-        auto& placed = cache.placed[t];
-        if (cache.generation[t] != cache.step) {
-            auto& box = placed;
-            box = tile.box;
-            box.center = cad::coordinates(cad::point(box.center).Transformed(pose));
-            for (int i = 0; i < 3; ++i) {
-                box.half[i] = reach + 1e-10;
-                for (int j = 0; j < 3; ++j)
-                    box.half[i] += std::abs(m.Value(i + 1, j + 1)) * tile.box.half[j];
-            }
-            cache.generation[t] = cache.step;
+    const double margin=reach;
+    const double turn=std::min(2.,margin/std::max(reach,length(root.half)));
+    const auto valid=[&](const gp_Trsf& anchor) {
+        if (box_motion(root,pose,anchor)>margin) return false;
+        double norm2=0;
+        for (int i=1;i<=3;++i) for (int j=1;j<=3;++j) {
+            const double d=pose.Value(i,j)-anchor.Value(i,j);norm2+=d*d;
         }
-        auto box = placed;
-        if (expand) {
-            const double roundoff =
-                64 * std::numeric_limits<double>::epsilon() *
-                (1 + length(root.center) + length(root.half) + pose.TranslationPart().Modulus());
-            for (auto& h : box.half)
-                h += cache.margin + Precision::Confusion() + roundoff;
-        }
-        const auto visit_sites=[&](auto&& descend,int k)->void {
-            const auto& site=sites[k];
-            if (!box.overlaps(site.box)) return;
-            if (expand && tile.count <= 64 && site.count <= 64) {
-                cache.frontier.emplace_back(t, k);
-                return;
-            }
-            if (tile.left>=0 && (site.left<0 || squared(box.half)>squared(site.box.half))) {
-                self(self, tile.left, k, expand);
-                self(self, tile.right, k, expand);
-                return;
-            }
-            if (site.left>=0) {descend(descend,site.left); descend(descend,site.right); return;}
-            const auto& f=target.charts[tile.chart];
-            const auto& p=source.charts[site.chart];
-            if (window.IsOut(f.search_box)) return;
-            auto old_box=f.search_box.Transformed(pose); old_box.Enlarge(reach);
-            if (old_box.IsOut(p.point)) return;
-            const auto n=f.normal.Transformed(pose);
-            const double cosine=-p.normal.Dot(n);
-            if (cosine<.5) return;
-            const double d=-gp_Vec(f.point.Transformed(pose),p.point).Dot(n)/cosine;
-            if (std::abs(d)>reach) return;
-            const FacePair pair=reverse ? FacePair{f.face,p.face} : FacePair{p.face,f.face};
-            candidates[pair].push_back({d,site.chart,tile.chart,reverse});
-        };
-        visit_sites(visit_sites,s);
+        return norm2<=2*turn*turn;
     };
-    if (rebuild) visit_tile(visit_tile, 0, 0, true);
-    for (const auto& [t, k] : cache.frontier)
-        visit_tile(visit_tile, t, k, false);
-    return rebuild;
+    bool built=false;
+    if (!cache.active || !valid(cache.active->anchor)) {
+        const auto bin=CandidateWindow::key(root,pose,margin);
+        const auto [first,last]=cache.bins.equal_range(bin);
+        cache.active=nullptr;
+        for (auto it=first;it!=last;++it) {
+            if (valid(it->second->anchor)) {cache.active=it->second;break;}
+        }
+        if (!cache.active) {
+            ChartWindow window{pose,bin,{}};
+            std::vector<std::pair<std::size_t,std::size_t>> leaves;
+            const auto matrix=pose.VectorialPart();
+            const double padding=reach+margin+Precision::Confusion()+
+                64*std::numeric_limits<double>::epsilon()*
+                (1+length(root.center)+length(root.half)+pose.TranslationPart().Modulus());
+            const auto visit_tile=[&](auto&& self,int t,int s)->void {
+                const auto& tile=tiles[t];
+                Box box;
+                box.center=cad::coordinates(cad::point(tile.box.center).Transformed(pose));
+                for (int i=0;i<3;++i) {
+                    box.half[i]=padding;
+                    for (int j=0;j<3;++j) box.half[i]+=std::abs(matrix.Value(i+1,j+1))*tile.box.half[j];
+                }
+                const auto visit_sites=[&](auto&& descend,int k)->void {
+                    const auto& site=sites[k];
+                    if (!box.overlaps(site.box)) return;
+                    if (tile.left>=0 && (site.left<0 || squared(tile.box.half)>squared(site.box.half))) {
+                        self(self,tile.left,k);self(self,tile.right,k);
+                    } else if (site.left>=0) {
+                        descend(descend,site.left);descend(descend,site.right);
+                    } else {
+                        const auto& f=target.charts[tile.chart];
+                        const auto& p=source.charts[site.chart];
+                        auto tight=f.search_box.Transformed(pose);
+                        tight.SetGap(tight.GetGap()+padding);
+                        if (tight.IsOut(p.point)) return;
+                        const auto n=f.normal.Transformed(pose);
+                        const auto v=gp_Vec(f.point.Transformed(pose),p.point);
+                        // Within this window a point moves by at most sqrt(3)*margin
+                        // and a unit normal by at most turn (spectral rotation norm).
+                        if (-n.Dot(p.normal)+turn+1e-12<.5 ||
+                            std::abs(v.Dot(n))>reach+std::sqrt(3.)*margin+v.Magnitude()*turn+Precision::Confusion()) return;
+                        leaves.emplace_back(tile.chart,site.chart);
+                    }
+                };
+                visit_sites(visit_sites,s);
+            };
+            visit_tile(visit_tile,0,0);
+            std::sort(leaves.begin(),leaves.end());
+            std::size_t tile=0,site=0;
+            for (auto [t,s]:leaves) {
+                window.append(t-tile);
+                window.append(t==tile ? s-site : s);
+                tile=t;site=s;
+            }
+            cache.insert(std::move(window));
+            built=true;
+        }
+    }
+    auto source_box=source.body_box.Transformed(pose.Inverted());
+    source_box.Enlarge(reach);
+    std::size_t last=std::numeric_limits<std::size_t>::max();
+    gp_Pnt origin;
+    gp_Vec outward;
+    Bnd_Box exact;
+    std::size_t t=0,s=0;
+    for (std::size_t offset=0;offset<cache.active->leaves.size();) {
+        const auto delta=cache.active->read(offset);
+        t+=delta;
+        s=(delta ? 0 : s)+cache.active->read(offset);
+        const auto& tile=target.charts[t];
+        if (last!=t) {
+            last=t;
+            exact.SetVoid();
+            if (!source_box.IsOut(tile.search_box)) {
+                exact=tile.search_box.Transformed(pose);
+                exact.Enlarge(reach);
+                origin=tile.point.Transformed(pose);
+                outward=tile.normal.Transformed(pose);
+            }
+        }
+        const auto& site=source.charts[s];
+        if (exact.IsVoid() || exact.IsOut(site.point)) continue;
+        const double cosine=-site.normal.Dot(outward);
+        if (cosine<.5) continue;
+        const double d=-gp_Vec(origin,site.point).Dot(outward)/cosine;
+        if (std::abs(d)>reach) continue;
+        const FacePair pair=reverse ? FacePair{tile.face,site.face} : FacePair{site.face,tile.face};
+        candidates[pair].push_back({d,s,t,reverse});
+    }
+    return built;
 }
 
 void collect(const Atlas& source,const Atlas& target,const gp_Trsf& target_in_source,
@@ -554,7 +637,11 @@ struct Search {
         const auto& surf=face.surface;
         double du=(surf.LastUParameter()-surf.FirstUParameter())/(2*grid);
         double dv=(surf.LastVParameter()-surf.FirstVParameter())/(2*grid);
-        for (int k=0;k<5 && !hit;++k,du*=.5,dv*=.5) {
+        const double grazing_band=std::sqrt(Precision::Confusion()*1000*reach);
+        for (int k=0;k<10 && !hit;++k,du*=.5,dv*=.5) {
+            // A nearly tangent pair can contain a loaded interior between
+            // the last two stencil points. Refine only these near misses.
+            if (k>=5 && score < -grazing_band) break;
             const auto center=best.site;
             for (const auto offset:std::array<std::array<int,2>,8>{{{1,0},{-1,0},{0,1},{0,-1},{1,1},{-1,1},{1,-1},{-1,-1}}}) {
                 Seed trial=best;
@@ -595,43 +682,28 @@ struct PressurePatch {Vec center,normal,arm;double depth;};
 std::optional<PressurePatch> integrate_patch(std::array<SurfaceQuadrature,2>& grids,
     CadExitQuery& ray_a,CadExitQuery& ray_b,const std::array<ContactPose,2>& poses,
     const std::vector<CadChord>& group,double reach) {
-    Vec axis{};
-    double best=-2.;
-    for (const auto& w:group) {
-        const auto a=poses[0].rotate(w.exits[0].outward),b=poses[1].rotate(w.exits[1].outward);
-        const double opposed=-dot3(a,b);
-        if (opposed>best) {best=opposed;axis=sub(a,b);}
-    }
-    if (length(axis)<1e-8) return {};
-    axis=scale(axis,1/length(axis));
     Vec area{},moment{},centroid{};
-    const Vec origin=group.front().region.point;
+    const Vec origin=poses[0].origin;
     double volume=0;
     for (int side=0;side<2;++side) {
         const int other=1-side;
         const double sign=side ? -1. : 1.;
-        const auto ray=scale(axis,-sign);
-        const auto direction=poses[other].inverse_rotate(ray);
         const auto world=cad::placement(poses[side]);
         const auto to_target=cad::placement(poses[other]).Inverted()*world;
-        const gp_Vec cast(direction[0],direction[1],direction[2]);
-        const auto segment=cast.XYZ()*(1000*reach);
-        std::map<std::size_t,std::map<std::size_t,Chart>> faces;
+        // The discovery chords identify the faces in this region. The material
+        // normal at each integration point defines its column independently.
+        std::map<std::size_t,std::set<std::size_t>> faces;
         for (const auto& w:group) {
-            const auto& t=w.exits[other];
-            auto& c=faces[w.exits[side].face][t.face];
-            c.face=t.face;c.u=t.uv[0];c.v=t.uv[1];
+            faces[w.exits[side].face].insert(w.exits[other].face);
         }
-        for (const auto& [id, targets] : faces) {
+        for (const auto& [id, face_set] : faces) {
+            const std::vector<std::size_t> targets(face_set.begin(),face_set.end());
             const auto& rule = grids[side].rule(id);
             for (const auto& block : rule.blocks) {
                 auto swept = block.bounds.Transformed(to_target);
-                gp_Trsf shift;
-                shift.SetTranslation(gp_Vec(segment));
-                swept.Add(swept.Transformed(shift));
-                swept.Enlarge(2 * Precision::Confusion());
+                swept.SetGap(swept.GetGap()+1000*reach+2*Precision::Confusion());
                 bool possible = false;
-                for (const auto& [face, seed] : targets) {
+                for (const auto face : targets) {
                     const auto& bounds = grids[other].body.face_boxes[face - 1];
                     if (!swept.IsOut(bounds) && grids[other].body.surfaces[face - 1]->block_possible(swept)) {
                         possible = true;
@@ -646,21 +718,26 @@ std::optional<PressurePatch> integrate_patch(std::array<SurfaceQuadrature,2>& gr
                     const auto& sample = rule.nodes[j];
                     const auto native = cad::point(scale(sample.point, 1000));
                     const auto local = native.Transformed(to_target);
-                    double depth = infinity;
-                    for (const auto& [face, seed] : targets) {
-                        if (!grids[other].body.surfaces[face - 1]->column_possible(local.XYZ(), segment))
-                            continue;
-                        const auto d =
-                            propose_depth(grids[other].body, seed, local, cast, reach * 1000, true);
-                        if (d && *d > 0.) depth = std::min(depth, *d * .001);
-                    }
-                    if (!std::isfinite(depth)) continue;
+                    const auto weight=length(sample.area);
+                    if (!(weight>0)) continue;
+                    const auto ray=poses[side].rotate(scale(sample.area,-1/weight));
+                    const auto direction=poses[other].inverse_rotate(ray);
+                    const gp_XYZ segment(direction[0]*1000*reach,direction[1]*1000*reach,direction[2]*1000*reach);
+                    const auto hint=std::find_if(targets.begin(),targets.end(),[&](auto face){
+                        return grids[other].body.surfaces[face-1]->column_possible(local.XYZ(),segment);
+                    });
+                    if (hint==targets.end()) continue;
+                    std::size_t tests=0;
+                    const auto hit=(other ? ray_b : ray_a).first_exit(
+                        scale(cad::coordinates(local),.001),direction,reach,*hint,tests,targets);
+                    if (!hit.face || !(hit.distance_m>0)) continue;
+                    const double depth=hit.distance_m;
                     const auto point = scale(cad::coordinates(native.Transformed(world)), .001);
                     const auto area_element = scale(poses[side].rotate(sample.area), sign);
                     const auto r = sub(point, origin);
                     area = add(area, area_element);
                     moment = add(moment, cross3(r, area_element));
-                    const double dv = depth * std::max(0., dot3(area_element, axis));
+                    const double dv = depth * weight;
                     centroid = add(centroid, scale(add(r, scale(ray, .5 * depth)), dv));
                     volume += dv;
                 }
@@ -895,7 +972,7 @@ using namespace dynamics;
 class PatchRegionQuery final : public PairRegionQuery {
 public:
     PatchRegionQuery(const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,double maximum,bool bezier):
-        a_(a),b_(b),search_(a,b,6,2*maximum,bezier),events_(cad_local_region_query(a,b,centers,maximum)) {}
+        a_(a),b_(b),search_(a,b,6,2*maximum,bezier),centers_(centers),maximum_(maximum) {}
     bool independent_cad_patch() const override {return true;}
     std::vector<ContactRegion> regions(ContactPose a,ContactPose b,ContactWork& work) const override {
         const std::array poses{a,b};
@@ -950,10 +1027,10 @@ public:
         return result;
     }
     SurfaceTransition transition(ContactPose a,ContactPose b,ContactPose c,ContactPose d,double eps) const override {
-        return events_->transition(a,b,c,d,eps);
+        return events().transition(a,b,c,d,eps);
     }
     SurfaceTransition transition(ContactPose a,ContactPose b,ContactPose c,ContactPose d,double eps,double dt) const override {
-        return events_->transition(a,b,c,d,eps,dt);
+        return events().transition(a,b,c,d,eps,dt);
     }
 private:
     std::vector<ContactRegion> whole_pressure(const std::array<ContactPose,2>& poses,ContactWork& work) const {
@@ -997,7 +1074,14 @@ private:
     mutable std::shared_ptr<const cad::BoundaryIndex> boundary_a_,boundary_b_;
     mutable cad::BoundaryWitness witness_;
     mutable cad::PatchSearch search_;
-    std::shared_ptr<const PairRegionQuery> events_;
+    std::array<Vec,2> centers_;
+    double maximum_;
+    mutable std::once_flag event_init_;
+    mutable std::shared_ptr<const PairRegionQuery> events_;
+    const PairRegionQuery& events() const {
+        std::call_once(event_init_,[&]{events_=cad_local_region_query(a_,b_,centers_,maximum_);});
+        return *events_;
+    }
 };
 }
 std::shared_ptr<const dynamics::PairRegionQuery> cad_patch_region_query(

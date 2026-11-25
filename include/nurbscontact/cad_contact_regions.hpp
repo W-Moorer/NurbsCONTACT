@@ -99,7 +99,7 @@ public:
     explicit CadExitQuery(const CadContactIndex& index, std::shared_ptr<const cad::BezierRayAtlas> bezier = {});
     ~CadExitQuery();
     CadExit first_exit(Vec origin, Vec direction, double reach_m, std::size_t hint,
-                       std::size_t& face_tests);
+                       std::size_t& face_tests, std::span<const std::size_t> required_faces = {});
     // Both endpoints must already be strictly interior to this solid.
     bool interior_segment(Vec a,Vec b,const CadExit* near_a=nullptr,const CadExit* near_b=nullptr);
     bool crosses_from_hints(Vec a,Vec b,const CadExit& near_a,const CadExit& near_b);

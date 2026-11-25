@@ -2,6 +2,7 @@
 #include "nurbscontact/cad_contact_regions.hpp"
 #include "../src/cad_boundary_distance.hpp"
 #include "../src/cad_bezier_ray.hpp"
+#include "../src/cad_patch_search.hpp"
 #include "../src/cad_local_solid.hpp"
 #include "../src/cad_planar_trim.hpp"
 #include "../src/cad_rigid_path.hpp"
@@ -149,6 +150,42 @@ void pressure_moment() {
     close(closed[0].depth_m,.001,1e-8,"sphere pole pressure depth");
     const auto open=patch->regions({},ContactPose{{0,0,.021}},work);
     require(open.empty(),"separated spheres acquired pressure");
+
+    cad::PatchSearch search(ball,ball,6,.003,true);
+    const std::array poses{ContactPose{},ContactPose{{.018,0,0}}};
+    const auto first=search.chord(poses,{.009,0,0},{1,0,0},{});
+    const auto second=search.chord(poses,{.009,.001,0},{.96,.28,0},{});
+    require(first && second,"expected two interior sphere chords");
+    const auto x=search.integrate(poses,{*first},0);
+    const auto y=search.integrate(poses,{*second},0);
+    require(x && y,"sphere pressure integration failed");
+    close(length(sub(x->point,y->point)),0,1e-12,"pressure centroid depends on witness");
+    close(length(sub(x->pressure_arm,y->pressure_arm)),0,1e-12,"pressure moment depends on witness");
+    close(std::abs(x->depth_m-y->depth_m),0,1e-12,"pressure depth depends on witness");
+    const auto initial=search.discover(poses,true,true);
+    search.discover({poses[0],ContactPose{{0,.018,0}}},true,true);
+    const auto revisit=search.discover(poses,true,true);
+    require(initial.window_builds==2 && revisit.window_builds==0,"did not reuse recurring relative placement");
+    require(initial.candidate_pairs==revisit.candidate_pairs && initial.labels==revisit.labels,
+            "revisited sphere contact candidates or component labels changed");
+
+    BRep_Builder builder;
+    TopoDS_Compound separated;
+    builder.MakeCompound(separated);
+    builder.Add(separated,ball);
+    builder.Add(separated,BRepPrimAPI_MakeSphere(gp_Pnt(0,25,0),10).Shape());
+    CadContactIndex both(separated);
+    CadExitQuery ray(both);
+    std::size_t tests=0;
+    const Vec direction{0,1,0};
+    const auto front_exit=ray.first_exit({},direction,.05,0,tests);
+    const auto back_exit=ray.first_exit({0,.025,0},direction,.05,0,tests);
+    require(front_exit.face && back_exit.face && front_exit.face!=back_exit.face,"expected two distinct exit faces");
+    const std::array allowed_near{front_exit.face},allowed_far{back_exit.face};
+    require(ray.first_exit({},direction,.05,front_exit.face,tests,allowed_near).face==front_exit.face,
+            "filtered query lost the first exit");
+    require(!ray.first_exit({},direction,.05,back_exit.face,tests,allowed_far).face,
+            "filtered query accepted an occluded exit");
 }
 
 void check(CadEventMethod chen) {

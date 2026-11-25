@@ -1,0 +1,13 @@
+{
+  "stage": 1,
+  "step": 46015,
+  "executable_sha256": "ef2d91f06009a6b8fc50ef1fb66c457ea022c862b2bed2e75b592a1d6d805616",
+  "regions": [
+    2,
+    2
+  ],
+  "torque_Nm": [
+    36.72543973416034,
+    36.72138766828048
+  ]
+}

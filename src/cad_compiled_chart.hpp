@@ -28,21 +28,51 @@ struct CompiledChart {
     struct Hull {gp_XYZ lo,hi,n;double low,high;};
     std::vector<Patch> patches;
     std::vector<Hull> hulls;
+    std::vector<std::array<Hull,4>> column_hulls;
     std::vector<double> ku,kv;
     mutable std::mutex adaptor_mutex;
     static Row polynomial(const Row& p) {
         return {p[0],(p[1]-p[0])*3.,((p[2]-p[1])-(p[1]-p[0]))*3.,
                 (p[3]-p[0])+(p[1]-p[2])*3.};
     }
-    explicit CompiledChart(const TopoDS_Face& f):surface(f),trims(f,Precision::PConfusion()),
+    explicit CompiledChart(const TopoDS_Face& f,bool refine_columns=false):surface(f),trims(f,Precision::PConfusion()),
         u0(surface.FirstUParameter()),u1(surface.LastUParameter()),
         v0(surface.FirstVParameter()),v1(surface.LastVParameter()),
         eu(std::max(32*Precision::PConfusion(),1e-7*(u1-u0))),
         ev(std::max(32*Precision::PConfusion(),1e-7*(v1-v0))) {
-        try { prepare(f); }
-        catch (const Standard_Failure&) {rectangular=false;patches.clear();hulls.clear();}
+        try { prepare(f,refine_columns); }
+        catch (const Standard_Failure&) {rectangular=false;patches.clear();hulls.clear();column_hulls.clear();}
     }
-    void prepare(const TopoDS_Face& f) {
+    // Subdivide a tensor-product control net at its parameter midpoint. The
+    // convex hull of each child encloses its entire subpatch.
+    static std::array<Patch,2> halves(const Patch& poles,bool along_u) {
+        std::array<Patch,2> result;
+        for (int i=0;i<4;++i) {
+            Row p;
+            for (int j=0;j<4;++j) p[j]=along_u ? poles[j][i] : poles[i][j];
+            const auto a=(p[0]+p[1])*.5,b=(p[1]+p[2])*.5,c=(p[2]+p[3])*.5;
+            const auto l=(a+b)*.5,r=(b+c)*.5,m=(l+r)*.5;
+            const std::array<Row,2> rows{{{p[0],a,l,m},{m,r,c,p[3]}}};
+            for (int side=0;side<2;++side) for (int j=0;j<4;++j)
+                (along_u ? result[side][j][i] : result[side][i][j])=rows[side][j];
+        }
+        return result;
+    }
+    static Hull enclosure(const Patch& poles) {
+        const auto& p=poles[0][0];
+        auto n=(poles[3][3]-p).Crossed(poles[0][3]-poles[3][0]);
+        if (n.SquareModulus()>0) n.Normalize();
+        Hull h{p,p,n,n.Dot(p),n.Dot(p)};
+        for (const auto& row:poles) for (const auto& q:row) {
+            for (int d=1;d<=3;++d) {
+                h.lo.SetCoord(d,std::min(h.lo.Coord(d),q.Coord(d)));
+                h.hi.SetCoord(d,std::max(h.hi.Coord(d),q.Coord(d)));
+            }
+            h.low=std::min(h.low,n.Dot(q));h.high=std::max(h.high,n.Dot(q));
+        }
+        return h;
+    }
+    void prepare(const TopoDS_Face& f,bool refine_columns) {
         rectangular=trims.Perform(gp_Pnt2d(.5*(u0+u1),.5*(v0+v1)))==TopAbs_IN;
         for (TopExp_Explorer it(f.Oriented(TopAbs_FORWARD),TopAbs_EDGE);rectangular && it.More();it.Next()) {
             double lo,hi;
@@ -76,7 +106,7 @@ struct CompiledChart {
             if (normal.SquareMagnitude()>0) normal.Normalize();
             const auto first=bez->Pole(1,1).XYZ();
             Hull hull{first,first,normal.XYZ(),normal.XYZ().Dot(first),normal.XYZ().Dot(first)};
-            Patch rows,coeff;
+            Patch rows,coeff,poles;
             for (int a=0;a<4;++a) {
                 Row values;
                 for (int b=0;b<4;++b) {
@@ -88,6 +118,7 @@ struct CompiledChart {
                     const double h=values[b].Dot(hull.n);
                     hull.low=std::min(hull.low,h); hull.high=std::max(hull.high,h);
                 }
+                poles[a]=values;
                 rows[a]=polynomial(values);
             }
             for (int b=0;b<4;++b) {
@@ -98,6 +129,13 @@ struct CompiledChart {
             }
             patches.push_back(coeff);
             hulls.push_back(hull);
+            if (refine_columns) {
+                std::array<Hull,4> sub;
+                int k=0;
+                for (const auto& u:halves(poles,true)) for (const auto& v:halves(u,false))
+                    sub[k++]=enclosure(v);
+                column_hulls.push_back(sub);
+            }
         }
     }
     bool block_possible(const Bnd_Box& swept) const {
@@ -123,11 +161,15 @@ struct CompiledChart {
         const auto q=p+segment;
         const gp_XYZ low(std::min(p.X(),q.X())-tol,std::min(p.Y(),q.Y())-tol,std::min(p.Z(),q.Z())-tol);
         const gp_XYZ high(std::max(p.X(),q.X())+tol,std::max(p.Y(),q.Y())+tol,std::max(p.Z(),q.Z())+tol);
-        for (const auto& h:hulls) {
+        const auto possible=[&](const Hull& h) {
             if (high.X()<h.lo.X() || low.X()>h.hi.X() || high.Y()<h.lo.Y() || low.Y()>h.hi.Y() ||
-                high.Z()<h.lo.Z() || low.Z()>h.hi.Z()) continue;
+                high.Z()<h.lo.Z() || low.Z()>h.hi.Z()) return false;
             const double x=p.Dot(h.n),y=q.Dot(h.n);
-            if (std::max(x,y)>=h.low-tol && std::min(x,y)<=h.high+tol) return true;
+            return std::max(x,y)>=h.low-tol && std::min(x,y)<=h.high+tol;
+        };
+        for (std::size_t i=0;i<hulls.size();++i) {
+            if (possible(hulls[i]) && (column_hulls.empty() ||
+                std::any_of(column_hulls[i].begin(),column_hulls[i].end(),possible))) return true;
         }
         return false;
     }

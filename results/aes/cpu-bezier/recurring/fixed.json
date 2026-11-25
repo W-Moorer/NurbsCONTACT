@@ -1,0 +1,92 @@
+{
+  "probe_sha256": "080aa6ea0528483aedd40339d3e30fa135b7b5c71879a09269c67f56b140c84d",
+  "witness_swap": {
+    "faces": [
+      4,
+      4
+    ],
+    "witness_displacement_mm": 1.4737844766824313,
+    "torque_Nm": [
+      140.24203694091887,
+      140.24203694091887
+    ],
+    "region_depth_um": [
+      [
+        13.856473490411478,
+        14.238824223366176,
+        14.294349637708693
+      ],
+      [
+        13.856473490411478,
+        14.238824223366176,
+        14.294349637708693
+      ]
+    ]
+  },
+  "stages": [
+    {
+      "stage": 1,
+      "windows": [
+        {
+          "mean_ms": 9.44089125,
+          "broad_ms": 3.13008375,
+          "window_builds": 160,
+          "window_reuses": 0
+        },
+        {
+          "mean_ms": 5.14354375,
+          "broad_ms": 0.47797999999999996,
+          "window_builds": 0,
+          "window_reuses": 160
+        },
+        {
+          "mean_ms": 5.5335825000000005,
+          "broad_ms": 0.52283125,
+          "window_builds": 0,
+          "window_reuses": 160
+        }
+      ],
+      "step5_Nm": 123.68986076206949,
+      "unresolved": 0,
+      "reference_poses": 20,
+      "reference_rms_Nm": 3.9128367364723684
+    },
+    {
+      "stage": 2,
+      "windows": [
+        {
+          "mean_ms": 25.912708750000004,
+          "broad_ms": 4.6807125,
+          "window_builds": 160,
+          "window_reuses": 0
+        },
+        {
+          "mean_ms": 20.77175125,
+          "broad_ms": 0.67106375,
+          "window_builds": 0,
+          "window_reuses": 160
+        },
+        {
+          "mean_ms": 21.9864975,
+          "broad_ms": 0.7466912499999999,
+          "window_builds": 0,
+          "window_reuses": 160
+        }
+      ],
+      "step5_Nm": 534.1020571369277,
+      "unresolved": 0,
+      "reference_poses": 28,
+      "reference_rms_Nm": 8.200570374762629
+    }
+  ],
+  "switch": {
+    "cad-patch": {
+      "regions": 2,
+      "torque_Nm": 35.417287329115254
+    },
+    "cad-bezier": {
+      "regions": 2,
+      "torque_Nm": 35.40503814730542
+    }
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "cad-bezier": {
+    "status": "complete",
+    "process_s": 1104.1378011000052,
+    "first_loaded_ms": [
+      0.30000000000000004,
+      0.30000000000000004
+    ],
+    "load_changes": [
+      1,
+      5
+    ],
+    "torque_reconstruction_max_error_Nm": 9.143223849150672e-07,
+    "torque_reconstruction_checked_steps": 49954,
+    "steps_with_solid_boolean": 17,
+    "wall_s_in_those_steps": 295.3447572999999,
+    "mean_step_ms_by_second": [
+      34.03708231,
+      18.2093799,
+      17.152568240000004,
+      17.090010959999997,
+      18.05312748
+    ],
+    "torque_vs_recurdyn_rms_Nm": 42.09497839801429,
+    "speed_vs_recurdyn_rms_rad_s": [
+      0.8795111366022357,
+      0.3008172600682586,
+      0.42390244597379995
+    ],
+    "te_vs_recurdyn_rms_mrad": [
+      0.02678074028890056,
+      0.12569260984668992
+    ]
+  },
+  "mesh-obb": {
+    "status": "complete",
+    "process_s": 294.9035367000033,
+    "first_loaded_ms": [
+      0.30000000000000004,
+      0.30000000000000004
+    ],
+    "load_changes": [
+      1,
+      5
+    ],
+    "steps_with_solid_boolean": 0,
+    "wall_s_in_those_steps": 0.0,
+    "mean_step_ms_by_second": [
+      10.91574052,
+      5.433373670000001,
+      4.02521399,
+      4.120266129999999,
+      3.84338932
+    ],
+    "torque_vs_recurdyn_rms_Nm": 29.1423846001526,
+    "speed_vs_recurdyn_rms_rad_s": [
+      0.5990254705760845,
+      0.2039660688336247,
+      0.27879400160025497
+    ],
+    "te_vs_recurdyn_rms_mrad": [
+      0.01951359982265053,
+      0.0565526254469035
+    ]
+  },
+  "cad-patch": {
+    "status": "timeout",
+    "process_s": 1800.2429264999955,
+    "last_accepted": {
+      "step": 32788.0,
+      "time_s": 3.2788000000024917,
+      "integration_s": 1756.7706105,
+      "mesh_triangle_tests": 0.0,
+      "mesh_booleans": 0.0,
+      "cad_booleans": 11.0,
+      "mesh_detection_s": 0.0,
+      "mesh_placement_s": 0.0,
+      "mesh_boolean_s": 0.0,
+      "q0": 618.0428995815074,
+      "v0": 188.04521219063116,
+      "q1": 309.01971919343106,
+      "v1": 94.15826125327898,
+      "q2": 154.50827518278925,
+      "v2": 47.14055169657746,
+      "mesh_pair_bvh_builds": 0.0,
+      "mesh_pair_bvh_reuses": 0.0,
+      "mesh_patch_builds": 0.0,
+      "mesh_patch_reuses": 0.0,
+      "cad_patch_queries": 66570.0,
+      "cad_patch_batches": 32845.0,
+      "cad_patch_broad_s": 69.61802479999962,
+      "cad_patch_search_s": 264.68909870000334,
+      "cad_patch_group_s": 198.87436979999944,
+      "cad_patch_area_s": 1748.603147400005
+    },
+    "common_frames": 32789,
+    "speed_vs_bezier_prefix_rms_rad_s": [
+      0.0008069819192443629,
+      0.0002854161328908177,
+      0.0001874557303193916
+    ]
+  },
+  "cad_vs_mesh": {
+    "output_torque_rms_Nm": 21.953167893744194,
+    "speed_rms_rad_s": [
+      0.4986047479242066,
+      0.16927554122129396,
+      0.22581747331841917
+    ]
+  },
+  "paired_cad_prefix": {
+    "steps_with_torque": 32760,
+    "end_s": 3.2788000000024917,
+    "max_abs_Nm": 0.8774927967857025,
+    "peak_time_s": 2.96490000000183,
+    "rms_Nm": 0.01638921785911805,
+    "at_original_peak_Nm": -0.001484676737703694,
+    "original_window_max_Nm": 0.06965354943710622,
+    "original_window_checked_steps": 41
+  }
+}

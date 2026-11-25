@@ -441,7 +441,7 @@ CadExitQuery::~CadExitQuery() = default;
 std::array<std::size_t,4> CadExitQuery::ray_counts() const {return data_->counts;}
 
 CadExit CadExitQuery::first_exit(Vec origin, Vec direction, double reach_m, std::size_t hint,
-                                std::size_t& face_tests) {
+                                std::size_t& face_tests,std::span<const std::size_t> required_faces) {
     const double reach = reach_m/mm, tol = Precision::Confusion();
     if (!std::isfinite(reach) || reach<=0 || !(std::abs(length(direction)-1.)<1e-8)
         || !std::all_of(origin.begin(),origin.end(),[](double x){return std::isfinite(x/mm);}))
@@ -457,6 +457,8 @@ CadExit CadExitQuery::first_exit(Vec origin, Vec direction, double reach_m, std:
         return b;
     };
     const auto& geometry = *data_->index.data_;
+    for (auto face:required_faces) if (!face || face>geometry.faces.size())
+        throw std::invalid_argument("invalid required CAD face");
     double nearest = reach+2*tol;
     CadExit hit;
     bool ambiguous = false, boundary = false;
@@ -530,11 +532,18 @@ CadExit CadExitQuery::first_exit(Vec origin, Vec direction, double reach_m, std:
     };
     try {
         if (hint && hint<=geometry.faces.size()) visit(hint-1);
+        for (auto face:required_faces) if (face!=hint) visit(face-1);
+        // A pressure column can only contribute on one of its opposing faces.
+        // A confirmed hit still needs the full-tree test for an earlier crossing.
+        if (!required_faces.empty() && !hit.face) return {};
         NearBox candidates(segment(std::min(reach,nearest+tol)));
         geometry.tree.Select(candidates);
-        for (auto i:candidates.faces) if (i+1!=hint) visit(i);
+        for (auto i:candidates.faces)
+            if (i+1!=hint && std::find(required_faces.begin(),required_faces.end(),i+1)==required_faces.end()) visit(i);
     } catch (const Standard_Failure&) { return {}; }
       catch (const dynamics::UnresolvedContact&) { return {}; }
+    if (!required_faces.empty() && std::find(required_faces.begin(),required_faces.end(),hit.face)==required_faces.end())
+        return {};
     return ambiguous || boundary ? CadExit{} : hit;
 }
 

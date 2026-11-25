@@ -282,10 +282,7 @@ def full_replay(args):
     )
 
 
-def history(csv_file, scene):
-    x = np.genfromtxt(csv_file, delimiter=",", names=True)
-    q, v, f = (np.column_stack([x[f"{key}{i}"] for i in range(3)]) for key in ("q", "v", "generalized_force"))
-    t = x["time_s"]
+def smooth_loads(scene, t, q, v):
     lines = iter(scene.read_text().splitlines())
     coords = []
     external = np.zeros_like(q)
@@ -298,6 +295,14 @@ def history(csv_file, scene):
             external[:, int(key)] += np.interp(t, table[:, 0], table[:, 1])
     p = np.asarray(coords)
     smooth = p[:, 6] - p[:, 3] * (q - p[:, 5]) - p[:, 4] * v + external
+    return p, smooth
+
+
+def history(csv_file, scene):
+    x = np.genfromtxt(csv_file, delimiter=",", names=True)
+    q, v, f = (np.column_stack([x[f"{key}{i}"] for i in range(3)]) for key in ("q", "v", "generalized_force"))
+    t = x["time_s"]
+    p, smooth = smooth_loads(scene, t, q, v)
     change = q - q[0]
     bodies, pairs = read_model(scene)
     shaft_bodies = [pairs[0][0], pairs[0][1], pairs[1][1]]
