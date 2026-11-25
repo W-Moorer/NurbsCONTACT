@@ -1,0 +1,57 @@
+{
+  "RecurDyn": {
+    "mean_torque_Nm": 138.06673474009287,
+    "peak_abs_torque_Nm": 509.32494922780234,
+    "torque_at_0p5ms_Nm": 440.83087641361493
+  },
+  "mesh": {
+    "speed_rms_vs_RecurDyn": [
+      0.5990254705760845,
+      0.2039660688336247,
+      0.27879400160025497
+    ],
+    "te_mrad_rms_vs_RecurDyn": [
+      0.01951359982265053,
+      0.0565526254469035
+    ],
+    "output_torque_Nm_rms_vs_RecurDyn": 29.1423846001526,
+    "peak_abs_torque_Nm": 432.7064738330969,
+    "mean_torque_Nm": 137.80435384864452,
+    "source_sha256": "422068b9d21aeb562bb8203c6313e469c245d4cb8f42d939d08186fc1d90595f",
+    "torque_at_0p5ms_Nm": 395.36754174056597,
+    "stage2_normal_at_0p5ms_N": 6368.833109481577,
+    "torque_rms_vs_original_RecurDyn_Nm": 73.50707267397998,
+    "output_torque_rms_by_second_Nm": [
+      30.02925607288394,
+      29.26652243867483,
+      28.51275219686812,
+      29.04911616962419,
+      28.831943338210593
+    ]
+  },
+  "cad": {
+    "speed_rms_vs_RecurDyn": [
+      0.8815415444629792,
+      0.301153670694799,
+      0.4245571739075734
+    ],
+    "te_mrad_rms_vs_RecurDyn": [
+      0.026867206784516616,
+      0.12564478663848572
+    ],
+    "output_torque_Nm_rms_vs_RecurDyn": 42.16382763700698,
+    "peak_abs_torque_Nm": 433.2724947902735,
+    "mean_torque_Nm": 137.79845411592564,
+    "source_sha256": "72e0539d6b50e5f2f5da569eb06ce053406cb30090ee86ec93c1a8e7e71d8518",
+    "torque_at_0p5ms_Nm": 433.2724947902735,
+    "stage2_normal_at_0p5ms_N": 6980.853555532868,
+    "torque_rms_vs_original_RecurDyn_Nm": 76.68467907256512,
+    "output_torque_rms_by_second_Nm": [
+      43.898917507636526,
+      41.855626660826246,
+      41.37271507411956,
+      41.86297100816371,
+      41.78189411021653
+    ]
+  }
+}

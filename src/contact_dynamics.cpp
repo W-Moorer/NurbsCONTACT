@@ -66,7 +66,7 @@ std::optional<WorldHit> hit(const ContactBodyState& body, Vec ray, Vec direction
 template<class Differential>
 bool assemble_contact(Forces* forces, const ContactMaterial& material, ContactSample& sample,
                       const ContactBodyState& a, const ContactBodyState& b, const Vector& velocity,
-                      const ImpactHistory& previous, const Differential& differential) {
+                      const ImpactHistory& previous, const Differential& differential,Vec pressure_arm={}) {
     const double depth = -sample.gap;
     const bool incident_law = material.approach_floor > 0;
     const std::size_t n = velocity.size();
@@ -112,9 +112,10 @@ bool assemble_contact(Forces* forces, const ContactMaterial& material, ContactSa
     if (!forces) return true;
     const double k = (material.exponent*elastic-damping_exponent*c*rate)/depth;
     for (std::size_t i=0;i<n;++i) {
-        forces->value[i] += jacobian[i]*normal_force + dot3(tangent[i],sample.friction);
+        const double normal_load=jacobian[i]+dot3(pressure_arm,sub(b.derivative[i].angular,a.derivative[i].angular));
+        forces->value[i] += normal_load*normal_force + dot3(tangent[i],sample.friction);
         for (std::size_t j=0;j<n;++j) {
-            const double product = jacobian[i]*jacobian[j];
+            const double product = normal_load*jacobian[j];
             forces->stiffness[i*n+j] += k*product;
             const double projection = dot3(tangent[i],slip)*dot3(tangent[j],slip)/(tangent_speed*tangent_speed);
             forces->damping[i*n+j] += c*product + friction*(dot3(tangent[i],tangent[j])-projection);
@@ -168,7 +169,7 @@ struct RegionEvaluation {
 };
 
 #ifdef _OPENMP
-// Only independent mesh geometries run concurrently. Material response and HHT
+// Each admitted pair owns its mutable geometry. Material response and HHT
 // assembly keep their original per-pair and per-region accumulation order.
 std::vector<RegionEvaluation> batch_mesh_regions(std::span<const ContactBodyState> bodies,
         std::span<const ContactPair> pairs,ContactWork& work) {
@@ -176,12 +177,15 @@ std::vector<RegionEvaluation> batch_mesh_regions(std::span<const ContactBodyStat
     if (workers<2 || omp_in_parallel()) return {};
     std::unordered_set<const PairRegionQuery*> seen;
     std::size_t faces=0;
+    bool cad_patch=false;
     for (const auto& pair:pairs) {
         const auto* query=pair.regions.get();
-        if (!query || !query->independent_mesh_faces() || !seen.insert(query).second) return {};
+        if (!query || (!query->independent_mesh_faces() && !query->independent_cad_patch()) ||
+            !seen.insert(query).second) return {};
+        cad_patch|=query->independent_cad_patch();
         faces+=query->independent_mesh_faces();
     }
-    if (faces<1024) return {};
+    if (!cad_patch && faces<1024) return {};
     std::vector<RegionEvaluation> batch(pairs.size());
     const auto start=std::chrono::steady_clock::now();
     int team=1;
@@ -198,10 +202,22 @@ std::vector<RegionEvaluation> batch_mesh_regions(std::span<const ContactBodyStat
             } catch (...) {evaluation.error=std::current_exception();}
         }
     }
-    work.mesh_detection_s+=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
-    ++work.mesh_parallel_batches;
-    work.mesh_max_workers=std::max(work.mesh_max_workers,static_cast<std::size_t>(team));
+    const double elapsed=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
+    if (cad_patch) {work.cad_patch_batch_s+=elapsed;++work.cad_patch_batches;}
+    else {
+        work.mesh_detection_s+=elapsed;
+        ++work.mesh_parallel_batches;
+        work.mesh_max_workers=std::max(work.mesh_max_workers,static_cast<std::size_t>(team));
+    }
     for (const auto& entry:batch) {
+        work.cad_patch_queries+=entry.work.cad_patch_queries;
+        work.cad_patch_broad_s+=entry.work.cad_patch_broad_s;
+        work.cad_patch_search_s+=entry.work.cad_patch_search_s;
+        work.cad_patch_group_s+=entry.work.cad_patch_group_s;
+        work.cad_patch_area_s+=entry.work.cad_patch_area_s;
+        work.cad_boolean_queries+=entry.work.cad_boolean_queries;
+        work.cad_region_common_s+=entry.work.cad_region_common_s;
+        work.cad_region_extract_s+=entry.work.cad_region_extract_s;
         work.mesh.nodes+=entry.work.mesh.nodes;
         work.mesh.triangles+=entry.work.mesh.triangles;
         work.mesh_pair_bvh_builds+=entry.work.mesh_pair_bvh_builds;
@@ -255,7 +271,7 @@ bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState&
                 const Vec relative=sub(db.at(rb),da.at(ra));
                 return std::pair{dot3(region.normal,relative),tangential(relative,region.normal)};
             };
-            if (!assemble_contact(shared && forces ? &local : forces,pair.material,item,a,b,velocity,previous,differential)) return false;
+            if (!assemble_contact(shared && forces ? &local : forces,pair.material,item,a,b,velocity,previous,differential,region.pressure_arm)) return false;
             loaded+=item.normal_force>0;
             if (!sample.resolved || item.gap<sample.gap) {
                 sample.gap=item.gap;

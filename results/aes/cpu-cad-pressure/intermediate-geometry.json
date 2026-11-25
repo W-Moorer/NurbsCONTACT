@@ -1,0 +1,60 @@
+[
+  {
+    "frames": 50001,
+    "witnesses_aligned": 92624,
+    "labels_changed": 0,
+    "face_ids_changed": 0,
+    "any_witness_changed": 0,
+    "max_aligned_difference_point_m_normal_depth_m": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "mesh_any_region_changed": 0,
+    "mesh_unresolved": 0,
+    "old_phase_s": [
+      291.5495552999997,
+      184.699678800001,
+      18.949790599999233
+    ],
+    "indexed_first_phase_s": [
+      101.13452449999977,
+      211.45120059999894,
+      20.611016899999115
+    ],
+    "process_s": {
+      "old": 575.7737564000054,
+      "indexed_first": 363.08321219999925,
+      "mesh_repeat": 129.3635936999999
+    }
+  },
+  {
+    "frames": 50001,
+    "witnesses_aligned": 281159,
+    "labels_changed": 0,
+    "face_ids_changed": 0,
+    "any_witness_changed": 0,
+    "max_aligned_difference_point_m_normal_depth_m": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "mesh_any_region_changed": 0,
+    "mesh_unresolved": 1,
+    "old_phase_s": [
+      243.69330409999915,
+      429.64938860000706,
+      483.5963233000017
+    ],
+    "indexed_first_phase_s": [
+      128.37426200000073,
+      315.42033660000004,
+      403.2694378999987
+    ],
+    "process_s": {
+      "old": 1179.3253324999969,
+      "indexed_first": 860.3454313000038,
+      "mesh_repeat": 317.0172132999942
+    }
+  }
+]

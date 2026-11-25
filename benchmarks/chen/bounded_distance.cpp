@@ -58,6 +58,41 @@ int regions(const TopoDS_Shape& a,const TopoDS_Shape& b) {
     return 0;
 }
 
+int pressure_patches(const TopoDS_Shape& a,const TopoDS_Shape& b,double reach) {
+    using namespace dynamics;
+    CadExitQuery ray_a{CadContactIndex(a)},ray_b{CadContactIndex(b)};
+    std::cout<<std::setprecision(17);
+    while ((std::cin>>std::ws).peek()!=std::char_traits<char>::eof()) {
+        const std::array poses{read_pose(),read_pose()};
+        ContactWork work;
+        const auto start=Clock::now();
+        std::vector<Vec> arms;
+        std::vector<ContactRegion> regions;
+        bool resolved=true;
+        try {
+            regions=cad::solid_regions(a.Moved(TopLoc_Location(cad::placement(poses[0]))),
+                                       b.Moved(TopLoc_Location(cad::placement(poses[1]))),work,false,&arms);
+            for (auto& region:regions) {
+                std::size_t tests=0;
+                auto chord=local_chord(ray_a,ray_b,poses,region.point,region.normal,reach,{},tests);
+                if (!chord) {resolved=false;break;}
+                region.depth_m=chord->region.depth_m;
+            }
+        } catch (const UnresolvedContact&) {resolved=false;}
+        std::cout<<"{\"query_s\":"<<elapsed(start)<<",\"resolved\":"<<(resolved?"true":"false")<<",\"patches\":[";
+        if (resolved) for (std::size_t i=0;i<regions.size();++i) {
+            if (i) std::cout<<',';
+            std::cout<<'[';
+            for (double x:regions[i].point) std::cout<<x<<',';
+            for (double x:regions[i].normal) std::cout<<x<<',';
+            for (double x:arms[i]) std::cout<<x<<',';
+            std::cout<<regions[i].depth_m<<']';
+        }
+        std::cout<<"]}"<<std::endl;
+    }
+    return 0;
+}
+
 // Time the fixed-pose geometry used by nc_contact, without CCD or the integrator.
 int profile_regions(const TopoDS_Shape& a,const TopoDS_Shape& b,double maximum_depth=0.) {
     const auto query=maximum_depth ? cad_local_region_query(a,b,{},maximum_depth)
@@ -307,9 +342,15 @@ int main(int argc,char** argv) {
     try {
         const bool local=argc==5 && std::string_view(argv[4])=="--local";
         const bool local_profile=argc==5 && std::string_view(argv[3])=="--profile-local-regions";
-        if (argc!=4 && !local && !local_profile) throw std::invalid_argument("nc_cad_distance_benchmark A.step B.step CAP_MM [--local] | --regions | --profile-regions | --profile-local-regions MAX_DEPTH_M | --normal-chords | --local-chords | --entry < poses.txt");
+        const bool pressure=argc==5 && std::string_view(argv[3])=="--pressure-patches";
+        if (argc!=4 && !local && !local_profile && !pressure) throw std::invalid_argument("nc_cad_distance_benchmark A.step B.step CAP_MM [--local] | --regions | --profile-regions | --profile-local-regions MAX_DEPTH_M | --pressure-patches REACH_M | --normal-chords | --local-chords | --entry < poses.txt");
         const auto a=read_step_shape(argv[1]),b=read_step_shape(argv[2]);
         if (std::string_view(argv[3])=="--regions") return regions(a,b);
+        if (pressure) {
+            const auto reach=std::stod(argv[4]);
+            if (!(reach>0 && std::isfinite(reach))) throw std::invalid_argument("invalid patch reach");
+            return pressure_patches(a,b,reach);
+        }
         if (local_profile) {
             const auto limit=std::stod(argv[4]);
             if (!(limit>0 && std::isfinite(limit))) throw std::invalid_argument("invalid local depth limit");

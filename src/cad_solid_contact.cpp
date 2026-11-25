@@ -76,7 +76,9 @@ public:
         gp_Pnt p;
         gp_Vec derivative;
         edge_.D1(t,p,derivative);
-        result=gp_Vec(origin_,p).Crossed(derivative).Coord(coordinate_);
+        const auto r=gp_Vec(origin_,p);
+        result=coordinate_<=3 ? r.Crossed(derivative).Coord(coordinate_) :
+                                -r.SquareMagnitude()*derivative.Coord(coordinate_-3);
         return std::isfinite(result);
     }
 private:
@@ -85,7 +87,7 @@ private:
     int coordinate_;
 };
 
-Vec vector_area(const TopoDS_Face& face,const gp_Pnt& origin) {
+Vec vector_area(const TopoDS_Face& face,const gp_Pnt& origin,Vec* moment) {
     Vec area{};
     for (TopExp_Explorer it(face,TopAbs_EDGE);it.More();it.Next()) {
         const auto edge=TopoDS::Edge(it.Current());
@@ -95,11 +97,12 @@ Vec vector_area(const TopoDS_Face& face,const gp_Pnt& origin) {
         TColStd_Array1OfReal knots(1,1+curve.NbIntervals(GeomAbs_C1));
         curve.Intervals(knots,GeomAbs_C1);
         for (int i=1;i<knots.Upper();++i) {
-            for (int k=0;k<3;++k) {
+            for (int k=0;k<(moment ? 6 : 3);++k) {
                 AreaIntegrand function(curve,origin,k+1);
                 math_KronrodSingleIntegration integral(function,knots(i),knots(i+1),15,1e-8,8);
                 if (!integral.IsDone()) throw UnresolvedContact("CAD contact boundary integration failed");
-                area[k]+=sign*integral.Value();
+                if (k<3) area[k]+=sign*integral.Value();
+                else (*moment)[k-3]+=sign*integral.Value();
             }
         }
     }
@@ -118,7 +121,8 @@ TopTools_IndexedMapOfShape source_faces(const TopoDS_Shape& shape,BRepAlgoAPI_Co
 }
 namespace cad {
 std::vector<dynamics::ContactRegion> solid_regions(const TopoDS_Shape& first,const TopoDS_Shape& second,
-                                                  dynamics::ContactWork& work,bool measure_span) try {
+                                                  dynamics::ContactWork& work,bool measure_span,
+                                                  std::vector<Vec>* pressure_moment_arms) try {
     ++work.cad_boolean_queries;
     BRepAlgoAPI_Common op;
     TopTools_ListOfShape args,tools;
@@ -143,7 +147,7 @@ std::vector<dynamics::ContactRegion> solid_regions(const TopoDS_Shape& first,con
         BRepGProp::VolumeProperties(solid,props,1e-8,true);
         if (!(props.Mass()>0)) throw UnresolvedContact("invalid CAD intersection volume");
         const auto origin=props.CentreOfMass();
-        Vec direction{};
+        Vec direction{},moment{};
         double total=0;
         bool source_a=false,source_b=false;
         for (TopExp_Explorer it(solid,TopAbs_FACE);it.More();it.Next()) {
@@ -152,8 +156,10 @@ std::vector<dynamics::ContactRegion> solid_regions(const TopoDS_Shape& first,con
             if (!on_a && !on_b) throw UnresolvedContact("CAD intersection face has no source");
             if (on_a==on_b) continue;
             source_a|=on_a; source_b|=on_b;
-            const Vec area=vector_area(face,origin);
+            Vec local_moment{};
+            const Vec area=vector_area(face,origin,pressure_moment_arms ? &local_moment : nullptr);
             direction=add(direction,scale(area,on_a ? 1. : -1.));
+            moment=add(moment,scale(local_moment,on_a ? 1. : -1.));
             total+=length(area);
         }
         const auto magnitude=length(direction);
@@ -168,6 +174,10 @@ std::vector<dynamics::ContactRegion> solid_regions(const TopoDS_Shape& first,con
             span=.001*(extent.CornerMax().Z()-extent.CornerMin().Z());
         }
         regions.push_back({scale(coordinates(origin),.001),n,span});
+        // Under uniform pressure, integral r x n dA = -1/2 integral |r|² dr.
+        // Use the same resultant magnitude as the shared spring law, and
+        // retain the full three-axis couple about the volume centroid in m.
+        if (pressure_moment_arms) pressure_moment_arms->push_back(scale(moment,.001/magnitude));
     }
     return regions;
 } catch (const Standard_Failure& e) {

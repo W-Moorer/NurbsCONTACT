@@ -1,0 +1,70 @@
+[
+  {
+    "stage": 1,
+    "poses": 50001,
+    "old_broad_local_group_s": [
+      291.5495552999997,
+      184.699678800001,
+      18.949790599999233
+    ],
+    "new_broad_local_group_s": [
+      49.53934980000021,
+      44.061969599999784,
+      3.1300748999999453
+    ],
+    "mesh_query_s": 44.74788529999994,
+    "different_face_sets": 0,
+    "different_partitions": 0,
+    "different_region_counts": 0,
+    "first_different_partition_steps": [],
+    "mesh_unresolved": 0,
+    "indexed_process": {
+      "frames": 50001,
+      "process_s": 132.61678080000274,
+      "executable_sha256": "3e1f82e4175c8acf929a6b296bfc63f9ea98563b6c7e58000f1da7f6ba6417ac",
+      "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+      "output_sha256": "cd97425e3a3a2c5c0cb6049aee59ae174e9a998aea6682adb008b05c84c97df6"
+    },
+    "mesh_process": {
+      "frames": 50001,
+      "process_s": 48.194449700000405,
+      "executable_sha256": "6f4d37ef052f528c3b0aa2cfcee676bf435c29244283256c5771e2dc16d0c321",
+      "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+      "output_sha256": "d935e148c42ad67b1f31e3cd019d160b55dd56200c19d223199b5f2a41488512"
+    }
+  },
+  {
+    "stage": 2,
+    "poses": 50001,
+    "old_broad_local_group_s": [
+      243.69330409999915,
+      429.64938860000706,
+      483.5963233000017
+    ],
+    "new_broad_local_group_s": [
+      69.62333800000066,
+      78.74882000000044,
+      111.52323759999952
+    ],
+    "mesh_query_s": 124.37961139999983,
+    "different_face_sets": 0,
+    "different_partitions": 0,
+    "different_region_counts": 0,
+    "first_different_partition_steps": [],
+    "mesh_unresolved": 1,
+    "indexed_process": {
+      "frames": 50001,
+      "process_s": 273.72972930000105,
+      "executable_sha256": "3e1f82e4175c8acf929a6b296bfc63f9ea98563b6c7e58000f1da7f6ba6417ac",
+      "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+      "output_sha256": "24eadec324e48d8a5fda1121d1a2d29fc1f1438ab7c4819a0f2599ab09c057e5"
+    },
+    "mesh_process": {
+      "frames": 50001,
+      "process_s": 128.62327289999666,
+      "executable_sha256": "6f4d37ef052f528c3b0aa2cfcee676bf435c29244283256c5771e2dc16d0c321",
+      "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+      "output_sha256": "4f7c48da481a77797cf9a10eed7f3347bcac9deeafed6365aaa9d7e4e5e58701"
+    }
+  }
+]

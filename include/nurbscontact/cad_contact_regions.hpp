@@ -100,7 +100,7 @@ public:
     CadExit first_exit(Vec origin, Vec direction, double reach_m, std::size_t hint,
                        std::size_t& face_tests);
     // Both endpoints must already be strictly interior to this solid.
-    bool interior_segment(Vec a,Vec b);
+    bool interior_segment(Vec a,Vec b,const CadExit* near_a=nullptr,const CadExit* near_b=nullptr);
     Vec surface_point(std::size_t face,std::array<double,2> uv) const;
 private:
     struct Data;

@@ -1,0 +1,11 @@
+{
+  "peak_N": 22.499130687198658,
+  "max_difference_N": 0.003213354836182611,
+  "steps": 800,
+  "reference_peak_N": 22.5,
+  "first_loaded_s": 0.04010000000000012,
+  "dt_s": 0.0001,
+  "duration_s": 0.08,
+  "executable_sha256": "e17dfe35584ced2c070d067a49e9be6a9251e98a4c8c6b23c964ecc5b022ff67",
+  "response_sha256": "34ee45bf099e5ff9678a900704f03edbac7daa3ce9f82c327dc705cf07de8e3e"
+}

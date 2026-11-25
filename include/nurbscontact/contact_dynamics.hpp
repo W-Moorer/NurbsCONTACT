@@ -51,6 +51,8 @@ struct ContactWork {
     std::size_t mesh_patch_builds{}, mesh_patch_reuses{};
     std::size_t mesh_parallel_batches{}, mesh_max_workers{};
     double cad_region_index_s{}, cad_region_select_s{}, cad_region_common_s{}, cad_region_extract_s{};
+    std::size_t cad_patch_queries{},cad_patch_batches{};
+    double cad_patch_batch_s{},cad_patch_broad_s{},cad_patch_search_s{},cad_patch_group_s{},cad_patch_area_s{};
 };
 
 struct ContactLineSample {
@@ -95,6 +97,7 @@ public:
 struct ContactRegion {
     Vec point, normal; // Common world-space point, unit normal from A toward B.
     double depth_m;
+    Vec pressure_arm{}; // Distributed normal moment about point per unit resultant (m).
 };
 
 class UnresolvedContact : public std::runtime_error {
@@ -120,6 +123,7 @@ public:
     virtual std::size_t predictor_slots() const {return 0;}
     // Finite mesh queries with private, pair-local mutable geometry return their face count.
     virtual std::size_t independent_mesh_faces() const {return 0;}
+    virtual bool independent_cad_patch() const {return false;}
     virtual std::vector<ContactRegion> regions(ContactPose a, ContactPose b, ContactWork& work) const = 0;
     // A sweep from a separated endpoint locates an entry or a release.
     virtual SurfaceTransition transition(ContactPose a0,ContactPose b0,ContactPose a1,ContactPose b1,

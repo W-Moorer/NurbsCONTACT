@@ -241,6 +241,41 @@ The finite search can miss a component and the path search can split one. The
 reducer replay checks both effects by classifying witnesses in independently
 computed STEP overlap volumes. [Verification and reproduction](../results/aes/cpu-local-cad/README.md)
 
+### Distributed pressure on CPU CAD patches
+
+`nc_contact --method cad-patch --solver penalty` uses the same scene and
+implicit integrator as `mesh-obb`. Both bodies provide trimmed STEP charts.
+The indexed search traverses the site and tile trees together. Positive
+witnesses have two oriented exits. Disjoint spline control hulls prune
+segment queries during grouping. Workers have private intersectors, and the
+solver assembles results in face-pair order. Polynomial bicubic knot spans
+use precomputed coefficients. Other surfaces use the OCCT adaptor.
+[Search and quadrature](../src/cad_patch_search.cpp)
+
+For each discovered component, quadrature on the participating faces computes
+the directed area, its first moment and a thickness-weighted centroid. A
+trimmed STEP chord through that centroid sets the scalar penetration. The
+shared spring stiffness sets the magnitude of the normal force. Uniform
+pressure over the region distributes that force and contributes a three-axis
+couple at the centroid. HHT transports both the point and couple during a
+predictor update. The area rule starts at 12 by 12 per face and retries
+unresolved components at 24, 48 and 96. If these rules cannot return a patch,
+the backend tries a whole-solid intersection at that pose. Empty witness
+sets require separated body boxes or a native solid-distance check,
+including enclosure testing. Possible overlap takes the whole-solid path.
+At a degenerate chart pole, two rings around the centroid ray must agree
+before the solver accepts the limiting depth.
+A resolved coarse rule has no a priori error bound. A nonempty witness set
+can still miss an additional disconnected component.
+[Force assembly](../src/contact_dynamics.cpp)
+
+`nc_cad_distance_benchmark --pressure-patches` (following the two STEP paths,
+with a reach in metres) integrates the boundary of every trimmed surface of
+the complete overlap under the same pressure convention. The replay tool
+`nc_cad_probes --patch-wrench` evaluates the discovered faces independently
+of this control. CPU force, torque and timing comparisons use common shaft
+poses and independently advanced trajectories. [Reducer results](../results/aes/cpu-cad-pressure/README.md)
+
 ## Free rigid bodies
 
 The optional v2 scene block after `drives` adds independent spatial bodies alongside existing hinges and sliders.

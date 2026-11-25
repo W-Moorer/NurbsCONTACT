@@ -82,6 +82,17 @@ void check_shared_pair_stiffness() {
     for (std::size_t i=0;i<4;++i)
         require(std::abs(shared.stiffness[i]-.5*sum.stiffness[i])<1e-12 &&
                 std::abs(shared.damping[i]-.5*sum.damping[i])<1e-12,"inconsistent shared penalty tangent");
+    // The point lies at both pivots. Only the integrated couple can load
+    // either shaft. The two generalized torques must be equal and opposite.
+    auto pivots=bodies;
+    pivots[0].derivative={Twist{{},{0,0,1}},Twist{}};
+    pivots[1].derivative={Twist{},Twist{{},{0,0,1}}};
+    geometry->points={ContactRegion{{},{1,0,0},.1,{0.,0.,.03}}};
+    Forces pressure{Vector(2),Vector(4),Vector(4)};
+    ContactWork work;
+    require(add_contact_forces(&pressure,pivots,std::span(&pair,1),{0.,0.},work) &&
+            std::abs(pressure.value[0]+.3)<1e-12 && std::abs(pressure.value[1]-.3)<1e-12,
+            "distributed normal couple did not load both shafts");
 }
 
 void check_spatial_wrench() {

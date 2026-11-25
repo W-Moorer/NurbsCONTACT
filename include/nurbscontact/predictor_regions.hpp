@@ -7,7 +7,7 @@ namespace nc::dynamics {
 // Transport loaded material points within a Newton solve. An empty predictor
 // or an opening support must be queried at the corrected trial pose.
 class PredictorRegions final : public PairRegionQuery {
-    struct Anchors {Vec a,b,normal_a,normal_b;};
+    struct Anchors {Vec a,b,normal_a,normal_b,couple_a,couple_b;};
     std::shared_ptr<const PairRegionQuery> exact_;
     mutable std::vector<Anchors> anchors_;
     mutable bool ready_{};
@@ -27,6 +27,7 @@ public:
     explicit PredictorRegions(std::shared_ptr<const PairRegionQuery> exact):exact_(std::move(exact)) {}
     void reset() {ready_=false;anchors_.clear();}
     std::size_t independent_mesh_faces() const override {return ready_ ? 0 : exact_->independent_mesh_faces();}
+    bool independent_cad_patch() const override {return !ready_ && exact_->independent_cad_patch();}
     std::vector<ContactRegion> regions(ContactPose a,ContactPose b,ContactWork& work) const override {
         if (!ready_) {
             const auto& points=query(a,b,work);
@@ -35,7 +36,8 @@ public:
                 const auto half=scale(p.normal,.5*p.depth_m);
                 anchors_.push_back({a.inverse_rotate(sub(add(p.point,half),a.origin)),
                     b.inverse_rotate(sub(sub(p.point,half),b.origin)),
-                    a.inverse_rotate(p.normal),b.inverse_rotate(p.normal)});
+                    a.inverse_rotate(p.normal),b.inverse_rotate(p.normal),
+                    a.inverse_rotate(p.pressure_arm),b.inverse_rotate(p.pressure_arm)});
             }
             ready_=true;
             return points;
@@ -49,7 +51,8 @@ public:
             if (norm<1.) throw UnresolvedContact("predictor contact frame rotated out of range");
             n=scale(n,1/norm);
             const double depth=dot3(sub(pa,pb),n);
-            if (depth>0) points.push_back({scale(add(pa,pb),.5),n,depth});
+            if (depth>0) points.push_back({scale(add(pa,pb),.5),n,depth,
+                                          scale(add(a.rotate(p.couple_a),b.rotate(p.couple_b)),.5)});
         }
         // Query fresh without replacing the predictor's anchors. A rejected
         // line-search trial must not change the force law for the next trial.

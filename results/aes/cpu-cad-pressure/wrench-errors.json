@@ -1,0 +1,178 @@
+[
+  {
+    "stage": 1,
+    "method": "mesh",
+    "reference_loaded": 21,
+    "resolved": 21,
+    "paired_poses": 21,
+    "paired_shaft_torque_rms_Nm": 6.549012415084614,
+    "load_rms_N": 115.6938950836116,
+    "force_vector_rms_N": 115.78608351534766,
+    "shaft_torque_rms_Nm": 6.549012415084614
+  },
+  {
+    "stage": 1,
+    "method": "deepest",
+    "reference_loaded": 21,
+    "resolved": 21,
+    "paired_poses": 21,
+    "paired_shaft_torque_rms_Nm": 45.528210599847654,
+    "load_rms_N": 812.2798408521235,
+    "force_vector_rms_N": 812.632660392396,
+    "shaft_torque_rms_Nm": 45.528210599847654
+  },
+  {
+    "stage": 1,
+    "method": "centroid",
+    "reference_loaded": 21,
+    "resolved": 21,
+    "paired_poses": 21,
+    "paired_shaft_torque_rms_Nm": 0.006360981454435947,
+    "load_rms_N": 2.977020225025522e-12,
+    "force_vector_rms_N": 3.0606091007756617e-12,
+    "shaft_torque_rms_Nm": 0.006360981454435947
+  },
+  {
+    "stage": 1,
+    "method": "pressure",
+    "reference_loaded": 21,
+    "resolved": 21,
+    "paired_poses": 21,
+    "paired_shaft_torque_rms_Nm": 0.0,
+    "load_rms_N": 0.0,
+    "force_vector_rms_N": 0.0,
+    "shaft_torque_rms_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "method": "area-0",
+    "reference_loaded": 21,
+    "resolved": 21,
+    "paired_poses": 21,
+    "paired_shaft_torque_rms_Nm": 3.8690558275446674,
+    "load_rms_N": 68.91176258360235,
+    "force_vector_rms_N": 69.46246040023847,
+    "shaft_torque_rms_Nm": 3.8690558275446674
+  },
+  {
+    "stage": 1,
+    "method": "area-24",
+    "reference_loaded": 21,
+    "resolved": 21,
+    "paired_poses": 21,
+    "paired_shaft_torque_rms_Nm": 2.2322834912233893,
+    "load_rms_N": 38.651959796008335,
+    "force_vector_rms_N": 39.20277742170261,
+    "shaft_torque_rms_Nm": 2.2322834912233893
+  },
+  {
+    "stage": 1,
+    "method": "area-48",
+    "reference_loaded": 21,
+    "resolved": 21,
+    "paired_poses": 21,
+    "paired_shaft_torque_rms_Nm": 1.103127611545903,
+    "load_rms_N": 21.12923605192683,
+    "force_vector_rms_N": 21.560843400533024,
+    "shaft_torque_rms_Nm": 1.103127611545903
+  },
+  {
+    "stage": 1,
+    "method": "area-96",
+    "reference_loaded": 21,
+    "resolved": 21,
+    "paired_poses": 21,
+    "paired_shaft_torque_rms_Nm": 0.4887590568800744,
+    "load_rms_N": 9.567533983586761,
+    "force_vector_rms_N": 10.276566720176591,
+    "shaft_torque_rms_Nm": 0.4887590568800744
+  },
+  {
+    "stage": 2,
+    "method": "mesh",
+    "reference_loaded": 23,
+    "resolved": 22,
+    "paired_poses": 22,
+    "paired_shaft_torque_rms_Nm": 73.85725841748689,
+    "load_rms_N": 1201.1196998472044,
+    "force_vector_rms_N": 1201.5930054579728,
+    "shaft_torque_rms_Nm": 73.85725841748689
+  },
+  {
+    "stage": 2,
+    "method": "deepest",
+    "reference_loaded": 23,
+    "resolved": 23,
+    "paired_poses": 22,
+    "paired_shaft_torque_rms_Nm": 128.29325105050705,
+    "load_rms_N": 1324.9223018263976,
+    "force_vector_rms_N": 2223.6515501986746,
+    "shaft_torque_rms_Nm": 129.05766343910238
+  },
+  {
+    "stage": 2,
+    "method": "centroid",
+    "reference_loaded": 23,
+    "resolved": 23,
+    "paired_poses": 22,
+    "paired_shaft_torque_rms_Nm": 0.1278878415057831,
+    "load_rms_N": 7.761423699424139e-11,
+    "force_vector_rms_N": 7.743850640991792e-11,
+    "shaft_torque_rms_Nm": 0.12565866269826292
+  },
+  {
+    "stage": 2,
+    "method": "pressure",
+    "reference_loaded": 23,
+    "resolved": 23,
+    "paired_poses": 22,
+    "paired_shaft_torque_rms_Nm": 0.0,
+    "load_rms_N": 0.0,
+    "force_vector_rms_N": 0.0,
+    "shaft_torque_rms_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "method": "area-0",
+    "reference_loaded": 23,
+    "resolved": 23,
+    "paired_poses": 22,
+    "paired_shaft_torque_rms_Nm": 9.36671585782584,
+    "load_rms_N": 149.46541898714972,
+    "force_vector_rms_N": 153.3238450051061,
+    "shaft_torque_rms_Nm": 9.161546668358715
+  },
+  {
+    "stage": 2,
+    "method": "area-24",
+    "reference_loaded": 23,
+    "resolved": 21,
+    "paired_poses": 20,
+    "paired_shaft_torque_rms_Nm": 1.2723202601925938,
+    "load_rms_N": 23.37941739260752,
+    "force_vector_rms_N": 27.929573295088122,
+    "shaft_torque_rms_Nm": 1.2416957850901857
+  },
+  {
+    "stage": 2,
+    "method": "area-48",
+    "reference_loaded": 23,
+    "resolved": 23,
+    "paired_poses": 22,
+    "paired_shaft_torque_rms_Nm": 5.09490255508439,
+    "load_rms_N": 80.42032043909323,
+    "force_vector_rms_N": 80.58177628341514,
+    "shaft_torque_rms_Nm": 4.983026051473862
+  },
+  {
+    "stage": 2,
+    "method": "area-96",
+    "reference_loaded": 23,
+    "resolved": 23,
+    "paired_poses": 22,
+    "paired_shaft_torque_rms_Nm": 0.4478880359432957,
+    "load_rms_N": 7.346874515942206,
+    "force_vector_rms_N": 7.842189966504575,
+    "shaft_torque_rms_Nm": 0.43829319370863956
+  }
+]

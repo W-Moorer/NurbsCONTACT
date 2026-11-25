@@ -69,6 +69,29 @@ void local_region_depths() {
     require(two->regions(origin,right,work).size()==2,"missed new contact while the first persisted");
 }
 
+void pressure_moment() {
+    // Every pressure normal through the spherical patch passes through the
+    // sphere center. Two unequal cuts give a noncentral volume centroid.
+    const auto ball=BRepPrimAPI_MakeSphere(10.).Shape();
+    const auto corner=BRepPrimAPI_MakeBox(gp_Pnt(6.,2.,-12.),gp_Pnt(12.,12.,12.)).Shape();
+    for (bool swap:{false,true}) {
+        ContactWork work;
+        std::vector<Vec> arms;
+        const auto regions=cad::solid_regions(swap ? corner:ball,swap ? ball:corner,work,false,&arms);
+        require(regions.size()==1 && arms.size()==1,"sphere pressure patch missing");
+        require(length(arms[0])>1e-5,"asymmetric sphere pressure patch needs a couple");
+        close(length(add(cross3(regions[0].point,regions[0].normal),arms[0])),0.,2e-8,
+              "uniform spherical pressure must have zero moment about sphere center");
+    }
+    const auto patch=cad_patch_region_query(ball,ball,{},.002);
+    ContactWork work;
+    const auto closed=patch->regions({},ContactPose{{0,0,.019}},work);
+    require(closed.size()==1,"empty chart candidates lost sphere pole contact");
+    close(closed[0].depth_m,.001,1e-8,"sphere pole pressure depth");
+    const auto open=patch->regions({},ContactPose{{0,0,.021}},work);
+    require(open.empty(),"separated spheres acquired pressure");
+}
+
 void check(CadEventMethod chen) {
     const auto ball=BRepPrimAPI_MakeSphere(10.).Shape();
     auto balls=cad_solid_region_query(ball,ball,{},chen);
@@ -277,7 +300,7 @@ void local_solids() {
 }
 }
 int main(int argc,char** argv) {
-    try { if (argc==1) { local_region_depths(); boundary_distances(); local_solids(); }
+    try { if (argc==1) { local_region_depths(); pressure_moment(); boundary_distances(); local_solids(); }
           check(argc==1 ? CadEventMethod::conservative_advancement :
                 std::string_view(argv[1])=="--chen-2026" ? CadEventMethod::chen_2026 : CadEventMethod::chen_2024); }
     catch (const Standard_Failure& e) { std::cerr<<e.GetMessageString()<<'\n'; return 1; }

@@ -1,0 +1,122 @@
+[
+  {
+    "step": 0,
+    "time_s": 0.0,
+    "integration_s": 5.4655677,
+    "cad_booleans": 0.0,
+    "cad_patch_queries": 2.0,
+    "cad_patch_batches": 1.0,
+    "cad_patch_broad_s": 0.0019049,
+    "cad_patch_search_s": 9.993590000000001,
+    "cad_patch_group_s": 6e-07,
+    "cad_patch_area_s": 0.0
+  },
+  {
+    "step": 5,
+    "time_s": 0.0005,
+    "integration_s": 33.9580325,
+    "cad_booleans": 0.0,
+    "cad_patch_queries": 21.0,
+    "cad_patch_batches": 6.0,
+    "cad_patch_broad_s": 0.011565400000000002,
+    "cad_patch_search_s": 46.38470800000001,
+    "cad_patch_group_s": 0.0136048,
+    "cad_patch_area_s": 0.014277900000000001
+  },
+  {
+    "step": 10,
+    "time_s": 0.0010000000000000002,
+    "integration_s": 74.009956,
+    "cad_booleans": 0.0,
+    "cad_patch_queries": 40.0,
+    "cad_patch_batches": 11.0,
+    "cad_patch_broad_s": 0.0210582,
+    "cad_patch_search_s": 86.4209821,
+    "cad_patch_group_s": 0.02015329999999999,
+    "cad_patch_area_s": 0.021131199999999996
+  },
+  {
+    "step": 20,
+    "time_s": 0.0020000000000000005,
+    "integration_s": 96.1299787,
+    "cad_booleans": 0.0,
+    "cad_patch_queries": 72.0,
+    "cad_patch_batches": 21.0,
+    "cad_patch_broad_s": 0.0371257,
+    "cad_patch_search_s": 108.50361489999999,
+    "cad_patch_group_s": 0.034672800000000004,
+    "cad_patch_area_s": 0.04927239999999999
+  },
+  {
+    "step": 100,
+    "time_s": 0.009999999999999995,
+    "integration_s": 96.5015226,
+    "cad_booleans": 0.0,
+    "cad_patch_queries": 232.0,
+    "cad_patch_batches": 101.0,
+    "cad_patch_broad_s": 0.12402580000000002,
+    "cad_patch_search_s": 108.6629464,
+    "cad_patch_group_s": 0.18878440000000005,
+    "cad_patch_area_s": 0.13989310000000005
+  },
+  {
+    "step": 1000,
+    "time_s": 0.10000000000000184,
+    "integration_s": 100.380963,
+    "cad_booleans": 0.0,
+    "cad_patch_queries": 2032.0,
+    "cad_patch_batches": 1001.0,
+    "cad_patch_broad_s": 1.1383240000000037,
+    "cad_patch_search_s": 110.25203339999992,
+    "cad_patch_group_s": 1.5337160000000007,
+    "cad_patch_area_s": 1.2832513999999966
+  },
+  {
+    "step": 5000,
+    "time_s": 0.49999999999996125,
+    "integration_s": 119.7892854,
+    "cad_booleans": 0.0,
+    "cad_patch_queries": 10138.0,
+    "cad_patch_batches": 5009.0,
+    "cad_patch_broad_s": 7.117797000000021,
+    "cad_patch_search_s": 116.31690159999984,
+    "cad_patch_group_s": 8.763240499999934,
+    "cad_patch_area_s": 7.159871100000011
+  },
+  {
+    "step": 10000,
+    "time_s": 0.9999999999999062,
+    "integration_s": 151.2263944,
+    "cad_booleans": 0.0,
+    "cad_patch_queries": 20337.0,
+    "cad_patch_batches": 10023.0,
+    "cad_patch_broad_s": 16.630889800000016,
+    "cad_patch_search_s": 125.64604130000004,
+    "cad_patch_group_s": 20.890316200000218,
+    "cad_patch_area_s": 16.457430900000027
+  },
+  {
+    "step": 25000,
+    "time_s": 2.500000000000851,
+    "integration_s": 257.0543863,
+    "cad_booleans": 0.0,
+    "cad_patch_queries": 50958.0,
+    "cad_patch_batches": 25069.0,
+    "cad_patch_broad_s": 48.56521449999991,
+    "cad_patch_search_s": 157.01948559999903,
+    "cad_patch_group_s": 62.119208400001476,
+    "cad_patch_area_s": 47.48493100000019
+  },
+  {
+    "step": 50000,
+    "time_s": 5.000000000001675,
+    "integration_s": 436.5222165,
+    "cad_booleans": 0.0,
+    "cad_patch_queries": 101993.0,
+    "cad_patch_batches": 50151.0,
+    "cad_patch_broad_s": 102.48396179999992,
+    "cad_patch_search_s": 210.43487389999876,
+    "cad_patch_group_s": 131.8929808000082,
+    "cad_patch_area_s": 100.2527570999987
+  }
+]

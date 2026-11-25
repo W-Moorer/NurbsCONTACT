@@ -1,4 +1,5 @@
 #include "nurbscontact/cad_contact_regions.hpp"
+#include "cad_compiled_chart.hpp"
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepBndLib.hxx>
@@ -11,6 +12,7 @@
 #include <Geom2d_Line.hxx>
 #include <Geom2d_TrimmedCurve.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
+#include <Geom_BSplineSurface.hxx>
 #include <IntCurvesFace_Intersector.hxx>
 #include <gp_Lin.hxx>
 #include <NCollection_UBTreeFiller.hxx>
@@ -334,9 +336,86 @@ CadContactIndex::CadContactIndex(const TopoDS_Shape& shape) {
 std::size_t CadContactIndex::face_count() const { return data_->faces.size(); }
 
 struct CadExitQuery::Data {
-    explicit Data(const CadContactIndex& index) : index(index), rays(index.face_count()) {}
+    struct Cell {
+        Bnd_Box box;
+        gp_XYZ n;
+        double lo=0.,hi=0.;
+        bool possible(const gp_XYZ& a,const gp_XYZ& b,const Bnd_Box& segment,double tol) const {
+            if (box.IsOut(segment)) return false;
+            const double x=n.Dot(a),y=n.Dot(b);
+            return std::max(x,y)>=lo-tol && std::min(x,y)<=hi+tol;
+        }
+    };
+    explicit Data(const CadContactIndex& index) : index(index), rays(index.face_count()),cells(index.face_count()),
+                                                  charts(index.face_count()) {}
     CadContactIndex index;
     std::vector<Handle(IntCurvesFace_Intersector)> rays;
+    std::vector<std::optional<std::vector<Cell>>> cells;
+    std::vector<std::unique_ptr<cad::CompiledChart>> charts;
+    bool crosses(const gp_Pnt& p,const gp_Vec& direction,double span,const CadExit* hint) {
+        if (!hint || !hint->face) return false;
+        const gp_Vec outward(hint->outward[0],hint->outward[1],hint->outward[2]);
+        if (direction.Dot(outward)<1e-5) return false;
+        auto& chart=charts[hint->face-1];
+        if (!chart) chart=std::make_unique<cad::CompiledChart>(index.data_->faces[hint->face-1].shape);
+        double u=hint->uv[0],v=hint->uv[1];
+        for (int j=0;j<5;++j) {
+            gp_Pnt q;gp_Vec du,dv;
+            chart->d1(u,v,q,du,dv);
+            const gp_Vec delta(p,q);
+            const double t=delta.Dot(direction);
+            const auto residual=delta-direction*t;
+            const auto c=dv.Crossed(direction);
+            const double det=du.Dot(c);
+            if (std::abs(det)<=1e-7*du.Magnitude()*dv.Magnitude()) return false;
+            if (residual.SquareMagnitude()<1e-16) {
+                const double tol=4*Precision::Confusion();
+                return t>tol && t<span-tol && chart->inside(u,v);
+            }
+            u-=residual.Dot(c)/det;
+            v-=residual.Dot(direction.Crossed(du))/det;
+            if (u<chart->u0 || u>chart->u1 || v<chart->v0 || v>chart->v1) return false;
+        }
+        return false;
+    }
+    bool possible(std::size_t i,const gp_Pnt& a,const gp_Pnt& b,const Bnd_Box& segment) {
+        auto& cached=cells[i];
+        const auto& f=index.data_->faces[i].shape;
+        const double tol=std::max(Precision::Confusion(),BRep_Tool::Tolerance(f));
+        if (!cached) {
+            cached.emplace();
+            try {
+                BRepAdaptor_Surface s(f);
+                if (s.GetType()==GeomAbs_BSplineSurface) {
+                    const auto source=s.BSpline();
+                    // Positive rational B-spline weights bound the surface by
+                    // its poles, including trimmed faces and curved boundaries.
+                    const double u=s.FirstUParameter(),v=s.FirstVParameter();
+                    const double du=(s.LastUParameter()-u)/6,dv=(s.LastVParameter()-v)/6;
+                    for (int h=0;h<6;++h) for (int k=0;k<6;++k) {
+                        const auto patch=Handle(Geom_BSplineSurface)::DownCast(source->Copy());
+                        patch->Segment(u+h*du,u+(h+1)*du,v+k*dv,v+(k+1)*dv);
+                        gp_Pnt p; gp_Vec tu,tv;
+                        patch->D1(u+(h+.5)*du,v+(k+.5)*dv,p,tu,tv);
+                        auto n=tu.Crossed(tv);
+                        if (n.SquareMagnitude()>1e-28) n.Normalize();
+                        Cell cell; cell.n=n.XYZ(); cell.lo=infinity; cell.hi=-infinity;
+                        for (int r=1;r<=patch->NbUPoles();++r) for (int c=1;c<=patch->NbVPoles();++c) {
+                            const auto point=patch->Pole(r,c);
+                            cell.box.Add(point);
+                            const double d=cell.n.Dot(point.XYZ());
+                            cell.lo=std::min(cell.lo,d); cell.hi=std::max(cell.hi,d);
+                        }
+                        cell.box.SetGap(tol);
+                        cached->push_back(cell);
+                    }
+                }
+            } catch (const Standard_Failure&) {cached->clear();}
+        }
+        return cached->empty() || std::any_of(cached->begin(),cached->end(),[&](const Cell& c) {
+            return c.possible(a.XYZ(),b.XYZ(),segment,tol);
+        });
+    }
 };
 
 CadExitQuery::CadExitQuery(const CadContactIndex& index) : data_(std::make_unique<Data>(index)) {}
@@ -365,7 +444,10 @@ CadExit CadExitQuery::first_exit(Vec origin, Vec direction, double reach_m, std:
     TopoDS_Edge first_edge;
     const auto visit = [&](std::size_t i) {
         const auto& face=geometry.faces[i];
-        if (face.bounds.IsOut(segment(std::min(reach,nearest+tol))) || face.bounds.IsOut(line)) return;
+        const double end=std::min(reach,nearest+tol);
+        const auto box=segment(end);
+        if (face.bounds.IsOut(box) || face.bounds.IsOut(line) ||
+            !data_->possible(i,p.Translated(-gp_Vec(d)*tol),p.Translated(gp_Vec(d)*end),box)) return;
         ++face_tests;
         auto& ray=data_->rays[i];
         if (ray.IsNull()) ray=new IntCurvesFace_Intersector(face.shape,tol);
@@ -419,7 +501,7 @@ CadExit CadExitQuery::first_exit(Vec origin, Vec direction, double reach_m, std:
     return ambiguous || boundary ? CadExit{} : hit;
 }
 
-bool CadExitQuery::interior_segment(Vec a,Vec b) {
+bool CadExitQuery::interior_segment(Vec a,Vec b,const CadExit* near_a,const CadExit* near_b) {
     const gp_Pnt p(a[0]/mm,a[1]/mm,a[2]/mm),q(b[0]/mm,b[1]/mm,b[2]/mm);
     const double span=p.Distance(q),tol=Precision::Confusion();
     if (span==0) return true;
@@ -430,8 +512,12 @@ bool CadExitQuery::interior_segment(Vec a,Vec b) {
     const auto& geometry=*data_->index.data_;
     geometry.tree.Select(candidates);
     try {
+        const gp_Vec d(line.Direction());
+        if (data_->crosses(p,d,span,near_a) || data_->crosses(q,-d,span,near_b)) return false;
         for (auto i:candidates.faces) {
-            if (geometry.faces[i].bounds.IsOut(line)) continue;
+            if (geometry.faces[i].bounds.IsOut(line) ||
+                !data_->possible(i,p.Translated(-gp_Vec(line.Direction())*tol),
+                                 q.Translated(gp_Vec(line.Direction())*tol),box)) continue;
             auto& ray=data_->rays[i];
             if (ray.IsNull()) ray=new IntCurvesFace_Intersector(geometry.faces[i].shape,tol);
             ray->Perform(line,-tol,span+tol);
@@ -468,7 +554,7 @@ bool interior_path(CadExitQuery& a,CadExitQuery& b,const std::array<ContactPose,
     const auto& p=x.region.point; const auto& q=y.region.point;
     for (int i=0;i<2;++i) {
         const auto local=[&](Vec v){return poses[i].inverse_rotate(sub(v,poses[i].origin));};
-        if (!(i ? b : a).interior_segment(local(p),local(q))) break;
+        if (!(i ? b : a).interior_segment(local(p),local(q),&x.exits[i],&y.exits[i])) break;
         if (i==1) return true;
     }
     if (remaining==0) return false;
@@ -485,11 +571,21 @@ bool interior_path(CadExitQuery& a,CadExitQuery& b,const std::array<ContactPose,
         const auto exit=(i ? a : b).first_exit(other.inverse_rotate(sub(world,other.origin)),
                             other.inverse_rotate(scale(outward,-1)),reach,x.exits[1-i].face,tested);
         if (!exit.face) continue;
-        const auto mid=local_chord(a,b,poses,sub(world,scale(outward,.5*exit.distance_m)),
-                                   scale(outward,i ? -1. : 1.),reach,{x.exits[0].face,x.exits[1].face},tested);
-        if (mid && mid->exits[i].face==left.face &&
-            interior_path(a,b,poses,x,*mid,reach,remaining-1) &&
-            interior_path(a,b,poses,*mid,y,reach,remaining-1)) return true;
+        // The first opposing exit already certified the entire half segment
+        // from its midpoint to that exit. Only the source half needs a new ray.
+        const auto center=sub(world,scale(outward,.5*exit.distance_m));
+        auto back=(i ? b : a).first_exit(poses[i].inverse_rotate(sub(center,poses[i].origin)),
+                        poses[i].inverse_rotate(outward),reach,left.face,tested);
+        if (back.face!=left.face) continue;
+        auto mid=CadChord{};
+        mid.exits[i]=back;
+        mid.exits[1-i]=exit;
+        mid.exits[1-i].distance_m*=.5;
+        const double opposite=mid.exits[1-i].distance_m;
+        mid.region={add(center,scale(outward,.5*(back.distance_m-opposite))),
+                    scale(outward,i ? -1. : 1.),back.distance_m+opposite};
+        if (interior_path(a,b,poses,x,mid,reach,remaining-1) &&
+            interior_path(a,b,poses,mid,y,reach,remaining-1)) return true;
     }
     return false;
 }
