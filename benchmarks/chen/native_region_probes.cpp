@@ -54,10 +54,16 @@ void patch_replay(PatchSearch& search,int order) {
 }
 
 int main(int argc,char** argv) try {
+    if (argc>=3 && std::string_view(argv[1])=="--prepare-parts") {
+        for (int i=2;i<argc;++i) prepare_patch_part(read_step_shape(argv[i]));
+        return 0;
+    }
+    const bool dense=argc==6 && std::string_view(argv[5])=="--prepare-all";
+    const bool prepare=dense || (argc==6 && std::string_view(argv[5])=="--prepare");
     const bool indexed=argc==6 && std::string_view(argv[5])=="--indexed-groups";
     const bool group=indexed || (argc==6 && std::string_view(argv[5])=="--groups");
     const bool patch=argc==7 && std::string_view(argv[5])=="--patch-wrench";
-    if (argc!=5 && !group && !patch) throw std::invalid_argument("nc_cad_probes A.step B.step sites_per_uv_axis reach_m [--groups|--indexed-groups|--patch-wrench ORDER]");
+    if (argc!=5 && !group && !patch && !prepare) throw std::invalid_argument("nc_cad_probes A.step B.step sites_per_uv_axis reach_m [--prepare|--prepare-all|--groups|--indexed-groups|--patch-wrench ORDER]");
     const int grid=std::stoi(argv[3]);
     const double reach=std::stod(argv[4]);
     if (grid<1 || grid>128 || !(reach>0 && std::isfinite(reach))) throw std::invalid_argument("invalid probe grid or reach");
@@ -65,10 +71,17 @@ int main(int argc,char** argv) try {
     PatchSearch search(read_step_shape(argv[1]),read_step_shape(argv[2]),grid,reach);
     std::cerr<<"prepare_s "<<std::chrono::duration<double>(Clock::now()-start).count()<<'\n';
     std::cout<<std::setprecision(17);
+    if (prepare) {
+        if (dense) search.prepare_dense();
+        const auto counts=search.asset_counts();
+        std::cout<<"{\"tables_loaded\":"<<counts[0]<<",\"tables_built\":"<<counts[1]<<"}"<<std::endl;
+        return 0;
+    }
     if (patch) {
         const int order=std::stoi(argv[6]);
         if (order<0 || order==1 || order>256) throw std::invalid_argument("invalid surface quadrature order");
         patch_replay(search,order);
+        std::cerr<<"skipped_integral_nodes "<<search.skipped_nodes()<<std::endl;
         return 0;
     }
 
@@ -78,7 +91,7 @@ int main(int argc,char** argv) try {
         const auto& found=result.witnesses;
         const auto& labels=result.labels;
         std::cout<<"{\"query_s\":"<<result.query_s<<",\"broad_s\":"<<result.broad_s
-                 <<",\"candidate_face_pairs\":"<<result.candidate_pairs
+                 <<",\"window_builds\":"<<result.window_builds<<",\"window_reuses\":"<<result.window_reuses<<",\"reused_paths\":"<<result.reused_paths<<",\"candidate_face_pairs\":"<<result.candidate_pairs
                  <<",\"attempts\":"<<result.attempts<<",\"tracked\":"<<result.tracked<<",\"face_tests\":"<<result.tests<<",\"witnesses\":[";
         for (std::size_t i=0;i<found.size();++i) {
             if (i) std::cout<<',';

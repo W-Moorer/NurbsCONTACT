@@ -272,6 +272,17 @@ feature extrema. This optimization applies during separation checks. Once
 the search finds a loaded region, the default uses the existing area and
 moment integration and each worker's original ray intersector.
 [Implementation and CPU comparisons](../results/aes/cpu-cad-pressure/pruning/README.md)
+
+The CPU `cad-patch` backend caches the native UV search grid, local BVHs and
+surface quadrature by part geometry. Set `NC_CAD_CACHE_DIR` to select a
+persistent directory. Run `nc_cad_probes --prepare-parts part1.step part2.step`
+to build the 12, 24, 48 and 96 point-per-axis rules ahead of simulation.
+The online search keeps a list of pairs of BVH nodes and rebuilds it when
+a bound on the relative displacement exceeds the list margin. Each integration
+block is tested against the opposing faces before individual quadrature.
+Search and integration still use the existing finite witness and pressure rules.
+[Timing, cache sizes and fixed-pose checks](../results/aes/cpu-cad-offline/README.md)
+
 At a degenerate chart pole, two rings around the centroid ray must agree
 before the solver accepts the limiting depth.
 A resolved coarse rule has no a priori error bound. A nonempty witness set

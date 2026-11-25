@@ -1,0 +1,218 @@
+{
+  "before": {
+    "process_s": 1171.3118824000048,
+    "setup_s": 51.4784852,
+    "first_20_steps_s": 55.7012173,
+    "steps": 50000.0,
+    "cad_patch_queries": 101973.0,
+    "cad_patch_batches": 50145.0,
+    "cad_patch_batch_s": 1008.1013476999999,
+    "cad_patch_broad_s": 322.9941259999945,
+    "cad_patch_search_s": 383.00187009999985,
+    "cad_patch_group_s": 397.6087910000032,
+    "cad_patch_area_s": 309.8932311000028,
+    "torque_0p5ms_Nm": 433.2724947902735,
+    "torque_rms_vs_recurdyn_Nm": 42.164024180104526
+  },
+  "after": {
+    "process_s": 804.523529500002,
+    "setup_s": 40.8227394,
+    "first_20_steps_s": 46.6063052,
+    "steps": 50000.0,
+    "cad_patch_queries": 101977.0,
+    "cad_patch_batches": 50147.0,
+    "cad_patch_batch_s": 692.4392987999987,
+    "cad_patch_broad_s": 268.65991439999885,
+    "cad_patch_search_s": 290.59226620000163,
+    "cad_patch_group_s": 240.66277180000282,
+    "cad_patch_area_s": 203.81678550000004,
+    "cad_window_builds": 83338.0,
+    "cad_window_reuses": 120616.0,
+    "cad_path_reuses": 0.0,
+    "cad_skipped_area_nodes": 82731680.0,
+    "torque_0p5ms_Nm": 433.2724947902735,
+    "torque_rms_vs_recurdyn_Nm": 42.16385649096829,
+    "response_change": {
+      "output_torque_Nm": {
+        "rms": 0.12142386694271344,
+        "max": 10.265626313524933
+      },
+      "speed": {
+        "rms": [
+          0.002926337824231389,
+          0.001002313098622432,
+          0.0011459502561899364
+        ],
+        "max": [
+          0.26144587213792647,
+          0.07517740780224358,
+          0.08561421532959201
+        ]
+      },
+      "te_mrad": {
+        "rms": [
+          0.00012135542624686909,
+          0.00019330953948498735
+        ],
+        "max": [
+          0.019862829390149273,
+          0.015116908997470091
+        ]
+      },
+      "normal_N": {
+        "rms": [
+          1.0746797305196607,
+          1.9470948622303423
+        ],
+        "max": [
+          179.21740759445106,
+          163.16306042140786
+        ]
+      }
+    }
+  },
+  "mesh": {
+    "process_s": 298.25709080000524,
+    "setup_s": 3.5766159,
+    "first_20_steps_s": 0.502542,
+    "steps": 50000.0,
+    "cad_patch_queries": 0.0,
+    "cad_patch_batches": 0.0,
+    "cad_patch_batch_s": 0.0,
+    "cad_patch_broad_s": 0.0,
+    "cad_patch_search_s": 0.0,
+    "cad_patch_group_s": 0.0,
+    "cad_patch_area_s": 0.0,
+    "torque_0p5ms_Nm": 395.36754174056597,
+    "torque_rms_vs_recurdyn_Nm": 29.1423846001526
+  },
+  "repeat-after": {
+    "process_s": 804.3909232000005,
+    "setup_s": 47.0806274,
+    "first_20_steps_s": 58.5088216,
+    "steps": 50000.0,
+    "cad_patch_queries": 101973.0,
+    "cad_patch_batches": 50145.0,
+    "cad_patch_batch_s": 681.831275300009,
+    "cad_patch_broad_s": 264.28010029999547,
+    "cad_patch_search_s": 300.146086500002,
+    "cad_patch_group_s": 234.66087240000965,
+    "cad_patch_area_s": 196.50514700000028,
+    "cad_window_builds": 83338.0,
+    "cad_window_reuses": 120608.0,
+    "cad_path_reuses": 0.0,
+    "cad_skipped_area_nodes": 82729720.0,
+    "torque_0p5ms_Nm": 433.2724947902735,
+    "torque_rms_vs_recurdyn_Nm": 42.16330195904248,
+    "response_change": {
+      "output_torque_Nm": {
+        "rms": 0.15057838968278586,
+        "max": 10.265626549752142
+      },
+      "speed": {
+        "rms": [
+          0.00263342843608292,
+          0.0010324479124162026,
+          0.001399350237157853
+        ],
+        "max": [
+          0.17384221475339245,
+          0.06814895728366821,
+          0.08561421500613164
+        ]
+      },
+      "te_mrad": {
+        "rms": [
+          5.4340769980286526e-05,
+          0.00023862797182413342
+        ],
+        "max": [
+          0.003801080197263218,
+          0.015116908940626672
+        ]
+      },
+      "normal_N": {
+        "rms": [
+          0.4646206788188746,
+          2.4146931157627955
+        ],
+        "max": [
+          25.362276932952227,
+          163.16306426068013
+        ]
+      }
+    }
+  },
+  "repeat-before": {
+    "process_s": 811.0495312999992,
+    "setup_s": 44.6104007,
+    "first_20_steps_s": 45.2198806,
+    "steps": 50000.0,
+    "cad_patch_queries": 101961.0,
+    "cad_patch_batches": 50143.0,
+    "cad_patch_batch_s": 687.4282558999998,
+    "cad_patch_broad_s": 218.0704711999989,
+    "cad_patch_search_s": 267.94539459999686,
+    "cad_patch_group_s": 271.8833539000112,
+    "cad_patch_area_s": 210.75578329999766,
+    "torque_0p5ms_Nm": 433.2724947902735,
+    "torque_rms_vs_recurdyn_Nm": 42.16349219124697
+  },
+  "all-orders": {
+    "process_s": 770.4145286999992,
+    "setup_s": 40.0510841,
+    "first_20_steps_s": 43.0944718,
+    "steps": 50000.0,
+    "cad_patch_queries": 101977.0,
+    "cad_patch_batches": 50147.0,
+    "cad_patch_batch_s": 663.2162241000071,
+    "cad_patch_broad_s": 271.340053600002,
+    "cad_patch_search_s": 276.10040719999984,
+    "cad_patch_group_s": 230.0656847000019,
+    "cad_patch_area_s": 189.4361968000018,
+    "cad_window_builds": 83338.0,
+    "cad_window_reuses": 120616.0,
+    "cad_path_reuses": 0.0,
+    "cad_skipped_area_nodes": 82720144.0,
+    "torque_0p5ms_Nm": 433.2724947902735,
+    "torque_rms_vs_recurdyn_Nm": 42.16380096858796,
+    "response_change": {
+      "output_torque_Nm": {
+        "rms": 0.14260462607605093,
+        "max": 10.265626533422505
+      },
+      "speed": {
+        "rms": [
+          0.004169100055088229,
+          0.0012819521210086372,
+          0.0013144429356407121
+        ],
+        "max": [
+          0.520548051512236,
+          0.12112841747470782,
+          0.08561421519868873
+        ]
+      },
+      "te_mrad": {
+        "rms": [
+          0.00017943229953132342,
+          0.00022609381782936087
+        ],
+        "max": [
+          0.025441803984449507,
+          0.015116908940626672
+        ]
+      },
+      "normal_N": {
+        "rms": [
+          1.3770899032262345,
+          2.286204084400078
+        ],
+        "max": [
+          212.47301867952456,
+          163.16306399759833
+        ]
+      }
+    }
+  }
+}

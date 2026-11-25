@@ -4,6 +4,8 @@
 #include "cad_compiled_chart.hpp"
 #include "cad_rigid_path.hpp"
 #include "cad_patch_search.hpp"
+#include "cad_patch_assets.hpp"
+#include <BndLib_AddSurface.hxx>
 #include "cad_local_solid.hpp"
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepTopAdaptor_FClass2d.hxx>
@@ -13,6 +15,7 @@
 #include <TopExp.hxx>
 #include <TopoDS.hxx>
 #include <chrono>
+#include <deque>
 #include <map>
 #include <memory>
 #include <numeric>
@@ -40,6 +43,7 @@ public:
 };
 struct Box {
     Vec center,half;
+    Box() = default;
     explicit Box(const Bnd_Box& b) {
         const auto lo=cad::coordinates(b.CornerMin()),hi=cad::coordinates(b.CornerMax());
         center=scale(add(lo,hi),.5); half=scale(sub(hi,lo),.5);
@@ -52,16 +56,25 @@ struct Box {
 // Keep tile and point bounds in contiguous median-split trees. A transformed
 // parent bounds every transformed child AABB, including the search margin.
 struct ChartTree {
-    struct Node {Box box; int left=-1,right=-1; std::size_t chart{};};
+    struct Node {
+        Box box;
+        int left = -1, right = -1;
+        std::size_t chart{}, count{};
+    };
     std::vector<Node> nodes;
-    void build(std::vector<std::size_t>& ids,const std::vector<Chart>& charts,bool points) {
+    void build(std::vector<std::size_t>& ids, const std::vector<Chart>& charts, bool points,
+               const std::vector<Bnd_Box>& enclosures = {}) {
         const auto recurse=[&](auto&& self,auto first,auto last)->int {
             Bnd_Box bounds;
             for (auto it=first;it!=last;++it) {
-                if (points) bounds.Add(charts[*it].point); else bounds.Add(charts[*it].search_box);
+                if (points)
+                    bounds.Add(charts[*it].point);
+                else
+                    bounds.Add(enclosures[*it]);
             }
             int id=static_cast<int>(nodes.size());
             nodes.push_back({Box(bounds)});
+            nodes.back().count = static_cast<std::size_t>(last - first);
             if (last-first==1) nodes[id].chart=*first;
             else {
                 auto& h=nodes[id].box.half;
@@ -78,6 +91,25 @@ struct ChartTree {
         if (!ids.empty()) recurse(recurse,ids.begin(),ids.end());
     }
 };
+struct AreaNode {
+    Vec point, area;
+};
+struct NodeBlock {
+    std::size_t begin, end;
+    Bnd_Box bounds;
+};
+struct FaceRule {
+    std::vector<AreaNode> nodes;
+    std::vector<NodeBlock> blocks;
+    void index() {
+        for (std::size_t i = 0; i < nodes.size(); i += 8) {
+            NodeBlock block{i, std::min(i + 8, nodes.size()), {}};
+            for (auto j = i; j < block.end; ++j)
+                block.bounds.Add(cad::point(scale(nodes[j].point, 1000)));
+            blocks.push_back(block);
+        }
+    }
+};
 struct Atlas {
     CadContactIndex index;
     CadExitQuery rays;
@@ -88,37 +120,139 @@ struct Atlas {
     std::vector<std::size_t> point_order,tile_order;
     using Face=cad::CompiledChart;
     std::vector<std::unique_ptr<Face>> surfaces;
-    Atlas(const TopoDS_Shape& shape,int count):index(shape),rays(index) {
+    cad::PatchAssets assets;
+    std::vector<FaceRule> base_rule;
+    struct DenseRules {
+        std::array<std::once_flag, 3> once;
+        std::array<FaceRule, 3> rules;
+    };
+    std::deque<DenseRules> dense;
+    std::vector<Bnd_Box> face_boxes;
+    struct StoredChart {
+        Vec point, normal, lo, hi, bound_lo, bound_hi;
+        std::uint64_t face, interior;
+        double u, v;
+    };
+    Atlas(const TopoDS_Shape& shape, int count) : index(shape), rays(index), assets(shape) {
         TopTools_IndexedMapOfShape faces;
         TopExp::MapShapes(shape,TopAbs_FACE,faces);
         NCollection_UBTreeFiller<std::size_t,Bnd_Box> points(sites),boxes(tiles);
         const auto face_bounds=index.face_bounds();
         for (int f=1;f<=faces.Extent();++f) {
-            for (const auto xyz:face_bounds[f-1]) body_box.Add(cad::point(scale(xyz,1000)));
+            Bnd_Box bounds;
+            for (const auto xyz : face_bounds[f - 1])
+                bounds.Add(cad::point(scale(xyz, 1000)));
+            face_boxes.push_back(bounds);
+            body_box.Add(bounds);
             const auto face=TopoDS::Face(faces(f));
             surfaces.emplace_back(std::make_unique<Face>(face));
-            const auto& surface=surfaces.back()->surface;
-            const auto& trims=surfaces.back()->trims;
-            const double u0=surface.FirstUParameter(),v0=surface.FirstVParameter();
-            const double du=(surface.LastUParameter()-u0)/count,dv=(surface.LastVParameter()-v0)/count;
-            for (int i=0;i<count;++i) for (int j=0;j<count;++j) {
-                const double u=u0+(i+.5)*du,v=v0+(j+.5)*dv;
-                gp_Pnt p;
-                gp_Vec tu,tv;
-                surface.D1(u,v,p,tu,tv);
-                auto n=tu.Crossed(tv);
-                if (n.SquareMagnitude()<1e-24) continue;
-                n.Normalize();
-                if (face.Orientation()==TopAbs_REVERSED) n.Reverse();
-                Bnd_Box box;
-                box.Add(p);
-                for (double a:{-.5,.5}) for (double b:{-.5,.5}) box.Add(surface.Value(u+a*du,v+b*dv));
-                const bool interior=trims.Perform(gp_Pnt2d(u,v))==TopAbs_IN;
-                const auto id=charts.size();
-                charts.push_back({p,n,box,std::size_t(f),interior,u,v});
-                boxes.Add(id,box);
-                if (interior) { Bnd_Box site; site.Add(p); points.Add(id,site); }
+        }
+        const auto stored = assets.table<StoredChart>(
+            "charts-" + std::to_string(count), std::size_t(faces.Extent()) * count * count, [&] {
+                std::vector<StoredChart> result;
+                for (int f = 1; f <= faces.Extent(); ++f) {
+                    const auto face = TopoDS::Face(faces(f));
+                    const auto& surface = surfaces[f - 1]->surface;
+                    const auto& trims = surfaces[f - 1]->trims;
+                    const double u0 = surface.FirstUParameter(), v0 = surface.FirstVParameter();
+                    const double du = (surface.LastUParameter() - u0) / count,
+                                 dv = (surface.LastVParameter() - v0) / count;
+                    for (int i = 0; i < count; ++i)
+                        for (int j = 0; j < count; ++j) {
+                            const double u = u0 + (i + .5) * du, v = v0 + (j + .5) * dv;
+                            gp_Pnt p;
+                            gp_Vec tu, tv;
+                            surface.D1(u, v, p, tu, tv);
+                            auto n = tu.Crossed(tv);
+                            if (n.SquareMagnitude() < 1e-24) continue;
+                            n.Normalize();
+                            if (face.Orientation() == TopAbs_REVERSED) n.Reverse();
+                            Bnd_Box box;
+                            box.Add(p);
+                            for (double a : {-.5, .5})
+                                for (double b : {-.5, .5})
+                                    box.Add(surface.Value(u + a * du, v + b * dv));
+                            const bool interior = trims.Perform(gp_Pnt2d(u, v)) == TopAbs_IN;
+                            Bnd_Box bound;
+                            // Use native analytic or pole enclosures. Other adaptors use
+                            // the complete face bounds. The five-point box remains only
+                            // the original proposal filter.
+                            const auto type = surface.GetType();
+                            try {
+                                if (type == GeomAbs_Plane || type == GeomAbs_Cylinder ||
+                                    type == GeomAbs_Sphere || type == GeomAbs_BezierSurface ||
+                                    type == GeomAbs_BSplineSurface)
+                                    BndLib_AddSurface::Add(surface, u - .5 * du, u + .5 * du, v - .5 * dv,
+                                                           v + .5 * dv, Precision::Confusion(), bound);
+                                if (type == GeomAbs_BSplineSurface) {
+                                    try {
+                                        const auto spline =
+                                            Handle(Geom_BSplineSurface)::DownCast(surface.BSpline()->Copy());
+                                        double U0, U1, V0, V1;
+                                        spline->Bounds(U0, U1, V0, V1);
+                                        if ((spline->IsUPeriodic() ||
+                                             (u - .5 * du >= U0 && u + .5 * du <= U1)) &&
+                                            (spline->IsVPeriodic() ||
+                                             (v - .5 * dv >= V0 && v + .5 * dv <= V1))) {
+                                            spline->Segment(u - .5 * du, u + .5 * du, v - .5 * dv,
+                                                            v + .5 * dv);
+                                            Bnd_Box tight;
+                                            for (int h = 1; h <= spline->NbUPoles(); ++h)
+                                                for (int k = 1; k <= spline->NbVPoles(); ++k)
+                                                    tight.Add(spline->Pole(h, k));
+                                            tight.Enlarge(
+                                                std::max(BRep_Tool::Tolerance(face), Precision::Confusion()));
+                                            bound = tight;
+                                        }
+                                    } catch (const Standard_Failure&) { /* Keep the native enclosure. */
+                                    }
+                                }
+                            } catch (const Standard_Failure&) {
+                                bound.SetVoid();
+                            }
+                            if (bound.IsVoid() || bound.IsOpen()) {
+                                bound.SetVoid();
+                                for (const auto xyz : face_bounds[f - 1])
+                                    bound.Add(cad::point(scale(xyz, 1000)));
+                            }
+                            bound.Add(box);
+                            result.push_back({cad::coordinates(p),
+                                              {n.X(), n.Y(), n.Z()},
+                                              cad::coordinates(box.CornerMin()),
+                                              cad::coordinates(box.CornerMax()),
+                                              cad::coordinates(bound.CornerMin()),
+                                              cad::coordinates(bound.CornerMax()),
+                                              std::size_t(f),
+                                              interior,
+                                              u,
+                                              v});
+                        }
+                }
+                return result;
+            });
+        std::vector<Bnd_Box> enclosures;
+        for (const auto& row : stored) {
+            Chart chart{cad::point(row.point),
+                        gp_Vec(row.normal[0], row.normal[1], row.normal[2]),
+                        {},
+                        std::size_t(row.face),
+                        bool(row.interior),
+                        row.u,
+                        row.v};
+            chart.search_box.Add(cad::point(row.lo));
+            chart.search_box.Add(cad::point(row.hi));
+            Bnd_Box bound;
+            bound.Add(cad::point(row.bound_lo));
+            bound.Add(cad::point(row.bound_hi));
+            enclosures.push_back(bound);
+            const auto id = charts.size();
+            boxes.Add(id, chart.search_box);
+            if (chart.interior) {
+                Bnd_Box site;
+                site.Add(chart.point);
+                points.Add(id, site);
             }
+            charts.push_back(chart);
         }
         points.Fill(); boxes.Fill();
         Bnd_Box all; all.SetWhole();
@@ -127,7 +261,78 @@ struct Atlas {
         point_order.resize(charts.size()); tile_order.resize(charts.size());
         for (std::size_t i=0;i<p.ids.size();++i) point_order[p.ids[i]]=i;
         for (std::size_t i=0;i<t.ids.size();++i) tile_order[t.ids[i]]=i;
-        point_index.build(p.ids,charts,true); tile_index.build(t.ids,charts,false);
+        const auto hierarchy = [&](ChartTree& tree, std::vector<std::size_t>& ids, bool sites) {
+            tree.nodes = assets.table<ChartTree::Node>((sites ? "sites-" : "tiles-") + std::to_string(count),
+                                                       2 * ids.size(), [&] {
+                                                           ChartTree built;
+                                                           built.build(ids, charts, sites, enclosures);
+                                                           return std::move(built.nodes);
+                                                       });
+        };
+        hierarchy(point_index, p.ids, true);
+        hierarchy(tile_index, t.ids, false);
+        struct StoredNode {
+            std::uint64_t face;
+            AreaNode node;
+        };
+        const auto nodes = assets.table<StoredNode>("area12", std::size_t(faces.Extent()) * 144, [&] {
+            std::vector<StoredNode> result;
+            for (std::size_t i = 0; i < surfaces.size(); ++i) {
+                for (const auto& node : quadrature(i + 1, 12).nodes)
+                    result.push_back({i, node});
+            }
+            return result;
+        });
+        dense.resize(surfaces.size());
+        base_rule.resize(surfaces.size());
+        for (const auto& row : nodes)
+            base_rule.at(row.face).nodes.push_back(row.node);
+        for (auto& rule : base_rule)
+            rule.index();
+    }
+    FaceRule dense_rule(std::size_t face, int order) const {
+        cad::PatchAssets cache(surfaces.at(face - 1)->surface.Face());
+        FaceRule result;
+        result.nodes =
+            cache.table<AreaNode>("quadrature-" + std::to_string(order), std::size_t(order) * order,
+                                  [&] { return quadrature(face, order).nodes; });
+        result.index();
+        return result;
+    }
+    const FaceRule& shared_rule(std::size_t face, int order) {
+        if (order == 12) return base_rule.at(face - 1);
+        auto& entry = dense.at(face - 1);
+        const int level = order == 24 ? 0 : order == 48 ? 1 : 2;
+        std::call_once(entry.once[level], [&] { entry.rules[level] = dense_rule(face, order); });
+        return entry.rules[level];
+    }
+    void prepare_dense() const {
+        // Write one face at a time so preprocessing does not retain every
+        // high-order node simultaneously.
+        for (std::size_t face = 1; face <= surfaces.size(); ++face)
+            for (const int order : {24, 48, 96})
+                dense_rule(face, order);
+    }
+    FaceRule quadrature(std::size_t id, int order) const {
+        FaceRule result;
+        const auto& f = *surfaces[id - 1];
+        const auto& s = f.surface;
+        const double u0 = s.FirstUParameter(), v0 = s.FirstVParameter();
+        const double du = (s.LastUParameter() - u0) / order, dv = (s.LastVParameter() - v0) / order;
+        const double sign = s.Face().Orientation() == TopAbs_REVERSED ? -1. : 1.;
+        for (int i = 0; i < order; ++i)
+            for (int j = 0; j < order; ++j) {
+                const double u = u0 + (i + .5) * du, v = v0 + (j + .5) * dv;
+                if (!f.inside(u, v)) continue;
+                gp_Pnt p;
+                gp_Vec tu, tv;
+                f.d1(u, v, p, tu, tv);
+                const auto n = tu.Crossed(tv);
+                result.nodes.push_back({scale(cad::coordinates(p), .001),
+                                        scale(Vec{n.X(), n.Y(), n.Z()}, sign * du * dv * 1e-6)});
+            }
+        result.index();
+        return result;
     }
 };
 struct Proposal {
@@ -138,26 +343,82 @@ struct Proposal {
 using FacePair=std::array<std::size_t,2>;
 using Proposals=std::map<FacePair,std::vector<Proposal>>;
 
-void collect_indexed(const Atlas& source,const Atlas& target,const gp_Trsf& pose,
-                     double reach,bool reverse,Proposals& candidates) {
+struct CandidateWindow {
+    std::optional<gp_Trsf> anchor, last;
+    std::vector<std::pair<int, int>> frontier;
+    std::vector<Box> placed;
+    std::vector<std::uint64_t> generation;
+    std::uint64_t step{};
+    double margin{};
+};
+// Bound displacement in each source-body coordinate for all points of the
+// target root box. Also bounds movement of every transformed child AABB.
+double box_motion(const Box& box, const gp_Trsf& a, const gp_Trsf& b) {
+    const auto center = cad::point(box.center);
+    const auto shift = center.Transformed(a).XYZ() - center.Transformed(b).XYZ();
+    double largest = 0.;
+    for (int i = 1; i <= 3; ++i) {
+        double delta = std::abs(shift.Coord(i));
+        for (int j = 1; j <= 3; ++j)
+            delta += std::abs(a.Value(i, j) - b.Value(i, j)) * box.half[j - 1];
+        largest = std::max(largest, delta);
+    }
+    return largest;
+}
+bool collect_indexed(const Atlas& source, const Atlas& target, const gp_Trsf& pose, double reach,
+                     bool reverse, Proposals& candidates, CandidateWindow& cache) {
     const auto& sites=source.point_index.nodes;
     const auto& tiles=target.tile_index.nodes;
-    if (sites.empty() || tiles.empty()) return;
+    if (sites.empty() || tiles.empty()) return false;
+    const auto& root = tiles.front().box;
+    const bool rebuild = !cache.anchor || box_motion(root, pose, *cache.anchor) > cache.margin;
+    if (rebuild) {
+        const double advance = cache.last ? box_motion(root, pose, *cache.last) : 0.;
+        cache.margin = std::clamp(4 * advance, reach, std::max(reach, .05 * length(root.half)));
+        cache.anchor = pose;
+        cache.frontier.clear();
+    }
+    cache.last = pose;
     const auto m=pose.VectorialPart();
     auto window=source.body_box.Transformed(pose.Inverted()); window.Enlarge(reach);
-    const auto visit_tile=[&](auto&& self,int t,int s)->void {
+    if (cache.placed.empty()) {
+        cache.placed.resize(tiles.size());
+        cache.generation.resize(tiles.size());
+    }
+    ++cache.step;
+    const auto visit_tile = [&](auto&& self, int t, int s, bool expand) -> void {
         const auto& tile=tiles[t];
-        Box box=tile.box;
-        box.center=cad::coordinates(cad::point(box.center).Transformed(pose));
-        for (int i=0;i<3;++i) {
-            box.half[i]=reach+1e-10;
-            for (int j=0;j<3;++j) box.half[i]+=std::abs(m.Value(i+1,j+1))*tile.box.half[j];
+        auto& placed = cache.placed[t];
+        if (cache.generation[t] != cache.step) {
+            auto& box = placed;
+            box = tile.box;
+            box.center = cad::coordinates(cad::point(box.center).Transformed(pose));
+            for (int i = 0; i < 3; ++i) {
+                box.half[i] = reach + 1e-10;
+                for (int j = 0; j < 3; ++j)
+                    box.half[i] += std::abs(m.Value(i + 1, j + 1)) * tile.box.half[j];
+            }
+            cache.generation[t] = cache.step;
+        }
+        auto box = placed;
+        if (expand) {
+            const double roundoff =
+                64 * std::numeric_limits<double>::epsilon() *
+                (1 + length(root.center) + length(root.half) + pose.TranslationPart().Modulus());
+            for (auto& h : box.half)
+                h += cache.margin + Precision::Confusion() + roundoff;
         }
         const auto visit_sites=[&](auto&& descend,int k)->void {
             const auto& site=sites[k];
             if (!box.overlaps(site.box)) return;
+            if (expand && tile.count <= 64 && site.count <= 64) {
+                cache.frontier.emplace_back(t, k);
+                return;
+            }
             if (tile.left>=0 && (site.left<0 || squared(box.half)>squared(site.box.half))) {
-                self(self,tile.left,k); self(self,tile.right,k); return;
+                self(self, tile.left, k, expand);
+                self(self, tile.right, k, expand);
+                return;
             }
             if (site.left>=0) {descend(descend,site.left); descend(descend,site.right); return;}
             const auto& f=target.charts[tile.chart];
@@ -175,7 +436,10 @@ void collect_indexed(const Atlas& source,const Atlas& target,const gp_Trsf& pose
         };
         visit_sites(visit_sites,s);
     };
-    visit_tile(visit_tile,0,0);
+    if (rebuild) visit_tile(visit_tile, 0, 0, true);
+    for (const auto& [t, k] : cache.frontier)
+        visit_tile(visit_tile, t, k, false);
+    return rebuild;
 }
 
 void collect(const Atlas& source,const Atlas& target,const gp_Trsf& target_in_source,
@@ -311,28 +575,15 @@ struct Search {
 // Midpoint surface quadrature on the original UV charts. Each material-side
 // face contributes once per group, including when several opposing faces
 // cover it. The opposing trim and positive thickness clip its loaded part.
-struct AreaNode {Vec point,area;};
 struct SurfaceQuadrature {
     Atlas& body;
     int order;
-    std::map<std::size_t,std::vector<AreaNode>> saved;
-    const std::vector<AreaNode>& nodes(std::size_t id) {
+    std::map<std::size_t, FaceRule> saved;
+    std::size_t skipped{};
+    const FaceRule& rule(std::size_t id) {
+        if (order == 12 || order == 24 || order == 48 || order == 96) return body.shared_rule(id, order);
         auto [it,fresh]=saved.try_emplace(id);
-        if (!fresh) return it->second;
-        const auto& f=*body.surfaces[id-1];
-        const auto& s=f.surface;
-        const double u0=s.FirstUParameter(),v0=s.FirstVParameter();
-        const double du=(s.LastUParameter()-u0)/order,dv=(s.LastVParameter()-v0)/order;
-        const double sign=s.Face().Orientation()==TopAbs_REVERSED ? -1. : 1.;
-        for (int i=0;i<order;++i) for (int j=0;j<order;++j) {
-            const double u=u0+(i+.5)*du,v=v0+(j+.5)*dv;
-            if (!f.inside(u,v)) continue;
-            gp_Pnt p;gp_Vec tu,tv;
-            f.d1(u,v,p,tu,tv);
-            const auto n=tu.Crossed(tv);
-            it->second.push_back({scale(cad::coordinates(p),.001),
-                                  scale(Vec{n.X(),n.Y(),n.Z()},sign*du*dv*1e-6)});
-        }
+        if (fresh) it->second = body.quadrature(id, order);
         return it->second;
     }
 };
@@ -367,24 +618,49 @@ std::optional<PressurePatch> integrate_patch(std::array<SurfaceQuadrature,2>& gr
             auto& c=faces[w.exits[side].face][t.face];
             c.face=t.face;c.u=t.uv[0];c.v=t.uv[1];
         }
-        for (const auto& [id,targets]:faces) for (const auto& sample:grids[side].nodes(id)) {
-            const auto native=cad::point(scale(sample.point,1000));
-            const auto local=native.Transformed(to_target);
-            double depth=infinity;
-            for (const auto& [face,seed]:targets) {
-                if (!grids[other].body.surfaces[face-1]->column_possible(local.XYZ(),segment)) continue;
-                const auto d=propose_depth(grids[other].body,seed,local,cast,reach*1000,true);
-                if (d && *d>0.) depth=std::min(depth,*d*.001);
+        for (const auto& [id, targets] : faces) {
+            const auto& rule = grids[side].rule(id);
+            for (const auto& block : rule.blocks) {
+                auto swept = block.bounds.Transformed(to_target);
+                gp_Trsf shift;
+                shift.SetTranslation(gp_Vec(segment));
+                swept.Add(swept.Transformed(shift));
+                swept.Enlarge(2 * Precision::Confusion());
+                bool possible = false;
+                for (const auto& [face, seed] : targets) {
+                    const auto& bounds = grids[other].body.face_boxes[face - 1];
+                    if (!swept.IsOut(bounds) && grids[other].body.surfaces[face - 1]->block_possible(swept)) {
+                        possible = true;
+                        break;
+                    }
+                }
+                if (!possible) {
+                    grids[side].skipped += block.end - block.begin;
+                    continue;
+                }
+                for (auto j = block.begin; j < block.end; ++j) {
+                    const auto& sample = rule.nodes[j];
+                    const auto native = cad::point(scale(sample.point, 1000));
+                    const auto local = native.Transformed(to_target);
+                    double depth = infinity;
+                    for (const auto& [face, seed] : targets) {
+                        if (!grids[other].body.surfaces[face - 1]->column_possible(local.XYZ(), segment))
+                            continue;
+                        const auto d =
+                            propose_depth(grids[other].body, seed, local, cast, reach * 1000, true);
+                        if (d && *d > 0.) depth = std::min(depth, *d * .001);
+                    }
+                    if (!std::isfinite(depth)) continue;
+                    const auto point = scale(cad::coordinates(native.Transformed(world)), .001);
+                    const auto area_element = scale(poses[side].rotate(sample.area), sign);
+                    const auto r = sub(point, origin);
+                    area = add(area, area_element);
+                    moment = add(moment, cross3(r, area_element));
+                    const double dv = depth * std::max(0., dot3(area_element, axis));
+                    centroid = add(centroid, scale(add(r, scale(ray, .5 * depth)), dv));
+                    volume += dv;
+                }
             }
-            if (!std::isfinite(depth)) continue;
-            const auto point=scale(cad::coordinates(native.Transformed(world)),.001);
-            const auto area_element=scale(poses[side].rotate(sample.area),sign);
-            const auto r=sub(point,origin);
-            area=add(area,area_element);
-            moment=add(moment,cross3(r,area_element));
-            const double dv=depth*std::max(0.,dot3(area_element,axis));
-            centroid=add(centroid,scale(add(r,scale(ray,.5*depth)),dv));
-            volume+=dv;
         }
     }
     const double magnitude=length(area);
@@ -406,6 +682,9 @@ struct PatchSearch::Data {
     Atlas a,b;
     int grid;
     double reach;
+    std::array<CandidateWindow, 2> windows;
+    using EdgeKey = std::array<FacePair, 2>;
+    std::map<EdgeKey, ChordPath> paths;
     std::map<FacePair,Seed> previous;
     struct Worker {
         CadExitQuery a,b;
@@ -422,11 +701,18 @@ struct PatchSearch::Data {
         const auto t=Clock::now();
         const auto b_in_a=cad::placement(poses[0]).Inverted()*cad::placement(poses[1]);
         std::array<Proposals,2> sides;
-        const auto discover=indexed ? collect_indexed : collect;
+        std::array<int, 2> builds{}, queries{};
         OSD_ThreadPool::Launcher pool(*OSD_ThreadPool::DefaultPool(),indexed ? worker_limit : 1);
-        pool.Perform(0,2,[&](int,int side) {
-            if (side) discover(b,a,b_in_a.Inverted(),1000*reach,true,sides[1]);
-            else discover(a,b,b_in_a,1000*reach,false,sides[0]);
+        pool.Perform(0, 2, [&](int, int side) {
+            const auto relative = side ? b_in_a.Inverted() : b_in_a;
+            const auto& source = side ? b : a;
+            const auto& target = side ? a : b;
+            if (indexed) {
+                queries[side] = !source.point_index.nodes.empty() && !target.tile_index.nodes.empty();
+                builds[side] =
+                    collect_indexed(source, target, relative, 1000 * reach, side, sides[side], windows[side]);
+            } else
+                collect(source, target, relative, 1000 * reach, side, sides[side]);
         });
         auto& proposals=sides[0];
         for (const auto& [pair,sites]:sides[1]) {
@@ -486,15 +772,37 @@ struct PatchSearch::Data {
         previous=std::move(next);
         const auto search_end=Clock::now();
         std::vector<int> labels;
+        int reused_paths = 0;
         if (group && found.size()>=3 && found.size()<=24 && pool.HasThreads()) {
             std::vector<std::pair<int,int>> edges;
             for (int i=1;i<static_cast<int>(found.size());++i)
                 for (int j=0;j<i;++j) edges.emplace_back(i,j);
+            std::vector<ChordPath> hints(edges.size());
+            const auto key = [&](int i, int j) {
+                const auto faces = [&](int k) {
+                    return FacePair{found[k]->exits[0].face, found[k]->exits[1].face};
+                };
+                return EdgeKey{faces(i), faces(j)};
+            };
+            if (!paths.empty()) {
+                for (std::size_t k = 0; k < edges.size(); ++k) {
+                    const auto [i, j] = edges[k];
+                    if (auto it = paths.find(key(i, j)); it != paths.end()) hints[k] = std::move(it->second);
+                }
+            }
             std::vector<unsigned char> connected(edges.size());
             pool.Perform(0,static_cast<int>(edges.size()),[&](int idx,int k) {
                 const auto [i,j]=edges[k]; auto& w=*workers[idx];
-                connected[k]=connected_chords(w.a,w.b,poses,*found[i],*found[j],reach);
+                connected[k] = connected_chords(w.a, w.b, poses, *found[i], *found[j], reach, &hints[k]);
             });
+            paths.clear();
+            for (std::size_t k = 0; k < hints.size(); ++k) {
+                reused_paths += hints[k].reused;
+                if (!hints[k].intermediate_in_a.empty()) {
+                    const auto [i, j] = edges[k];
+                    paths.emplace(key(i, j), std::move(hints[k]));
+                }
+            }
             labels.resize(found.size());std::iota(labels.begin(),labels.end(),0);
             for (std::size_t k=0;k<edges.size();++k) if (connected[k]) {
                 const auto [i,j]=edges[k]; const int old=labels[i],replacement=labels[j];
@@ -504,13 +812,42 @@ struct PatchSearch::Data {
         const auto end=Clock::now();
         const double seconds=std::chrono::duration<double>(end-t).count();
 
-        return {std::move(found),std::move(labels),proposals.size(),attempts,tracked,tests,
-                seconds,std::chrono::duration<double>(shortlisted-t).count(),std::chrono::duration<double>(end-search_end).count()};
+        return {std::move(found),
+                std::move(labels),
+                proposals.size(),
+                attempts,
+                tracked,
+                tests,
+                seconds,
+                std::chrono::duration<double>(shortlisted - t).count(),
+                std::chrono::duration<double>(end - search_end).count(),
+                builds[0] + builds[1],
+                queries[0] + queries[1] - builds[0] - builds[1],
+                reused_paths};
     }
 };
+void prepare_patch_part(const TopoDS_Shape& shape) {
+    Atlas part(shape, 6);
+    part.prepare_dense();
+}
 PatchSearch::PatchSearch(const TopoDS_Shape& a,const TopoDS_Shape& b,int grid,double reach):
     data_(std::make_unique<Data>(a,b,grid,reach)) {}
 PatchSearch::~PatchSearch()=default;
+void PatchSearch::prepare_dense() const {
+    data_->a.prepare_dense();
+    data_->b.prepare_dense();
+}
+std::array<std::size_t, 2> PatchSearch::asset_counts() const {
+    return {data_->a.assets.loaded + data_->b.assets.loaded, data_->a.assets.built + data_->b.assets.built};
+}
+std::size_t PatchSearch::skipped_nodes() const {
+    std::size_t count = 0;
+    for (const auto& worker : data_->workers)
+        for (const auto& [order, levels] : worker->levels)
+            for (const auto& level : levels)
+                count += level.skipped;
+    return count;
+}
 bool PatchSearch::boxes_separate(const std::array<ContactPose,2>& poses) const {
     auto a=data_->a.body_box.Transformed(placement(poses[0]));
     a.Enlarge(a.GetGap()+2*Precision::Confusion());
@@ -551,6 +888,9 @@ public:
         ++work.cad_patch_queries;
         if (search_.boxes_separate(poses)) return {};
         const auto search=search_.discover(poses,true,true);
+        work.cad_window_builds += search.window_builds;
+        work.cad_window_reuses += search.window_reuses;
+        work.cad_path_reuses += search.reused_paths;
         work.cad_patch_broad_s+=search.broad_s;
         work.cad_patch_search_s+=search.query_s-search.group_s-search.broad_s;
         work.cad_patch_group_s+=search.group_s;
@@ -576,12 +916,14 @@ public:
         std::vector<const std::vector<CadChord>*> components;
         for (const auto& [label,group]:groups) components.push_back(&group);
         std::vector<std::optional<ContactRegion>> patches(groups.size());
+        const auto previous_skips = search_.skipped_nodes();
         if (!groups.empty()) {
             OSD_ThreadPool::Launcher pool(*OSD_ThreadPool::DefaultPool(),std::min(4,static_cast<int>(groups.size())));
             pool.Perform(0,static_cast<int>(groups.size()),[&](int worker,int i) {
                 patches[i]=search_.integrate(poses,*components[i],0,worker);
             });
         }
+        work.cad_skipped_area_nodes += search_.skipped_nodes() - previous_skips;
         std::vector<ContactRegion> result;
         for (const auto& patch:patches) {
             if (!patch) {

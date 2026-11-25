@@ -1,0 +1,94 @@
+{
+  "previous": {
+    "process_s": 37.07154760000412,
+    "response_sha256": "8365f2bd9b37810c02457532369635973616bb94febd1899d8a6b867993d2ac9",
+    "executable_sha256": "1154dfb665514432d2ecdef3dbaf5ba37b08ec4f7167a29699a57f876b5bd131",
+    "frames": 50001,
+    "peak_N": 22.499130687198658,
+    "max_force_error_N": 0.003213354836182611,
+    "max_linear_momentum_drift_kg_m_s": 1.3662959652549489e-12,
+    "max_angular_momentum_drift_kg_m2_s": 5.57073363747777e-32,
+    "initial_kinetic_energy_J": 0.10125,
+    "final_kinetic_energy_J": 0.10125057080607854,
+    "final_velocities_m_s": [
+      [
+        1.3459598812311206e-31,
+        9.518724291978419e-30,
+        -0.45000126845437677
+      ],
+      [
+        -1.3459598812311206e-31,
+        -9.518724291978419e-30,
+        1.268455743078914e-06
+      ]
+    ],
+    "final_angular_velocities_rad_s": [
+      [
+        -9.72704686867253e-16,
+        -1.7368897928875531e-15,
+        -5.509718497446211e-39
+      ],
+      [
+        9.727046868661226e-16,
+        1.7368897928875535e-15,
+        -3.7742278689035755e-39
+      ]
+    ],
+    "peak_normal_force_N": 22.499130687198658,
+    "normal_impulse_Ns": 0.4500012636118724,
+    "reference_entry_s": 0.04,
+    "reference_peak_N": 22.5,
+    "reference_impulse_Ns": 0.45,
+    "reference_final_axial_velocities_m_s": [
+      -0.45,
+      0.0
+    ],
+    "force_rmse_N": 0.00010946044234526148
+  },
+  "new": {
+    "process_s": 39.806852900001104,
+    "response_sha256": "8365f2bd9b37810c02457532369635973616bb94febd1899d8a6b867993d2ac9",
+    "executable_sha256": "f4526537fcc2e93274bc6399d1d6cb7ae6794dcff6c16b3a81a2c243a811afaa",
+    "frames": 50001,
+    "peak_N": 22.499130687198658,
+    "max_force_error_N": 0.003213354836182611,
+    "max_linear_momentum_drift_kg_m_s": 1.3662959652549489e-12,
+    "max_angular_momentum_drift_kg_m2_s": 5.57073363747777e-32,
+    "initial_kinetic_energy_J": 0.10125,
+    "final_kinetic_energy_J": 0.10125057080607854,
+    "final_velocities_m_s": [
+      [
+        1.3459598812311206e-31,
+        9.518724291978419e-30,
+        -0.45000126845437677
+      ],
+      [
+        -1.3459598812311206e-31,
+        -9.518724291978419e-30,
+        1.268455743078914e-06
+      ]
+    ],
+    "final_angular_velocities_rad_s": [
+      [
+        -9.72704686867253e-16,
+        -1.7368897928875531e-15,
+        -5.509718497446211e-39
+      ],
+      [
+        9.727046868661226e-16,
+        1.7368897928875535e-15,
+        -3.7742278689035755e-39
+      ]
+    ],
+    "peak_normal_force_N": 22.499130687198658,
+    "normal_impulse_Ns": 0.4500012636118724,
+    "reference_entry_s": 0.04,
+    "reference_peak_N": 22.5,
+    "reference_impulse_Ns": 0.45,
+    "reference_final_axial_velocities_m_s": [
+      -0.45,
+      0.0
+    ],
+    "force_rmse_N": 0.00010946044234526148
+  }
+}

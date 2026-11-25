@@ -52,6 +52,7 @@ struct ContactWork {
     std::size_t mesh_parallel_batches{}, mesh_max_workers{};
     double cad_region_index_s{}, cad_region_select_s{}, cad_region_common_s{}, cad_region_extract_s{};
     std::size_t cad_patch_queries{},cad_patch_batches{};
+    std::size_t cad_window_builds{},cad_window_reuses{},cad_path_reuses{},cad_skipped_area_nodes{};
     double cad_patch_batch_s{},cad_patch_broad_s{},cad_patch_search_s{},cad_patch_group_s{},cad_patch_area_s{};
 };
 

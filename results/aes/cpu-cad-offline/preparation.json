@@ -1,0 +1,32 @@
+{
+  "cold": [
+    {
+      "process_s": 38.74099479999859,
+      "native_setup_s": 38.5647,
+      "tables_loaded": 0,
+      "tables_built": 8
+    },
+    {
+      "process_s": 7.2718097000033595,
+      "native_setup_s": 7.10932,
+      "tables_loaded": 0,
+      "tables_built": 8
+    }
+  ],
+  "warm": [
+    {
+      "process_s": 35.46917150000809,
+      "native_setup_s": 35.3187,
+      "tables_loaded": 8,
+      "tables_built": 0
+    },
+    {
+      "process_s": 6.588287500009756,
+      "native_setup_s": 6.43003,
+      "tables_loaded": 8,
+      "tables_built": 0
+    }
+  ],
+  "files": 24,
+  "bytes": 38608000
+}

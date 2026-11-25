@@ -101,6 +101,7 @@ public:
                        std::size_t& face_tests);
     // Both endpoints must already be strictly interior to this solid.
     bool interior_segment(Vec a,Vec b,const CadExit* near_a=nullptr,const CadExit* near_b=nullptr);
+    bool crosses_from_hints(Vec a,Vec b,const CadExit& near_a,const CadExit& near_b);
     Vec surface_point(std::size_t face,std::array<double,2> uv) const;
 private:
     struct Data;
@@ -120,8 +121,12 @@ std::optional<CadChord> local_chord(CadExitQuery& a, CadExitQuery& b,
 
 // A positive answer joins two material witnesses by an interior polyline in
 // both original solids. Failure to find a path leaves the witnesses separate.
+struct ChordPath {
+    std::vector<Vec> intermediate_in_a;
+    bool reused{};
+};
 bool connected_chords(CadExitQuery& a,CadExitQuery& b,const std::array<dynamics::ContactPose,2>& poses,
-                      const CadChord& x,const CadChord& y,double reach_m);
+                      const CadChord& x,const CadChord& y,double reach_m,ChordPath* previous=nullptr);
 std::vector<int> chord_groups(CadExitQuery& a,CadExitQuery& b,const std::array<dynamics::ContactPose,2>& poses,
                               std::span<const std::optional<CadChord>> witnesses,double reach_m);
 

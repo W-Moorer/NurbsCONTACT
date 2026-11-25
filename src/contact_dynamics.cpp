@@ -211,6 +211,10 @@ std::vector<RegionEvaluation> batch_mesh_regions(std::span<const ContactBodyStat
     }
     for (const auto& entry:batch) {
         work.cad_patch_queries+=entry.work.cad_patch_queries;
+        work.cad_window_builds+=entry.work.cad_window_builds;
+        work.cad_window_reuses+=entry.work.cad_window_reuses;
+        work.cad_path_reuses+=entry.work.cad_path_reuses;
+        work.cad_skipped_area_nodes+=entry.work.cad_skipped_area_nodes;
         work.cad_patch_broad_s+=entry.work.cad_patch_broad_s;
         work.cad_patch_search_s+=entry.work.cad_patch_search_s;
         work.cad_patch_group_s+=entry.work.cad_patch_group_s;

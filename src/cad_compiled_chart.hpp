@@ -100,6 +100,23 @@ struct CompiledChart {
             hulls.push_back(hull);
         }
     }
+    bool block_possible(const Bnd_Box& swept) const {
+        if (hulls.empty()) return true;
+        const auto lo = swept.CornerMin().XYZ(), hi = swept.CornerMax().XYZ();
+        const auto center = (lo + hi) * .5, half = (hi - lo) * .5;
+        for (const auto& h : hulls) {
+            if (hi.X() < h.lo.X() || lo.X() > h.hi.X() || hi.Y() < h.lo.Y() || lo.Y() > h.hi.Y() ||
+                hi.Z() < h.lo.Z() || lo.Z() > h.hi.Z())
+                continue;
+            const double mid = center.Dot(h.n);
+            const double radius =
+                std::abs(h.n.X()) * half.X() + std::abs(h.n.Y()) * half.Y() + std::abs(h.n.Z()) * half.Z();
+            if (mid + radius >= h.low - 2 * Precision::Confusion() &&
+                mid - radius <= h.high + 2 * Precision::Confusion())
+                return true;
+        }
+        return false;
+    }
     bool column_possible(const gp_XYZ& p,const gp_XYZ& segment) const {
         if (hulls.empty()) return true;
         const double tol=2*Precision::Confusion();

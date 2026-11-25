@@ -501,6 +501,18 @@ CadExit CadExitQuery::first_exit(Vec origin, Vec direction, double reach_m, std:
     return ambiguous || boundary ? CadExit{} : hit;
 }
 
+bool CadExitQuery::crosses_from_hints(Vec a, Vec b, const CadExit& near_a, const CadExit& near_b) {
+    const gp_Pnt p(a[0] / mm, a[1] / mm, a[2] / mm), q(b[0] / mm, b[1] / mm, b[2] / mm);
+    const double span = p.Distance(q);
+    if (span <= Precision::Confusion()) return false;
+    const auto direction = gp_Vec(p, q) / span;
+    try {
+        return data_->crosses(p, direction, span, &near_a) || data_->crosses(q, -direction, span, &near_b);
+    } catch (const Standard_Failure&) {
+        return false;
+    }
+}
+
 bool CadExitQuery::interior_segment(Vec a,Vec b,const CadExit* near_a,const CadExit* near_b) {
     const gp_Pnt p(a[0]/mm,a[1]/mm,a[2]/mm),q(b[0]/mm,b[1]/mm,b[2]/mm);
     const double span=p.Distance(q),tol=Precision::Confusion();
@@ -549,14 +561,18 @@ std::optional<CadChord> local_chord(CadExitQuery& a, CadExitQuery& b,
 }
 
 namespace {
-bool interior_path(CadExitQuery& a,CadExitQuery& b,const std::array<ContactPose,2>& poses,
-                   const CadChord& x,const CadChord& y,double reach,int remaining) {
+bool interior_path(CadExitQuery& a, CadExitQuery& b, const std::array<ContactPose, 2>& poses,
+                   const CadChord& x, const CadChord& y, double reach, int remaining,
+                   std::vector<Vec>* path) {
     const auto& p=x.region.point; const auto& q=y.region.point;
-    for (int i=0;i<2;++i) {
-        const auto local=[&](Vec v){return poses[i].inverse_rotate(sub(v,poses[i].origin));};
-        if (!(i ? b : a).interior_segment(local(p),local(q),&x.exits[i],&y.exits[i])) break;
-        if (i==1) return true;
-    }
+    const auto local = [&](int side, Vec v) {
+        return poses[side].inverse_rotate(sub(v, poses[side].origin));
+    };
+    const auto pa = local(0, p), qa = local(0, q), pb = local(1, p), qb = local(1, q);
+    if (!a.crosses_from_hints(pa, qa, x.exits[0], y.exits[0]) &&
+        !b.crosses_from_hints(pb, qb, x.exits[1], y.exits[1]) && a.interior_segment(pa, qa) &&
+        b.interior_segment(pb, qb))
+        return true;
     if (remaining==0) return false;
     for (int i=0;i<2;++i) {
         const auto& left=x.exits[i]; const auto& right=y.exits[i];
@@ -584,17 +600,48 @@ bool interior_path(CadExitQuery& a,CadExitQuery& b,const std::array<ContactPose,
         const double opposite=mid.exits[1-i].distance_m;
         mid.region={add(center,scale(outward,.5*(back.distance_m-opposite))),
                     scale(outward,i ? -1. : 1.),back.distance_m+opposite};
-        if (interior_path(a,b,poses,x,mid,reach,remaining-1) &&
-            interior_path(a,b,poses,mid,y,reach,remaining-1)) return true;
+        const auto start = path ? path->size() : 0;
+        if (interior_path(a, b, poses, x, mid, reach, remaining - 1, path)) {
+            if (path) path->push_back(local(0, mid.region.point));
+            if (interior_path(a, b, poses, mid, y, reach, remaining - 1, path)) return true;
+        }
+        if (path) path->resize(start);
     }
     return false;
 }
 }
 
-bool connected_chords(CadExitQuery& a,CadExitQuery& b,const std::array<ContactPose,2>& poses,
-                      const CadChord& x,const CadChord& y,double reach_m) {
+bool connected_chords(CadExitQuery& a, CadExitQuery& b, const std::array<ContactPose, 2>& poses,
+                      const CadChord& x, const CadChord& y, double reach_m, ChordPath* previous) {
     if (!x.exits[0].face || !x.exits[1].face || !y.exits[0].face || !y.exits[1].face) return false;
-    return interior_path(a,b,poses,x,y,reach_m,5);
+    if (previous) {
+        previous->reused = false;
+        if (!previous->intermediate_in_a.empty()) {
+            Vec start = x.region.point;
+            bool valid = true;
+            const auto test = [&](Vec end) {
+                for (int side = 0; side < 2; ++side) {
+                    const auto& pose = poses[side];
+                    const auto local = [&](Vec v) { return pose.inverse_rotate(sub(v, pose.origin)); };
+                    if (!(side ? b : a).interior_segment(local(start), local(end))) return false;
+                }
+                start = end;
+                return true;
+            };
+            for (auto waypoint : previous->intermediate_in_a) {
+                if (!test(poses[0].point(waypoint))) {
+                    valid = false;
+                    break;
+                }
+            }
+            if (valid && test(y.region.point)) {
+                previous->reused = true;
+                return true;
+            }
+            previous->intermediate_in_a.clear();
+        }
+    }
+    return interior_path(a, b, poses, x, y, reach_m, 5, previous ? &previous->intermediate_in_a : nullptr);
 }
 
 std::vector<int> chord_groups(CadExitQuery& a,CadExitQuery& b,const std::array<ContactPose,2>& poses,

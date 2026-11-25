@@ -1,0 +1,562 @@
+[
+  {
+    "stage": 1,
+    "step": 0,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 0.0,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 1,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 0.0,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 2,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 0.0,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 3,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 86.32703228481651,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 4,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 156.6547379383479,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 5,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 123.67440076526276,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 6,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 91.9555907829638,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 7,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 85.65493616459744,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 8,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 85.89011525168246,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 9,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 74.89964110310001,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 10,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 55.2728039399873,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 26,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 100.79394285271066,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 27,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 133.10830646861277,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 10000,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 76.19219667596484,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 16667,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 70.64453269736941,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 16668,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 52.40908098430769,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 20000,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 76.29293250047276,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 25000,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 76.39764246781225,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 30000,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 76.19177110711264,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 33334,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 78.79333400915294,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 33335,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 60.68095351530209,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 40000,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 76.36126195081994,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 46315,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 79.20977318622522,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 1,
+    "step": 50000,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 76.1916831781547,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 0,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 0.0,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 1,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 0.0,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 2,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 0.0,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 3,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 23.039432765921397,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 4,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 316.18217867296613,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 5,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 533.9526959571954,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 6,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 592.7091336110875,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 7,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 475.5734992771488,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 8,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 275.325799626295,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 9,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 68.03055313298341,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 10,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 0.0,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 11,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 0.0,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 12,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 0.0,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 19,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 223.54193415686115,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 20,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 79.02756810161638,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 21,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 0.0,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 22,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 0.0,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 23,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 0.0,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 296,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 237.94926272468268,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 297,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 237.88629132764106,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 298,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 231.76142646494884,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 10000,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 200.08294515684656,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 16680,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 138.8932094637883,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 16681,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 196.83426185900052,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 20000,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 200.57098864051284,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 25000,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 200.91866891757545,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 30000,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 200.08274406730737,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 33347,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 157.99389580829526,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 33348,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 215.87946506696426,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 40000,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 200.91747877566854,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 46315,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 192.49481314233995,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  },
+  {
+    "stage": 2,
+    "step": 50000,
+    "resolved": true,
+    "previous_resolved": true,
+    "shaft_Nm": 200.0826912602551,
+    "shaft_change_Nm": 0.0,
+    "force_vector_change_N": 0.0,
+    "torque_vector_change_Nm": 0.0
+  }
+]
