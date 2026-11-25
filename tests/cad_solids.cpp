@@ -80,6 +80,30 @@ void bezier_rays() {
         close(length(sub(reference.outward,hit.outward)),0.,1e-7,"rational Bezier normal");
     }
     require(fast.ray_counts()[1]>0,"rational test did not exercise the compiled intersection");
+    // Preparing another packet must not eliminate hits outside its old box.
+    fast.prepare_columns({.1,.1,.1},{.101,.101,.101});
+    const auto mid=surface->Value(.5,.5).XYZ()-dir*.1;
+    const Vec source{mid.X()*.001,mid.Y()*.001,mid.Z()*.001},direction{dir.X(),dir.Y(),dir.Z()};
+    std::size_t packet_tests=0;
+    const std::array<std::size_t,1> required{1};
+    const auto fresh=old.first_exit(source,direction,.0002,1,packet_tests,required);
+    const auto outside_packet=fast.first_exit(source,direction,.0002,1,packet_tests,required);
+    require(fresh.face==1 && outside_packet.face==1,"stale packet lost a valid ray");
+    close(fresh.distance_m,outside_packet.distance_m,1e-10,"packet coverage after pose change");
+    gp_Trsf advance;
+    advance.SetTranslation(gp_Vec(dir)*(-.04));
+    BRep_Builder assembly;
+    TopoDS_Compound two_faces;
+    assembly.MakeCompound(two_faces);
+    assembly.Add(two_faces,face);
+    assembly.Add(two_faces,face.Moved(TopLoc_Location(advance)));
+    CadContactIndex overlap_index(two_faces);
+    CadExitQuery occluded(overlap_index);
+    for (double box_start:{.1,-.005}) {
+        occluded.prepare_columns({box_start,box_start,box_start},{box_start+.01,box_start+.01,box_start+.01});
+        require(!occluded.first_exit(source,direction,.0002,1,packet_tests,required).face,
+                "packet ignored a closer face outside the load group");
+    }
     std::optional<cad::BezierRayHit> interior;
     require(atlas->query(1,{100,100,100},dir,1,1e-7,interior) && !interior,"separated Bezier ray");
     // A root at the UV boundary must go back to the shared-edge classifier.
@@ -183,6 +207,17 @@ void pressure_moment() {
     close(length(sub(x->point,y->point)),0,1e-12,"pressure centroid depends on witness");
     close(length(sub(x->pressure_arm,y->pressure_arm)),0,1e-12,"pressure moment depends on witness");
     close(std::abs(x->depth_m-y->depth_m),0,1e-12,"pressure depth depends on witness");
+    // The first moment of a material block must include the translation of
+    // each body when the two sets of columns are combined.
+    const ContactPose frame{{.073,-.051,.034},{0,0,1},.63};
+    const std::array moved{frame,ContactPose{frame.point(poses[1].origin),frame.axis,frame.angle}};
+    const auto witness=search.chord(moved,frame.point({.009,0,0}),frame.rotate({1,0,0}),{});
+    require(witness.has_value(),"moved pressure witness missing");
+    const auto rotated=search.integrate(moved,{*witness},0);
+    require(rotated.has_value(),"moved pressure block unresolved");
+    close(length(sub(rotated->point,frame.point(x->point))),0,2e-10,"rigid transformation of pressure centroid");
+    close(length(sub(rotated->normal,frame.rotate(x->normal))),0,2e-8,"rigid transformation of pressure resultant");
+    close(length(sub(rotated->pressure_arm,frame.rotate(x->pressure_arm))),0,2e-10,"rigid transformation of pressure couple");
     const auto initial=search.discover(poses,true,true);
     search.discover({poses[0],ContactPose{{0,.018,0}}},true,true);
     const auto revisit=search.discover(poses,true,true);

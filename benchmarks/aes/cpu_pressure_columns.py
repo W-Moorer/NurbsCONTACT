@@ -86,8 +86,8 @@ def differences(y):
     return dict(rms=float(np.sqrt(np.mean(y*y))),max_abs=float(abs(y[idx])),peak_step=idx)
 
 
-def paired_geometry(scene, previous, current, out):
-    archive=out.parent
+def paired_geometry(scene, previous, current, out, archive=None, report_all=False):
+    archive=out.parent if archive is None else archive
     replay=json.loads((archive/"replay.json").read_text())
     trajectory=archive.parent/"cpu-local-cad/trajectory.npz"
     if digest(trajectory)!=replay["trajectory_sha256"] or digest(scene)!=replay["scene_sha256"]:
@@ -109,6 +109,9 @@ def paired_geometry(scene, previous, current, out):
         face_switches=0
         former=None
         torque_delta=[]
+        changed_states=[]
+        changed_geometry=[]
+        max_error=np.zeros(4)
         def grouped_faces(row):
             groups={}
             for label,hit in zip(row["labels"],row["witnesses"],strict=True):
@@ -116,30 +119,49 @@ def paired_geometry(scene, previous, current, out):
             return sorted(tuple(sorted(faces)) for faces in groups.values())
         for frame,(x,y) in enumerate(zip(runs["previous"],runs["current"],strict=True)):
             current_faces=grouped_faces(y)
-            if x["resolved"]!=y["resolved"] or x["labels"]!=y["labels"] or grouped_faces(x)!=current_faces:
-                raise ValueError("fixed-pose result or grouping changed")
+            same=x["resolved"]==y["resolved"] and x["labels"]==y["labels"] and grouped_faces(x)==current_faces
+            if not same:
+                changed_states.append(int(indices[frame]))
+                if not report_all:
+                    raise ValueError("fixed-pose result or grouping changed")
             if frame%100 and current_faces!=former:
                 face_switches+=1
             former=current_faces
-            np.testing.assert_allclose(x["regions"],y["regions"],rtol=1e-8,atol=1e-12)
-            if x["resolved"]:
+            if same and x["regions"] and len(x["regions"])==len(y["regions"]):
+                error=abs(np.asarray(x["regions"])-np.asarray(y["regions"]))
+                max_error=np.maximum(max_error,[error[:,:3].max(),error[:,3:6].max(),error[:,6:9].max(),error[:,-1].max()])
+            if same and (len(x["regions"])!=len(y["regions"]) or not np.allclose(x["regions"],y["regions"],rtol=1e-8,atol=1e-12)):
+                changed_geometry.append(int(indices[frame]))
+                if not report_all:
+                    raise ValueError("fixed-pose pressure geometry changed")
+            if x["resolved"] and y["resolved"]:
                 moments=[wrench(row["regions"],origins[indices[frame],b],bodies[b][2],stiffness,limit,True)
                          for row in (x,y)]
                 if all(m is not None for m in moments):
                     torque_delta.append(moments[1][-1]-moments[0][-1])
         entry=dict(stage=stage,checked=len(poses),timed=int(warm.sum()),face_group_changes=face_switches,
-                   compared_torques=len(torque_delta),max_torque_delta_Nm=float(max(map(abs,torque_delta),default=0.)))
+                   compared_torques=len(torque_delta),max_torque_delta_Nm=float(max(map(abs,torque_delta),default=0.)),
+                   changed_states=changed_states,changed_geometry=changed_geometry,
+                   max_component_errors=dict(zip(("point_m","unit_normal","arm_m","depth_m"),max_error.tolist())))
         for name,rows in runs.items():
             area=1e3*np.array([r["loaded_s"]-r["query_s"] for r in rows])[warm]
             total=1e3*np.array([r["loaded_s"] for r in rows])[warm]
             entry[name]=dict(area_mean_ms=float(area.mean()),area_median_ms=float(np.median(area)),
                              full_query_mean_ms=float(total.mean()))
+            entry[name]["ray_counts"]=rows[-1]["ray_counts"]
+            if "block_counts" in rows[-1]:
+                entry[name]["full_blocks"],entry[name]["partial_blocks"],entry[name]["shared_columns"]=rows[-1]["block_counts"]
+            if "column_windows" in rows[-1]:
+                entry[name]["column_windows_built"],entry[name]["column_windows_reused"]=rows[-1]["column_windows"]
+            if "strip_checks" in rows[-1]:
+                entry[name]["strip_checks"]=dict(zip(("eligible","parallel_source","invariant_target","matched_ends"),rows[-1]["strip_checks"],strict=True))
         result["stages"].append(entry)
     write(out/"fixed-timing.json",result)
 
 
-def report(scene, runs, out):
-    old_dir=out.parent/"recurring"
+def report(scene, runs, out, previous=None):
+    native_dir=out.parent/"recurring"
+    old_dir=previous if previous is not None else native_dir
     traces,metrics={},{}
     for method in ("cad-bezier","mesh-obb"):
         path=runs/method
@@ -191,7 +213,8 @@ def report(scene, runs, out):
                 mesh_output_torque_Nm=float(mesh["output_torque_Nm"][step]))
         for key,series in traces.items():
             metrics[key]["torque_minus_recurdyn_Nm"]=differences(series["output_torque_Nm"]-archive["RecurDyn_output_torque_Nm"])
-        prefix=old["cad_patch_reconstructed_output_torque_Nm"]
+        with np.load(native_dir/"responses.npz") as reference:
+            prefix=reference["cad_patch_reconstructed_output_torque_Nm"]
         window=slice(25365,25406)
         residual=torque[window]-prefix[window]
         metrics["original_spike_window"]=dict(max_abs_vs_native_Nm=float(np.nanmax(abs(residual))),

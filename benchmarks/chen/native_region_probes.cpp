@@ -148,7 +148,8 @@ int main(int argc,char** argv) try {
                 std::cout<<regions[i].depth_m<<']';
             }
             const auto counts=search.ray_counts();
-            std::cout<<"],\"ray_counts\":["<<counts[0]<<','<<counts[1]<<','<<counts[2]<<','<<counts[3]
+            const auto blocks=search.block_counts();
+            std::cout<<"],\"block_counts\":["<<blocks[0]<<','<<blocks[1]<<','<<blocks[2]<<"],\"ray_counts\":["<<counts[0]<<','<<counts[1]<<','<<counts[2]<<','<<counts[3]
                      <<"],\"loaded_s\":"<<loaded_s;
         }
         std::cout<<"}"<<std::endl;

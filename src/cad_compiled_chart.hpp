@@ -32,6 +32,8 @@ struct CompiledChart {
     std::vector<std::array<Hull,4>> column_hulls;
     SpanIndex column_index;
     std::vector<double> ku,kv;
+    struct TranslationBand { gp_XYZ axis; double lo,hi; };
+    std::vector<TranslationBand> bands;
     mutable std::mutex adaptor_mutex;
     static Row polynomial(const Row& p) {
         return {p[0],(p[1]-p[0])*3.,((p[2]-p[1])-(p[1]-p[0]))*3.,
@@ -95,6 +97,34 @@ struct CompiledChart {
         if (surface.GetType()!=GeomAbs_BSplineSurface) return;
         const auto bs=surface.BSpline();
         if (bs->UDegree()!=3 || bs->VDegree()!=3 || bs->IsURational() || bs->IsVRational()) return;
+        if (refine_columns && rectangular) for (int along=0;along<2;++along) {
+            // A tensor-product net is invariant under translations along a
+            // generator when its rows are translations of a transverse curve.
+            // Monotone axial poles ensure the entire trimmed band is covered.
+            const int n=along ? bs->NbVPoles():bs->NbUPoles(), m=along ? bs->NbUPoles():bs->NbVPoles();
+            const auto pole=[&](int i,int j) {return (along ? bs->Pole(j,i):bs->Pole(i,j)).XYZ();};
+            const auto p=pole(1,1);
+            auto axis=pole(n,1)-p;
+            if (axis.Modulus()<Precision::Confusion()) continue;
+            axis.Normalize();
+            const double guard=1e-10; // mm, well below the native ray tolerance
+            bool valid=true;
+            double previous=0;
+            for (int i=1;valid && i<=n;++i) {
+                const auto shift=pole(i,1)-p;
+                const double axial=shift.Dot(axis);
+                valid=axial>=previous && (shift-axis*axial).Modulus()<=guard;
+                previous=axial;
+                for (int j=1;valid && j<=m;++j)
+                    valid=(pole(i,j)-pole(1,j)-shift).Modulus()<=guard &&
+                          std::abs((pole(1,j)-p).Dot(axis))<=guard;
+            }
+            if (valid) {
+                const double lo=surface.Value(u0,v0).XYZ().Dot(axis);
+                const double hi=surface.Value(along ? u0:u1,along ? v1:v0).XYZ().Dot(axis);
+                if (hi>lo) bands.push_back({axis,lo,hi});
+            }
+        }
         GeomConvert_BSplineSurfaceToBezierSurface net(bs);
         const int nu=net.NbUPatches(),nv=net.NbVPatches();
         TColStd_Array1OfReal u(1,nu+1),v(1,nv+1);

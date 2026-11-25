@@ -17,7 +17,7 @@ def digest(path):
 
 
 def run(exe, scene, directory, method, scope, solver, penalty_stiffness=None, geometry_update=None,
-        spectral_radius=None, substeps_per_output=1):
+        spectral_radius=None, substeps_per_output=1, launch=subprocess.run):
     if not isinstance(substeps_per_output, int) or substeps_per_output < 1:
         raise ValueError("Expected a positive integer number of integration steps per output")
     dt=.0001/substeps_per_output
@@ -39,7 +39,7 @@ def run(exe, scene, directory, method, scope, solver, penalty_stiffness=None, ge
     exit_code = None
     with (directory / "process.log").open("wb") as log:
         try:
-            exit_code = subprocess.run(args, stdout=log, stderr=subprocess.STDOUT, timeout=1800).returncode
+            exit_code = launch(args, stdout=log, stderr=subprocess.STDOUT, timeout=1800).returncode
             if exit_code:
                 status = "runtime_loader_failure" if exit_code & 0xFFFFFFFF == 0xC0000135 else "solver_failure"
         except subprocess.TimeoutExpired:

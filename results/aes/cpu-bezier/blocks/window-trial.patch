@@ -1,0 +1,216 @@
+--- a/src/cad_patch_search.cpp
++++ b/src/cad_patch_search.cpp
+@@ -122,15 +122,21 @@
+ struct FaceRule {
+     std::vector<AreaNode> nodes;
+     std::vector<NodeBlock> blocks;
++    Box envelope{};
+     struct Column {gp_XYZ point; Vec inward; double weight;};
+     std::vector<Column> columns;
+     void index(double reach,int order) {
+         columns.reserve(nodes.size());
++        Bnd_Box bounds;
+         for (const auto& node:nodes) {
+             const double weight=length(node.area);
+             columns.push_back({cad::point(scale(node.point,1000)).XYZ(),
+                                weight>0 ? scale(node.area,-1/weight) : Vec{},weight});
+-        }
++            const auto& c=columns.back();
++            bounds.Add(gp_Pnt(c.point));
++            bounds.Add(gp_Pnt(c.point+cad::point(c.inward).XYZ()*(1000*reach)));
++        }
++        if (!bounds.IsVoid()) envelope=Box(bounds);
+         const bool grid=nodes.size()==std::size_t(order)*order;
+         for (std::size_t i=0;i<nodes.size();) {
+             const auto row_end=grid ? (i/order+1)*order:nodes.size();
+@@ -730,6 +736,48 @@
+     int order;
+     std::map<std::size_t, FaceRule> saved;
+     std::size_t skipped{},full_blocks{},partial_blocks{},shared_columns{};
++    struct TargetSpans {std::size_t index;std::vector<std::size_t> spans;};
++    struct CandidateBlock {std::size_t index;std::vector<TargetSpans> faces;};
++    struct Window {
++        std::size_t source{},excluded{};
++        std::vector<std::size_t> targets;
++        gp_Trsf pose;
++        std::vector<CandidateBlock> blocks;
++    };
++    std::array<Window,64> windows;
++    std::size_t built{},reused{};
++    std::array<std::size_t,4> strip_checks{}; // eligible head, parallel source, invariant target, matched ends
++    const Window& candidates(std::size_t source,const FaceRule& rule,const Atlas& other,
++                             const std::vector<std::size_t>& targets,const gp_Trsf& pose,double reach) {
++        auto hash=source;
++        for (auto face:targets) hash=hash*31+face;
++        auto& w=windows[hash%windows.size()];
++        const double margin=std::max(100*Precision::Confusion(),1000*reach);
++        if (w.source==source && w.targets==targets && box_motion(rule.envelope,pose,w.pose)<=margin) {
++            ++reused;
++            return w;
++        }
++        ++built;
++        w.source=source; w.targets=targets; w.pose=pose; w.excluded=0; w.blocks.clear();
++        for (std::size_t j=0;j<rule.blocks.size();++j) {
++            const auto& block=rule.blocks[j];
++            const auto box=block.placed(pose);
++            Bnd_Box bounds(gp_Pnt(box.lo),gp_Pnt(box.hi));
++            bounds.Enlarge(margin);
++            CandidateBlock candidate{j,{}};
++            for (std::size_t i=0;i<targets.size();++i) {
++                const auto face=targets[i]-1;
++                if (bounds.IsOut(other.face_boxes[face])) continue;
++                TargetSpans entry{i,{}};
++                const auto& chart=*other.surfaces[face];
++                chart.block_spans(box,entry.spans,margin);
++                if (chart.hulls.empty() || !entry.spans.empty()) candidate.faces.push_back(std::move(entry));
++            }
++            if (candidate.faces.empty()) w.excluded+=block.end-block.begin;
++            else w.blocks.push_back(std::move(candidate));
++        }
++        return w;
++    }
+     const FaceRule& rule(std::size_t id) {
+         if (order == 12 || order == 24 || order == 48 || order == 96) return body.shared_rule(id, order);
+         auto [it,fresh]=saved.try_emplace(id);
+@@ -784,24 +832,12 @@
+         }
+         for (const auto& [id, face_set] : faces) {
+             const std::vector<std::size_t> targets(face_set.begin(),face_set.end());
+-            std::vector<std::vector<std::size_t>> spans(targets.size());
+-            std::vector<std::size_t> active;
+             const auto& rule = grids[side].rule(id);
+-            for (const auto& block : rule.blocks) {
++            const auto& window=grids[side].candidates(id,rule,grids[other].body,targets,to_target,reach);
++            grids[side].skipped+=window.excluded;
++            for (const auto& candidate:window.blocks) {
++                const auto& block=rule.blocks[candidate.index];
+                 const auto swept=block.placed(to_target);
+-                const Bnd_Box bounds(gp_Pnt(swept.lo),gp_Pnt(swept.hi));
+-                active.clear();
+-                for (std::size_t i=0;i<targets.size();++i) {
+-                    const auto face=targets[i]-1;
+-                    if (bounds.IsOut(grids[other].body.face_boxes[face])) continue;
+-                    const auto& surface=*grids[other].body.surfaces[face];
+-                    surface.block_spans(swept,spans[i]);
+-                    if (surface.hulls.empty() || !spans[i].empty()) active.push_back(i);
+-                }
+-                if (active.empty()) {
+-                    grids[side].skipped += block.end - block.begin;
+-                    continue;
+-                }
+                 bool prepared=false;
+                 std::span<const std::size_t> nearby;
+                 const auto depth_at=[&](std::size_t j)->CadExit {
+@@ -810,13 +846,13 @@
+                     const auto local=gp_Pnt(col.point).Transformed(to_target);
+                     const auto direction=cad::coordinates(gp_Pnt(to_target.VectorialPart()*cad::point(col.inward).XYZ()));
+                     const gp_XYZ segment(direction[0]*1000*reach,direction[1]*1000*reach,direction[2]*1000*reach);
+-                    const auto hint=std::find_if(active.begin(),active.end(),[&](auto i){
+-                        return grids[other].body.surfaces[targets[i]-1]->column_possible(local.XYZ(),segment,&spans[i]);
++                    const auto hint=std::find_if(candidate.faces.begin(),candidate.faces.end(),[&](const auto& entry){
++                        return grids[other].body.surfaces[targets[entry.index]-1]->column_possible(local.XYZ(),segment,&entry.spans);
+                     });
+-                    if (hint==active.end()) return {};
++                    if (hint==candidate.faces.end()) return {};
+                     // Keep the native face visitation order for coincident
+                     // hits, including conservative hints outside this block.
+-                    const auto first=std::find_if(targets.begin(),targets.begin()+*hint,[&](auto face) {
++                    const auto first=std::find_if(targets.begin(),targets.begin()+hint->index,[&](auto face) {
+                         return grids[other].body.surfaces[face-1]->column_possible(local.XYZ(),segment);
+                     });
+                     std::size_t tests=0;
+@@ -830,13 +866,20 @@
+                 const auto head=depth_at(block.begin);
+                 CadExit tail;
+                 bool checked_tail=false,uniform=false;
+-                if (head.face && block.end-block.begin>2 && head.distance_m>1e-9 &&
+-                    head.distance_m<reach-1e-9 && translated_columns(grids[other].body,block,to_target,swept,nearby)) {
++                const bool eligible=head.face && block.end-block.begin>2 && head.distance_m>1e-9 &&
++                                    head.distance_m<reach-1e-9;
++                if (eligible) {
++                    ++grids[side].strip_checks[0];
++                    grids[side].strip_checks[1]+=block.parallel_strip;
++                }
++                if (eligible && translated_columns(grids[other].body,block,to_target,swept,nearby)) {
++                    ++grids[side].strip_checks[2];
+                     const auto d=to_target.VectorialPart()*cad::point(rule.columns[block.begin].inward).XYZ();
+                     if (d.Dot(cad::point(head.outward).XYZ())>.01) {
+                         tail=depth_at(block.end-1);
+                         checked_tail=true;
+                         uniform=tail.face==head.face && std::abs(tail.distance_m-head.distance_m)<1e-12;
++                        grids[side].strip_checks[3]+=uniform;
+                     }
+                 }
+                 unsigned mask=0;
+@@ -1073,6 +1116,21 @@
+         for (const auto& [order,levels]:worker->levels) for (const auto& level:levels) {
+             counts[0]+=level.full_blocks; counts[1]+=level.partial_blocks; counts[2]+=level.shared_columns;
+         }
++    return counts;
++}
++std::array<std::size_t,2> PatchSearch::column_window_counts() const {
++    std::array<std::size_t,2> counts{};
++    for (const auto& worker:data_->workers)
++        for (const auto& [order,levels]:worker->levels) for (const auto& level:levels) {
++            counts[0]+=level.built; counts[1]+=level.reused;
++        }
++    return counts;
++}
++std::array<std::size_t,4> PatchSearch::strip_checks() const {
++    std::array<std::size_t,4> counts{};
++    for (const auto& worker:data_->workers)
++        for (const auto& [order,levels]:worker->levels) for (const auto& level:levels)
++            for (std::size_t i=0;i<counts.size();++i) counts[i]+=level.strip_checks[i];
+     return counts;
+ }
+ std::array<std::size_t,4> PatchSearch::ray_counts() const {
+--- a/src/cad_patch_search.hpp
++++ b/src/cad_patch_search.hpp
+@@ -20,6 +20,8 @@
+     std::array<std::size_t,2> asset_counts() const;
+     std::size_t skipped_nodes() const;
+     std::array<std::size_t,3> block_counts() const;
++    std::array<std::size_t,2> column_window_counts() const;
++    std::array<std::size_t,4> strip_checks() const;
+     std::array<std::size_t,4> ray_counts() const;
+     bool boxes_separate(const std::array<dynamics::ContactPose,2>& poses) const;
+     PatchDiscovery discover(const std::array<dynamics::ContactPose,2>& poses,bool indexed,bool group);
+--- a/src/cad_compiled_chart.hpp
++++ b/src/cad_compiled_chart.hpp
+@@ -179,17 +179,18 @@
+         std::array<gp_XYZ,3> axes;
+         gp_XYZ lo,hi;
+     };
+-    void block_spans(const ColumnBox& box,std::vector<std::size_t>& spans) const {
++    void block_spans(const ColumnBox& box,std::vector<std::size_t>& spans,double displacement=0) const {
+         spans.clear();
+-        const auto& lo=box.lo;
+-        const auto& hi=box.hi;
++        const gp_XYZ pad(displacement,displacement,displacement);
++        const auto lo=box.lo-pad,hi=box.hi+pad;
+         const auto possible=[&](const Hull& h) {
+             if (hi.X() < h.lo.X() || lo.X() > h.hi.X() || hi.Y() < h.lo.Y() || lo.Y() > h.hi.Y() ||
+                 hi.Z() < h.lo.Z() || lo.Z() > h.hi.Z())
+                 return false;
+             const double mid=box.center.Dot(h.n);
+             const double radius=std::abs(box.axes[0].Dot(h.n))+std::abs(box.axes[1].Dot(h.n))+
+-                                std::abs(box.axes[2].Dot(h.n))+4*Precision::Confusion();
++                                std::abs(box.axes[2].Dot(h.n))+4*Precision::Confusion()+
++                                displacement*(std::abs(h.n.X())+std::abs(h.n.Y())+std::abs(h.n.Z()));
+             return mid+radius>=h.low && mid-radius<=h.high;
+         };
+         column_index.query(lo,hi,[&](auto i) {
+--- a/benchmarks/chen/native_region_probes.cpp
++++ b/benchmarks/chen/native_region_probes.cpp
+@@ -149,7 +149,10 @@
+             }
+             const auto counts=search.ray_counts();
+             const auto blocks=search.block_counts();
+-            std::cout<<"],\"block_counts\":["<<blocks[0]<<','<<blocks[1]<<','<<blocks[2]<<"],\"ray_counts\":["<<counts[0]<<','<<counts[1]<<','<<counts[2]<<','<<counts[3]
++            const auto windows=search.column_window_counts();
++            const auto strips=search.strip_checks();
++            std::cout<<"],\"strip_checks\":["<<strips[0]<<','<<strips[1]<<','<<strips[2]<<','<<strips[3];
++            std::cout<<"],\"column_windows\":["<<windows[0]<<','<<windows[1]<<"],\"block_counts\":["<<blocks[0]<<','<<blocks[1]<<','<<blocks[2]<<"],\"ray_counts\":["<<counts[0]<<','<<counts[1]<<','<<counts[2]<<','<<counts[3]
+                      <<"],\"loaded_s\":"<<loaded_s;
+         }
+         std::cout<<"}"<<std::endl;

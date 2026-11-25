@@ -101,6 +101,10 @@ struct NodeBlock {
     std::size_t begin, end;
     gp_XYZ center;
     std::array<gp_XYZ,3> axes;
+    Vec area{},moment{},weighted_point{};
+    double weight{};
+    gp_XYZ generator;
+    bool parallel_strip{};
     cad::CompiledChart::ColumnBox placed(const gp_Trsf& pose) const {
         cad::CompiledChart::ColumnBox box;
         const auto r=pose.VectorialPart();
@@ -118,17 +122,19 @@ struct NodeBlock {
 struct FaceRule {
     std::vector<AreaNode> nodes;
     std::vector<NodeBlock> blocks;
-    struct Column {gp_XYZ point; Vec inward;};
-    void index(double reach) {
-        std::vector<Column> columns;
+    struct Column {gp_XYZ point; Vec inward; double weight;};
+    std::vector<Column> columns;
+    void index(double reach,int order) {
         columns.reserve(nodes.size());
         for (const auto& node:nodes) {
             const double weight=length(node.area);
             columns.push_back({cad::point(scale(node.point,1000)).XYZ(),
-                               weight>0 ? scale(node.area,-1/weight) : Vec{}});
+                               weight>0 ? scale(node.area,-1/weight) : Vec{},weight});
         }
-        for (std::size_t i = 0; i < nodes.size(); i += 8) {
-            NodeBlock block{i, std::min(i + 8, nodes.size()), {}, {}};
+        const bool grid=nodes.size()==std::size_t(order)*order;
+        for (std::size_t i=0;i<nodes.size();) {
+            const auto row_end=grid ? (i/order+1)*order:nodes.size();
+            NodeBlock block{i,std::min(i+8,row_end),{},{}};
             auto along=columns[block.end-1].point-columns[i].point;
             if (along.SquareModulus()<1e-24) along=gp_XYZ(1,0,0);
             along.Normalize();
@@ -139,6 +145,18 @@ struct FaceRule {
             const std::array axes{along,across,along.Crossed(across)};
             const auto origin=columns[i].point;
             block.center=origin;
+            block.generator=along;
+            block.parallel_strip=block.end-i>1;
+            for (auto j=i;j<block.end;++j) {
+                const auto& sample=nodes[j];
+                const auto d=columns[j].point-origin;
+                block.parallel_strip &= columns[j].weight>0 && (d-along*d.Dot(along)).Modulus()<1.e-10 &&
+                    length(sub(columns[j].inward,columns[i].inward))<1.e-11;
+                block.area=add(block.area,sample.area);
+                block.moment=add(block.moment,cross3(sample.point,sample.area));
+                block.weighted_point=add(block.weighted_point,scale(sample.point,columns[j].weight));
+                block.weight+=columns[j].weight;
+            }
             for (int k=0;k<3;++k) {
                 double lo=0,hi=0;
                 for (auto j=i;j<block.end;++j) {
@@ -150,6 +168,7 @@ struct FaceRule {
                 block.axes[k]=axes[k]*(.5*(hi-lo));
             }
             blocks.push_back(block);
+            i=block.end;
         }
     }
 };
@@ -335,7 +354,7 @@ struct Atlas {
         for (const auto& row : nodes)
             base_rule.at(row.face).nodes.push_back(row.node);
         for (auto& rule : base_rule)
-            rule.index(column_reach);
+            rule.index(column_reach,12);
     }
     FaceRule dense_rule(std::size_t face, int order) const {
         cad::PatchAssets cache(surfaces.at(face - 1)->surface.Face());
@@ -343,7 +362,7 @@ struct Atlas {
         result.nodes =
             cache.table<AreaNode>("quadrature-" + std::to_string(order), std::size_t(order) * order,
                                   [&] { return quadrature(face, order).nodes; });
-        result.index(column_reach);
+        result.index(column_reach,order);
         return result;
     }
     const FaceRule& shared_rule(std::size_t face, int order) {
@@ -710,18 +729,39 @@ struct SurfaceQuadrature {
     Atlas& body;
     int order;
     std::map<std::size_t, FaceRule> saved;
-    std::size_t skipped{};
+    std::size_t skipped{},full_blocks{},partial_blocks{},shared_columns{};
     const FaceRule& rule(std::size_t id) {
         if (order == 12 || order == 24 || order == 48 || order == 96) return body.shared_rule(id, order);
         auto [it,fresh]=saved.try_emplace(id);
         if (fresh) {
             it->second = body.quadrature(id, order);
-            it->second.index(body.column_reach);
+            it->second.index(body.column_reach,order);
         }
         return it->second;
     }
 };
 struct PressurePatch {Vec center,normal,arm;double depth;};
+bool translated_columns(const Atlas& target,const NodeBlock& block,const gp_Trsf& pose,
+                        const cad::CompiledChart::ColumnBox& box,std::span<const std::size_t> nearby) {
+    if (!block.parallel_strip) return false;
+    const auto axis=pose.VectorialPart()*block.generator;
+    for (const auto face:nearby) {
+        const auto& chart=*target.surfaces[face-1];
+        const bool invariant=std::any_of(chart.bands.begin(),chart.bands.end(),[&](const auto& band) {
+            if (axis.Crossed(band.axis).Modulus()>1e-11) return false;
+            const double mid=box.center.Dot(band.axis);
+            double extent=8*Precision::Confusion();
+            for (const auto& side:box.axes) extent+=std::abs(side.Dot(band.axis));
+            return mid-extent>band.lo && mid+extent<band.hi;
+        });
+        if (invariant) continue;
+        if (chart.hulls.empty()) return false;
+        std::vector<std::size_t> spans;
+        chart.block_spans(box,spans);
+        if (!spans.empty()) return false;
+    }
+    return true;
+}
 std::optional<PressurePatch> integrate_patch(std::array<SurfaceQuadrature,2>& grids,
     CadExitQuery& ray_a,CadExitQuery& ray_b,const std::array<ContactPose,2>& poses,
     const std::vector<CadChord>& group,double reach,cad::PressureFailure* failure) {
@@ -733,6 +773,9 @@ std::optional<PressurePatch> integrate_patch(std::array<SurfaceQuadrature,2>& gr
         const double sign=side ? -1. : 1.;
         const auto world=cad::placement(poses[side]);
         const auto to_target=cad::placement(poses[other]).Inverted()*world;
+        auto& exit=other ? ray_b:ray_a;
+        Vec local_area{},local_moment{},local_centroid{};
+        double local_volume=0;
         // The discovery chords identify the faces in this region. The material
         // normal at each integration point defines its column independently.
         std::map<std::size_t,std::set<std::size_t>> faces;
@@ -759,40 +802,78 @@ std::optional<PressurePatch> integrate_patch(std::array<SurfaceQuadrature,2>& gr
                     grids[side].skipped += block.end - block.begin;
                     continue;
                 }
-                for (auto j = block.begin; j < block.end; ++j) {
-                    const auto& sample = rule.nodes[j];
-                    const auto native=cad::point(scale(sample.point,1000));
-                    const auto local = native.Transformed(to_target);
-                    const auto weight=length(sample.area);
-                    if (!(weight>0)) continue;
-                    const auto ray=poses[side].rotate(scale(sample.area,-1/weight));
-                    const auto direction=poses[other].inverse_rotate(ray);
+                bool prepared=false;
+                std::span<const std::size_t> nearby;
+                const auto depth_at=[&](std::size_t j)->CadExit {
+                    const auto& col=rule.columns[j];
+                    if (!(col.weight>0)) return {};
+                    const auto local=gp_Pnt(col.point).Transformed(to_target);
+                    const auto direction=cad::coordinates(gp_Pnt(to_target.VectorialPart()*cad::point(col.inward).XYZ()));
                     const gp_XYZ segment(direction[0]*1000*reach,direction[1]*1000*reach,direction[2]*1000*reach);
                     const auto hint=std::find_if(active.begin(),active.end(),[&](auto i){
                         return grids[other].body.surfaces[targets[i]-1]->column_possible(local.XYZ(),segment,&spans[i]);
                     });
-                    if (hint==active.end()) continue;
+                    if (hint==active.end()) return {};
                     // Keep the native face visitation order for coincident
                     // hits, including conservative hints outside this block.
                     const auto first=std::find_if(targets.begin(),targets.begin()+*hint,[&](auto face) {
                         return grids[other].body.surfaces[face-1]->column_possible(local.XYZ(),segment);
                     });
                     std::size_t tests=0;
-                    const auto hit=(other ? ray_b : ray_a).first_exit(
-                        scale(cad::coordinates(local),.001),direction,reach,*first,tests,targets);
-                    if (!hit.face || !(hit.distance_m>0)) continue;
-                    const double depth=hit.distance_m;
-                    const auto point = scale(cad::coordinates(native.Transformed(world)), .001);
-                    const auto area_element = scale(poses[side].rotate(sample.area), sign);
-                    const auto r = sub(point, origin);
-                    area = add(area, area_element);
-                    moment = add(moment, cross3(r, area_element));
-                    const double dv = depth * weight;
-                    centroid = add(centroid, scale(add(r, scale(ray, .5 * depth)), dv));
-                    volume += dv;
+                    if (!prepared) {
+                        nearby=exit.prepare_columns(scale(cad::coordinates(gp_Pnt(swept.lo)),.001),
+                                                    scale(cad::coordinates(gp_Pnt(swept.hi)),.001));
+                        prepared=true;
+                    }
+                    return exit.first_exit(scale(cad::coordinates(local),.001),direction,reach,*first,tests,targets);
+                };
+                const auto head=depth_at(block.begin);
+                CadExit tail;
+                bool checked_tail=false,uniform=false;
+                if (head.face && block.end-block.begin>2 && head.distance_m>1e-9 &&
+                    head.distance_m<reach-1e-9 && translated_columns(grids[other].body,block,to_target,swept,nearby)) {
+                    const auto d=to_target.VectorialPart()*cad::point(rule.columns[block.begin].inward).XYZ();
+                    if (d.Dot(cad::point(head.outward).XYZ())>.01) {
+                        tail=depth_at(block.end-1);
+                        checked_tail=true;
+                        uniform=tail.face==head.face && std::abs(tail.distance_m-head.distance_m)<1e-12;
+                    }
+                }
+                unsigned mask=0;
+                if (uniform) {
+                    const double d=head.distance_m;
+                    local_volume+=d*block.weight;
+                    local_centroid=add(local_centroid,sub(scale(block.weighted_point,d),scale(block.area,.5*d*d)));
+                    grids[side].shared_columns+=block.end-block.begin-2;
+                } else for (auto j=block.begin;j<block.end;++j) {
+                    const auto hit=j==block.begin ? head : checked_tail && j+1==block.end ? tail : depth_at(j);
+                    if (!hit.face || hit.distance_m<=0) continue;
+                    mask|=1u<<(j-block.begin);
+                    const auto& col=rule.columns[j];
+                    const double dv=hit.distance_m*col.weight;
+                    local_volume+=dv;
+                    local_centroid=add(local_centroid,scale(add(rule.nodes[j].point,scale(col.inward,.5*hit.distance_m)),dv));
+                }
+                if (uniform || mask==(1u<<(block.end-block.begin))-1) {
+                    local_area=add(local_area,block.area);
+                    local_moment=add(local_moment,block.moment);
+                    ++grids[side].full_blocks;
+                } else if (mask) {
+                    ++grids[side].partial_blocks;
+                    for (auto j=block.begin;j<block.end;++j) if (mask&(1u<<(j-block.begin))) {
+                        const auto& node=rule.nodes[j];
+                        local_area=add(local_area,node.area);
+                        local_moment=add(local_moment,cross3(node.point,node.area));
+                    }
                 }
             }
         }
+        const Vec offset=sub(poses[side].origin,origin);
+        const auto world_area=scale(poses[side].rotate(local_area),sign);
+        area=add(area,world_area);
+        moment=add(moment,add(scale(poses[side].rotate(local_moment),sign),cross3(offset,world_area)));
+        centroid=add(centroid,add(poses[side].rotate(local_centroid),scale(offset,local_volume)));
+        volume+=local_volume;
     }
     const double magnitude=length(area);
     if (!(volume>0 && magnitude>0)) {
@@ -986,6 +1067,14 @@ std::size_t PatchSearch::skipped_nodes() const {
                 count += level.skipped;
     return count;
 }
+std::array<std::size_t,3> PatchSearch::block_counts() const {
+    std::array<std::size_t,3> counts{};
+    for (const auto& worker:data_->workers)
+        for (const auto& [order,levels]:worker->levels) for (const auto& level:levels) {
+            counts[0]+=level.full_blocks; counts[1]+=level.partial_blocks; counts[2]+=level.shared_columns;
+        }
+    return counts;
+}
 std::array<std::size_t,4> PatchSearch::ray_counts() const {
     std::array<std::size_t,4> result{};
     const auto add=[&](const CadExitQuery& rays) {
@@ -1066,6 +1155,7 @@ public:
         for (const auto& [label,group]:groups) components.push_back(&group);
         std::vector<std::optional<ContactRegion>> patches(groups.size());
         const auto previous_skips = search_.skipped_nodes();
+        const auto before=search_.block_counts();
         if (!groups.empty()) {
             OSD_ThreadPool::Launcher pool(*OSD_ThreadPool::DefaultPool(),std::min(4,static_cast<int>(groups.size())));
             pool.Perform(0,static_cast<int>(groups.size()),[&](int worker,int i) {
@@ -1073,6 +1163,10 @@ public:
             });
         }
         work.cad_skipped_area_nodes += search_.skipped_nodes() - previous_skips;
+        const auto after=search_.block_counts();
+        work.cad_full_blocks+=after[0]-before[0];
+        work.cad_partial_blocks+=after[1]-before[1];
+        work.cad_shared_columns+=after[2]-before[2];
         std::vector<ContactRegion> result;
         for (const auto& patch:patches) {
             if (!patch) {

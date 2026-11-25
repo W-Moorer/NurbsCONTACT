@@ -1,0 +1,259 @@
+{
+  "cad-bezier": {
+    "process_s": 1212.6549806999974,
+    "boolean_steps": [
+      1860,
+      2741,
+      4226,
+      5741,
+      9317,
+      14226,
+      15741,
+      19317,
+      24226,
+      25741,
+      29317,
+      34226,
+      35741,
+      39317,
+      44226,
+      45741,
+      49317
+    ],
+    "wall_in_boolean_steps_s": 122.00250750000006,
+    "ordinary_steps": 49983,
+    "ordinary_mean_ms": 20.338904859652278,
+    "ordinary_p50_ms": 15.570400000115114,
+    "ordinary_p95_ms": 36.414749999994456,
+    "budget_per_ordinary_step_ms_for_300s": 2.07959708100759,
+    "unchanged_trace_sha256": false,
+    "torque_minus_recurdyn_Nm": {
+      "rms": 42.094760875681125,
+      "max_abs": 254.79863811185413,
+      "peak_step": 24
+    }
+  },
+  "mesh-obb": {
+    "process_s": 367.03056220000144,
+    "boolean_steps": [],
+    "wall_in_boolean_steps_s": 0.0,
+    "ordinary_steps": 50000,
+    "ordinary_mean_ms": 7.073823804000002,
+    "ordinary_p50_ms": 2.011249999995357,
+    "ordinary_p95_ms": 23.357904999999235,
+    "budget_per_ordinary_step_ms_for_300s": 5.733212559999973,
+    "unchanged_trace_sha256": true,
+    "torque_minus_recurdyn_Nm": {
+      "rms": 29.1423846001526,
+      "max_abs": 139.1397076410301,
+      "peak_step": 17
+    }
+  },
+  "torque_delta_from_previous_Nm": {
+    "rms": 3.881347004489522e-08,
+    "max_abs": 9.507048162049614e-07,
+    "peak_step": 13868
+  },
+  "torque_delta_from_mesh_Nm": {
+    "rms": 21.953128267484043,
+    "max_abs": 201.45644567691426,
+    "peak_step": 24
+  },
+  "speed_delta_from_mesh_rad_s": [
+    {
+      "rms": 0.4985964145736063,
+      "max_abs": 4.227128265395862,
+      "peak_step": 25
+    },
+    {
+      "rms": 0.16927217876677936,
+      "max_abs": 1.7274824120828214,
+      "peak_step": 25
+    },
+    {
+      "rms": 0.22581598342046175,
+      "max_abs": 2.426559088699726,
+      "peak_step": 25
+    }
+  ],
+  "loads_delta_from_previous_N": [
+    {
+      "rms": 5.806693470551149e-07,
+      "max_abs": 1.4914167650204035e-05,
+      "peak_step": 42304
+    },
+    {
+      "rms": 6.273159502553768e-07,
+      "max_abs": 1.5770847085150308e-05,
+      "peak_step": 13868
+    }
+  ],
+  "speed_delta_from_previous_rad_s": [
+    {
+      "rms": 3.3431568141749835e-09,
+      "max_abs": 5.855622475792188e-08,
+      "peak_step": 42303
+    },
+    {
+      "rms": 1.5865578094029997e-09,
+      "max_abs": 2.1234384917079296e-08,
+      "peak_step": 46198
+    },
+    {
+      "rms": 8.697652222599747e-10,
+      "max_abs": 1.447823194666853e-08,
+      "peak_step": 30170
+    }
+  ],
+  "switch_steps": {
+    "previous": [
+      [
+        3
+      ],
+      [
+        3,
+        9,
+        12,
+        20,
+        21
+      ]
+    ],
+    "cad-bezier": [
+      [
+        3
+      ],
+      [
+        3,
+        9,
+        12,
+        20,
+        21
+      ]
+    ],
+    "mesh-obb": [
+      [
+        3
+      ],
+      [
+        3,
+        10,
+        13,
+        21,
+        24
+      ]
+    ]
+  },
+  "changed_loaded_frames_vs_previous": [
+    0,
+    0
+  ],
+  "fallback_torque_delta_from_previous_Nm": [
+    {
+      "step": 1860,
+      "same_step_Nm": 4.46297576672805e-09,
+      "max_over_next_10_steps_Nm": 4.498360794968903e-09
+    },
+    {
+      "step": 2741,
+      "same_step_Nm": 1.4868675179968704e-08,
+      "max_over_next_10_steps_Nm": 1.4868675179968704e-08
+    },
+    {
+      "step": 4226,
+      "same_step_Nm": 1.0667605465641827e-08,
+      "max_over_next_10_steps_Nm": 1.9596825495682424e-08
+    },
+    {
+      "step": 5741,
+      "same_step_Nm": 3.779007329285378e-09,
+      "max_over_next_10_steps_Nm": 8.625008263152267e-09
+    },
+    {
+      "step": 9317,
+      "same_step_Nm": -3.754684030354838e-08,
+      "max_over_next_10_steps_Nm": 3.754684030354838e-08
+    },
+    {
+      "step": 14226,
+      "same_step_Nm": 5.287179760671279e-08,
+      "max_over_next_10_steps_Nm": 5.287179760671279e-08
+    },
+    {
+      "step": 15741,
+      "same_step_Nm": -1.2142919558755239e-08,
+      "max_over_next_10_steps_Nm": 3.337601128805545e-08
+    },
+    {
+      "step": 19317,
+      "same_step_Nm": 1.2235631174917216e-07,
+      "max_over_next_10_steps_Nm": 1.2235631174917216e-07
+    },
+    {
+      "step": 24226,
+      "same_step_Nm": 1.0230110092379618e-08,
+      "max_over_next_10_steps_Nm": 1.761824819368485e-08
+    },
+    {
+      "step": 25741,
+      "same_step_Nm": -3.7877128988839104e-08,
+      "max_over_next_10_steps_Nm": 4.343323212196992e-08
+    },
+    {
+      "step": 29317,
+      "same_step_Nm": -1.7239020166925911e-07,
+      "max_over_next_10_steps_Nm": 1.7239020166925911e-07
+    },
+    {
+      "step": 34226,
+      "same_step_Nm": -1.7808901020544e-08,
+      "max_over_next_10_steps_Nm": 3.5195512282371055e-08
+    },
+    {
+      "step": 35741,
+      "same_step_Nm": -4.356809313321719e-08,
+      "max_over_next_10_steps_Nm": 6.811080766055966e-08
+    },
+    {
+      "step": 39317,
+      "same_step_Nm": 5.8710554640128976e-08,
+      "max_over_next_10_steps_Nm": 1.0396567518000666e-07
+    },
+    {
+      "step": 44226,
+      "same_step_Nm": -4.378904350232915e-09,
+      "max_over_next_10_steps_Nm": 1.042408257490024e-07
+    },
+    {
+      "step": 45741,
+      "same_step_Nm": -5.6123752756320755e-08,
+      "max_over_next_10_steps_Nm": 1.131735132275935e-07
+    },
+    {
+      "step": 49317,
+      "same_step_Nm": 7.997240913937276e-08,
+      "max_over_next_10_steps_Nm": 1.0490035151633492e-07
+    }
+  ],
+  "tracked_steps": {
+    "1860": {
+      "output_torque_Nm": 183.62213765585648,
+      "previous_output_torque_Nm": 183.6221376513935,
+      "mesh_output_torque_Nm": 189.39170060137695
+    },
+    "25377": {
+      "output_torque_Nm": 149.62495139897544,
+      "previous_output_torque_Nm": 149.62495140096956,
+      "mesh_output_torque_Nm": 128.19028449296573
+    },
+    "46015": {
+      "output_torque_Nm": 143.60533078647933,
+      "previous_output_torque_Nm": 143.6053308562348,
+      "mesh_output_torque_Nm": 144.92280272920175
+    }
+  },
+  "original_spike_window": {
+    "max_abs_vs_native_Nm": 0.06965355808378604,
+    "at_2_5377_s_vs_native_Nm": -0.0014846656044653628,
+    "checked": 41
+  }
+}

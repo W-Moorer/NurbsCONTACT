@@ -1,0 +1,113 @@
+{
+  "probes_sha256": [
+    "07645953e19d916dbd02a39c786453418065781c609b0b22e7491b81e50f6644",
+    "7b043f2e7696b03a6b3ab6262bc2d05f85dcdc03aa3bc5233fb7aa087fdbc6e0"
+  ],
+  "trajectory_sha256": "33dfb97a3bdf7786746f0c706ae6392071a073a50c2666ec521a8255ca35d005",
+  "stages": [
+    {
+      "stage": 1,
+      "checked": 800,
+      "timed": 640,
+      "face_group_changes": 163,
+      "compared_torques": 800,
+      "max_torque_delta_Nm": 2.842170943040401e-14,
+      "changed_states": [],
+      "changed_geometry": [],
+      "max_component_errors": {
+        "point_m": 0.0,
+        "unit_normal": 0.0,
+        "arm_m": 0.0,
+        "depth_m": 3.3881317890172014e-21
+      },
+      "previous": {
+        "area_mean_ms": 2.00897796875,
+        "area_median_ms": 1.5976,
+        "full_query_mean_ms": 4.5735425,
+        "ray_counts": [
+          521,
+          46174,
+          4359,
+          54720
+        ],
+        "full_blocks": 7363,
+        "partial_blocks": 0,
+        "shared_columns": 8
+      },
+      "current": {
+        "area_mean_ms": 1.90539671875,
+        "area_median_ms": 1.5056499999999997,
+        "full_query_mean_ms": 4.18164421875,
+        "ray_counts": [
+          521,
+          46174,
+          4359,
+          54720
+        ],
+        "full_blocks": 7363,
+        "partial_blocks": 0,
+        "shared_columns": 8,
+        "column_windows_built": 1045,
+        "column_windows_reused": 2002,
+        "strip_checks": {
+          "eligible": 7361,
+          "parallel_source": 6150,
+          "invariant_target": 2,
+          "matched_ends": 2
+        }
+      }
+    },
+    {
+      "stage": 2,
+      "checked": 800,
+      "timed": 640,
+      "face_group_changes": 142,
+      "compared_torques": 800,
+      "max_torque_delta_Nm": 0.0,
+      "changed_states": [],
+      "changed_geometry": [],
+      "max_component_errors": {
+        "point_m": 0.0,
+        "unit_normal": 0.0,
+        "arm_m": 0.0,
+        "depth_m": 0.0
+      },
+      "current": {
+        "area_mean_ms": 9.5361775,
+        "area_median_ms": 8.955550000000002,
+        "full_query_mean_ms": 15.571535625,
+        "ray_counts": [
+          263303,
+          55395,
+          21418,
+          373073
+        ],
+        "full_blocks": 652,
+        "partial_blocks": 24730,
+        "shared_columns": 0,
+        "column_windows_built": 3171,
+        "column_windows_reused": 3984,
+        "strip_checks": {
+          "eligible": 9615,
+          "parallel_source": 0,
+          "invariant_target": 0,
+          "matched_ends": 0
+        }
+      },
+      "previous": {
+        "area_mean_ms": 9.0246696875,
+        "area_median_ms": 8.658749999999998,
+        "full_query_mean_ms": 14.854438125000001,
+        "ray_counts": [
+          263303,
+          55395,
+          21418,
+          373073
+        ],
+        "full_blocks": 652,
+        "partial_blocks": 24730,
+        "shared_columns": 0
+      }
+    }
+  ]
+}

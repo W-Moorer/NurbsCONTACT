@@ -1,0 +1,45 @@
+{
+  "probes_sha256": [
+    "0db3445513d4ff18743d69d8a12f698d2e30fe0813b487afe0da6723aaa071a8",
+    "07645953e19d916dbd02a39c786453418065781c609b0b22e7491b81e50f6644"
+  ],
+  "trajectory_sha256": "33dfb97a3bdf7786746f0c706ae6392071a073a50c2666ec521a8255ca35d005",
+  "stages": [
+    {
+      "stage": 1,
+      "checked": 800,
+      "timed": 640,
+      "face_group_changes": 163,
+      "compared_torques": 800,
+      "max_torque_delta_Nm": 1.0111023129866226e-10,
+      "previous": {
+        "area_mean_ms": 2.5193920312499998,
+        "area_median_ms": 2.0396500000000004,
+        "full_query_mean_ms": 5.42204453125
+      },
+      "current": {
+        "area_mean_ms": 2.2169757812500004,
+        "area_median_ms": 1.7424500000000003,
+        "full_query_mean_ms": 5.0630821875
+      }
+    },
+    {
+      "stage": 2,
+      "checked": 800,
+      "timed": 640,
+      "face_group_changes": 142,
+      "compared_torques": 800,
+      "max_torque_delta_Nm": 7.554490366601385e-11,
+      "current": {
+        "area_mean_ms": 10.091579375,
+        "area_median_ms": 9.62555,
+        "full_query_mean_ms": 16.624760156249998
+      },
+      "previous": {
+        "area_mean_ms": 12.22250515625,
+        "area_median_ms": 11.610149999999999,
+        "full_query_mean_ms": 19.71935375
+      }
+    }
+  ]
+}

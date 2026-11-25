@@ -350,6 +350,9 @@ struct CadExitQuery::Data {
     explicit Data(const CadContactIndex& index) : index(index), rays(index.face_count()),cells(index.face_count()),
                                                   charts(index.face_count()) {}
     CadContactIndex index;
+    Vec column_lo{},column_hi{};
+    std::vector<std::size_t> column_faces;
+    bool columns_ready=false;
     std::vector<Handle(IntCurvesFace_Intersector)> rays;
     std::vector<std::optional<std::vector<Cell>>> cells;
     std::vector<std::unique_ptr<cad::CompiledChart>> charts;
@@ -440,6 +443,16 @@ CadExitQuery::CadExitQuery(const CadContactIndex& index,std::shared_ptr<const ca
 CadExitQuery::~CadExitQuery() = default;
 std::array<std::size_t,4> CadExitQuery::ray_counts() const {return data_->counts;}
 
+std::span<const std::size_t> CadExitQuery::prepare_columns(Vec lo,Vec hi) {
+    Bnd_Box box(gp_Pnt(lo[0]/mm,lo[1]/mm,lo[2]/mm),gp_Pnt(hi[0]/mm,hi[1]/mm,hi[2]/mm));
+    box.SetGap(2*Precision::Confusion());
+    NearBox selection(box);
+    data_->index.data_->tree.Select(selection);
+    for (auto& face:selection.faces) ++face;
+    data_->column_faces=std::move(selection.faces);
+    data_->column_lo=lo; data_->column_hi=hi; data_->columns_ready=true;
+    return data_->column_faces;
+}
 CadExit CadExitQuery::first_exit(Vec origin, Vec direction, double reach_m, std::size_t hint,
                                 std::size_t& face_tests,std::span<const std::size_t> required_faces) {
     const double reach = reach_m/mm, tol = Precision::Confusion();
@@ -536,10 +549,20 @@ CadExit CadExitQuery::first_exit(Vec origin, Vec direction, double reach_m, std:
         // A pressure column can only contribute on one of its opposing faces.
         // A confirmed hit still needs the full-tree test for an earlier crossing.
         if (!required_faces.empty() && !hit.face) return {};
-        NearBox candidates(segment(std::min(reach,nearest+tol)));
-        geometry.tree.Select(candidates);
-        for (auto i:candidates.faces)
-            if (i+1!=hint && std::find(required_faces.begin(),required_faces.end(),i+1)==required_faces.end()) visit(i);
+        const auto other=[&](std::size_t id) {
+            if (id!=hint && std::find(required_faces.begin(),required_faces.end(),id)==required_faces.end()) visit(id-1);
+        };
+        const auto last=add(origin,scale(direction,reach_m));
+        bool covered=data_->columns_ready && !required_faces.empty();
+        for (int k=0;k<3 && covered;++k)
+            covered=std::min(origin[k],last[k])>=data_->column_lo[k] && std::max(origin[k],last[k])<=data_->column_hi[k];
+        if (covered) {
+            for (auto id:data_->column_faces) other(id);
+        } else {
+            NearBox candidates(segment(std::min(reach,nearest+tol)));
+            geometry.tree.Select(candidates);
+            for (auto i:candidates.faces) other(i+1);
+        }
     } catch (const Standard_Failure&) { return {}; }
       catch (const dynamics::UnresolvedContact&) { return {}; }
     if (!required_faces.empty() && std::find(required_faces.begin(),required_faces.end(),hit.face)==required_faces.end())

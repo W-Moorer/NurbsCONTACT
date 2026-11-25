@@ -19,6 +19,7 @@ public:
     void prepare_dense() const;
     std::array<std::size_t,2> asset_counts() const;
     std::size_t skipped_nodes() const;
+    std::array<std::size_t,3> block_counts() const;
     std::array<std::size_t,4> ray_counts() const;
     bool boxes_separate(const std::array<dynamics::ContactPose,2>& poses) const;
     PatchDiscovery discover(const std::array<dynamics::ContactPose,2>& poses,bool indexed,bool group);
