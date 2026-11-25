@@ -2,8 +2,10 @@
 #include "nurbscontact/cad_contact_regions.hpp"
 #include "../src/cad_boundary_distance.hpp"
 #include "../src/cad_local_solid.hpp"
+#include "../src/cad_planar_trim.hpp"
 #include "../src/cad_rigid_path.hpp"
 #include <BRepAlgoAPI_Cut.hxx>
+#include <BRepAdaptor_Surface.hxx>
 #include <BRepExtrema_DistShapeShape.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
 #include <BRepBuilderAPI_NurbsConvert.hxx>
@@ -168,6 +170,41 @@ void check(CadEventMethod chen) {
     close(*hit.fraction,.5-2*std::asin(.1)/std::acos(-1.),2e-6,"rotating sphere entry time");
 }
 
+void planar_trim_bounds() {
+    const auto disk=BRepPrimAPI_MakeCylinder(10.,2.).Shape();
+    const auto ring=BRepAlgoAPI_Cut(disk,BRepPrimAPI_MakeCylinder(5.,2.).Shape()).Shape();
+    bool checked=false;
+    for (TopExp_Explorer it(ring,TopAbs_FACE);it.More();it.Next()) {
+        const auto face=TopoDS::Face(it.Current());
+        BRepAdaptor_Surface surf(face);
+        if (surf.GetType()!=GeomAbs_Plane || std::abs(surf.Plane().Location().Z()-2.)>1e-8) continue;
+        cad::PlanarTrim trim(face,surf.Plane());
+        auto excluded=[&](std::initializer_list<gp_XYZ> pts){return trim.separates(pts,gp_Trsf(),1e-5);};
+        require(excluded({{0.,0.,2.}}),"failed to exclude the inner trim of an annulus");
+        require(!excluded({{5.,0.,2.}}),"rejected inner rim tangency");
+        require(!excluded({{7.,0.,2.}}),"rejected annular material");
+        require(!excluded({{0.,0.,2.},{12.,0.,2.}}),"missed segment bridging both trims");
+        require(!excluded({{0.,0.,1.},{14.,0.,3.}}),"missed an oblique segment through the face");
+        require(excluded({{0.,0.,2.},{7.,0.,5.}}),"failed to restrict the projection to the plane slab");
+        for (int i=0;i<72;++i) {
+            const double angle=i*std::acos(-1.)/36.;
+            for (double radius:{5.,5.000003,7.5,9.999997,10.}) {
+                require(!excluded({{radius*std::cos(angle),radius*std::sin(angle),2.}}),
+                        "winding or its tolerance rejected material on the annular face");
+            }
+        }
+        gp_Trsf turn;
+        turn.SetRotation(gp_Ax1({},gp_Dir(1.,2.,3.)),.73);
+        turn.SetTranslationPart(gp_Vec(8.,-4.,12.));
+        const auto moved=TopoDS::Face(face.Moved(TopLoc_Location(turn)));
+        cad::PlanarTrim rotated(moved,BRepAdaptor_Surface(moved).Plane());
+        require(rotated.separates({{0.,0.,2.}},turn,1e-5) &&
+                !rotated.separates({{7.,0.,2.}},turn,1e-5),"rotated face changed its winding");
+        checked=true;
+    }
+    require(checked,"annular test face missing");
+}
+
 void boundary_distances() {
     const auto box=BRepPrimAPI_MakeBox(10.,10.,10.).Shape();
     const auto ball=BRepPrimAPI_MakeSphere(1.).Shape();
@@ -204,12 +241,15 @@ void boundary_distances() {
         close(cad::bounded_distance(plate_index,b,pose,5.,1e-7,counts,&plate_witness),ref.Value(),2e-6,
               "witness-aligned boxes after relative rotation");
     }
+    const auto rational_ball=cad::boundary_index(BRepBuilderAPI_NurbsConvert(BRepPrimAPI_MakeSphere(1.).Shape()).Shape());
     for (double separation:{3.,2.,1.,0.}) {
         gp_Trsf pose;
         pose.SetRotation(gp_Ax1(gp_Pnt(),gp_Dir(1,2,3)),.7);
         pose.SetTranslationPart(gp_Vec(separation/std::sqrt(2.),separation/std::sqrt(2.),0));
         close(cad::bounded_distance(a,a,pose,5,1e-7,counts),std::max(0.,separation-2.),2e-6,
               "oblique smooth boundaries");
+        close(cad::bounded_distance(rational_ball,rational_ball,pose,5,1e-7,counts),
+              std::max(0.,separation-2.),2e-6,"positive-weight rational sphere distance");
     }
     const auto hollow=BRepAlgoAPI_Cut(BRepPrimAPI_MakeSphere(10.).Shape(),
                                       BRepPrimAPI_MakeSphere(6.).Shape()).Shape();
@@ -300,7 +340,7 @@ void local_solids() {
 }
 }
 int main(int argc,char** argv) {
-    try { if (argc==1) { local_region_depths(); pressure_moment(); boundary_distances(); local_solids(); }
+    try { if (argc==1) { local_region_depths(); pressure_moment(); planar_trim_bounds(); boundary_distances(); local_solids(); }
           check(argc==1 ? CadEventMethod::conservative_advancement :
                 std::string_view(argv[1])=="--chen-2026" ? CadEventMethod::chen_2026 : CadEventMethod::chen_2024); }
     catch (const Standard_Failure& e) { std::cerr<<e.GetMessageString()<<'\n'; return 1; }

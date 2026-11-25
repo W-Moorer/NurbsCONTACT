@@ -31,6 +31,8 @@
 #include <math_FunctionSetRoot.hxx>
 
 #include <algorithm>
+#include <deque>
+#include <mutex>
 #include <map>
 #include <numeric>
 #include <stdexcept>
@@ -296,9 +298,40 @@ std::optional<CadContactLine> straight_line(const TopoDS_Face& fa, const TopoDS_
 
 } // namespace
 
+namespace {
+struct SplineCell {
+    Bnd_Box box;
+    gp_XYZ normal,low,high;
+    double slab_low,slab_high;
+    bool possible(const gp_XYZ& a,const gp_XYZ& delta,const Bnd_Box& segment,double tol) const {
+        if (box.IsOut(segment)) return false;
+        const double value=normal.Dot(a),slope=normal.Dot(delta);
+        if (std::max(value,value+slope)<slab_low-tol || std::min(value,value+slope)>slab_high+tol) return false;
+        // Clip the same segment parameter against the three box intervals
+        // before testing the normal interval. Expand every bound outwards.
+        double t0=0.,t1=1.;
+        for (int k=1;k<=3;++k) {
+            const double d=delta.Coord(k);
+            if (std::abs(d)<=tol) continue;
+            double entry=(low.Coord(k)-tol-a.Coord(k))/d;
+            double leave=(high.Coord(k)+tol-a.Coord(k))/d;
+            if (d<0) std::swap(entry,leave);
+            t0=std::max(t0,entry-1e-12); t1=std::min(t1,leave+1e-12);
+            if (t0>t1) return false;
+        }
+        const double x=value+t0*slope,y=value+t1*slope;
+        return std::max(x,y)>=slab_low-tol && std::min(x,y)<=slab_high+tol;
+    }
+};
+struct FaceCells {
+    mutable std::once_flag once;
+    mutable std::vector<SplineCell> bounds;
+};
+}
 struct CadContactIndex::Data {
     std::vector<Face> faces;
     FaceTree tree;
+    std::deque<FaceCells> ray_cells;
 };
 
 struct CadContactCache::Data {
@@ -316,6 +349,7 @@ CadContactIndex::CadContactIndex(const TopoDS_Shape& shape) {
     TopExp::MapShapes(shape, TopAbs_FACE, faces);
     if (faces.IsEmpty()) throw std::invalid_argument("contact index requires a shape with faces");
     data->faces.reserve(faces.Extent());
+    data->ray_cells.resize(faces.Extent());
     NCollection_UBTreeFiller<std::size_t, Bnd_Box> entries(data->tree);
     for (int i = 1; i <= faces.Extent(); ++i) {
         Face face{TopoDS::Face(faces(i)), {}, {}};
@@ -336,21 +370,10 @@ CadContactIndex::CadContactIndex(const TopoDS_Shape& shape) {
 std::size_t CadContactIndex::face_count() const { return data_->faces.size(); }
 
 struct CadExitQuery::Data {
-    struct Cell {
-        Bnd_Box box;
-        gp_XYZ n;
-        double lo=0.,hi=0.;
-        bool possible(const gp_XYZ& a,const gp_XYZ& b,const Bnd_Box& segment,double tol) const {
-            if (box.IsOut(segment)) return false;
-            const double x=n.Dot(a),y=n.Dot(b);
-            return std::max(x,y)>=lo-tol && std::min(x,y)<=hi+tol;
-        }
-    };
-    explicit Data(const CadContactIndex& index) : index(index), rays(index.face_count()),cells(index.face_count()),
+    explicit Data(const CadContactIndex& index) : index(index), rays(index.face_count()),
                                                   charts(index.face_count()) {}
     CadContactIndex index;
     std::vector<Handle(IntCurvesFace_Intersector)> rays;
-    std::vector<std::optional<std::vector<Cell>>> cells;
     std::vector<std::unique_ptr<cad::CompiledChart>> charts;
     bool crosses(const gp_Pnt& p,const gp_Vec& direction,double span,const CadExit* hint) {
         if (!hint || !hint->face) return false;
@@ -379,11 +402,11 @@ struct CadExitQuery::Data {
         return false;
     }
     bool possible(std::size_t i,const gp_Pnt& a,const gp_Pnt& b,const Bnd_Box& segment) {
-        auto& cached=cells[i];
+        const auto& shared=index.data_->ray_cells[i];
+        auto& cached=shared.bounds;
         const auto& f=index.data_->faces[i].shape;
         const double tol=std::max(Precision::Confusion(),BRep_Tool::Tolerance(f));
-        if (!cached) {
-            cached.emplace();
+        std::call_once(shared.once,[&] {
             try {
                 BRepAdaptor_Surface s(f);
                 if (s.GetType()==GeomAbs_BSplineSurface) {
@@ -399,21 +422,25 @@ struct CadExitQuery::Data {
                         patch->D1(u+(h+.5)*du,v+(k+.5)*dv,p,tu,tv);
                         auto n=tu.Crossed(tv);
                         if (n.SquareMagnitude()>1e-28) n.Normalize();
-                        Cell cell; cell.n=n.XYZ(); cell.lo=infinity; cell.hi=-infinity;
+                        SplineCell cell; cell.normal=n.XYZ(); cell.slab_low=infinity; cell.slab_high=-infinity;
                         for (int r=1;r<=patch->NbUPoles();++r) for (int c=1;c<=patch->NbVPoles();++c) {
                             const auto point=patch->Pole(r,c);
                             cell.box.Add(point);
-                            const double d=cell.n.Dot(point.XYZ());
-                            cell.lo=std::min(cell.lo,d); cell.hi=std::max(cell.hi,d);
+                            const double d=cell.normal.Dot(point.XYZ());
+                            cell.slab_low=std::min(cell.slab_low,d); cell.slab_high=std::max(cell.slab_high,d);
                         }
                         cell.box.SetGap(tol);
-                        cached->push_back(cell);
+                        cell.low=cell.box.CornerMin().XYZ(); cell.high=cell.box.CornerMax().XYZ();
+                        cached.push_back(cell);
                     }
                 }
-            } catch (const Standard_Failure&) {cached->clear();}
-        }
-        return cached->empty() || std::any_of(cached->begin(),cached->end(),[&](const Cell& c) {
-            return c.possible(a.XYZ(),b.XYZ(),segment,tol);
+            } catch (const Standard_Failure&) {cached.clear();}
+        });
+        const auto delta=b.XYZ()-a.XYZ();
+        const double pad=tol+64*std::numeric_limits<double>::epsilon()*
+            (1+a.XYZ().Modulus()+b.XYZ().Modulus());
+        return cached.empty() || std::any_of(cached.begin(),cached.end(),[&](const SplineCell& c) {
+            return c.possible(a.XYZ(),delta,segment,pad);
         });
     }
 };

@@ -36,7 +36,7 @@ def timing_windows(stage, poses, args, paths, limit):
     window.write_text("".join(all_poses[j] + "\n" for start in starts for j in range(start, start + 100)))
     paths_to_mesh = [p.with_suffix(".msh") for p in paths]
     commands = {
-        "old": [args.old_exe, *paths, "6", str(2 * limit), "--groups"],
+        "old": [args.old_exe, *paths, "6", str(2 * limit), "--indexed-groups" if args.old_indexed else "--groups"],
         "indexed": [args.exe, *paths, "6", str(2 * limit), "--indexed-groups"],
         "mesh": [
             args.mesh_exe,
@@ -208,6 +208,7 @@ if __name__ == "__main__":
     parser.add_argument("--data", type=Path, default=Path("results/aes/cpu-local-cad"))
     parser.add_argument("--exe", type=Path)
     parser.add_argument("--old-exe", type=Path)
+    parser.add_argument("--old-indexed", action="store_true", help="compare two indexed CAD builds in timing windows")
     parser.add_argument("--mesh-exe", type=Path)
     parser.add_argument(
         "--order", type=int, default=0, help="0 retries unresolved groups at 12, 24, 48 and 96"

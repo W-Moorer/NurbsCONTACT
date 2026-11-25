@@ -1,0 +1,32 @@
+[
+  {
+    "stage": 1,
+    "poses": 50001,
+    "differences": {
+      "face_pairs": 0,
+      "partitions": 0,
+      "counts": 0
+    },
+    "first_different_partitions": [],
+    "max_point_normal_depth_difference": [
+      8.542522420166516e-18,
+      0.0,
+      1.683012114546932e-17
+    ]
+  },
+  {
+    "stage": 2,
+    "poses": 50001,
+    "differences": {
+      "face_pairs": 0,
+      "partitions": 0,
+      "counts": 0
+    },
+    "first_different_partitions": [],
+    "max_point_normal_depth_difference": [
+      2.7809732887839817e-17,
+      0.0,
+      1.9251364825195738e-17
+    ]
+  }
+]

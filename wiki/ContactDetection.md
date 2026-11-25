@@ -263,6 +263,14 @@ unresolved components at 24, 48 and 96. If these rules cannot return a patch,
 the backend tries a whole-solid intersection at that pose. Empty witness
 sets require separated body boxes or a native solid-distance check,
 including enclosure testing. Possible overlap takes the whole-solid path.
+The distance kernel tests separating directions against original spline
+control hulls. For a bounded planar face it can also clip the opposing hull
+to the plane's distance band and classify its footprint against the face
+trims. A winding test is used only when the entire footprint clears the
+enclosures of the original trim curves. Remaining candidates use OCCT
+feature extrema. Ray queries share immutable spline-cell bounds and test
+the same clipped segment against each cell's box and normal slab.
+[Implementation and CPU comparisons](../results/aes/cpu-cad-pressure/pruning/README.md)
 At a degenerate chart pole, two rings around the centroid ray must agree
 before the solver accepts the limiting depth.
 A resolved coarse rule has no a priori error bound. A nonempty witness set

@@ -1,0 +1,24 @@
+{
+  "new": {
+    "process_s": 446.3558342999968,
+    "first_2ms_s": 22.3072881,
+    "later_integration_s": 400.4309579,
+    "setup_s": 19.6422989,
+    "response_sha256": "0a24baf8bf1b347a9b4f19f87aeb58b77d4e579f32d6c0f2c619f3636d1caebe",
+    "executable_sha256": "0d5ef684f2f6940a0c44e395a4a6849e07c6ee7af89949ac79ee5ef744336779"
+  },
+  "old": {
+    "process_s": 445.1027372999961,
+    "first_2ms_s": 94.5961285,
+    "later_integration_s": 322.92287389999996,
+    "setup_s": 23.4178281,
+    "response_sha256": "bd799eb2dec7f7522d61c6882492ff2e91512a806fdb7e4570f92d15068b94f8",
+    "executable_sha256": "e17dfe35584ced2c070d067a49e9be6a9251e98a4c8c6b23c964ecc5b022ff67"
+  },
+  "response": {
+    "torque_rms_Nm": 0.10069236842587467,
+    "torque_max_abs_Nm": 10.265626216275393,
+    "new_0p5ms_Nm": 433.2724947902735,
+    "old_0p5ms_Nm": 433.2724947902735
+  }
+}

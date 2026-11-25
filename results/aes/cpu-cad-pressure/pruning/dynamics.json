@@ -1,0 +1,76 @@
+{
+  "old": {
+    "process_s": 519.7940455999997,
+    "setup_s": 17.0578679,
+    "start_2ms_wall_s": 97.9057861,
+    "steps": 50000.0,
+    "torque_rms_vs_RecurDyn_Nm": 42.1638276732915,
+    "torque_at_0p5ms_Nm": 433.2724947902735,
+    "end_to_end_mean_ms_per_step": 10.395880911999994,
+    "integration_after_2ms_s": 400.6702931,
+    "startup_local_search_s": 107.30623509999998,
+    "same_executable_repeat_torque_Nm": {
+      "max_abs": 10.265626538706385,
+      "rms": 0.15564053954576093
+    }
+  },
+  "new": {
+    "process_s": 407.86852109999745,
+    "setup_s": 20.6396729,
+    "start_2ms_wall_s": 22.1031099,
+    "steps": 50000.0,
+    "torque_rms_vs_RecurDyn_Nm": 42.16321136732982,
+    "torque_at_0p5ms_Nm": 433.2724947902735,
+    "end_to_end_mean_ms_per_step": 8.15737042199995,
+    "integration_after_2ms_s": 360.796506,
+    "startup_local_search_s": 25.232679399999995,
+    "difference_from_previous": {
+      "output_torque_Nm": {
+        "max_abs": 10.265626520972404,
+        "rms": 0.15355842842639678
+      },
+      "speed": {
+        "max_abs": [
+          0.5205483299180571,
+          0.12112828827579847,
+          0.08561421549186576
+        ],
+        "rms": [
+          0.0043364618190083,
+          0.0013610393233768295,
+          0.0014339248286613028
+        ]
+      },
+      "normal_N": {
+        "max_abs": [
+          212.47303850375238,
+          163.16306379848265
+        ],
+        "rms": [
+          1.3993881098865233,
+          2.4624046807356534
+        ]
+      },
+      "te_mrad": {
+        "max_abs": [
+          0.025441806542403356,
+          0.015116908912204963
+        ],
+        "rms": [
+          0.0001813218861925686,
+          0.0002444169971518183
+        ]
+      }
+    }
+  },
+  "mesh": {
+    "process_s": 134.8323831999951,
+    "setup_s": 1.9508146,
+    "start_2ms_wall_s": 0.2743279,
+    "steps": 50000.0,
+    "torque_rms_vs_RecurDyn_Nm": 29.1423846001526,
+    "torque_at_0p5ms_Nm": 395.36754174056597,
+    "end_to_end_mean_ms_per_step": 2.6966476639999017,
+    "integration_after_2ms_s": 129.7371321
+  }
+}

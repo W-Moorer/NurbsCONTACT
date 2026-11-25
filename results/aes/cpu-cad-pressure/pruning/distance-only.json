@@ -1,0 +1,9 @@
+{
+  "process_s": 374.2207744999978,
+  "first_2ms_s": 19.6787858,
+  "later_integration_s": 331.778868,
+  "setup_s": 18.8344381,
+  "torque_at_0p5ms_Nm": 433.2724947902735,
+  "torque_rms_vs_repeat_old_Nm": 0.13967434203206056,
+  "torque_max_abs_vs_repeat_old_Nm": 10.265626495583888
+}

@@ -203,7 +203,7 @@ def timing(args):
         ax.barh(y, values, left=left, height=0.63, label=label, color=color)
         left += values
     for pos, total in zip(y, left, strict=True):
-        ax.text(total + 0.6, pos, f"{total:.2f}", va="center", fontsize=9)
+        ax.text(total + 0.012 * max(left), pos, f"{total:.2f}", va="center", fontsize=9)
     ax.set_yticks(
         y, ["Stage 1 · previous", "Stage 1 · CAD (ours)", "Stage 2 · previous", "Stage 2 · CAD (ours)"]
     )

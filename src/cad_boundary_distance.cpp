@@ -1,4 +1,5 @@
 #include "cad_boundary_distance.hpp"
+#include "cad_planar_trim.hpp"
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepBndLib.hxx>
@@ -42,6 +43,42 @@ struct FlatDirections {
         return active && ((u&active)==active || (v&active)==active);
     }
 };
+// A trim is contained in the convex hull of its positive-weight spline.
+// Unsupported geometry retains the original OCCT bounding box.
+struct SupportHull {
+    std::vector<gp_XYZ> points;
+    gp_XYZ direction;
+    double tolerance{};
+    double magnitude{};
+    gp_XYZ support(const gp_XYZ& axis) const {
+        auto best=points.front();
+        auto high=best.Dot(axis);
+        for (std::size_t i=1;i<points.size();++i) {
+            const double value=points[i].Dot(axis);
+            if (value>high) {high=value;best=points[i];}
+        }
+        return best;
+    }
+    template<class Curve> void curve(const Curve& c) {
+        if (c->NbPoles()>256) return;
+        for (int i=1;i<=c->NbPoles();++i) {
+            if (!(c->Weight(i)>0)) {points.clear();return;}
+            points.push_back(c->Pole(i).XYZ());
+        }
+    }
+    template<class Surface> void surface(const Surface& s) {
+        if (s->NbUPoles()>256/s->NbVPoles()) return;
+        for (int i=1;i<=s->NbUPoles();++i) for (int j=1;j<=s->NbVPoles();++j) {
+            if (!(s->Weight(i,j)>0)) {points.clear();return;}
+            points.push_back(s->Pole(i,j).XYZ());
+        }
+    }
+    void box(const Bnd_Box& bounds) {
+        const auto lo=bounds.CornerMin().XYZ(),hi=bounds.CornerMax().XYZ();
+        for (int i=0;i<8;++i) points.emplace_back(i&1 ? hi.X() : lo.X(),
+            i&2 ? hi.Y() : lo.Y(),i&4 ? hi.Z() : lo.Z());
+    }
+};
 template<class Curve>
 unsigned curve_flat(const Curve& c) {
     unsigned flat=7;
@@ -64,33 +101,122 @@ FlatDirections surface_flat(const Surface& s,bool periodic_u,bool periodic_v) {
     return flat;
 }
 struct FeatureBox {
+    struct TrimCache {
+        std::once_flag once;
+        std::optional<PlanarTrim> trim;
+    };
     TopoDS_Shape shape;
     Bnd_Box box;
     gp_Pnt center;
     bool plane{};
     gp_XYZ normal;
     FlatDirections flat;
+    SupportHull hull;
+    std::shared_ptr<TrimCache> trim;
+    bool excludes_projection(const SupportHull& other,const gp_Trsf& relative,double limit) const {
+        if (!trim) return false;
+        std::call_once(trim->once,[&] {
+            const auto face=TopoDS::Face(shape);
+            trim->trim.emplace(face,BRepAdaptor_Surface(face).Plane());
+        });
+        return trim->trim->separates(other.points,relative,limit+other.tolerance);
+    }
     explicit FeatureBox(const TopoDS_Shape& s) : shape(s),box(box_of(s)),
         center((box.CornerMin().XYZ()+box.CornerMax().XYZ())*.5) {
-        if (s.ShapeType()==TopAbs_EDGE && TopExp_Explorer(s,TopAbs_VERTEX).More()) {
+        if (s.ShapeType()==TopAbs_VERTEX) {
+            const auto v=TopoDS::Vertex(s);
+            hull.points.push_back(BRep_Tool::Pnt(v).XYZ());
+            hull.tolerance=BRep_Tool::Tolerance(v);
+        } else if (s.ShapeType()==TopAbs_EDGE && TopExp_Explorer(s,TopAbs_VERTEX).More()) {
             const BRepAdaptor_Curve c(TopoDS::Edge(s));
+            hull.tolerance=BRep_Tool::Tolerance(TopoDS::Edge(s));
             switch (c.GetType()) {
-                case GeomAbs_Line: flat.u=constant_components(c.Line().Direction().XYZ()); break;
-                case GeomAbs_BSplineCurve: flat.u=curve_flat(c.BSpline()); break;
-                case GeomAbs_BezierCurve: flat.u=curve_flat(c.Bezier()); break;
+                case GeomAbs_Line:
+                    flat.u=constant_components(c.Line().Direction().XYZ());
+                    hull.points={c.Value(c.FirstParameter()).XYZ(),c.Value(c.LastParameter()).XYZ()};
+                    break;
+                case GeomAbs_BSplineCurve: {
+                    auto spline=c.BSpline(); flat.u=curve_flat(spline);
+                    if (spline->IsPeriodic() || (c.FirstParameter()>=spline->FirstParameter() &&
+                        c.LastParameter()<=spline->LastParameter())) hull.curve(spline);
+                    break;
+                }
+                case GeomAbs_BezierCurve: {
+                    auto bez=c.Bezier(); flat.u=curve_flat(bez);
+                    if (c.FirstParameter()>=0 && c.LastParameter()<=1) hull.curve(bez);
+                    break;
+                }
                 default: break;
             }
         } else if (s.ShapeType()==TopAbs_FACE) {
             const BRepAdaptor_Surface surf(TopoDS::Face(s));
+            hull.tolerance=BRep_Tool::Tolerance(TopoDS::Face(s));
             switch (surf.GetType()) {
                 case GeomAbs_Plane: plane=true; normal=surf.Plane().Axis().Direction().XYZ(); break;
-                case GeomAbs_BSplineSurface: flat=surface_flat(surf.BSpline(),surf.IsUPeriodic(),surf.IsVPeriodic()); break;
-                case GeomAbs_BezierSurface: flat=surface_flat(surf.Bezier(),false,false); break;
+                case GeomAbs_BSplineSurface: {
+                    auto spline=surf.BSpline(); flat=surface_flat(spline,surf.IsUPeriodic(),surf.IsVPeriodic());
+                    double u,v,U,V; spline->Bounds(u,U,v,V);
+                    if ((spline->IsUPeriodic() || (surf.FirstUParameter()>=u && surf.LastUParameter()<=U)) &&
+                        (spline->IsVPeriodic() || (surf.FirstVParameter()>=v && surf.LastVParameter()<=V)))
+                        hull.surface(spline);
+                    break;
+                }
+                case GeomAbs_BezierSurface: {
+                    const auto bez=surf.Bezier(); flat=surface_flat(bez,false,false);
+                    if (surf.FirstUParameter()>=0 && surf.LastUParameter()<=1 &&
+                        surf.FirstVParameter()>=0 && surf.LastVParameter()<=1) hull.surface(bez);
+                    break;
+                }
                 default: break;
             }
+            if (plane) {hull.direction=normal;trim=std::make_shared<TrimCache>();}
+            else if (!hull.points.empty()) {
+                gp_Pnt p;gp_Vec u,v;
+                try {
+                    surf.D1(.5*(surf.FirstUParameter()+surf.LastUParameter()),
+                            .5*(surf.FirstVParameter()+surf.LastVParameter()),p,u,v);
+                    hull.direction=u.Crossed(v).XYZ();
+                } catch (const Standard_Failure&) {} // The support test can choose another axis.
+            }
         }
+        if (hull.points.empty()) hull.box(box);
+        for (const auto& p:hull.points) hull.magnitude=std::max(hull.magnitude,p.Modulus());
     }
 };
+
+// Each rejection is a direct separating-axis test on both complete hulls.
+// The iterative search only chooses directions. Stagnation or exhaustion
+// falls through to the existing trimmed-feature distance kernel.
+bool hulls_separate(const FeatureBox& a,const FeatureBox& b,const gp_Trsf& pose,
+                    const gp_Mat& inverse,double limit) {
+    const auto rotation=pose.VectorialPart();
+    const auto translation=pose.TranslationPart();
+    const auto closest_support=[&](const gp_XYZ& axis) {
+        return rotation*a.hull.support(inverse*axis.Reversed())+translation-b.hull.support(axis);
+    };
+    limit+=a.hull.tolerance+b.hull.tolerance+128*std::numeric_limits<double>::epsilon()*
+           (a.hull.magnitude+b.hull.magnitude+translation.Modulus()+1.);
+    gp_XYZ p=rotation*a.center.XYZ()+translation-b.center.XYZ();
+    for (auto axis:{rotation*a.hull.direction,b.hull.direction}) {
+        if (axis.Dot(p)<0) axis.Reverse();
+        if (axis.SquareModulus()>0 && closest_support(axis).Dot(axis)>limit*axis.Modulus()) return true;
+    }
+    // Start inside A-B to keep subsequent segment updates bounded.
+    p=closest_support(p);
+    for (int i=0;i<24;++i) {
+        const double norm=p.Modulus();
+        if (norm<=limit) break;
+        const auto q=closest_support(p);
+        if (p.Dot(q)>limit*norm) return true;
+        const auto delta=q-p;
+        const auto length2=delta.SquareModulus();
+        if (!(length2>0)) break;
+        const auto t=std::clamp(-p.Dot(delta)/length2,0.,1.);
+        if (!(t>0)) break;
+        p+=delta*t;
+    }
+    return false;
+}
 struct Node {
     Bnd_Box box;
     std::size_t begin{},end{},left{},right{};
@@ -230,6 +356,7 @@ double bounded_distance(const std::shared_ptr<const BoundaryIndex>& first,const 
         bool operator<(const Pair& rhs) const { return lower>rhs.lower; }
     };
     const TopLoc_Location location(placement);
+    const auto reverse_placement=placement.Inverted();
     const auto rotation=placement.VectorialPart(),inverse=rotation.Transposed();
     std::priority_queue<Pair> queue;
     const double eps=std::min(.05*tol,Precision::Confusion());
@@ -322,6 +449,9 @@ double bounded_distance(const std::shared_ptr<const BoundaryIndex>& first,const 
                         ++stats.cad_box_tests;
                         if (aligned.Distance(db->features[y])>best+eps+frame_pad) continue;
                     }
+                    if (hulls_separate(f,g,placement,inverse,best+eps+frame_pad)) continue;
+                    if (g.excludes_projection(f.hull,placement,best+eps+frame_pad) ||
+                        f.excludes_projection(g.hull,reverse_placement,best+eps+frame_pad)) continue;
                     if (evaluate(x,y,shifted,box) && best<=tol) return 0.;
                 }
             }
