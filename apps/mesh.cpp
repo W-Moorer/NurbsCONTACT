@@ -11,7 +11,7 @@ using namespace nc::cpu;
 int main(int argc, char** argv) {
     try {
         if (argc < 5 || std::string_view(argv[1]) != "--method")
-            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--contours|--any [--same-face-only] [--candidate-window]|--regions local|full|fcl|finite|contour-ray [--axis-angle]] [--tolerance-m metres] [--max-depth-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz, or xyz axis_x axis_y axis_z radians per body");
+            throw std::invalid_argument("nc_mesh --method mesh-aabb|mesh-obb|mesh-sap [--detection discrete|continuous] [--contours|--any [--same-face-only] [--candidate-window]|--regions local|full|fcl|finite|contour-ray [--axis-angle] [--keep-unresolved]] [--tolerance-m metres] [--max-depth-m metres] A.msh B.msh ...; stdin: xyz qw qx qy qz, or xyz axis_x axis_y axis_z radians per body");
         const auto method = mesh_method(argv[2]);
         int first_mesh=3;
         bool continuous=false;
@@ -20,6 +20,7 @@ int main(int argc, char** argv) {
         bool candidate_window=false;
         bool follow_adjacent=true;
         bool axis_angle=false;
+        bool keep_unresolved=false;
         std::optional<MeshRegionMode> region_mode;
         double tolerance=1e-7,max_depth=0.;
         while (first_mesh < argc && std::string_view(argv[first_mesh]).starts_with("--")) {
@@ -27,6 +28,7 @@ int main(int argc, char** argv) {
             if (option=="--contours") { contours=true; continue; }
             if (option=="--any") { any=true; continue; }
             if (option=="--axis-angle") { axis_angle=true; continue; }
+            if (option=="--keep-unresolved") { keep_unresolved=true; continue; }
             if (option=="--candidate-window") { candidate_window=true; continue; }
             if (option=="--same-face-only") { follow_adjacent=false; continue; }
             if (first_mesh==argc) throw std::invalid_argument("missing option value");
@@ -49,6 +51,7 @@ int main(int argc, char** argv) {
         }
         if (argc-first_mesh<2) throw std::invalid_argument("expected at least two contact meshes");
         if (axis_angle && !region_mode) throw std::invalid_argument("--axis-angle requires --regions");
+        if (keep_unresolved && !region_mode) throw std::invalid_argument("--keep-unresolved requires --regions");
         if (continuous && contours) throw std::invalid_argument("contours require a discrete query");
         if (any && (continuous || contours)) throw std::invalid_argument("--any requires discrete overlap detection");
         if (!follow_adjacent && !any) throw std::invalid_argument("--same-face-only requires --any");
@@ -104,7 +107,16 @@ int main(int argc, char** argv) {
             const auto start = std::chrono::steady_clock::now();
             if (regions) {
                 nc::dynamics::ContactWork work;
-                const auto found=regions->regions(contact_poses[0],contact_poses[1],work);
+                std::vector<nc::dynamics::ContactRegion> found;
+                try {
+                    found=regions->regions(contact_poses[0],contact_poses[1],work);
+                } catch (const nc::dynamics::UnresolvedContact& error) {
+                    if (!keep_unresolved) throw;
+                    std::cerr<<error.what()<<'\n';
+                    const double seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
+                    std::cout<<"{\"resolved\":false,\"query_s\":"<<seconds<<",\"regions\":null}"<<std::endl;
+                    continue;
+                }
                 const double seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
                 std::cout<<"{\"query_s\":"<<seconds<<",\"triangle_tests\":"<<work.mesh.triangles<<",\"node_pairs\":"<<work.mesh.nodes
                          <<",\"boolean_queries\":"<<work.boolean_queries<<",\"input_faces\":"<<work.boolean_input_faces<<",\"local_solids\":"<<work.local_solid_uses

@@ -6,7 +6,7 @@ namespace nc::cad {
 struct RigidPath;
 // Apply the original OCCT force-region construction to two already placed solids.
 std::vector<dynamics::ContactRegion> solid_regions(const TopoDS_Shape& first,const TopoDS_Shape& second,
-                                                  dynamics::ContactWork& work);
+                                                  dynamics::ContactWork& work,bool measure_span=true);
 
 struct LocalSolidGeometry {
     TopoDS_Shape shape;

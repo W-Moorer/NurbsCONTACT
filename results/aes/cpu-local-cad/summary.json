@@ -1,0 +1,885 @@
+{
+  "frames": 50001,
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "trajectory_sha256": "33dfb97a3bdf7786746f0c706ae6392071a073a50c2666ec521a8255ca35d005",
+  "stages": [
+    {
+      "stage": 1,
+      "geometry_sha256": {
+        "reducer-1a.step": "90a5180ba1d3cd2b6e603de00a80c94cded07bfdccdf13f26e8a693845920035",
+        "reducer-1a.msh": "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+        "reducer-1b.step": "f0b5c19d140b2817f00ba29a3cadcd042141df5e2700e860dff7b9aedd37bf7b",
+        "reducer-1b.msh": "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13"
+      },
+      "fixed": {
+        "cad-occt": {
+          "total": 12,
+          "resolved": 12,
+          "max_depth_difference_um": 2.0633722595114756e-12,
+          "max_exit_difference_um": 3.076423664427619e-12,
+          "median_local_ms": 2.2662000000000004,
+          "median_whole_ms": 44.882000000000005
+        },
+        "mesh-obb": {
+          "total": 12,
+          "resolved": 12,
+          "max_depth_difference_um": 6.903318520122548e-12,
+          "max_exit_difference_um": 4.596000771801834e-12,
+          "median_local_ms": 1.51355,
+          "median_whole_ms": 34.894149999999996
+        }
+      },
+      "geometry_times": {
+        "mesh": {
+          "sum_s": 45.1436485,
+          "mean_ms": 0.9028549129017419,
+          "p95_ms": 2.7013
+        },
+        "local": {
+          "sum_s": 56.1812459,
+          "mean_ms": 1.123602445951081,
+          "p95_ms": 1.6837
+        },
+        "native": {
+          "sum_s": 476.24923409999997,
+          "mean_ms": 9.524794186116276,
+          "p95_ms": 18.563
+        },
+        "group": {
+          "sum_s": 18.9497906,
+          "mean_ms": 0.3789882322353553,
+          "p95_ms": 0.98
+        }
+      },
+      "mesh_unresolved_frames": 0,
+      "local_unresolved_points": 6362,
+      "native_regroup_unresolved_points": 0,
+      "native_witnesses": 92624,
+      "previous_site_confirmed": 56856,
+      "process_wall_s": {
+        "mesh": 48.96167460000288,
+        "local": 89.02674499999557,
+        "native_including_group": 575.7737564000054
+      },
+      "audited_component_checks": [
+        {
+          "step": 0,
+          "count": 0,
+          "mesh_count": 0,
+          "mesh_covered": 0,
+          "native_covered": 0,
+          "groups": 0,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 1,
+          "count": 0,
+          "mesh_count": 0,
+          "mesh_covered": 0,
+          "native_covered": 0,
+          "groups": 0,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 2,
+          "count": 0,
+          "mesh_count": 0,
+          "mesh_covered": 0,
+          "native_covered": 0,
+          "groups": 0,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 3,
+          "count": 2,
+          "mesh_count": 2,
+          "mesh_covered": 2,
+          "native_covered": 2,
+          "groups": 2,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 4,
+          "count": 2,
+          "mesh_count": 2,
+          "mesh_covered": 2,
+          "native_covered": 2,
+          "groups": 2,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 5,
+          "count": 2,
+          "mesh_count": 2,
+          "mesh_covered": 2,
+          "native_covered": 2,
+          "groups": 2,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 6,
+          "count": 2,
+          "mesh_count": 2,
+          "mesh_covered": 2,
+          "native_covered": 2,
+          "groups": 2,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 7,
+          "count": 2,
+          "mesh_count": 2,
+          "mesh_covered": 2,
+          "native_covered": 2,
+          "groups": 2,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 8,
+          "count": 2,
+          "mesh_count": 2,
+          "mesh_covered": 2,
+          "native_covered": 2,
+          "groups": 2,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 9,
+          "count": 2,
+          "mesh_count": 2,
+          "mesh_covered": 2,
+          "native_covered": 2,
+          "groups": 2,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 10,
+          "count": 2,
+          "mesh_count": 2,
+          "mesh_covered": 2,
+          "native_covered": 2,
+          "groups": 2,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 26,
+          "count": 2,
+          "mesh_count": 2,
+          "mesh_covered": 2,
+          "native_covered": 2,
+          "groups": 2,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 27,
+          "count": 1,
+          "mesh_count": 1,
+          "mesh_covered": 1,
+          "native_covered": 1,
+          "groups": 1,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 10000,
+          "count": 1,
+          "mesh_count": 1,
+          "mesh_covered": 1,
+          "native_covered": 1,
+          "groups": 1,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 16667,
+          "count": 1,
+          "mesh_count": 1,
+          "mesh_covered": 1,
+          "native_covered": 1,
+          "groups": 1,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 16668,
+          "count": 2,
+          "mesh_count": 2,
+          "mesh_covered": 2,
+          "native_covered": 2,
+          "groups": 2,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 20000,
+          "count": 1,
+          "mesh_count": 1,
+          "mesh_covered": 1,
+          "native_covered": 1,
+          "groups": 1,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 25000,
+          "count": 1,
+          "mesh_count": 1,
+          "mesh_covered": 1,
+          "native_covered": 1,
+          "groups": 1,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 30000,
+          "count": 1,
+          "mesh_count": 1,
+          "mesh_covered": 1,
+          "native_covered": 1,
+          "groups": 1,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 33334,
+          "count": 1,
+          "mesh_count": 1,
+          "mesh_covered": 1,
+          "native_covered": 1,
+          "groups": 1,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 33335,
+          "count": 2,
+          "mesh_count": 2,
+          "mesh_covered": 2,
+          "native_covered": 2,
+          "groups": 2,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 40000,
+          "count": 1,
+          "mesh_count": 1,
+          "mesh_covered": 1,
+          "native_covered": 1,
+          "groups": 1,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 46315,
+          "count": 2,
+          "mesh_count": 2,
+          "mesh_covered": 2,
+          "native_covered": 2,
+          "groups": 2,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 50000,
+          "count": 1,
+          "mesh_count": 1,
+          "mesh_covered": 1,
+          "native_covered": 1,
+          "groups": 1,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        }
+      ],
+      "audited_response_errors": {
+        "mesh": {
+          "poses": 18,
+          "rms_load_N": 117.56099779335322,
+          "rms_torque_Nm": 6.645296160826187
+        },
+        "local": {
+          "poses": 18,
+          "rms_load_N": 31.788185544993116,
+          "rms_torque_Nm": 1.8641738214125025
+        },
+        "witness": {
+          "poses": 18,
+          "rms_load_N": 867.8010828502134,
+          "rms_torque_Nm": 48.64119411367972
+        }
+      },
+      "representative_comparison": {
+        "deepest": {
+          "poses": 21,
+          "rms_load_N": 812.2798408521232,
+          "rms_torque_Nm": 45.53038372614551
+        },
+        "opposed_source": {
+          "poses": 21,
+          "rms_load_N": 812.2798408520936,
+          "rms_torque_Nm": 45.530383726143796
+        },
+        "opposed_bisector": {
+          "poses": 21,
+          "rms_load_N": 812.3835531955859,
+          "rms_torque_Nm": 45.6284956354964
+        }
+      },
+      "role_swap": {
+        "poses": 24,
+        "group_mismatches": 0,
+        "max_load_difference_N": 0.0,
+        "max_torque_difference_Nm": 0.0
+      },
+      "unresolved_seed_reference": {
+        "examined": 6362,
+        "whole_step_status": {
+          "ambiguous_boundary_hit": 6362
+        },
+        "recovered": [],
+        "process_s": 33.69130379999842
+      }
+    },
+    {
+      "stage": 2,
+      "geometry_sha256": {
+        "reducer-2a.step": "9037e0d52ca2550e2251621d46a6781b9b698722842b4178b9758858ee8f14a9",
+        "reducer-2a.msh": "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+        "reducer-2b.step": "93b72d60ebd26f3e94faedd22be00aa5d80dda5936605541ae3646ace82aee01",
+        "reducer-2b.msh": "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0"
+      },
+      "fixed": {
+        "cad-occt": {
+          "total": 21,
+          "resolved": 21,
+          "max_depth_difference_um": 8.497434526855141e-12,
+          "max_exit_difference_um": 6.365452598616067e-12,
+          "median_local_ms": 3.3623,
+          "median_whole_ms": 195.74
+        },
+        "mesh-obb": {
+          "total": 21,
+          "resolved": 21,
+          "max_depth_difference_um": 8.544868371901382e-12,
+          "max_exit_difference_um": 7.497935649095067e-12,
+          "median_local_ms": 1.8523999999999998,
+          "median_whole_ms": 211.2331
+        }
+      },
+      "geometry_times": {
+        "mesh": {
+          "sum_s": 158.23572490000004,
+          "mean_ms": 3.1646512049759012,
+          "p95_ms": 10.621500000000001
+        },
+        "local": {
+          "sum_s": 200.4693942,
+          "mean_ms": 4.009307697846043,
+          "p95_ms": 5.975299999999999
+        },
+        "native": {
+          "sum_s": 673.3426927,
+          "mean_ms": 13.466584522309555,
+          "p95_ms": 30.5255
+        },
+        "group": {
+          "sum_s": 483.59632329999994,
+          "mean_ms": 9.671733031339372,
+          "p95_ms": 22.9761
+        }
+      },
+      "mesh_unresolved_frames": 1,
+      "local_unresolved_points": 28,
+      "native_regroup_unresolved_points": 0,
+      "native_witnesses": 281159,
+      "previous_site_confirmed": 201748,
+      "process_wall_s": {
+        "mesh": 163.8020972000013,
+        "local": 213.23811710000155,
+        "native_including_group": 1179.3253324999969
+      },
+      "audited_component_checks": [
+        {
+          "step": 0,
+          "count": 0,
+          "mesh_count": 0,
+          "mesh_covered": 0,
+          "native_covered": 0,
+          "groups": 0,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 1,
+          "count": 0,
+          "mesh_count": 0,
+          "mesh_covered": 0,
+          "native_covered": 0,
+          "groups": 0,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 2,
+          "count": 0,
+          "mesh_count": 0,
+          "mesh_covered": 0,
+          "native_covered": 0,
+          "groups": 0,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 3,
+          "count": 3,
+          "mesh_count": 5,
+          "mesh_covered": 2,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 4,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 5,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 6,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 7,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 8,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 9,
+          "count": 3,
+          "mesh_count": 7,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 10,
+          "count": 0,
+          "mesh_count": 0,
+          "mesh_covered": 0,
+          "native_covered": 0,
+          "groups": 0,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 11,
+          "count": 0,
+          "mesh_count": 0,
+          "mesh_covered": 0,
+          "native_covered": 0,
+          "groups": 0,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 12,
+          "count": 0,
+          "mesh_count": 0,
+          "mesh_covered": 0,
+          "native_covered": 0,
+          "groups": 0,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 19,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 20,
+          "count": 3,
+          "mesh_count": 12,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 21,
+          "count": 0,
+          "mesh_count": 0,
+          "mesh_covered": 0,
+          "native_covered": 0,
+          "groups": 0,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 22,
+          "count": 0,
+          "mesh_count": 0,
+          "mesh_covered": 0,
+          "native_covered": 0,
+          "groups": 0,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 23,
+          "count": 0,
+          "mesh_count": 0,
+          "mesh_covered": 0,
+          "native_covered": 0,
+          "groups": 0,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 296,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 297,
+          "count": 3,
+          "mesh_count": null,
+          "mesh_covered": 0,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 298,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 10000,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 16680,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 16681,
+          "count": 2,
+          "mesh_count": 2,
+          "mesh_covered": 2,
+          "native_covered": 2,
+          "groups": 2,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 20000,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 25000,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 30000,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 33347,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 33348,
+          "count": 2,
+          "mesh_count": 2,
+          "mesh_covered": 2,
+          "native_covered": 2,
+          "groups": 2,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 40000,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 46315,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        },
+        {
+          "step": 50000,
+          "count": 3,
+          "mesh_count": 3,
+          "mesh_covered": 3,
+          "native_covered": 3,
+          "groups": 3,
+          "exact_groups": true,
+          "false_join": false,
+          "unclassified": 0
+        }
+      ],
+      "audited_response_errors": {
+        "mesh": {
+          "poses": 22,
+          "rms_load_N": 1201.1196998472049,
+          "rms_torque_Nm": 73.7740994701824
+        },
+        "local": {
+          "poses": 22,
+          "rms_load_N": 207.33006397311266,
+          "rms_torque_Nm": 12.058055016008392
+        },
+        "witness": {
+          "poses": 22,
+          "rms_load_N": 1336.9790741822894,
+          "rms_torque_Nm": 128.21735043133495
+        }
+      },
+      "representative_comparison": {
+        "deepest": {
+          "poses": 23,
+          "rms_load_N": 1324.922301826406,
+          "rms_torque_Nm": 128.98832311700681
+        },
+        "opposed_source": {
+          "poses": 23,
+          "rms_load_N": 1644.3403906423382,
+          "rms_torque_Nm": 101.25137085598362
+        },
+        "opposed_bisector": {
+          "poses": 23,
+          "rms_load_N": 1645.1435536984088,
+          "rms_torque_Nm": 100.6435755369099
+        }
+      },
+      "role_swap": {
+        "poses": 32,
+        "group_mismatches": 0,
+        "max_load_difference_N": 9.094947017729282e-13,
+        "max_torque_difference_Nm": 2.842170943040401e-14
+      },
+      "unresolved_seed_reference": {
+        "examined": 28,
+        "whole_step_status": {
+          "ambiguous_boundary_hit": 28
+        },
+        "recovered": [],
+        "process_s": 3.6225559000013163
+      }
+    }
+  ],
+  "stage_pair_query_times_s": {
+    "mesh": {
+      "sum_stage_times_s": 203.37937339999996,
+      "sum_per_frame_max_s": 162.06452620000002,
+      "mean_per_frame_max_ms": 3.241225699486011,
+      "p95_per_frame_max_ms": 10.621500000000001
+    },
+    "mesh_plus_local": {
+      "sum_stage_times_s": 460.0300135000001,
+      "sum_per_frame_max_s": 358.7234782,
+      "mean_per_frame_max_ms": 7.17432607747845,
+      "p95_per_frame_max_ms": 15.234
+    },
+    "native_with_grouping": {
+      "sum_stage_times_s": 1652.1380407,
+      "sum_per_frame_max_s": 1157.3474442000002,
+      "mean_per_frame_max_ms": 23.146485954280916,
+      "p95_per_frame_max_ms": 53.214600000000004
+    }
+  },
+  "reference_csv_sha256": "422068b9d21aeb562bb8203c6313e469c245d4cb8f42d939d08186fc1d90595f",
+  "cpu": "AMD Ryzen 9 5900X",
+  "platform": "Windows-11-10.0.22631-SP0",
+  "configuration": "Release",
+  "dt_s": 0.0001,
+  "force_evaluations_in_mesh_closed_loop": 151547,
+  "two_stage_native_replay_process_s": 1179.3326818999994,
+  "per_run_limit_s": 1800,
+  "sphere_cli": {
+    "frames": 801,
+    "duration_s": 0.08000000000000126,
+    "peak_N": 22.499130687198658,
+    "analytic_peak_N": 22.5,
+    "max_force_difference_N": 0.0032133548361860803,
+    "loaded_frames": 314
+  },
+  "measured_executable_sha256": {
+    "native_discovery_with_grouping": "fc0c1fdf1093afb4f6316021957296104aaef41955c7d6574dc95410e942260b",
+    "whole_STEP_membership": "d4fa8469f7257283f14834cd877c2bd75082f7b1e88c39e763e1a0df45aa1428"
+  },
+  "final_build_sha256": {
+    "mesh": "6f4d37ef052f528c3b0aa2cfcee676bf435c29244283256c5771e2dc16d0c321",
+    "cad_diagnostic": "5947e1119187d34aca859a596391c983728ab6c9c9befe2d5d57297e556ce043"
+  }
+}

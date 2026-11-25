@@ -1,4 +1,5 @@
 #include "nurbscontact/cad_solid_contact.hpp"
+#include "nurbscontact/cad_contact_regions.hpp"
 #include "../src/cad_boundary_distance.hpp"
 #include "../src/cad_local_solid.hpp"
 #include "../src/cad_rigid_path.hpp"
@@ -23,6 +24,49 @@ void close(double actual,double expected,double tol,const char* what) {
     if (std::abs(actual-expected)<=tol) return;
     std::cerr<<what<<" actual "<<actual<<", expected "<<expected<<"\n";
     throw std::runtime_error(what);
+}
+
+void local_region_depths() {
+    const auto ball=BRepPrimAPI_MakeSphere(10.).Shape();
+    const ContactPose origin{},right{{.019,0,0}};
+    ContactWork work;
+    const auto query=cad_local_region_query(ball,ball,{},.002);
+    const auto hit=query->regions(origin,right,work),swapped=query->regions(right,origin,work);
+    require(hit.size()==1 && swapped.size()==1,"local sphere region count");
+    close(hit[0].depth_m,.001,1e-10,"analytic local sphere depth");
+    close(length(sub(hit[0].point,swapped[0].point)),0,1e-10,"swapped force arm");
+    close(length(add(hit[0].normal,swapped[0].normal)),0,1e-10,"swapped normal");
+
+    const auto box=BRepPrimAPI_MakeBox(10,10,10).Shape();
+    const auto split=BRepAlgoAPI_Fuse(BRepPrimAPI_MakeBox(10,5,10).Shape(),
+        BRepPrimAPI_MakeBox(gp_Pnt(0,5,0),10,5,10).Shape()).Shape();
+    const ContactPose shift{{.009,0,0}};
+    const auto plain=cad_local_region_query(box,box,{},.002)->regions(origin,shift,work);
+    const auto divided=cad_local_region_query(split,box,{},.002)->regions(origin,shift,work);
+    require(plain.size()==1 && divided.size()==1,"CAD face split duplicated local force");
+    close(divided[0].depth_m,plain[0].depth_m,1e-10,"split depth");
+    close(length(sub(divided[0].point,plain[0].point)),0,1e-10,"split force arm");
+
+    CadExitQuery ray{CadContactIndex(box)};
+    std::size_t tests=0;
+    require(!ray.first_exit({-.0001,.005,.005},{1,0,0},.012,0,tests).face,"outside entry accepted as an exit");
+    require(!ray.first_exit({.005,.005,.005},{1,0,0},.001,0,tests).face,"exit beyond reach");
+    const Vec corner=scale(Vec{1,1,0},1/std::sqrt(2.));
+    require(!ray.first_exit({.005,.005,.005},corner,.01,0,tests).face,"sharp edge accepted as smooth");
+    const auto hole=BRepPrimAPI_MakeCylinder(gp_Ax2(gp_Pnt(5,5,-1),gp_Dir(0,0,1)),2,12).Shape();
+    CadExitQuery plate{CadContactIndex(BRepAlgoAPI_Cut(box,hole).Shape())};
+    require(!plate.interior_segment({.001,.005,.005},{.009,.005,.005}),"connected through a hole");
+    require(plate.interior_segment({.001,.004,.005},{.001,.006,.005}),"interior path rejected");
+
+    BRep_Builder builder;
+    TopoDS_Compound first,second;
+    builder.MakeCompound(first); builder.MakeCompound(second);
+    builder.Add(first,ball); builder.Add(second,ball);
+    builder.Add(first,BRepPrimAPI_MakeSphere(gp_Pnt(0,35,0),10).Shape());
+    builder.Add(second,BRepPrimAPI_MakeSphere(gp_Pnt(.6,35,0),10).Shape());
+    const auto two=cad_local_region_query(first,second,{},.002);
+    require(two->regions(origin,ContactPose{{.0195,0,0}},work).size()==1,"spurious second contact");
+    require(two->regions(origin,right,work).size()==2,"missed new contact while the first persisted");
 }
 
 void check(CadEventMethod chen) {
@@ -233,7 +277,7 @@ void local_solids() {
 }
 }
 int main(int argc,char** argv) {
-    try { if (argc==1) { boundary_distances(); local_solids(); }
+    try { if (argc==1) { local_region_depths(); boundary_distances(); local_solids(); }
           check(argc==1 ? CadEventMethod::conservative_advancement :
                 std::string_view(argv[1])=="--chen-2026" ? CadEventMethod::chen_2026 : CadEventMethod::chen_2024); }
     catch (const Standard_Failure& e) { std::cerr<<e.GetMessageString()<<'\n'; return 1; }

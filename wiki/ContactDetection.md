@@ -224,6 +224,23 @@ The [two-slider driver](../benchmarks/aes/solver_impact.py) checks the compliant
 
 An independent fixed-step control used discrete Drake 1.58.0 SAP with analytic spheres, 1 kg per body, pair stiffness 5,000 N/m, zero friction and zero relaxation time. Across 0.16 s the STEP and Drake displacement histories agreed within 1.3 × 10⁻¹⁵ m at 500 and 250 µs and within 3.06 µm at 125 µs. At 250 µs their common maximum displacement error relative to the continuous oscillator was 0.768 mm. [Drake comparison driver](../benchmarks/engines/drake_sap_impact.py) · [All three step sizes](../results/aes/cpu-solvers/impact-drake-sap.json) · [Drake contact parameters](https://drake.mit.edu/doxygen_cxx/group__contact__defaults.html)
 
+## Local STEP exit depths
+
+`nc_contact --method cad-local` locates connected overlap components with the native
+solid intersection. From each component seed and area-derived normal it intersects
+short segments with both original trimmed solids. The two first outward exits give
+the local depth. Their midpoint gives the common force arm. Each query traverses
+the body-local face boxes even when a previous face supplies a hint. Indeterminate
+exits propagate to the solver. [Implementation](../src/cad_solid_contact.cpp)
+
+The CPU replay executable `nc_cad_probes` explores faster discovery. It searches
+both bodies' parameter charts at every pose, rechecks previous sites and refines
+near misses in surface parameters. Each reported witness has two verified exits.
+With `--groups`, a polyline verified inside both solids can join two witnesses.
+The finite search can miss a component and the path search can split one. The
+reducer replay checks both effects by classifying witnesses in independently
+computed STEP overlap volumes. [Verification and reproduction](../results/aes/cpu-local-cad/README.md)
+
 ## Free rigid bodies
 
 The optional v2 scene block after `drives` adds independent spatial bodies alongside existing hinges and sliders.

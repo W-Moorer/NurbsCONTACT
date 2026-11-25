@@ -132,7 +132,7 @@ struct SurfaceOptions {
     bool predictor_geometry{};
     std::optional<double> spectral_radius;
     bool chen() const { return method=="chen-2024" || method=="chen-2026"; }
-    bool cad() const { return method=="cad-occt" || chen(); }
+    bool cad() const { return method=="cad-occt" || method=="cad-local" || chen(); }
 };
 
 Input read_scene(const Path& path,double deflection,std::optional<PairBackend> pair_backend,
@@ -412,7 +412,10 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         };
         for (auto& pair:input.pairs) {
             const std::array centers{center(pair.a),center(pair.b)};
-            if (surface_options.cad()) {
+            if (surface_options.method=="cad-local") {
+                pair.regions=cad_local_region_query(shapes.at(files[pair.a]),shapes.at(files[pair.b]),centers,
+                                                    pair.material.maximum_depth);
+            } else if (surface_options.cad()) {
                 pair.regions=cad_solid_region_query(shapes.at(files[pair.a]),shapes.at(files[pair.b]),centers,
                     surface_options.method=="chen-2026" ? CadEventMethod::chen_2026 :
                     surface_options.method=="chen-2024" ? CadEventMethod::chen_2024 : CadEventMethod::conservative_advancement);
@@ -1424,7 +1427,7 @@ int main(int argc,char** argv) {
                         "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
                         "  or append --method bvh-aabb|bvh-obb|mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
                         "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl|finite|contour-ray] [--penalty-stiffness per-region|shared] [--geometry-update newton|predictor] [--spectral-radius RHO]\n"
-                        "  or append --method cad-occt|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
+                        "  or append --method cad-occt|cad-local|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
                         "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp [--progress FILE]\n";
             return 2;
         }

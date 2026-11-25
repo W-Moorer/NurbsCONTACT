@@ -11,6 +11,8 @@
 #include <Geom2d_Line.hxx>
 #include <Geom2d_TrimmedCurve.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
+#include <IntCurvesFace_Intersector.hxx>
+#include <gp_Lin.hxx>
 #include <NCollection_UBTreeFiller.hxx>
 #include <Precision.hxx>
 #include <Standard_Failure.hxx>
@@ -28,6 +30,7 @@
 
 #include <algorithm>
 #include <map>
+#include <numeric>
 #include <stdexcept>
 
 namespace nc {
@@ -329,6 +332,191 @@ CadContactIndex::CadContactIndex(const TopoDS_Shape& shape) {
 }
 
 std::size_t CadContactIndex::face_count() const { return data_->faces.size(); }
+
+struct CadExitQuery::Data {
+    explicit Data(const CadContactIndex& index) : index(index), rays(index.face_count()) {}
+    CadContactIndex index;
+    std::vector<Handle(IntCurvesFace_Intersector)> rays;
+};
+
+CadExitQuery::CadExitQuery(const CadContactIndex& index) : data_(std::make_unique<Data>(index)) {}
+CadExitQuery::~CadExitQuery() = default;
+
+CadExit CadExitQuery::first_exit(Vec origin, Vec direction, double reach_m, std::size_t hint,
+                                std::size_t& face_tests) {
+    const double reach = reach_m/mm, tol = Precision::Confusion();
+    if (!std::isfinite(reach) || reach<=0 || !(std::abs(length(direction)-1.)<1e-8)
+        || !std::all_of(origin.begin(),origin.end(),[](double x){return std::isfinite(x/mm);}))
+        throw std::invalid_argument("invalid finite CAD exit ray");
+    const gp_Pnt p(origin[0]/mm,origin[1]/mm,origin[2]/mm);
+    const gp_Dir d(direction[0],direction[1],direction[2]);
+    const gp_Lin line(p,d);
+    const auto segment = [&](double end) {
+        Bnd_Box b;
+        b.Add(p);
+        b.Add(p.Translated(gp_Vec(d)*end));
+        b.SetGap(tol);
+        return b;
+    };
+    const auto& geometry = *data_->index.data_;
+    double nearest = reach+2*tol;
+    CadExit hit;
+    bool ambiguous = false, boundary = false;
+    TopoDS_Edge first_edge;
+    const auto visit = [&](std::size_t i) {
+        const auto& face=geometry.faces[i];
+        if (face.bounds.IsOut(segment(std::min(reach,nearest+tol))) || face.bounds.IsOut(line)) return;
+        ++face_tests;
+        auto& ray=data_->rays[i];
+        if (ray.IsNull()) ray=new IntCurvesFace_Intersector(face.shape,tol);
+        ray->Perform(line,-tol,std::min(reach,nearest+tol));
+        if (!ray->IsDone()) throw dynamics::UnresolvedContact("trimmed-face intersection failed");
+        for (int k=1;k<=ray->NbPnt();++k) {
+            const double t=ray->WParameter(k);
+            if (t < -tol || t>reach || t>nearest+tol) continue;
+            const bool tie=hit.face && std::abs(t-nearest)<=tol;
+            gp_Pnt q;
+            gp_Vec du,dv;
+            BRepAdaptor_Surface(face.shape).D1(ray->UParameter(k),ray->VParameter(k),q,du,dv);
+            auto n=du.Crossed(dv);
+            if (face.shape.Orientation()==TopAbs_REVERSED) n.Reverse();
+            const double magnitude=n.Magnitude();
+            if (magnitude>0) n.Divide(magnitude);
+            const Vec normal{n.X(),n.Y(),n.Z()};
+            const bool invalid=t<=tol || !(n.Dot(gp_Vec(d))>1e-8)
+                || ray->Transition(k)==IntCurveSurface_Tangent;
+            TopoDS_Edge edge;
+            if (ray->State(k)==TopAbs_ON) {
+                BRepClass_FaceClassifier uv(face.shape,gp_Pnt2d(ray->UParameter(k),ray->VParameter(k)),
+                                            Precision::PConfusion());
+                if (uv.State()==TopAbs_ON && uv.Position()==IntRes2d_Middle) edge=uv.Edge().Edge();
+            }
+            if (tie) {
+                ambiguous=ambiguous || invalid || dot3(hit.outward,normal)<1.-1e-10;
+                if (hit.face!=i+1) {
+                    // Only a shared topological edge can join two face hits.
+                    if (edge.IsNull() || first_edge.IsNull() || !edge.IsSame(first_edge)) ambiguous=true;
+                    else boundary=false;
+                }
+                nearest=std::min(nearest,t);
+                hit.distance_m=nearest*mm;
+            } else {
+                nearest=t;
+                hit={i+1,t*mm,normal,{ray->UParameter(k),ray->VParameter(k)}};
+                ambiguous=invalid;
+                first_edge=edge;
+                boundary=ray->State(k)!=TopAbs_IN && (edge.IsNull() || !BRep_Tool::IsClosed(edge,face.shape));
+            }
+        }
+    };
+    try {
+        if (hint && hint<=geometry.faces.size()) visit(hint-1);
+        NearBox candidates(segment(std::min(reach,nearest+tol)));
+        geometry.tree.Select(candidates);
+        for (auto i:candidates.faces) if (i+1!=hint) visit(i);
+    } catch (const Standard_Failure&) { return {}; }
+      catch (const dynamics::UnresolvedContact&) { return {}; }
+    return ambiguous || boundary ? CadExit{} : hit;
+}
+
+bool CadExitQuery::interior_segment(Vec a,Vec b) {
+    const gp_Pnt p(a[0]/mm,a[1]/mm,a[2]/mm),q(b[0]/mm,b[1]/mm,b[2]/mm);
+    const double span=p.Distance(q),tol=Precision::Confusion();
+    if (span==0) return true;
+    if (span<=tol) return false;
+    const gp_Lin line(p,gp_Dir(gp_Vec(p,q)));
+    Bnd_Box box; box.Add(p); box.Add(q); box.SetGap(tol);
+    NearBox candidates(box);
+    const auto& geometry=*data_->index.data_;
+    geometry.tree.Select(candidates);
+    try {
+        for (auto i:candidates.faces) {
+            if (geometry.faces[i].bounds.IsOut(line)) continue;
+            auto& ray=data_->rays[i];
+            if (ray.IsNull()) ray=new IntCurvesFace_Intersector(geometry.faces[i].shape,tol);
+            ray->Perform(line,-tol,span+tol);
+            if (!ray->IsDone() || ray->NbPnt() || ray->IsParallel()) return false;
+        }
+    } catch (const Standard_Failure&) {return false;}
+    return true;
+}
+
+Vec CadExitQuery::surface_point(std::size_t face,std::array<double,2> uv) const {
+    return point(BRepAdaptor_Surface(data_->index.data_->faces.at(face-1).shape).Value(uv[0],uv[1]));
+}
+
+std::optional<CadChord> local_chord(CadExitQuery& a, CadExitQuery& b,
+    const std::array<ContactPose,2>& poses, Vec point, Vec normal, double reach_m,
+    std::array<std::size_t,2> hints, std::size_t& face_tests) {
+    CadChord result;
+    for (int i=0;i<2;++i) {
+        const auto& pose=poses[i];
+        const Vec direction=pose.inverse_rotate(scale(normal,i ? -1. : 1.));
+        const Vec local=pose.inverse_rotate(sub(point,pose.origin));
+        auto& exit=result.exits[i];
+        exit=(i ? b : a).first_exit(local,direction,reach_m,hints[i],face_tests);
+        if (!exit.face) return std::nullopt;
+    }
+    const double da=result.exits[0].distance_m, db=result.exits[1].distance_m;
+    result.region={add(point,scale(normal,(da-db)*.5)),normal,da+db};
+    return result;
+}
+
+namespace {
+bool interior_path(CadExitQuery& a,CadExitQuery& b,const std::array<ContactPose,2>& poses,
+                   const CadChord& x,const CadChord& y,double reach,int remaining) {
+    const auto& p=x.region.point; const auto& q=y.region.point;
+    for (int i=0;i<2;++i) {
+        const auto local=[&](Vec v){return poses[i].inverse_rotate(sub(v,poses[i].origin));};
+        if (!(i ? b : a).interior_segment(local(p),local(q))) break;
+        if (i==1) return true;
+    }
+    if (remaining==0) return false;
+    for (int i=0;i<2;++i) {
+        const auto& left=x.exits[i]; const auto& right=y.exits[i];
+        if (left.face!=right.face) continue;
+        const std::array uv{.5*(left.uv[0]+right.uv[0]),.5*(left.uv[1]+right.uv[1])};
+        const Vec world=poses[i].point((i ? b : a).surface_point(left.face,uv));
+        const auto normal=add(left.outward,right.outward);
+        if (length(normal)<1e-6) continue;
+        const Vec outward=poses[i].rotate(scale(normal,1/length(normal)));
+        const auto& other=poses[1-i];
+        std::size_t tested=0;
+        const auto exit=(i ? a : b).first_exit(other.inverse_rotate(sub(world,other.origin)),
+                            other.inverse_rotate(scale(outward,-1)),reach,x.exits[1-i].face,tested);
+        if (!exit.face) continue;
+        const auto mid=local_chord(a,b,poses,sub(world,scale(outward,.5*exit.distance_m)),
+                                   scale(outward,i ? -1. : 1.),reach,{x.exits[0].face,x.exits[1].face},tested);
+        if (mid && mid->exits[i].face==left.face &&
+            interior_path(a,b,poses,x,*mid,reach,remaining-1) &&
+            interior_path(a,b,poses,*mid,y,reach,remaining-1)) return true;
+    }
+    return false;
+}
+}
+
+bool connected_chords(CadExitQuery& a,CadExitQuery& b,const std::array<ContactPose,2>& poses,
+                      const CadChord& x,const CadChord& y,double reach_m) {
+    if (!x.exits[0].face || !x.exits[1].face || !y.exits[0].face || !y.exits[1].face) return false;
+    return interior_path(a,b,poses,x,y,reach_m,5);
+}
+
+std::vector<int> chord_groups(CadExitQuery& a,CadExitQuery& b,const std::array<ContactPose,2>& poses,
+                              std::span<const std::optional<CadChord>> witnesses,double reach_m) {
+    std::vector<int> labels(witnesses.size());
+    std::iota(labels.begin(),labels.end(),0);
+    for (std::size_t i=0;i<witnesses.size();++i) {
+        if (!witnesses[i]) {labels[i]=-1; continue;}
+        for (std::size_t j=0;j<i;++j) {
+            if (!witnesses[j] || labels[i]==labels[j]) continue;
+            if (connected_chords(a,b,poses,*witnesses[i],*witnesses[j],reach_m)) {
+                const int old=labels[i],replacement=labels[j];
+                std::replace(labels.begin(),labels.end(),old,replacement);
+            }
+        }
+    }
+    return labels;
+}
 
 std::vector<std::array<Vec,2>> CadContactIndex::face_bounds() const {
     std::vector<std::array<Vec,2>> boxes;

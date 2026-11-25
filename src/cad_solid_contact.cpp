@@ -1,6 +1,7 @@
 #include "cad_rigid_path.hpp"
 #include "cad_boundary_distance.hpp"
 #include "cad_local_solid.hpp"
+#include "nurbscontact/cad_contact_regions.hpp"
 #include <chrono>
 #include <mutex>
 #include <deque>
@@ -117,7 +118,7 @@ TopTools_IndexedMapOfShape source_faces(const TopoDS_Shape& shape,BRepAlgoAPI_Co
 }
 namespace cad {
 std::vector<dynamics::ContactRegion> solid_regions(const TopoDS_Shape& first,const TopoDS_Shape& second,
-                                                  dynamics::ContactWork& work) try {
+                                                  dynamics::ContactWork& work,bool measure_span) try {
     ++work.cad_boolean_queries;
     BRepAlgoAPI_Common op;
     TopTools_ListOfShape args,tools;
@@ -159,11 +160,14 @@ std::vector<dynamics::ContactRegion> solid_regions(const TopoDS_Shape& first,con
         if (!source_a || !source_b || !(magnitude>1e-10*total))
             throw UnresolvedContact("CAD overlap has no resolved separation normal");
         const auto n=scale(direction,1/magnitude);
-        gp_Trsf frame;
-        frame.SetTransformation(gp_Ax3(origin,gp_Dir(n[0],n[1],n[2])));
-        const auto extent=bounds(solid.Moved(TopLoc_Location(frame)),true);
-        regions.push_back({scale(coordinates(origin),.001),n,
-                           .001*(extent.CornerMax().Z()-extent.CornerMin().Z())});
+        double span=0.;
+        if (measure_span) {
+            gp_Trsf frame;
+            frame.SetTransformation(gp_Ax3(origin,gp_Dir(n[0],n[1],n[2])));
+            const auto extent=bounds(solid.Moved(TopLoc_Location(frame)),true);
+            span=.001*(extent.CornerMax().Z()-extent.CornerMin().Z());
+        }
+        regions.push_back({scale(coordinates(origin),.001),n,span});
     }
     return regions;
 } catch (const Standard_Failure& e) {
@@ -174,8 +178,9 @@ std::vector<dynamics::ContactRegion> solid_regions(const TopoDS_Shape& first,con
 namespace {
 class CadSolidPair final : public PairRegionQuery {
 public:
-    CadSolidPair(const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,CadEventMethod method)
-        : a_(a,centers[0]),b_(b,centers[1]),centers_(centers) {
+    CadSolidPair(const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,CadEventMethod method,
+                 double chord_reach=0.)
+        : a_(a,centers[0]),b_(b,centers[1]),centers_(centers),chord_reach_(chord_reach) {
         if (method==CadEventMethod::chen_2026) candidate_=chen_2026_candidates(a,b);
         if (method==CadEventMethod::chen_2024) {
 #ifdef NC_WITH_CHEN
@@ -208,11 +213,35 @@ public:
         std::vector<ContactRegion> answer;
         if (!pair.separated) {
             try {
-                answer=solid_regions(pair.a.shape.Moved(TopLoc_Location(ta)),pair.b.shape.Moved(TopLoc_Location(tb)),work);
+                answer=solid_regions(pair.a.shape.Moved(TopLoc_Location(ta)),pair.b.shape.Moved(TopLoc_Location(tb)),work,!chord_reach_);
             } catch (const UnresolvedContact&) {
                 if (pair.a.shape.IsSame(a_.shape) && pair.b.shape.IsSame(b_.shape)) throw;
-                answer=solid_regions(a_.shape.Moved(TopLoc_Location(ta)),b_.shape.Moved(TopLoc_Location(tb)),work);
+                answer=solid_regions(a_.shape.Moved(TopLoc_Location(ta)),b_.shape.Moved(TopLoc_Location(tb)),work,!chord_reach_);
             }
+        }
+        if (chord_reach_ && !answer.empty()) {
+            std::lock_guard lock(chord_mutex_);
+            {
+                RegionTimer timer{work.cad_region_index_s};
+                if (!ray_a_) ray_a_=std::make_unique<CadExitQuery>(CadContactIndex(a_.shape));
+                if (!ray_b_) ray_b_=std::make_unique<CadExitQuery>(CadContactIndex(b_.shape));
+            }
+            RegionTimer timer{work.cad_region_extract_s};
+            std::vector<ChordHint> next;
+            for (auto& region:answer) {
+                const auto anchor=a.inverse_rotate(sub(region.point,a.origin));
+                const auto nearest=std::min_element(chord_hints_.begin(),chord_hints_.end(),[&](const auto& x,const auto& y) {
+                    return squared(sub(x.anchor,anchor))<squared(sub(y.anchor,anchor));
+                });
+                const auto hints=nearest==chord_hints_.end() ? std::array<std::size_t,2>{} : nearest->faces;
+                std::size_t face_tests=0;
+                const auto chord=local_chord(*ray_a_,*ray_b_,{a,b},region.point,region.normal,
+                                             chord_reach_,hints,face_tests);
+                if (!chord) throw UnresolvedContact("native region has no unambiguous local STEP chord");
+                next.push_back({anchor,{chord->exits[0].face,chord->exits[1].face}});
+                region=chord->region;
+            }
+            chord_hints_=std::move(next);
         }
         {
             std::lock_guard lock(cache_mutex_);
@@ -387,11 +416,23 @@ private:
     mutable std::array<std::shared_ptr<const BoundaryIndex>,2> boundaries_;
     std::array<Vec,2> centers_;
     CandidateQuery candidate_;
+    double chord_reach_{};
+    mutable std::mutex chord_mutex_;
+    mutable std::unique_ptr<CadExitQuery> ray_a_,ray_b_;
+    struct ChordHint { Vec anchor; std::array<std::size_t,2> faces; };
+    mutable std::vector<ChordHint> chord_hints_;
 };
 }
 
 std::shared_ptr<const dynamics::PairRegionQuery> cad_solid_region_query(
     const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,CadEventMethod chen_events) {
     return std::make_shared<CadSolidPair>(a,b,centers,chen_events);
+}
+
+std::shared_ptr<const dynamics::PairRegionQuery> cad_local_region_query(
+    const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,double maximum_depth_m) {
+    if (!(maximum_depth_m>0) || !std::isfinite(2*maximum_depth_m))
+        throw std::invalid_argument("local CAD depth requires a finite positive material depth limit");
+    return std::make_shared<CadSolidPair>(a,b,centers,CadEventMethod::conservative_advancement,2*maximum_depth_m);
 }
 }

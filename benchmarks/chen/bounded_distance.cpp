@@ -2,7 +2,9 @@
 #include "../../src/cad_local_solid.hpp"
 #include "../../src/cad_rigid_path.hpp"
 #include "nurbscontact/occt.hpp"
+#include "nurbscontact/cad_contact_regions.hpp"
 #include <BRepExtrema_DistShapeShape.hxx>
+#include <BRepAlgoAPI_Common.hxx>
 #include <BRepClass3d_SolidClassifier.hxx>
 #include <BRep_Builder.hxx>
 #include <IntCurvesFace_ShapeIntersector.hxx>
@@ -57,8 +59,9 @@ int regions(const TopoDS_Shape& a,const TopoDS_Shape& b) {
 }
 
 // Time the fixed-pose geometry used by nc_contact, without CCD or the integrator.
-int profile_regions(const TopoDS_Shape& a,const TopoDS_Shape& b) {
-    const auto query=cad_solid_region_query(a,b,{},CadEventMethod::conservative_advancement);
+int profile_regions(const TopoDS_Shape& a,const TopoDS_Shape& b,double maximum_depth=0.) {
+    const auto query=maximum_depth ? cad_local_region_query(a,b,{},maximum_depth)
+                                  : cad_solid_region_query(a,b,{},CadEventMethod::conservative_advancement);
     std::cout<<std::setprecision(17);
     while ((std::cin>>std::ws).peek()!=std::char_traits<char>::eof()) {
         const auto pa=read_pose(),pb=read_pose();
@@ -111,6 +114,7 @@ int normal_chords(const TopoDS_Shape& a,const TopoDS_Shape& b) {
             throw std::invalid_argument("expected point, unit normal and positive reach");
         const auto start=Clock::now();
         double depth=0;
+        std::array<double,2> offsets{};
         const char* status="resolved";
         for (int j=0;j<2;j++) {
             const auto& pose=poses[j];
@@ -129,13 +133,121 @@ int normal_chords(const TopoDS_Shape& a,const TopoDS_Shape& b) {
             }
             inside[j].Perform(ray.Pnt(first).Translated(gp_Vec(direction)*(10*tolerance)),tolerance);
             if (inside[j].State()!=TopAbs_OUT) {status="exit_not_verified"; break;}
-            depth+=.001*ray.WParameter(first);
+            offsets[j]=.001*ray.WParameter(first);
+            depth+=offsets[j];
         }
         const auto seconds=elapsed(start);
         std::cout<<"{\"status\":\""<<status<<"\",\"query_s\":"<<seconds<<",\"depth_m\":";
-        if (std::string_view(status)=="resolved") std::cout<<depth;
+        if (std::string_view(status)=="resolved")
+            std::cout<<depth<<",\"offsets_m\":["<<offsets[0]<<','<<offsets[1]<<']';
         else std::cout<<"null";
         std::cout<<"}"<<std::endl;
+    }
+    return 0;
+}
+
+// A row supplies one pose and all region seeds. Only the previous pose's
+// successful face IDs are hints. Each segment still traverses the face tree.
+int local_chords(const TopoDS_Shape& a,const TopoDS_Shape& b,bool group=false) {
+    const auto setup=Clock::now();
+    CadExitQuery first{CadContactIndex(a)}, second{CadContactIndex(b)};
+    std::cerr<<"index_s "<<std::setprecision(17)<<elapsed(setup)<<'\n';
+    struct Saved { Vec anchor; std::array<std::size_t,2> faces; };
+    std::vector<Saved> previous;
+    std::cout<<std::setprecision(17);
+    while ((std::cin>>std::ws).peek()!=std::char_traits<char>::eof()) {
+        const std::array poses{read_pose(),read_pose()};
+        double reach;
+        int count;
+        if (!(std::cin>>reach>>count) || !(reach>0) || count<0) throw std::invalid_argument("invalid seed group");
+        std::vector<Saved> next;
+        std::vector<std::optional<CadChord>> witnesses;
+        if (group) std::cout<<"{\"chords\":";
+        std::cout<<"[";
+        for (int i=0;i<count;++i) {
+            Vec point{},normal{};
+            for (auto& x:point) std::cin>>x;
+            for (auto& x:normal) std::cin>>x;
+            if (!std::cin) throw std::invalid_argument("incomplete region seed");
+            const auto start=Clock::now();
+            const auto anchor=poses[0].inverse_rotate(dynamics::sub(point,poses[0].origin));
+            std::array<std::size_t,2> hint{};
+            double best=infinity;
+            for (const auto& old:previous) {
+                const auto d=dynamics::squared(dynamics::sub(anchor,old.anchor));
+                if (d<best) { best=d; hint=old.faces; }
+            }
+            std::size_t tests=0;
+            const auto chord=local_chord(first,second,poses,point,normal,reach,hint,tests);
+            const double t=elapsed(start);
+            if (group) witnesses.push_back(chord);
+            if (i) std::cout<<',';
+            std::cout<<"{\"query_s\":"<<t<<",\"face_tests\":"<<tests<<",\"depth_m\":";
+            if (chord) {
+                const auto& x=chord->exits[0]; const auto& y=chord->exits[1];
+                next.push_back({anchor,{x.face,y.face}});
+                const auto na=poses[0].rotate(x.outward),nb=poses[1].rotate(y.outward);
+                const auto n=dynamics::sub(na,nb);
+                const auto bisector=dynamics::scale(n,1./dynamics::length(n));
+                std::cout<<chord->region.depth_m<<",\"offsets_m\":["<<x.distance_m<<','<<y.distance_m
+                         <<"],\"faces\":["<<x.face<<','<<y.face<<"],\"hint_matches\":"
+                         <<int(hint[0]==x.face)+int(hint[1]==y.face)
+                         <<",\"normal_cos\":"<<dynamics::dot3(bisector,normal)
+                         <<",\"opposition\":"<<-dynamics::dot3(na,nb)
+                         <<",\"bisector\":["<<bisector[0]<<','<<bisector[1]<<','<<bisector[2]<<']';
+            } else std::cout<<"null";
+            std::cout<<"}";
+        }
+        previous=std::move(next);
+        std::cout<<"]";
+        if (group) {
+            const auto t=Clock::now();
+            const auto labels=chord_groups(first,second,poses,witnesses,reach);
+            std::cout<<",\"group_s\":"<<elapsed(t)<<",\"labels\":[";
+            for (int i=0;i<count;++i) {if (i) std::cout<<','; std::cout<<labels[i];}
+            std::cout<<"]}";
+        }
+        std::cout<<std::endl;
+    }
+    return 0;
+}
+
+// Independent audit of witness coverage. Label using the actual connected
+// volumes of the two complete STEP solids, without a face-ID correspondence.
+int memberships(const TopoDS_Shape& a,const TopoDS_Shape& b) {
+    while ((std::cin>>std::ws).peek()!=std::char_traits<char>::eof()) {
+        const auto pa=read_pose(),pb=read_pose();
+        int count;
+        if (!(std::cin>>count) || count<0) throw std::invalid_argument("invalid number of witnesses");
+        std::vector<gp_Pnt> points;
+        for (int i=0;i<count;++i) {
+            Vec v{};
+            for (auto& x:v) if (!(std::cin>>x)) throw std::invalid_argument("incomplete witness");
+            points.push_back(cad::point(dynamics::scale(v,1000)));
+        }
+        BRepAlgoAPI_Common op;
+        TopTools_ListOfShape args,tools;
+        args.Append(a.Moved(TopLoc_Location(cad::placement(pa))));
+        tools.Append(b.Moved(TopLoc_Location(cad::placement(pb))));
+        op.SetArguments(args); op.SetTools(tools);
+        op.SetNonDestructive(true); op.SetUseOBB(true); op.Build();
+        if (!op.IsDone() || op.HasErrors() || op.HasWarnings()) {
+            std::cout<<"{\"resolved\":false}"<<std::endl; continue;
+        }
+        int components=0;
+        std::vector<int> labels(count,-1); // -1 outside, -2 on boundary or ambiguous
+        for (TopExp_Explorer it(op.Shape(),TopAbs_SOLID);it.More();it.Next(),++components) {
+            BRepClass3d_SolidClassifier classifier(it.Current());
+            for (int i=0;i<count;++i) {
+                classifier.Perform(points[i],Precision::Confusion());
+                const auto state=classifier.State();
+                if (state==TopAbs_IN) labels[i]=labels[i]==-1 ? components : -2;
+                else if (state!=TopAbs_OUT) labels[i]=-2;
+            }
+        }
+        std::cout<<"{\"resolved\":true,\"count\":"<<components<<",\"labels\":[";
+        for (int i=0;i<count;++i) {if (i) std::cout<<','; std::cout<<labels[i];}
+        std::cout<<"]}"<<std::endl;
     }
     return 0;
 }
@@ -194,11 +306,20 @@ int entry(const TopoDS_Shape& a,const TopoDS_Shape& b) {
 int main(int argc,char** argv) {
     try {
         const bool local=argc==5 && std::string_view(argv[4])=="--local";
-        if (argc!=4 && !local) throw std::invalid_argument("nc_cad_distance_benchmark A.step B.step CAP_MM [--local] | --regions | --profile-regions | --normal-chords | --entry < poses.txt");
+        const bool local_profile=argc==5 && std::string_view(argv[3])=="--profile-local-regions";
+        if (argc!=4 && !local && !local_profile) throw std::invalid_argument("nc_cad_distance_benchmark A.step B.step CAP_MM [--local] | --regions | --profile-regions | --profile-local-regions MAX_DEPTH_M | --normal-chords | --local-chords | --entry < poses.txt");
         const auto a=read_step_shape(argv[1]),b=read_step_shape(argv[2]);
         if (std::string_view(argv[3])=="--regions") return regions(a,b);
+        if (local_profile) {
+            const auto limit=std::stod(argv[4]);
+            if (!(limit>0 && std::isfinite(limit))) throw std::invalid_argument("invalid local depth limit");
+            return profile_regions(a,b,limit);
+        }
         if (std::string_view(argv[3])=="--profile-regions") return profile_regions(a,b);
         if (std::string_view(argv[3])=="--normal-chords") return normal_chords(a,b);
+        if (std::string_view(argv[3])=="--local-chords") return local_chords(a,b);
+        if (std::string_view(argv[3])=="--group-chords") return local_chords(a,b,true);
+        if (std::string_view(argv[3])=="--memberships") return memberships(a,b);
         if (std::string_view(argv[3])=="--entry") return entry(a,b);
         const double cap=std::stod(argv[3]),tol=1e-6;
         if (!(std::isfinite(cap) && cap>tol)) throw std::invalid_argument("invalid cap");

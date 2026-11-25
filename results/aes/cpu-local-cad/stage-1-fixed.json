@@ -1,0 +1,722 @@
+[
+ {
+  "seed": "cad-occt",
+  "step": 4,
+  "region": 0,
+  "local": {
+   "query_s": 0.0090257,
+   "face_tests": 2,
+   "depth_m": 1.7778042156295654e-05,
+   "offsets_m": [
+    1.006792453889554e-05,
+    7.710117617400114e-06
+   ],
+   "faces": [
+    142,
+    10
+   ],
+   "hint_matches": 0,
+   "normal_cos": 0.9999976667237133
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.2663483,
+   "depth_m": 1.7778042156295952e-05,
+   "offsets_m": [
+    1.006792453889536e-05,
+    7.710117617400593e-06
+   ]
+  },
+  "archived_m": 1.7778042156295952e-05
+ },
+ {
+  "seed": "cad-occt",
+  "step": 4,
+  "region": 1,
+  "local": {
+   "query_s": 0.0093939,
+   "face_tests": 2,
+   "depth_m": 1.7802153476164533e-05,
+   "offsets_m": [
+    9.24502915952368e-06,
+    8.557124316640855e-06
+   ],
+   "faces": [
+    4,
+    4
+   ],
+   "hint_matches": 0,
+   "normal_cos": 0.9999998669647546
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0615299,
+   "depth_m": 1.7802153476163476e-05,
+   "offsets_m": [
+    9.245029159523112e-06,
+    8.557124316640366e-06
+   ]
+  },
+  "archived_m": 1.7802153476163476e-05
+ },
+ {
+  "seed": "cad-occt",
+  "step": 5,
+  "region": 0,
+  "local": {
+   "query_s": 0.0013881,
+   "face_tests": 2,
+   "depth_m": 1.4340372167475514e-05,
+   "offsets_m": [
+    8.077911168005586e-06,
+    6.262460999469928e-06
+   ],
+   "faces": [
+    142,
+    10
+   ],
+   "hint_matches": 2,
+   "normal_cos": 0.9999990115708421
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.053806,
+   "depth_m": 1.4340372167476031e-05,
+   "offsets_m": [
+    8.077911168005944e-06,
+    6.262460999470088e-06
+   ]
+  },
+  "archived_m": 1.4340372167476031e-05
+ },
+ {
+  "seed": "cad-occt",
+  "step": 5,
+  "region": 1,
+  "local": {
+   "query_s": 0.0014887,
+   "face_tests": 2,
+   "depth_m": 1.435073567714068e-05,
+   "offsets_m": [
+    7.402617752095316e-06,
+    6.948117925045365e-06
+   ],
+   "faces": [
+    4,
+    4
+   ],
+   "hint_matches": 2,
+   "normal_cos": 0.9999999164292387
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.046878,
+   "depth_m": 1.4350735677140216e-05,
+   "offsets_m": [
+    7.402617752094058e-06,
+    6.948117925046157e-06
+   ]
+  },
+  "archived_m": 1.4350735677140216e-05
+ },
+ {
+  "seed": "cad-occt",
+  "step": 6,
+  "region": 0,
+  "local": {
+   "query_s": 0.0013603,
+   "face_tests": 2,
+   "depth_m": 1.025375811294503e-05,
+   "offsets_m": [
+    5.74340349463283e-06,
+    4.5103546183122e-06
+   ],
+   "faces": [
+    142,
+    10
+   ],
+   "hint_matches": 2,
+   "normal_cos": 0.9999996495941933
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.042886,
+   "depth_m": 1.0253758112944151e-05,
+   "offsets_m": [
+    5.743403494632941e-06,
+    4.51035461831121e-06
+   ]
+  },
+  "archived_m": 1.0253758112944151e-05
+ },
+ {
+  "seed": "cad-occt",
+  "step": 6,
+  "region": 1,
+  "local": {
+   "query_s": 0.001435,
+   "face_tests": 2,
+   "depth_m": 1.025741113754542e-05,
+   "offsets_m": [
+    5.2559711830877775e-06,
+    5.0014399544576426e-06
+   ],
+   "faces": [
+    4,
+    4
+   ],
+   "hint_matches": 2,
+   "normal_cos": 0.9999999578718001
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0376547,
+   "depth_m": 1.025741113754443e-05,
+   "offsets_m": [
+    5.255971183088567e-06,
+    5.001439954455862e-06
+   ]
+  },
+  "archived_m": 1.025741113754443e-05
+ },
+ {
+  "seed": "cad-occt",
+  "step": 7,
+  "region": 0,
+  "local": {
+   "query_s": 0.0018027,
+   "face_tests": 2,
+   "depth_m": 9.992943716051792e-06,
+   "offsets_m": [
+    5.564224964627765e-06,
+    4.428718751424028e-06
+   ],
+   "faces": [
+    142,
+    10
+   ],
+   "hint_matches": 2,
+   "normal_cos": 0.9999997562091251
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0417702,
+   "depth_m": 9.992943716049957e-06,
+   "offsets_m": [
+    5.564224964629006e-06,
+    4.428718751420951e-06
+   ]
+  },
+  "archived_m": 9.992943716049957e-06
+ },
+ {
+  "seed": "cad-occt",
+  "step": 7,
+  "region": 1,
+  "local": {
+   "query_s": 0.0026702,
+   "face_tests": 2,
+   "depth_m": 9.995413201613321e-06,
+   "offsets_m": [
+    5.087891066409998e-06,
+    4.907522135203323e-06
+   ],
+   "faces": [
+    4,
+    4
+   ],
+   "hint_matches": 2,
+   "normal_cos": 0.9999999597657507
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0387003,
+   "depth_m": 9.995413201611258e-06,
+   "offsets_m": [
+    5.087891066409977e-06,
+    4.90752213520128e-06
+   ]
+  },
+  "archived_m": 9.995413201611258e-06
+ },
+ {
+  "seed": "cad-occt",
+  "step": 25000,
+  "region": 0,
+  "local": {
+   "query_s": 0.0101334,
+   "face_tests": 2,
+   "depth_m": 8.608310568073428e-06,
+   "offsets_m": [
+    4.590865527091416e-06,
+    4.017445040982011e-06
+   ],
+   "faces": [
+    4,
+    148
+   ],
+   "hint_matches": 1,
+   "normal_cos": 0.9999999564584207
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0395778,
+   "depth_m": 8.608310568072564e-06,
+   "offsets_m": [
+    4.590865527090097e-06,
+    4.0174450409824665e-06
+   ]
+  },
+  "archived_m": 8.608310568072564e-06
+ },
+ {
+  "seed": "cad-occt",
+  "step": 46315,
+  "region": 0,
+  "local": {
+   "query_s": 0.0134118,
+   "face_tests": 2,
+   "depth_m": 8.967703315498411e-06,
+   "offsets_m": [
+    4.492634125663347e-06,
+    4.475069189835064e-06
+   ],
+   "faces": [
+    16,
+    136
+   ],
+   "hint_matches": 0,
+   "normal_cos": 0.9999999648513046
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0628779,
+   "depth_m": 8.967703315497003e-06,
+   "offsets_m": [
+    4.4926341256613904e-06,
+    4.475069189835613e-06
+   ]
+  },
+  "archived_m": 8.967703315497003e-06
+ },
+ {
+  "seed": "cad-occt",
+  "step": 46315,
+  "region": 1,
+  "local": {
+   "query_s": 0.0092762,
+   "face_tests": 2,
+   "depth_m": 8.966803872873204e-06,
+   "offsets_m": [
+    4.921570604303293e-06,
+    4.0452332685699115e-06
+   ],
+   "faces": [
+    10,
+    142
+   ],
+   "hint_matches": 0,
+   "normal_cos": 0.9999998943253129
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0513236,
+   "depth_m": 8.966803872873802e-06,
+   "offsets_m": [
+    4.921570604304362e-06,
+    4.04523326856944e-06
+   ]
+  },
+  "archived_m": 8.966803872873802e-06
+ },
+ {
+  "seed": "cad-occt",
+  "step": 50000,
+  "region": 0,
+  "local": {
+   "query_s": 0.0018622,
+   "face_tests": 2,
+   "depth_m": 8.599671021137586e-06,
+   "offsets_m": [
+    4.586513449543327e-06,
+    4.013157571594259e-06
+   ],
+   "faces": [
+    4,
+    4
+   ],
+   "hint_matches": 0,
+   "normal_cos": 0.999999956499522
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0407735,
+   "depth_m": 8.599671021138699e-06,
+   "offsets_m": [
+    4.58651344954385e-06,
+    4.013157571594849e-06
+   ]
+  },
+  "archived_m": 8.599671021138699e-06
+ },
+ {
+  "seed": "mesh-obb",
+  "step": 4,
+  "region": 0,
+  "local": {
+   "query_s": 0.0082871,
+   "face_tests": 2,
+   "depth_m": 1.7780448324170488e-05,
+   "offsets_m": [
+    8.462586334173969e-06,
+    9.31786198999652e-06
+   ],
+   "faces": [
+    4,
+    4
+   ],
+   "hint_matches": 0,
+   "normal_cos": 0.9999900090631532
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.1364563,
+   "depth_m": 1.7780448324170176e-05,
+   "offsets_m": [
+    8.462586334173372e-06,
+    9.317861989996804e-06
+   ]
+  },
+  "archived_m": 1.7780448324170176e-05
+ },
+ {
+  "seed": "mesh-obb",
+  "step": 4,
+  "region": 1,
+  "local": {
+   "query_s": 0.0079147,
+   "face_tests": 2,
+   "depth_m": 1.777292634037155e-05,
+   "offsets_m": [
+    8.5520808483411e-06,
+    9.220845492030448e-06
+   ],
+   "faces": [
+    142,
+    10
+   ],
+   "hint_matches": 0,
+   "normal_cos": 0.9999987648456662
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0773045,
+   "depth_m": 1.77729263403669e-05,
+   "offsets_m": [
+    8.552080848339232e-06,
+    9.22084549202767e-06
+   ]
+  },
+  "archived_m": 1.77729263403669e-05
+ },
+ {
+  "seed": "mesh-obb",
+  "step": 5,
+  "region": 0,
+  "local": {
+   "query_s": 0.0014239,
+   "face_tests": 2,
+   "depth_m": 1.4055633012446607e-05,
+   "offsets_m": [
+    6.91893447837295e-06,
+    7.136698534073657e-06
+   ],
+   "faces": [
+    4,
+    4
+   ],
+   "hint_matches": 2,
+   "normal_cos": 0.9999891915374315
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0306935,
+   "depth_m": 1.4055633012444837e-05,
+   "offsets_m": [
+    6.918934478372559e-06,
+    7.136698534072277e-06
+   ]
+  },
+  "archived_m": 1.4055633012444837e-05
+ },
+ {
+  "seed": "mesh-obb",
+  "step": 5,
+  "region": 1,
+  "local": {
+   "query_s": 0.0010608,
+   "face_tests": 2,
+   "depth_m": 1.4263576567438896e-05,
+   "offsets_m": [
+    6.8693793640589754e-06,
+    7.394197203379919e-06
+   ],
+   "faces": [
+    142,
+    10
+   ],
+   "hint_matches": 2,
+   "normal_cos": 0.9999773866289156
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.042568,
+   "depth_m": 1.4263576567438835e-05,
+   "offsets_m": [
+    6.8693793640593354e-06,
+    7.394197203379499e-06
+   ]
+  },
+  "archived_m": 1.4263576567438835e-05
+ },
+ {
+  "seed": "mesh-obb",
+  "step": 6,
+  "region": 0,
+  "local": {
+   "query_s": 0.0011522,
+   "face_tests": 2,
+   "depth_m": 9.842421706947301e-06,
+   "offsets_m": [
+    4.898613363059552e-06,
+    4.9438083438877484e-06
+   ],
+   "faces": [
+    142,
+    10
+   ],
+   "hint_matches": 2,
+   "normal_cos": 0.9999996745467271
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0353399,
+   "depth_m": 9.842421706945607e-06,
+   "offsets_m": [
+    4.8986133630583905e-06,
+    4.943808343887216e-06
+   ]
+  },
+  "archived_m": 9.842421706945607e-06
+ },
+ {
+  "seed": "mesh-obb",
+  "step": 6,
+  "region": 1,
+  "local": {
+   "query_s": 0.0012857,
+   "face_tests": 2,
+   "depth_m": 1.0174555874964636e-05,
+   "offsets_m": [
+    4.888594244885928e-06,
+    5.285961630078708e-06
+   ],
+   "faces": [
+    4,
+    4
+   ],
+   "hint_matches": 2,
+   "normal_cos": 0.9999811018210238
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0319266,
+   "depth_m": 1.0174555874964326e-05,
+   "offsets_m": [
+    4.888594244885046e-06,
+    5.2859616300792796e-06
+   ]
+  },
+  "archived_m": 1.0174555874964326e-05
+ },
+ {
+  "seed": "mesh-obb",
+  "step": 7,
+  "region": 0,
+  "local": {
+   "query_s": 0.001207,
+   "face_tests": 2,
+   "depth_m": 9.995447568419606e-06,
+   "offsets_m": [
+    4.521442133240658e-06,
+    5.4740054351789475e-06
+   ],
+   "faces": [
+    4,
+    4
+   ],
+   "hint_matches": 2,
+   "normal_cos": 0.9999960899248943
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0326131,
+   "depth_m": 9.99544756841689e-06,
+   "offsets_m": [
+    4.521442133238321e-06,
+    5.47400543517857e-06
+   ]
+  },
+  "archived_m": 9.99544756841689e-06
+ },
+ {
+  "seed": "mesh-obb",
+  "step": 7,
+  "region": 1,
+  "local": {
+   "query_s": 0.0011381,
+   "face_tests": 2,
+   "depth_m": 9.717814168413432e-06,
+   "offsets_m": [
+    4.5738993966785e-06,
+    5.143914771734933e-06
+   ],
+   "faces": [
+    142,
+    10
+   ],
+   "hint_matches": 2,
+   "normal_cos": 0.9999985012771545
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0344484,
+   "depth_m": 9.717814168411106e-06,
+   "offsets_m": [
+    4.573899396678103e-06,
+    5.143914771733003e-06
+   ]
+  },
+  "archived_m": 9.717814168411106e-06
+ },
+ {
+  "seed": "mesh-obb",
+  "step": 25000,
+  "region": 0,
+  "local": {
+   "query_s": 0.0051327,
+   "face_tests": 2,
+   "depth_m": 8.590633212360717e-06,
+   "offsets_m": [
+    3.912697420556506e-06,
+    4.677935791804212e-06
+   ],
+   "faces": [
+    4,
+    148
+   ],
+   "hint_matches": 1,
+   "normal_cos": 0.9999919164791686
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0328677,
+   "depth_m": 8.590633212360619e-06,
+   "offsets_m": [
+    3.912697420555335e-06,
+    4.677935791805282e-06
+   ]
+  },
+  "archived_m": 8.59063321235845e-06
+ },
+ {
+  "seed": "mesh-obb",
+  "step": 46315,
+  "region": 0,
+  "local": {
+   "query_s": 0.0072408,
+   "face_tests": 2,
+   "depth_m": 8.62805030717498e-06,
+   "offsets_m": [
+    4.286122348767831e-06,
+    4.341927958407148e-06
+   ],
+   "faces": [
+    10,
+    142
+   ],
+   "hint_matches": 0,
+   "normal_cos": 0.9999971248019836
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0431297,
+   "depth_m": 8.628050307175127e-06,
+   "offsets_m": [
+    4.286122348768711e-06,
+    4.3419279584064164e-06
+   ]
+  },
+  "archived_m": 8.628050307175127e-06
+ },
+ {
+  "seed": "mesh-obb",
+  "step": 46315,
+  "region": 1,
+  "local": {
+   "query_s": 0.0077369,
+   "face_tests": 2,
+   "depth_m": 8.520365224070989e-06,
+   "offsets_m": [
+    3.916160014736212e-06,
+    4.604205209334777e-06
+   ],
+   "faces": [
+    16,
+    136
+   ],
+   "hint_matches": 0,
+   "normal_cos": 0.9999981049078948
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0514162,
+   "depth_m": 8.520365224077892e-06,
+   "offsets_m": [
+    3.9161600147385194e-06,
+    4.604205209339373e-06
+   ]
+  },
+  "archived_m": 8.520365224077892e-06
+ },
+ {
+  "seed": "mesh-obb",
+  "step": 50000,
+  "region": 0,
+  "local": {
+   "query_s": 0.0016032,
+   "face_tests": 2,
+   "depth_m": 8.577976770309871e-06,
+   "offsets_m": [
+    3.906364108288928e-06,
+    4.671612662020944e-06
+   ],
+   "faces": [
+    4,
+    4
+   ],
+   "hint_matches": 0,
+   "normal_cos": 0.9999914199361426
+  },
+  "whole": {
+   "status": "resolved",
+   "query_s": 0.0343096,
+   "depth_m": 8.577976770310423e-06,
+   "offsets_m": [
+    3.906364108289082e-06,
+    4.671612662021341e-06
+   ]
+  },
+  "archived_m": 8.577976770310423e-06
+ }
+]
