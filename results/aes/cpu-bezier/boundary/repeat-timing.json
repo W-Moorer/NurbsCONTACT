@@ -1,0 +1,110 @@
+{
+  "mesh-obb": {
+    "response_sha256": "422068b9d21aeb562bb8203c6313e469c245d4cb8f42d939d08186fc1d90595f",
+    "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+    "early_check": {
+      "executable_sha256": "0d5ef684f2f6940a0c44e395a4a6849e07c6ee7af89949ac79ee5ef744336779",
+      "integration_s": 457.9492001,
+      "setup_s": 4.1030626,
+      "process_s": 476.3308757999912,
+      "accepted": 50025,
+      "subdivisions": 25,
+      "force_evaluations": 151547,
+      "cad_queries": 0,
+      "cumulative_pair_worker_s": {
+        "broad": 0.0,
+        "search": 0.0,
+        "group": 0.0,
+        "area": 0.0
+      }
+    },
+    "repeated_cycle": {
+      "executable_sha256": "0d5ef684f2f6940a0c44e395a4a6849e07c6ee7af89949ac79ee5ef744336779",
+      "integration_s": 654.5828283,
+      "setup_s": 7.3206268,
+      "process_s": 683.1787721999863,
+      "accepted": 50025,
+      "subdivisions": 25,
+      "force_evaluations": 151547,
+      "cad_queries": 0,
+      "cumulative_pair_worker_s": {
+        "broad": 0.0,
+        "search": 0.0,
+        "group": 0.0,
+        "area": 0.0
+      }
+    }
+  },
+  "cad-compiled": {
+    "response_sha256": "53e8c424b4b8cdd13bc3221ef73f0ebe1d87278f1a68290462ca1a91b22e50dd",
+    "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+    "early_check": {
+      "executable_sha256": "b6d1985ca235e86ac963829410aa1d035c4fb8e02ed6da957cecae6601cea3c2",
+      "integration_s": 529.2706549,
+      "setup_s": 6.2548204,
+      "process_s": 556.2992493999773,
+      "accepted": 50044,
+      "subdivisions": 44,
+      "force_evaluations": 185691,
+      "cad_queries": 101648,
+      "cumulative_pair_worker_s": {
+        "broad": 158.8130603,
+        "search": 119.07009529999979,
+        "group": 21.181365900001513,
+        "area": 342.24343720000695
+      }
+    },
+    "repeated_cycle": {
+      "executable_sha256": "09880b158587292e1436e71172b72e15c9d00b155f6ba43b7c7724f3f669766b",
+      "integration_s": 592.8987983,
+      "setup_s": 5.1216321,
+      "process_s": 616.5257722999959,
+      "accepted": 50044,
+      "subdivisions": 44,
+      "force_evaluations": 185691,
+      "cad_queries": 101648,
+      "cumulative_pair_worker_s": {
+        "broad": 172.3768503999991,
+        "search": 135.15161369999808,
+        "group": 24.04478699999932,
+        "area": 385.1712058000023
+      }
+    }
+  },
+  "cad-boundary": {
+    "response_sha256": "6650d23e95668ceb83889edb3c2731f9a825de5d2f2ee67819f5c2326b66e92a",
+    "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+    "early_check": {
+      "executable_sha256": "f3d5401fdd01cac328958e5a1fb7e24e17e6ae760e523128d9be0ccdf6f956bb",
+      "integration_s": 934.3622947,
+      "setup_s": 21.0470153,
+      "process_s": 964.3668875000149,
+      "accepted": 50080,
+      "subdivisions": 80,
+      "force_evaluations": 188576,
+      "cad_queries": 102754,
+      "cumulative_pair_worker_s": {
+        "broad": 785.9441757000008,
+        "search": 109.78260619999882,
+        "group": 14.752417799999984,
+        "area": 337.4473146999984
+      }
+    },
+    "repeated_cycle": {
+      "executable_sha256": "09880b158587292e1436e71172b72e15c9d00b155f6ba43b7c7724f3f669766b",
+      "integration_s": 1656.3393433,
+      "setup_s": 39.2955567,
+      "process_s": 1714.2412141999812,
+      "accepted": 50080,
+      "subdivisions": 80,
+      "force_evaluations": 188576,
+      "cad_queries": 102754,
+      "cumulative_pair_worker_s": {
+        "broad": 1399.243364399992,
+        "search": 194.61943539999996,
+        "group": 26.4412882999993,
+        "area": 596.5189992000122
+      }
+    }
+  }
+}

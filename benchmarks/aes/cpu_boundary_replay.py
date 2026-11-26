@@ -9,7 +9,7 @@ from cpu_backend_run import digest
 from cpu_cad_pressure_report import wrench
 
 
-def replay(config, exe, assets, method, reverse=False, force_n=10.0, moment_nm=0.5):
+def replay(config, exe, assets, method, reverse=False, force_n=10.0, moment_nm=0.5, cold=False):
     reference = method.startswith("step")
     mesh = method == "mesh-obb"
     suffix = ".msh" if mesh else ".step" if reference else ".ncpart"
@@ -45,11 +45,13 @@ def replay(config, exe, assets, method, reverse=False, force_n=10.0, moment_nm=0
         records = list(zip(stage["steps"], stage["poses"], strict=True))
         if reverse:
             records.reverse()
-        payload = "".join(" ".join(format(x, ".17g") for x in pose) + "\n" for _, pose in records)
-        proc = subprocess.run([exe, *args], input=payload, text=True, capture_output=True, timeout=1800)
-        if proc.returncode:
-            raise RuntimeError(proc.stderr)
-        output = [json.loads(line) for line in proc.stdout.splitlines()]
+        lines = [" ".join(format(x, ".17g") for x in pose) + "\n" for _, pose in records]
+        output = []
+        for payload in lines if cold else ["".join(lines)]:
+            proc = subprocess.run([exe, *args], input=payload, text=True, capture_output=True, timeout=1800)
+            if proc.returncode:
+                raise RuntimeError(proc.stderr)
+            output.extend(json.loads(line) for line in proc.stdout.splitlines())
         for (step, pose), result in zip(records, output, strict=True):
             regions = result["patches" if reference else "regions"]
             resolved = result.get("resolved", True)
@@ -68,6 +70,7 @@ def replay(config, exe, assets, method, reverse=False, force_n=10.0, moment_nm=0
     return dict(
         method=method,
         reverse_sequence=reverse,
+        cold_start_per_pose=cold,
         executable_sha256=digest(exe),
         assets=fingerprints,
         quadrature_tolerances=[force_n, moment_nm] if method == "adaptive" else None,
@@ -86,6 +89,7 @@ if __name__ == "__main__":
     )
     p.add_argument("out", type=Path)
     p.add_argument("--reverse", action="store_true", help="Process the same poses in reverse order")
+    p.add_argument("--cold", action="store_true", help="Start a fresh geometry process for each pose")
     p.add_argument("--force-tol-n", type=float, default=10.0)
     p.add_argument("--moment-tol-nm", type=float, default=0.5)
     a = p.parse_args()
@@ -97,5 +101,6 @@ if __name__ == "__main__":
         a.reverse,
         a.force_tol_n,
         a.moment_tol_nm,
+        a.cold,
     )
     a.out.write_text(json.dumps(data, indent=1, allow_nan=False) + "\n")

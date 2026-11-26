@@ -1,0 +1,16 @@
+Internal ctest changing into directory: G:/NurbsCONTACT/build/cpu-swept
+Test project G:/NurbsCONTACT/build/cpu-swept
+    Start  2: cpu_mesh_intersections
+1/5 Test  #2: cpu_mesh_intersections ...........   Passed   12.53 sec
+    Start  7: cad_solid_contact
+2/5 Test  #7: cad_solid_contact ................   Passed    5.47 sec
+    Start  8: chen_2026_step_events
+3/5 Test  #8: chen_2026_step_events ............   Passed    2.38 sec
+    Start  9: chen_step_events
+4/5 Test  #9: chen_step_events .................   Passed    7.11 sec
+    Start 10: step_round_trip
+5/5 Test #10: step_round_trip ..................   Passed    1.93 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =  29.64 sec

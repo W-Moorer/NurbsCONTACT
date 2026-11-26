@@ -1,0 +1,114 @@
+{
+  "cad-boundary": [
+    {
+      "stage": 1,
+      "step": 5077,
+      "warm_count": 2,
+      "cold_count": 2,
+      "force_delta_N": 0.0,
+      "moment_delta_Nm": 0.0,
+      "shaft_delta_Nm": 0.0
+    },
+    {
+      "stage": 2,
+      "step": 13,
+      "warm_count": 3,
+      "cold_count": 3,
+      "force_delta_N": 0.0,
+      "moment_delta_Nm": 0.0,
+      "shaft_delta_Nm": 0.0
+    },
+    {
+      "stage": 2,
+      "step": 16,
+      "warm_count": 4,
+      "cold_count": 4,
+      "force_delta_N": 8.492947039433604e-11,
+      "moment_delta_Nm": 5.939432848454425e-12,
+      "shaft_delta_Nm": -5.286437954055145e-12
+    },
+    {
+      "stage": 2,
+      "step": 2741,
+      "warm_count": 3,
+      "cold_count": 3,
+      "force_delta_N": 0.0,
+      "moment_delta_Nm": 0.0,
+      "shaft_delta_Nm": 0.0
+    },
+    {
+      "stage": 2,
+      "step": 9317,
+      "warm_count": 3,
+      "cold_count": 3,
+      "force_delta_N": 0.0,
+      "moment_delta_Nm": 0.0,
+      "shaft_delta_Nm": 0.0
+    },
+    {
+      "stage": 2,
+      "step": 14653,
+      "warm_count": 3,
+      "cold_count": 3,
+      "force_delta_N": 0.0,
+      "moment_delta_Nm": 0.0,
+      "shaft_delta_Nm": 0.0
+    }
+  ],
+  "fixed96": [
+    {
+      "stage": 1,
+      "step": 5077,
+      "warm_count": 2,
+      "cold_count": 2,
+      "force_delta_N": 0.0,
+      "moment_delta_Nm": 0.0,
+      "shaft_delta_Nm": 0.0
+    },
+    {
+      "stage": 2,
+      "step": 13,
+      "warm_count": 3,
+      "cold_count": 3,
+      "force_delta_N": 0.0,
+      "moment_delta_Nm": 0.0,
+      "shaft_delta_Nm": 0.0
+    },
+    {
+      "stage": 2,
+      "step": 16,
+      "warm_count": 4,
+      "cold_count": 4,
+      "force_delta_N": 2.7406376347621575e-10,
+      "moment_delta_Nm": 1.9150312138342783e-11,
+      "shaft_delta_Nm": -1.7053025658242404e-11
+    },
+    {
+      "stage": 2,
+      "step": 2741,
+      "warm_count": 3,
+      "cold_count": 3,
+      "force_delta_N": 0.0,
+      "moment_delta_Nm": 0.0,
+      "shaft_delta_Nm": 0.0
+    },
+    {
+      "stage": 2,
+      "step": 9317,
+      "warm_count": 3,
+      "cold_count": 3,
+      "force_delta_N": 0.0,
+      "moment_delta_Nm": 0.0,
+      "shaft_delta_Nm": 0.0
+    },
+    {
+      "stage": 2,
+      "step": 14653,
+      "warm_count": 3,
+      "cold_count": 3,
+      "force_delta_N": 0.0,
+      "moment_delta_Nm": 0.0,
+      "shaft_delta_Nm": 0.0
+    }
+  ]
+}
