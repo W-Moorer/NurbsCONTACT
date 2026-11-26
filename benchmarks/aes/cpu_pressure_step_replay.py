@@ -14,7 +14,8 @@ from cpu_cad_pressure_report import smooth_loads
 from cpu_cad_pruning import verified_dynamics
 
 
-def replay(scene, previous, current, executable, output, current_method="cad-bezier",window_steps=3):
+def replay(scene, previous, current, executable, output, current_method="cad-bezier",window_steps=3,
+           previous_method="cad-bezier",steps=None,final_width_only=False):
     if window_steps<1:
         raise ValueError("Replay window must include at least the decision step")
     bodies,pairs=read_model(scene)
@@ -23,12 +24,16 @@ def replay(scene, previous, current, executable, output, current_method="cad-bez
     sources={}
     progress={}
     for name,path in (("previous",previous),("current",current)):
-        verified_dynamics(scene,path,current_method if name=="current" else "cad-bezier")
+        verified_dynamics(scene,path,current_method if name=="current" else previous_method)
         sources[name]=np.genfromtxt(path/"response.csv",delimiter=",",names=True,usecols=fields)
         progress[name]=np.genfromtxt(path/"progress.csv",delimiter=",",names=True,usecols=("cad_patch_batches",))
     def batches(name):
         return np.diff(progress[name]["cad_patch_batches"],prepend=0)
     events=np.flatnonzero(batches("previous")!=batches("current")).tolist()
+    if steps:
+        if set(steps)-set(events):
+            raise ValueError("Selected steps must have different HHT decisions")
+        events=sorted(set(steps))
     result=[]
     if not len(events):
         output.write_text(json.dumps(dict(executable_sha256=digest(executable),rows=[]),indent=2)+"\n")
@@ -36,7 +41,7 @@ def replay(scene, previous, current, executable, output, current_method="cad-bez
     with tempfile.TemporaryDirectory() as tmp:
         path=Path(tmp)
         # Include the output frames following the decision to check a delayed torque peak.
-        for width in range(1,window_steps+1):
+        for width in ((window_steps,) if final_width_only else range(1,window_steps+1)):
             records,labels=[],[]
             for name,trace in sources.items():
                 for step in events:
@@ -73,12 +78,17 @@ def replay(scene, previous, current, executable, output, current_method="cad-bez
                     rejected_trials=int(row["rejected_trials"]),
                     replay_torque_Nm=sign*(float(row["force2"])-smooth[0,2]),
                     original_torque_Nm=sign*(record["generalized_force2"]-smooth[1,2])))
-    output.write_text(json.dumps(dict(executable_sha256=digest(executable),rows=result),indent=2)+"\n")
+    output.write_text(json.dumps(dict(executable_sha256=digest(executable),previous_method=previous_method,
+                    current_method=current_method,previous_response_sha256=digest(previous/"response.csv"),
+                    current_response_sha256=digest(current/"response.csv"),rows=result),indent=2)+"\n")
 
 
 if __name__=="__main__":
     p=argparse.ArgumentParser(description=__doc__)
     for name in ("scene","previous","current","executable","output"): p.add_argument(name,type=Path)
-    p.add_argument("--current-method",choices=("cad-bezier","cad-bezier-bounds"),default="cad-bezier")
+    p.add_argument("--current-method",choices=("cad-bezier","cad-bezier-bounds","cad-bezier-relocate"),default="cad-bezier")
+    p.add_argument("--previous-method",choices=("cad-bezier","cad-bezier-bounds"),default="cad-bezier")
     p.add_argument("--window-steps",type=int,default=3)
+    p.add_argument("--steps",type=int,nargs="+",help="Subset of differing integration decisions")
+    p.add_argument("--final-width-only",action="store_true",help="Replay only the requested window length")
     replay(**vars(p.parse_args()))

@@ -1,0 +1,176 @@
+{
+  "probes_sha256": [
+    "134dc3a4a56ffd2a89f423208fc88cc308bec6d649846f5cefc089636a16ab0d",
+    "134dc3a4a56ffd2a89f423208fc88cc308bec6d649846f5cefc089636a16ab0d"
+  ],
+  "trajectory_sha256": "33dfb97a3bdf7786746f0c706ae6392071a073a50c2666ec521a8255ca35d005",
+  "stages": [
+    {
+      "stage": 1,
+      "checked": 800,
+      "timed": 640,
+      "face_group_changes": 163,
+      "compared_torques": 800,
+      "max_torque_delta_Nm": 2.159794121325831e-09,
+      "changed_states": [],
+      "changed_geometry": [],
+      "max_component_errors": {
+        "point_m": 1.1740637232535989e-13,
+        "unit_normal": 0.0,
+        "arm_m": 1.1022896121483864e-13,
+        "depth_m": 4.803489962561247e-16
+      },
+      "max_wrench_errors": {
+        "total_normal_N": 3.8427970139309764e-08,
+        "resultant_N": 3.8427839222613517e-08,
+        "moment_Nm": 2.159794121325831e-09
+      },
+      "previous": {
+        "area_mean_ms": 3.4915789062499996,
+        "area_median_ms": 2.27965,
+        "full_query_mean_ms": 7.58315609375,
+        "ray_counts": [
+          485,
+          7050,
+          4119,
+          12931
+        ],
+        "area_ray_counts": [
+          408,
+          4669,
+          3515,
+          9348
+        ],
+        "depth_bounds": {
+          "interval_tests": 29760,
+          "excluded_sites": 84,
+          "root_refinements": 39372,
+          "accepted_depths": 39372,
+          "empty_blocks": 13,
+          "interior_blocks": 6508,
+          "site_box_tests": 275758
+        },
+        "full_blocks": 7363,
+        "partial_blocks": 0,
+        "shared_columns": 0
+      },
+      "current": {
+        "area_mean_ms": 2.7591706250000003,
+        "area_median_ms": 2.4844,
+        "full_query_mean_ms": 7.2281284375,
+        "ray_counts": [
+          485,
+          7754,
+          3415,
+          13624
+        ],
+        "area_ray_counts": [
+          408,
+          5342,
+          2842,
+          9931
+        ],
+        "depth_bounds": {
+          "interval_tests": 29760,
+          "excluded_sites": 84,
+          "root_refinements": 39372,
+          "accepted_depths": 39372,
+          "empty_blocks": 13,
+          "interior_blocks": 6508,
+          "site_box_tests": 275758
+        },
+        "full_blocks": 7363,
+        "partial_blocks": 0,
+        "shared_columns": 0
+      }
+    },
+    {
+      "stage": 2,
+      "checked": 800,
+      "timed": 640,
+      "face_group_changes": 142,
+      "compared_torques": 800,
+      "max_torque_delta_Nm": 4.8992347956300364e-08,
+      "changed_states": [],
+      "changed_geometry": [],
+      "max_component_errors": {
+        "point_m": 1.5565951305696046e-12,
+        "unit_normal": 0.0,
+        "arm_m": 1.5376293988067502e-12,
+        "depth_m": 1.513079517635827e-14
+      },
+      "max_wrench_errors": {
+        "total_normal_N": 8.072584023466334e-07,
+        "resultant_N": 8.072579791922621e-07,
+        "moment_Nm": 5.2374758944127804e-08
+      },
+      "current": {
+        "area_mean_ms": 3.4857321874999996,
+        "area_median_ms": 2.8513,
+        "full_query_mean_ms": 11.86191359375,
+        "ray_counts": [
+          185908,
+          49121,
+          3871,
+          288081
+        ],
+        "area_ray_counts": [
+          135166,
+          40905,
+          0,
+          146652
+        ],
+        "depth_bounds": {
+          "interval_tests": 161217,
+          "excluded_sites": 415543,
+          "root_refinements": 21509,
+          "accepted_depths": 21509,
+          "empty_blocks": 43607,
+          "interior_blocks": 27,
+          "site_box_tests": 10314456
+        },
+        "full_blocks": 652,
+        "partial_blocks": 24730,
+        "shared_columns": 0
+      },
+      "previous": {
+        "area_mean_ms": 12.05975015625,
+        "area_median_ms": 11.312550000000002,
+        "full_query_mean_ms": 20.75781171875,
+        "ray_counts": [
+          184418,
+          35496,
+          18986,
+          268819
+        ],
+        "area_ray_counts": [
+          134049,
+          28882,
+          13140,
+          130731
+        ],
+        "depth_bounds": {
+          "interval_tests": 161217,
+          "excluded_sites": 415543,
+          "root_refinements": 21509,
+          "accepted_depths": 21509,
+          "empty_blocks": 43607,
+          "interior_blocks": 27,
+          "site_box_tests": 10314456
+        },
+        "full_blocks": 652,
+        "partial_blocks": 24730,
+        "shared_columns": 0
+      }
+    }
+  ],
+  "current_flags": [
+    "--depth-bounds",
+    "--relocate"
+  ],
+  "reverse_order": false,
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "previous_flags": [
+    "--depth-bounds"
+  ]
+}

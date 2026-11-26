@@ -1,0 +1,113 @@
+{
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "trajectory_sha256": "33dfb97a3bdf7786746f0c706ae6392071a073a50c2666ec521a8255ca35d005",
+  "executable_sha256": "c01e29cb9628b193e9fc5354e021be954853ff2e249fd9e8573d0ae35222b47f",
+  "stages": [
+    {
+      "stage": 1,
+      "poses": 800,
+      "native_calls": 3415,
+      "reasons": [
+        {
+          "site": "first_exit",
+          "reason": "root_interval_touches_edge",
+          "calls": 446,
+          "finished": 446,
+          "with_intersection": 446,
+          "perform_s": 0.1990945
+        },
+        {
+          "site": "first_exit",
+          "reason": "newton_leaves_span",
+          "calls": 2938,
+          "finished": 2938,
+          "with_intersection": 2938,
+          "perform_s": 1.0608045000000002
+        },
+        {
+          "site": "interior_segment",
+          "reason": "contraction_bound",
+          "calls": 31,
+          "finished": 31,
+          "with_intersection": 0,
+          "perform_s": 0.0358379
+        }
+      ],
+      "same_ray_cohort": [
+        {
+          "site": "first_exit",
+          "calls": 0,
+          "resolved": 0,
+          "discordant": 0,
+          "local_s": 0.0,
+          "avoided_native_s": 0.0
+        },
+        {
+          "site": "interior_segment",
+          "calls": 0,
+          "resolved": 0,
+          "discordant": 0,
+          "local_s": 0.0,
+          "avoided_native_s": 0.0
+        }
+      ]
+    },
+    {
+      "stage": 2,
+      "poses": 800,
+      "native_calls": 3871,
+      "reasons": [
+        {
+          "site": "first_exit",
+          "reason": "contraction_bound",
+          "calls": 517,
+          "finished": 517,
+          "with_intersection": 517,
+          "perform_s": 0.2614473
+        },
+        {
+          "site": "first_exit",
+          "reason": "root_interval_touches_edge",
+          "calls": 88,
+          "finished": 88,
+          "with_intersection": 88,
+          "perform_s": 0.0495857
+        },
+        {
+          "site": "first_exit",
+          "reason": "newton_leaves_span",
+          "calls": 59,
+          "finished": 59,
+          "with_intersection": 59,
+          "perform_s": 0.034846300000000004
+        },
+        {
+          "site": "interior_segment",
+          "reason": "contraction_bound",
+          "calls": 3207,
+          "finished": 3207,
+          "with_intersection": 0,
+          "perform_s": 2.5095080000000003
+        }
+      ],
+      "same_ray_cohort": [
+        {
+          "site": "first_exit",
+          "calls": 0,
+          "resolved": 0,
+          "discordant": 0,
+          "local_s": 0.0,
+          "avoided_native_s": 0.0
+        },
+        {
+          "site": "interior_segment",
+          "calls": 0,
+          "resolved": 0,
+          "discordant": 0,
+          "local_s": 0.0,
+          "avoided_native_s": 0.0
+        }
+      ]
+    }
+  ]
+}

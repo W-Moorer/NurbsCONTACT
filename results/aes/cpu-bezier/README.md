@@ -96,3 +96,5 @@ python benchmarks/aes/cpu_bezier_diagnosis.py $scene $bin build/bezier-runs-new
 ```
 
 可在运行前通过 `nc_cad_probes --prepare-parts part1.step part2.step ... --bezier` 为各零件建立持久表。回放计数依次为 Bézier 排除的逐面查询、定位在面内部的命中、调用 OCCT 的次数、通过包围盒初筛并访问的 Bézier 块数。最后一项统计访问次数，同一个块可能被多个查询访问。有限射线的误差界使用双精度数值估计。需要处理的切边、多根或病态情况交回原生几何内核。
+
+[曲面块初值越界时的 CPU 局部重定位](uv-relocation/README.md)记录了对原二级 15,017 次回退的逐射线核对、三种方法各自的五秒墙钟，以及力矩峰值处的等子步复算。

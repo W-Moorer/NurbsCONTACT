@@ -1,0 +1,40 @@
+{
+  "cad-bezier-bounds": {
+    "process_s": 911.2451218000206,
+    "ordinary_steps": 49983,
+    "ordinary_integration_s": 760.89901,
+    "fallback_steps": 17,
+    "fallback_step_wall_s": 91.81665340000008,
+    "ordinary_pair_seconds": {
+      "broad": 77.43395409999928,
+      "search": 181.56254079999763,
+      "group": 205.5557742000084,
+      "area": 443.42458589999666
+    },
+    "ordinary_pair_pct": {
+      "broad": 8.528185897425669,
+      "search": 19.996384247040883,
+      "group": 22.638878190348578,
+      "area": 48.83655166518487
+    }
+  },
+  "cad-bezier-relocate": {
+    "process_s": 644.0690279999981,
+    "ordinary_steps": 49983,
+    "ordinary_integration_s": 483.79196880000006,
+    "fallback_steps": 17,
+    "fallback_step_wall_s": 95.64944279999999,
+    "ordinary_pair_seconds": {
+      "broad": 81.05094559999897,
+      "search": 157.90520539999855,
+      "group": 218.32070140000604,
+      "area": 160.5797758000012
+    },
+    "ordinary_pair_pct": {
+      "broad": 13.11808304721499,
+      "search": 25.55693314483364,
+      "group": 35.335171856299006,
+      "area": 25.989811951652374
+    }
+  }
+}

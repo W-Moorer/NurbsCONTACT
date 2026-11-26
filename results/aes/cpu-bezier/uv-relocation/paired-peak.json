@@ -1,0 +1,119 @@
+{
+  "executable_sha256": "3b4399e7dae4710cadd0c7f75595988cb8faf8b8c5ca688299217f6eb8ca68fc",
+  "previous_method": "cad-bezier-bounds",
+  "current_method": "cad-bezier-relocate",
+  "previous_response_sha256": "3551286813959df34872c6f629a91fa8107e84c4e4fe1a9a964d6cf3d906488d",
+  "current_response_sha256": "212f74dc551f5a1f2e31150d6eabe477ad054c547b79eba0d328dc63542165e4",
+  "rows": [
+    {
+      "starting_trace": "previous",
+      "first_step": 36010,
+      "span_steps": 12,
+      "refinement": 1,
+      "forced_substeps": 12,
+      "additional_splits": 1,
+      "rejected_trials": 20,
+      "replay_torque_Nm": 172.42533363590917,
+      "original_torque_Nm": 172.42533360304589
+    },
+    {
+      "starting_trace": "previous",
+      "first_step": 36010,
+      "span_steps": 12,
+      "refinement": 2,
+      "forced_substeps": 24,
+      "additional_splits": 0,
+      "rejected_trials": 1,
+      "replay_torque_Nm": 184.442095770894,
+      "original_torque_Nm": 172.42533360304589
+    },
+    {
+      "starting_trace": "previous",
+      "first_step": 36010,
+      "span_steps": 12,
+      "refinement": 4,
+      "forced_substeps": 48,
+      "additional_splits": 0,
+      "rejected_trials": 1,
+      "replay_torque_Nm": 200.18934948118138,
+      "original_torque_Nm": 172.42533360304589
+    },
+    {
+      "starting_trace": "previous",
+      "first_step": 36010,
+      "span_steps": 12,
+      "refinement": 8,
+      "forced_substeps": 96,
+      "additional_splits": 0,
+      "rejected_trials": 0,
+      "replay_torque_Nm": 208.58956228643618,
+      "original_torque_Nm": 172.42533360304589
+    },
+    {
+      "starting_trace": "previous",
+      "first_step": 36010,
+      "span_steps": 12,
+      "refinement": 16,
+      "forced_substeps": 192,
+      "additional_splits": 0,
+      "rejected_trials": 2,
+      "replay_torque_Nm": 212.25967817220376,
+      "original_torque_Nm": 172.42533360304589
+    },
+    {
+      "starting_trace": "current",
+      "first_step": 36010,
+      "span_steps": 12,
+      "refinement": 1,
+      "forced_substeps": 12,
+      "additional_splits": 0,
+      "rejected_trials": 1,
+      "replay_torque_Nm": 169.84672759691404,
+      "original_torque_Nm": 169.84672759691404
+    },
+    {
+      "starting_trace": "current",
+      "first_step": 36010,
+      "span_steps": 12,
+      "refinement": 2,
+      "forced_substeps": 24,
+      "additional_splits": 0,
+      "rejected_trials": 0,
+      "replay_torque_Nm": 184.44209572398623,
+      "original_torque_Nm": 169.84672759691404
+    },
+    {
+      "starting_trace": "current",
+      "first_step": 36010,
+      "span_steps": 12,
+      "refinement": 4,
+      "forced_substeps": 48,
+      "additional_splits": 0,
+      "rejected_trials": 0,
+      "replay_torque_Nm": 200.18934938212456,
+      "original_torque_Nm": 169.84672759691404
+    },
+    {
+      "starting_trace": "current",
+      "first_step": 36010,
+      "span_steps": 12,
+      "refinement": 8,
+      "forced_substeps": 96,
+      "additional_splits": 0,
+      "rejected_trials": 0,
+      "replay_torque_Nm": 208.58956231995094,
+      "original_torque_Nm": 169.84672759691404
+    },
+    {
+      "starting_trace": "current",
+      "first_step": 36010,
+      "span_steps": 12,
+      "refinement": 16,
+      "forced_substeps": 192,
+      "additional_splits": 0,
+      "rejected_trials": 0,
+      "replay_torque_Nm": 212.25967794228154,
+      "original_torque_Nm": 169.84672759691404
+    }
+  ]
+}
