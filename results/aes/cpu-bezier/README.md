@@ -1,5 +1,7 @@
 # CPU 减速器的 Bézier 曲面接触对照
 
+[独立 CPU CAD 后端的五秒验收](standalone/README.md)包含可直接运行的编译模型、与原 CAD 和网格的全程响应，以及极窄承载区的整实体核对。
+
 [预处理清单与实际调用栈热点](hotspots/README.md)记录四个 STEP 零件的热缓存加载、普通步时间分解及 OCCT 求交调用来源。
 
 [承载区深度预处理与五秒闭环对照](depth-bounds/README.md)比较在同一 CPU 后端使用预计算深度界、原 Bézier 求交和 Gmsh 网格的结果。

@@ -1,0 +1,38 @@
+[
+  {
+    "source": "reducer-1a.step",
+    "source_sha256": "90a5180ba1d3cd2b6e603de00a80c94cded07bfdccdf13f26e8a693845920035",
+    "part": "reducer-1a.ncpart",
+    "sha256": "da49161ea7cd13eb0bb003b4c24a6459a21aff0a1b87bff7c112d69318b460dc",
+    "bytes": 12414664,
+    "compile_s": 21.454306700004963,
+    "geometry": "faces 147 patches 9795 trims 147"
+  },
+  {
+    "source": "reducer-1b.step",
+    "source_sha256": "f0b5c19d140b2817f00ba29a3cadcd042141df5e2700e860dff7b9aedd37bf7b",
+    "part": "reducer-1b.ncpart",
+    "sha256": "67d74054f362f0b7b0d8d6f1bffb66ef565a4e2cb90fd28625150cda52210b48",
+    "bytes": 24826696,
+    "compile_s": 41.72235460000229,
+    "geometry": "faces 291 patches 19587 trims 291"
+  },
+  {
+    "source": "reducer-2a.step",
+    "source_sha256": "9037e0d52ca2550e2251621d46a6781b9b698722842b4178b9758858ee8f14a9",
+    "part": "reducer-2a.ncpart",
+    "sha256": "c3c292c1a22baa70ceecf542be54486d252b61b0284d56e68253e59c1d6e0e31",
+    "bytes": 11380328,
+    "compile_s": 6.473968899983447,
+    "geometry": "faces 135 patches 8979 trims 135"
+  },
+  {
+    "source": "reducer-2b.step",
+    "source_sha256": "93b72d60ebd26f3e94faedd22be00aa5d80dda5936605541ae3646ace82aee01",
+    "part": "reducer-2b.ncpart",
+    "sha256": "ec870e7dccfa05a08176039ec056000c2fb7063b3b295cd41e15469bead56f4f",
+    "bytes": 22758664,
+    "compile_s": 13.154542000003858,
+    "geometry": "faces 267 patches 17955 trims 267"
+  }
+]

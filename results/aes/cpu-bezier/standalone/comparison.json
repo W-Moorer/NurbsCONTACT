@@ -1,0 +1,120 @@
+{
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "steps": 50000,
+  "process_s": {
+    "Compiled CAD (ours)": 411.2486420000205,
+    "Original CAD": 644.0690279999981,
+    "Mesh OBB": 449.0340578999894
+  },
+  "compiled_to_mesh_time_ratio": 0.9158517817631003,
+  "cad_torque_difference_Nm": {
+    "rms": 0.008929072779897284,
+    "max_abs": 0.8761339640425376,
+    "peak_step": 49649
+  },
+  "stage_loaded_mismatches": [
+    0,
+    0
+  ],
+  "stage_normal_difference_N": [
+    {
+      "rms": 0.21198755019427998,
+      "max_abs": 34.18033036257839,
+      "peak_step": 49647
+    },
+    {
+      "rms": 0.1517402959427714,
+      "max_abs": 13.787923102187051,
+      "peak_step": 49648
+    }
+  ],
+  "shaft_speed_difference_rad_s": [
+    {
+      "rms": 0.000533481307111724,
+      "max_abs": 0.09258239785029332,
+      "peak_step": 49646
+    },
+    {
+      "rms": 0.00014038088714098321,
+      "max_abs": 0.016884606134141222,
+      "peak_step": 49646
+    },
+    {
+      "rms": 9.940833452998123e-05,
+      "max_abs": 0.009096382166077888,
+      "peak_step": 49647
+    }
+  ],
+  "switch_steps": {
+    "Compiled CAD (ours)": [
+      [
+        3
+      ],
+      [
+        3,
+        9,
+        12,
+        20,
+        21
+      ]
+    ],
+    "Original CAD": [
+      [
+        3
+      ],
+      [
+        3,
+        9,
+        12,
+        20,
+        21
+      ]
+    ],
+    "Mesh OBB": [
+      [
+        3
+      ],
+      [
+        3,
+        10,
+        13,
+        21,
+        24
+      ]
+    ]
+  },
+  "torque_at_0p5_ms_Nm": {
+    "Compiled CAD (ours)": 432.63084367488136,
+    "Original CAD": 432.63084366581097,
+    "Mesh OBB": 395.36754174056597
+  },
+  "torque_at_2p5377_s_Nm": {
+    "Compiled CAD (ours)": 149.6249514003618,
+    "Original CAD": 149.62495140257423,
+    "Mesh OBB": 128.19028449296573
+  },
+  "historical_spike_window_max_difference_Nm": 4.313551471568644e-08,
+  "largest_sample_to_sample_torque_change_Nm": {
+    "Compiled CAD (ours)": 259.99144360339017,
+    "Original CAD": 259.9914436055767,
+    "Mesh OBB": 210.147734328168
+  },
+  "recurdyn_sha256": "3acd0c4436b44cc2bad438bfad9b5110c9e2bcb62aa1a8d63aeb31c636e0b7db",
+  "output_torque_difference_vs_recurdyn_Nm": {
+    "Compiled CAD (ours)": {
+      "rms": 42.09473973297086,
+      "max_abs": 254.79863810182775,
+      "peak_step": 24
+    },
+    "Original CAD": {
+      "rms": 42.094671252097086,
+      "max_abs": 254.79863810645946,
+      "peak_step": 24
+    },
+    "Mesh OBB": {
+      "rms": 29.1423846001526,
+      "max_abs": 139.1397076410301,
+      "peak_step": 17
+    }
+  }
+}
