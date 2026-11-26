@@ -15,6 +15,8 @@ The CPU reference for porting CAD contact is [commit 1406914](https://github.com
 
 Build Release with `NC_WITH_CPU_MESH=ON` and oneTBB available for the comparison. Set `OMP_NUM_THREADS=4`. Run `nc_contact <scene> 0 0.0001 5 1 response --method cad-compiled --solver penalty --penalty-stiffness shared --geometry-update predictor --spectral-radius 0`. The standalone `nc_contact_runtime` also runs the CAD method directly from the four compiled parts. Part compilation and scene initialization are timed separately. The original STEP files and Gmsh meshes are in the [CPU input deck](results/aes/cpu-foundation/reducer-physics/cpu-deck.zip). Use the [compiled scene and parts](results/aes/cpu-bezier/standalone/reducer-inputs.zip), [validation results and known narrow-contact cases](results/aes/cpu-bezier/standalone/README.md) and [raw thread-scaling measurements](results/aes/cpu-bezier/standalone/simulation-timing/cpu-worker-scaling.json) to reproduce and interpret the comparison.
 
+The frozen CAD assets have a separate [source-to-runtime equivalence audit](results/aes/cpu-bezier/standalone/README.md#source-to-runtime-geometry-check). It compares the compiled contact charts with the original STEP solids.
+
 ### GPU mesh package
 
 For CUDA simulation of rigid bodies on fixed parallel hinges, use the installable GPU backend. Its runtime includes mesh contact, the integrator and the native load-exchange library. [Download the GPU backend](https://github.com/W-Moorer/NurbsCONTACT/releases/tag/gpu-backend-v0.1.1) · [Installation and five-second reducer example](nurbscontact_gpu/README.md)
