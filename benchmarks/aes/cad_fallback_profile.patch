@@ -1,0 +1,163 @@
+--- a/src/cad_bezier_ray.cpp
++++ b/src/cad_bezier_ray.cpp
+@@ -10,6 +10,8 @@
+ #include <cmath>
+ #include <limits>
+ #include <numeric>
++
++namespace nc::audit { thread_local int reason=0; bool fail(int code) { reason=code; return false; } }
+
+ namespace nc::cad {
+ namespace {
+@@ -128,7 +130,7 @@
+         const auto row_u = b.Crossed(d), row_v = d.Crossed(a);
+         const double det = a.Dot(row_u);
+         if (std::abs(det) <= 1e-10 * a.Modulus() * b.Modulus() || !std::isfinite(1. / det))
+-            return false;
++            return audit::fail(2);
+         const gp_XYZ rows[]{row_u / det, row_v / det};
+         double contraction = 0;
+         const auto f = derivative(center);
+@@ -146,13 +148,13 @@
+             contraction = std::max(contraction, r);
+         }
+         if (!(contraction < .9) || xy[0] <= 0 || xy[0] >= 1 || xy[1] <= 0 || xy[1] >= 1)
+-            return false;
++            return audit::fail(contraction>=.9 ? 3 : 4);
+         for (int iter = 0; iter < 8; ++iter) {
+             gp_XYZ value, du, dv;
+             double w;
+             jet(xy[0], xy[1], origin, value, du, dv, w);
+             if (!(w > 0))
+-                return false;
++                return audit::fail(5);
+             const double t = d.Dot(value) / w;
+             const auto residual = value - d * (w * t);
+             if (residual.Modulus() < 1e-9 * w) {
+@@ -162,7 +164,7 @@
+                     (std::max(std::abs(rows[0].Dot(residual)), std::abs(rows[1].Dot(residual))) + 1e-12) /
+                     (1 - contraction);
+                 if (radius >= std::min({xy[0], 1 - xy[0], xy[1], 1 - xy[1]}))
+-                    return false;
++                    return audit::fail(6);
+                 const auto recovered = origin + d * t;
+                 double error = residual.Modulus();
+                 for (const auto &slope : slopes) {
+@@ -174,13 +176,13 @@
+                 if (t < -tol - error || t > end + error)
+                     return true;
+                 if (t <= error || t >= end - error || hit)
+-                    return false;
++                    return audit::fail(hit ? 7 : 8);
+                 // Rational tangents require subtracting the weight derivative
+                 // along the ray. Evaluate at the recovered point as origin.
+                 jet(xy[0], xy[1], recovered, value, du, dv, w);
+                 auto n = du.Crossed(dv);
+                 if (!(n.Modulus() > 0))
+-                    return false;
++                    return audit::fail(9);
+                 n.Normalize();
+                 hit = BezierRayHit{t, u0 + xy[0] * (u1 - u0), v0 + xy[1] * (v1 - v0), n};
+                 return true;
+@@ -188,13 +190,13 @@
+             const auto c = dv.Crossed(d), e = d.Crossed(du);
+             const double delta = du.Dot(c);
+             if (delta == 0)
+-                return false;
++                return audit::fail(10);
+             xy[0] -= residual.Dot(c) / delta;
+             xy[1] -= residual.Dot(e) / delta;
+             if (!(xy[0] > 0 && xy[0] < 1 && xy[1] > 0 && xy[1] < 1))
+-                return false;
+-        }
+-        return false;
++                return audit::fail(11);
++        }
++        return audit::fail(12);
+     }
+ };
+
+@@ -258,7 +260,7 @@
+     hit.reset();
+     const auto first = part_->offsets.at(face - 1), last = part_->offsets.at(face);
+     if (first == last)
+-        return false;
++        return audit::fail(1);
+     // Extend both ends for the native intersector's near-boundary decisions.
+     const auto p = point - d * tol, q = point + d * (end + tol);
+     const double margin = tol + 64 * std::numeric_limits<double>::epsilon() * (point.Modulus() + end + 1);
+--- a/src/cad_contact_regions.cpp
++++ b/src/cad_contact_regions.cpp
+@@ -35,6 +35,37 @@
+ #include <map>
+ #include <numeric>
+ #include <stdexcept>
++
++
++#include <atomic>
++#include <chrono>
++#include <cstdio>
++
++namespace nc::audit {
++extern thread_local int reason;
++struct NativeStats {
++    struct Cell {std::atomic<long long> calls{}, finished{}, hits{}, ns{};};
++    Cell data[2][15];
++    ~NativeStats() {
++        for (int site=0;site<2;++site) for (int k=0;k<15;++k) {
++            const auto& c=data[site][k];
++            if (c.calls.load()) std::fprintf(stderr,"native_fallback %d %d %lld %lld %lld %lld\n",
++                site,k,c.calls.load(),c.finished.load(),c.hits.load(),c.ns.load());
++        }
++    }
++} native;
++template<class Ray> void perform(int site,Ray& ray,const gp_Lin& line,double first,double last) {
++    auto& c=native.data[site][reason];
++    ++c.calls;
++    const auto start=std::chrono::steady_clock::now();
++    ray->Perform(line,first,last);
++    c.ns+=std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now()-start).count();
++    if (ray->IsDone()) {
++        ++c.finished;
++        if (ray->NbPnt()) ++c.hits;
++    }
++}
++}
+
+ namespace nc {
+ namespace {
+@@ -359,6 +390,7 @@
+     std::shared_ptr<const cad::BezierRayAtlas> bezier;
+     std::array<std::size_t,4> counts{}; // Resolved misses, interior hits, OCCT calls, visited span candidates.
+     bool bezier_query(std::size_t i,const gp_Pnt& p,const gp_Dir& d,double end,std::optional<cad::BezierRayHit>& hit) {
++        audit::reason=0;
+         if (!bezier) return false;
+         const auto& face=index.data_->faces[i].shape;
+         if (!bezier->query(i+1,p.XYZ(),d.XYZ(),end,std::max(Precision::Confusion(),BRep_Tool::Tolerance(face)),hit,&counts[3])) return false;
+@@ -367,7 +399,7 @@
+             if (!chart) chart=std::make_unique<cad::CompiledChart>(face);
+             // Leave trim curves, shared edges and seam ownership to OCCT.
+             if (!chart->rectangular || hit->u<=chart->u0+chart->eu || hit->u>=chart->u1-chart->eu ||
+-                hit->v<=chart->v0+chart->ev || hit->v>=chart->v1-chart->ev) return false;
++                hit->v<=chart->v0+chart->ev || hit->v>=chart->v1-chart->ev) {audit::reason=chart->rectangular ? 14 : 13;return false;}
+         }
+         ++counts[hit ? 1 : 0];
+         return true;
+@@ -503,7 +535,7 @@
+         ++data_->counts[2];
+         auto& ray=data_->rays[i];
+         if (ray.IsNull()) ray=new IntCurvesFace_Intersector(face.shape,tol);
+-        ray->Perform(line,-tol,std::min(reach,nearest+tol));
++        audit::perform(0,ray,line,-tol,std::min(reach,nearest+tol));
+         if (!ray->IsDone()) throw dynamics::UnresolvedContact("trimmed-face intersection failed");
+         for (int k=1;k<=ray->NbPnt();++k) {
+             const double t=ray->WParameter(k);
+@@ -607,7 +639,7 @@
+             ++data_->counts[2];
+             auto& ray=data_->rays[i];
+             if (ray.IsNull()) ray=new IntCurvesFace_Intersector(geometry.faces[i].shape,tol);
+-            ray->Perform(line,-tol,span+tol);
++            audit::perform(1,ray,line,-tol,span+tol);
+             if (!ray->IsDone() || ray->NbPnt() || ray->IsParallel()) return false;
+         }
+     } catch (const Standard_Failure&) {return false;}

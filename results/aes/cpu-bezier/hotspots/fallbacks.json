@@ -1,0 +1,101 @@
+{
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "trajectory_sha256": "33dfb97a3bdf7786746f0c706ae6392071a073a50c2666ec521a8255ca35d005",
+  "executable_sha256": "f81bac603f70dfa39187d336f280023126ffdb0c84b1ffd0d72de0e8fbc47cb2",
+  "stages": [
+    {
+      "stage": 1,
+      "poses": 800,
+      "native_calls": 4119,
+      "reasons": [
+        {
+          "site": "first_exit",
+          "reason": "initial_uv_outside_span",
+          "calls": 3800,
+          "finished": 3800,
+          "with_intersection": 3800,
+          "perform_s": 1.4607058000000002
+        },
+        {
+          "site": "first_exit",
+          "reason": "root_interval_touches_edge",
+          "calls": 211,
+          "finished": 211,
+          "with_intersection": 211,
+          "perform_s": 0.0867165
+        },
+        {
+          "site": "first_exit",
+          "reason": "newton_leaves_span",
+          "calls": 77,
+          "finished": 77,
+          "with_intersection": 77,
+          "perform_s": 0.0277559
+        },
+        {
+          "site": "interior_segment",
+          "reason": "contraction_bound",
+          "calls": 31,
+          "finished": 31,
+          "with_intersection": 0,
+          "perform_s": 0.036129600000000005
+        }
+      ]
+    },
+    {
+      "stage": 2,
+      "poses": 800,
+      "native_calls": 18986,
+      "reasons": [
+        {
+          "site": "first_exit",
+          "reason": "contraction_bound",
+          "calls": 517,
+          "finished": 517,
+          "with_intersection": 517,
+          "perform_s": 0.2675051
+        },
+        {
+          "site": "first_exit",
+          "reason": "initial_uv_outside_span",
+          "calls": 15003,
+          "finished": 15003,
+          "with_intersection": 13545,
+          "perform_s": 5.986223900000001
+        },
+        {
+          "site": "first_exit",
+          "reason": "root_interval_touches_edge",
+          "calls": 33,
+          "finished": 33,
+          "with_intersection": 33,
+          "perform_s": 0.01767
+        },
+        {
+          "site": "first_exit",
+          "reason": "newton_leaves_span",
+          "calls": 212,
+          "finished": 212,
+          "with_intersection": 194,
+          "perform_s": 0.08795120000000001
+        },
+        {
+          "site": "interior_segment",
+          "reason": "contraction_bound",
+          "calls": 3207,
+          "finished": 3207,
+          "with_intersection": 0,
+          "perform_s": 2.5960221000000003
+        },
+        {
+          "site": "interior_segment",
+          "reason": "initial_uv_outside_span",
+          "calls": 14,
+          "finished": 14,
+          "with_intersection": 0,
+          "perform_s": 0.0072396000000000005
+        }
+      ]
+    }
+  ]
+}

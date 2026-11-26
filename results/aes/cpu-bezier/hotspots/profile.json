@@ -1,0 +1,303 @@
+{
+  "profile_run": {
+    "method": "cad-bezier-bounds",
+    "solver": "penalty",
+    "scope": null,
+    "executable_sha256": "0e557ad9a47654c9cde999d7d218214b5bbc09f1420387cb7ca85fcc4240119a",
+    "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+    "requested_s": 5,
+    "dt_s": 0.0001,
+    "output_dt_s": 0.0001,
+    "budget_s": 1800,
+    "process_s": 1016.3219467000163,
+    "status": "complete",
+    "exit_code": 0,
+    "last_accepted": {
+      "step": 50000.0,
+      "time_s": 5.0000000000016795,
+      "integration_s": 942.4169981,
+      "mesh_triangle_tests": 0.0,
+      "mesh_booleans": 0.0,
+      "cad_booleans": 17.0,
+      "mesh_detection_s": 0.0,
+      "mesh_placement_s": 0.0,
+      "mesh_boolean_s": 0.0,
+      "q0": 942.4794349077562,
+      "v0": 188.29053783645116,
+      "q1": 471.2379714795685,
+      "v1": 94.40837392509987,
+      "q2": 235.6173616051631,
+      "v2": 47.186552156566236,
+      "mesh_pair_bvh_builds": 0.0,
+      "mesh_pair_bvh_reuses": 0.0,
+      "mesh_patch_builds": 0.0,
+      "mesh_patch_reuses": 0.0,
+      "cad_patch_queries": 101648.0,
+      "cad_patch_batches": 50089.0,
+      "cad_patch_broad_s": 84.76880049999971,
+      "cad_patch_search_s": 207.29064340000383,
+      "cad_patch_group_s": 225.38364690000913,
+      "cad_patch_area_s": 493.53410990000117
+    },
+    "penalty_stiffness": "shared",
+    "geometry_update": "predictor",
+    "spectral_radius": 0,
+    "statistics": {
+      "wall_s": "942.41712580000001",
+      "setup_s": "63.803057199999998",
+      "steps": "50000",
+      "accepted": "50044",
+      "subdivisions": "44",
+      "force_evaluations": "185768",
+      "max_residual": "9.143655432808373e-07",
+      "pairs": "371538",
+      "culled": "27",
+      "rays": "0",
+      "missing": "0",
+      "triangle_tests": "0",
+      "closest_queries": "0",
+      "unresolved_queries": "0",
+      "native_nodes": "0",
+      "ccd_checks": "0",
+      "ccd_rejected": "0",
+      "ccd_nodes": "0",
+      "ccd_unresolved": "0",
+      "saved_contact_reuses": "50001",
+      "mesh_boolean_queries": "0",
+      "mesh_boolean_input_faces": "0",
+      "mesh_local_solid_uses": "0",
+      "mesh_local_solid_builds": "0",
+      "mesh_detection_s": "0",
+      "mesh_placement_s": "0",
+      "mesh_boolean_s": "0",
+      "cad_boolean_queries": "17",
+      "cad_event_distances": "0",
+      "chen_patch_queries": "0",
+      "chen_confirmed_candidates": "0",
+      "event_tolerance_s": "0",
+      "solver": "penalty",
+      "impulse_solves": "0",
+      "impulse_regions": "0",
+      "impulse_iterations": "0",
+      "impulse_residual_m_s": "0",
+      "ccd_refinements": "0",
+      "ccd_refined_clear": "0",
+      "tdib_cells": "0",
+      "tdib_candidates": "0",
+      "tdib_unresolved": "0",
+      "cad_box_tests": "0",
+      "cad_extrema": "0",
+      "cad_classifications": "0",
+      "cad_region_cache_hits": "0",
+      "cad_distance_cache_hits": "0",
+      "cad_witness_tests": "0",
+      "cad_witness_improvements": "0",
+      "mesh_pair_bvh_builds": "0",
+      "mesh_pair_bvh_reuses": "0",
+      "mesh_patch_builds": "0",
+      "mesh_patch_reuses": "0",
+      "mesh_parallel_batches": "0",
+      "mesh_max_workers": "0",
+      "cad_region_index_s": "0",
+      "cad_region_select_s": "36.2018852",
+      "cad_region_common_s": "58.059798300000004",
+      "cad_region_extract_s": "1.6894115999999997",
+      "cad_patch_queries": "101648",
+      "cad_patch_batches": "50089",
+      "cad_patch_batch_s": "876.73233459999778",
+      "cad_patch_broad_s": "84.768800499999713",
+      "cad_patch_search_s": "207.29064340000383",
+      "cad_patch_group_s": "225.38364690000913",
+      "cad_patch_area_s": "493.53410990000117",
+      "cad_window_builds": "14903",
+      "cad_window_reuses": "188393",
+      "cad_path_reuses": "0",
+      "cad_skipped_area_nodes": "129257028",
+      "cad_pressure_clipped": "17",
+      "cad_pressure_full": "0",
+      "cad_full_blocks": "462365",
+      "cad_partial_blocks": "1482576",
+      "cad_shared_columns": "0",
+      "cad_depth_tests": "12272759",
+      "cad_depth_excluded": "28501708",
+      "cad_depth_refinements": "3121834",
+      "cad_depth_accepted": "3121834",
+      "cad_depth_empty_blocks": "3080827",
+      "cad_depth_interior_blocks": "395975"
+    },
+    "peak_load_N": [
+      2852.1322139643744,
+      6970.54521588979
+    ],
+    "response_sha256": "49c4275a791a42f8b7992f6beef4919abd6af05450def6dd94f4c601207962f2"
+  },
+  "archive_timing": {
+    "process_s": 915.4747142999986,
+    "ordinary_steps": 49983,
+    "ordinary_integration_s": 763.6356889000001,
+    "fallback_steps": 17,
+    "fallback_step_wall_s": 91.7519767,
+    "ordinary_pair_seconds": {
+      "broad": 77.36342799999922,
+      "search": 181.01164150000082,
+      "group": 206.78717390000386,
+      "area": 446.2285578000023
+    },
+    "ordinary_pair_pct": {
+      "broad": 8.48850217690772,
+      "search": 19.86103450481036,
+      "group": 22.689188175668683,
+      "area": 48.961275142613246
+    }
+  },
+  "response_hash_matches_control": false,
+  "output_torque_delta_Nm": {
+    "rms": 0.02106026481109474,
+    "max_abs": 1.7356867216448393,
+    "peak_step": 45043
+  },
+  "loaded_mismatches": [
+    0,
+    0
+  ],
+  "work_control": {
+    "steps": [
+      50000,
+      50000
+    ],
+    "cad_patch_batches": [
+      50095,
+      50089
+    ],
+    "cad_boolean_queries": [
+      17,
+      17
+    ],
+    "cad_pressure_full": [
+      0,
+      0
+    ],
+    "cad_depth_tests": [
+      12274062,
+      12272759
+    ]
+  },
+  "windows": [
+    {
+      "name": "setup",
+      "seconds": 14,
+      "first_step": -1,
+      "last_step": -1,
+      "trace_sha256": "c8c0b0f84d7a5a0648edbb4f90d19c2f7d51d969aa4b9ea865039d50538501af",
+      "successful_thread_samples": 8900,
+      "weighted_thread_seconds": {
+        "waiting": 42.0687008,
+        "other": 12.530458299999992,
+        "geometry": 1.4191069000000005
+      },
+      "kernel_pct_of_geometry": {
+        "other_geometry": 100.0
+      },
+      "occt_callers_pct_of_geometry": {},
+      "top_geometry_leaf_pct": {
+        "TKMath!BSplCLib::Bohm": 14.981,
+        "TKMath!math_PSO::Perform": 14.663,
+        "VCRUNTIME140!memset": 14.592,
+        "TKMath!BSplSLib_Cache::D0": 12.511,
+        "TKMath!PLib::NoDerivativeEvalPolynomial": 10.74,
+        "TKMath!PLib::EvalLength": 5.886,
+        "TKMath!BSplSLib::BuildCache": 3.671,
+        "TKMath!BSplCLib::D3": 3.529,
+        "TKGeomBase!BndLib_AddSurface::AddGenSurf": 3.475,
+        "TKMath!BSplSLib::RationalDerivative": 3.101,
+        "TKBRep!BRepAdaptor_Surface::Value": 2.145,
+        "TKMath!BSplSLib_Cache::IsCacheValid": 1.515
+      },
+      "step_read_pct_of_nonwait": 89.157
+    },
+    {
+      "name": "early",
+      "seconds": 18,
+      "first_step": 6015,
+      "last_step": 7181,
+      "trace_sha256": "4531f9c02479380df56096f90ef6188657d7d4fdbb124dba999a1f930dc54081",
+      "boolean_queries": 0,
+      "successful_thread_samples": 24960,
+      "weighted_thread_seconds": {
+        "other": 1.198797,
+        "waiting": 826.5295755000002,
+        "geometry": 37.33156410000002
+      },
+      "kernel_pct_of_geometry": {
+        "OCCT_ray_face": 60.327,
+        "other_geometry": 21.938,
+        "trim_membership": 5.871,
+        "integration_block_span_search": 5.522,
+        "other_bezier_ray_query": 3.752,
+        "depth_packet": 2.589
+      },
+      "occt_callers_pct_of_geometry": {
+        "integration_first_exit": 29.492,
+        "group_interior_segment": 21.721,
+        "discovery_first_exit": 9.115
+      },
+      "top_geometry_leaf_pct": {
+        "TKMath!Bnd_BoundSortBox::Compare": 15.178,
+        "jemalloc!je_xallocx": 12.434,
+        "jemalloc!je_free": 4.624,
+        "jemalloc!je_calloc": 3.506,
+        "nc_contact!nc::cad::CompiledChart::d1": 3.132,
+        "nc_contact!nc::cad::SpanIndex::visit<`nc::cad::BezierRayAtlas::query'::`2'::<lambda_1> >": 2.476,
+        "VCRUNTIME140!memset": 2.38,
+        "nc_contact!`nc::cad::CompiledChart::block_spans'::`2'::<lambda_1>::operator()": 2.169,
+        "ntdll!RtlAllocateHeap": 1.966,
+        "TKernel!NCollection_BaseMap::Destroy": 1.714,
+        "TKMath!Bnd_Box::Transformed": 1.582,
+        "nc_contact!`anonymous namespace'::DepthPacket::resolve": 1.574
+      },
+      "step_read_pct_of_nonwait": 0.0
+    },
+    {
+      "name": "late",
+      "seconds": 18,
+      "first_step": 30020,
+      "last_step": 31210,
+      "trace_sha256": "b51143b096c2287a79f2ea0788baa4a81fe6864e65383c9309484901ce5d37cd",
+      "boolean_queries": 0,
+      "successful_thread_samples": 24000,
+      "weighted_thread_seconds": {
+        "other": 2.0283899,
+        "waiting": 827.0895608,
+        "geometry": 36.20562500000001
+      },
+      "kernel_pct_of_geometry": {
+        "OCCT_ray_face": 66.332,
+        "other_geometry": 16.329,
+        "trim_membership": 6.952,
+        "integration_block_span_search": 4.508,
+        "depth_packet": 3.367,
+        "other_bezier_ray_query": 2.511
+      },
+      "occt_callers_pct_of_geometry": {
+        "integration_first_exit": 38.121,
+        "group_interior_segment": 19.138,
+        "discovery_first_exit": 9.072
+      },
+      "top_geometry_leaf_pct": {
+        "TKMath!Bnd_BoundSortBox::Compare": 17.896,
+        "jemalloc!je_xallocx": 13.329,
+        "jemalloc!je_free": 5.969,
+        "jemalloc!je_calloc": 4.233,
+        "nc_contact!nc::cad::CompiledChart::d1": 3.636,
+        "VCRUNTIME140!memset": 3.154,
+        "TKMath!math_FunctionSet::~math_FunctionSet": 2.595,
+        "TKernel!NCollection_BaseMap::Destroy": 2.547,
+        "ntdll!RtlSetLastWin32Error": 1.748,
+        "TKMath!Bnd_Box::IsOut": 1.617,
+        "nc_contact!nc::cad::SpanIndex::visit<`nc::cad::BezierRayAtlas::query'::`2'::<lambda_1> >": 1.574,
+        "nc_contact!`nc::cad::CompiledChart::block_spans'::`2'::<lambda_1>::operator()": 1.436
+      },
+      "step_read_pct_of_nonwait": 0.0
+    }
+  ]
+}

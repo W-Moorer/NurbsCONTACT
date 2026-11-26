@@ -1,0 +1,45 @@
+{
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "probes_sha256": "4da187194c44b14a1739f3be3094ffa0b4d963f9c596911e8954727dea70bb53",
+  "parts": 4,
+  "part_table_bytes": {
+    "bezier-rays-v2": 51741305,
+    "charts-6": 9768185,
+    "sites-6": 8786969,
+    "tiles-6": 8800217,
+    "area12": 11195737,
+    "column-depth-v1": 15256313
+  },
+  "cache_directory_dense_tables": {
+    "24": {
+      "files": 840,
+      "bytes": 40629392
+    },
+    "48": {
+      "files": 840,
+      "bytes": 110053328
+    },
+    "96": {
+      "files": 840,
+      "bytes": 387717776
+    }
+  },
+  "warm_load": [
+    {
+      "parts": [
+        "reducer-1a.step",
+        "reducer-1b.step"
+      ],
+      "tables_loaded": 12,
+      "tables_built": 0
+    },
+    {
+      "parts": [
+        "reducer-2a.step",
+        "reducer-2b.step"
+      ],
+      "tables_loaded": 12,
+      "tables_built": 0
+    }
+  ]
+}

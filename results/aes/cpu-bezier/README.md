@@ -1,5 +1,7 @@
 # CPU 减速器的 Bézier 曲面接触对照
 
+[预处理清单与实际调用栈热点](hotspots/README.md)记录四个 STEP 零件的热缓存加载、普通步时间分解及 OCCT 求交调用来源。
+
 [承载区深度预处理与五秒闭环对照](depth-bounds/README.md)比较在同一 CPU 后端使用预计算深度界、原 Bézier 求交和 Gmsh 网格的结果。
 
 [承载区积分预处理与局部求交复测](columns/README.md)记录同一减速器上 17 个触发步的原因、完整五秒计时与输出轴力矩复核。
