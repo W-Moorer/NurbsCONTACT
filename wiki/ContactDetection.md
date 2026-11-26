@@ -1,5 +1,7 @@
 # CPU contact mesh preparation
 
+The [rigid contact backend roadmap](RigidContactBackend.md) pins the CPU reducer baselines, defines the next CAD method and records the interface for a future GPU implementation.
+
 `apps/prepare_contact_mesh.py` imports a closed STEP solid through Gmsh's OpenCASCADE kernel, meshes its boundary with first-order triangles and writes an ASCII Gmsh 2.2 file in metres. The elementary entity tags identify the originating Gmsh faces and edges. The input model can declare its STEP length unit. Both the command line and the output use SI lengths.
 
 Install the Python dependencies with `python -m pip install gmsh numpy libigl meshio`. The last package is used by the round-trip test.
