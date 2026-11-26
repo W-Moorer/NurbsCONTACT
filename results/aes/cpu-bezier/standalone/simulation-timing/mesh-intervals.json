@@ -1,0 +1,77 @@
+{
+  "historical_run": "../../../cpu-cad-pressure/pruning/mesh-run.json",
+  "repeat_run": "mesh-archived-run.json",
+  "counters": "Increments between accepted main steps; the first interval starts after the step 0 contact evaluation.",
+  "intervals": [
+    {
+      "start_step": 0,
+      "end_step": 5000,
+      "triangle_tests": 123959351,
+      "archived_simulation_s": 31.450410599999998,
+      "repeated_simulation_s": 65.0299892
+    },
+    {
+      "start_step": 5000,
+      "end_step": 10000,
+      "triangle_tests": 79429828,
+      "archived_simulation_s": 20.956948500000003,
+      "repeated_simulation_s": 46.98715130000001
+    },
+    {
+      "start_step": 10000,
+      "end_step": 15000,
+      "triangle_tests": 46785971,
+      "archived_simulation_s": 14.074118400000003,
+      "repeated_simulation_s": 36.24927309999998
+    },
+    {
+      "start_step": 15000,
+      "end_step": 20000,
+      "triangle_tests": 24084485,
+      "archived_simulation_s": 9.221832599999999,
+      "repeated_simulation_s": 20.87234670000001
+    },
+    {
+      "start_step": 20000,
+      "end_step": 25000,
+      "triangle_tests": 21884539,
+      "archived_simulation_s": 8.491438500000001,
+      "repeated_simulation_s": 18.811901699999993
+    },
+    {
+      "start_step": 25000,
+      "end_step": 30000,
+      "triangle_tests": 26523309,
+      "archived_simulation_s": 9.452669499999999,
+      "repeated_simulation_s": 20.938923000000017
+    },
+    {
+      "start_step": 30000,
+      "end_step": 35000,
+      "triangle_tests": 28304754,
+      "archived_simulation_s": 10.4074758,
+      "repeated_simulation_s": 23.763018999999986
+    },
+    {
+      "start_step": 35000,
+      "end_step": 40000,
+      "triangle_tests": 23088228,
+      "archived_simulation_s": 8.825170200000002,
+      "repeated_simulation_s": 20.049445700000007
+    },
+    {
+      "start_step": 40000,
+      "end_step": 45000,
+      "triangle_tests": 20284176,
+      "archived_simulation_s": 7.813711799999993,
+      "repeated_simulation_s": 19.047842400000008
+    },
+    {
+      "start_step": 45000,
+      "end_step": 50000,
+      "triangle_tests": 26314738,
+      "archived_simulation_s": 9.299189800000008,
+      "repeated_simulation_s": 22.163418999999976
+    }
+  ]
+}

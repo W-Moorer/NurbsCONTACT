@@ -1,12 +1,12 @@
 {
   "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
   "steps": 50000,
-  "process_s": {
-    "Compiled CAD (ours)": 411.2486420000205,
-    "Original CAD": 644.0690279999981,
-    "Mesh OBB": 449.0340578999894
+  "simulation_s": {
+    "Compiled CAD (ours)": 396.4042919,
+    "Original CAD": 583.5906147,
+    "Mesh OBB": 431.4198882
   },
-  "compiled_to_mesh_time_ratio": 0.9158517817631003,
+  "compiled_to_mesh_simulation_time_ratio": 0.9188363882664414,
   "cad_torque_difference_Nm": {
     "rms": 0.008929072779897284,
     "max_abs": 0.8761339640425376,

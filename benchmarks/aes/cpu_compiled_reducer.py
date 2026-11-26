@@ -320,11 +320,14 @@ def compare(args):
     t = compiled["time_s"]
     torque = "output_torque_Nm"
     delta = compiled[torque] - native[torque]
+    simulation_s = {
+        label: float(run["statistics"]["wall_s"]) for label, run in zip(labels, records, strict=True)
+    }
     metrics = {
         "scene_sha256": records[0]["scene_sha256"],
         "steps": len(t) - 1,
-        "process_s": {k: r["process_s"] for k, r in zip(labels, records)},
-        "compiled_to_mesh_time_ratio": records[0]["process_s"] / records[2]["process_s"],
+        "simulation_s": simulation_s,
+        "compiled_to_mesh_simulation_time_ratio": simulation_s[labels[0]] / simulation_s[labels[2]],
         "cad_torque_difference_Nm": differences(delta),
         "stage_loaded_mismatches": np.sum(
             (compiled["normal_N"] > 0) != (native["normal_N"] > 0), axis=0

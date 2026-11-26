@@ -1,12 +1,19 @@
 {
-  "first_mesh": 445.1627939000027,
-  "first_compiled": 517.6576321999892,
-  "mesh_repeat": 449.0340578999894,
-  "compiled_final": 411.2486420000205,
+  "simulation_s": {
+    "first_mesh": 426.7607738,
+    "first_compiled": 504.217837,
+    "mesh_repeat": 431.4198882,
+    "compiled_final": 396.4042919
+  },
+  "metric": "statistics.wall_s",
   "source_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
   "input_zip_sha256": "a1a2eca152627fec73aec5e4bdeb5019bcadc7314677c950ca7c50c2c8985b6f",
   "asset_bytes": 71380352,
-  "offline_process_s": 82.80517219999456,
   "original_native_reference": "previous run with the same scene and integration settings",
-  "same_fixed_pose_torque_max_Nm": 1.2122853831897373e-08
+  "same_fixed_pose_torque_max_Nm": 1.2122853831897373e-08,
+  "controlled_repeat_simulation_s": {
+    "mesh-current": 310.6241528,
+    "cad-compiled": 282.7641162,
+    "mesh-archived": 293.9445467
+  }
 }
