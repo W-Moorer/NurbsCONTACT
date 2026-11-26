@@ -1,5 +1,8 @@
 #include "compiled_geometry.hpp"
 #include "contact_tasks.hpp"
+#ifdef NC_WITH_CUDA_COLUMNS
+#include "cuda_columns.hpp"
+#endif
 #include <chrono>
 #include <deque>
 #include <unordered_map>
@@ -17,6 +20,9 @@ struct BlockEntry {
 struct RuleCache {
     Rule rule;
     std::vector<BlockEntry> blocks;
+#ifdef NC_WITH_CUDA_COLUMNS
+    std::shared_ptr<device::Sites> device_sites;
+#endif
 };
 using Rules = std::map<std::pair<int, int>, RuleCache>;
 struct Seed {
@@ -29,10 +35,24 @@ struct Proposal {
     int side, site, tile;
 };
 using Candidates = std::map<Pair, std::vector<Proposal>>;
+#ifdef NC_WITH_CUDA_COLUMNS
+device::Pose device_pose(const Placement &pose) {
+    device::Pose transform{};
+    for(int j=0;j<3;++j) {
+        transform.offset.x[j]=pose.offset[j];
+        for(int k=0;k<3;++k) transform.cols[j].x[k]=pose.cols[j][k];
+    }
+    return transform;
+}
+#endif
 struct Window {
     Placement anchor;
     std::size_t key;
     std::vector<std::pair<int, int>> leaves;
+#ifdef NC_WITH_CUDA_COLUMNS
+    std::shared_ptr<device::Columns::Window> device_window;
+    size_t device_bytes{};
+#endif
 };
 struct WindowCache {
     struct PlacedNode {
@@ -49,7 +69,11 @@ struct WindowCache {
     void save(Window window) {
         constexpr std::size_t capacity = 32u << 20;
         const auto size = [](const Window &w) {
-            return sizeof(Window) + sizeof(w.leaves.front()) * w.leaves.capacity() + 64;
+            return sizeof(Window) + sizeof(w.leaves.front()) * w.leaves.capacity() + 64
+#ifdef NC_WITH_CUDA_COLUMNS
+                   + w.device_bytes
+#endif
+                   ;
         };
         while (!windows.empty() && bytes + size(window) > capacity) {
             const auto &old = windows.front();
@@ -67,13 +91,20 @@ struct WindowCache {
     }
 };
 void collect(const Solid &source, const Solid &target, const Placement &pose, int side, double reach,
-             WindowCache &cache, Candidates &pairs) {
+             WindowCache &cache, Candidates &pairs
+#ifdef NC_WITH_CUDA_COLUMNS
+             ,device::Columns *gpu_source, device::Columns *gpu_target
+#endif
+             ) {
     if (source.site_tree.nodes.empty() || target.tile_tree.nodes.empty())
         return;
     auto &tree = target.tile_tree.nodes;
     const auto root = tree[0].box;
     const Vec center = scale(add(root.lo, root.hi), .5), half = scale(sub(root.hi, root.lo), .5);
     const double turn = std::min(2., reach / std::max(reach, length(half)));
+#ifdef NC_WITH_CUDA_COLUMNS
+    const auto transform=device_pose(pose);
+#endif
     auto valid = [&](const Window &w) {
         const auto delta = sub(w.anchor.point(center), pose.point(center));
         double norm2 = 0;
@@ -109,6 +140,11 @@ void collect(const Solid &source, const Solid &target, const Placement &pose, in
             }
         if (!cache.active) {
             Window window{pose, key, {}};
+#ifdef NC_WITH_CUDA_COLUMNS
+            if(gpu_source) window.device_window=gpu_source->window(*gpu_target,transform,reach,turn,window.device_bytes);
+            else
+#endif
+            {
             cache.placed.resize(tree.size());
             ++cache.version;
             auto visit = [&](auto &&self, int a, int b) -> void {
@@ -148,9 +184,24 @@ void collect(const Solid &source, const Solid &target, const Placement &pose, in
             };
             visit(visit, 0, 0);
             std::sort(window.leaves.begin(), window.leaves.end());
+            }
             cache.save(std::move(window));
         }
     }
+#ifdef NC_WITH_CUDA_COLUMNS
+    if(gpu_source) {
+        std::vector<device::Candidate> hits;
+        gpu_source->candidates(*gpu_target,*cache.active->device_window,transform,reach,hits);
+        std::sort(hits.begin(),hits.end(),[](const auto &a,const auto &b){
+            return std::tie(a.tile,a.site)<std::tie(b.tile,b.site);
+        });
+        for(const auto &h:hits) {
+            auto a=source.tiles[h.site].face,b=target.tiles[h.tile].face;
+            pairs[side?Pair{b,a}:Pair{a,b}].push_back({h.score,side,h.site,h.tile});
+        }
+        return;
+    }
+#endif
     int last = -1;
     Box box;
     Vec point{}, normal{};
@@ -192,6 +243,10 @@ struct Detection {
     std::array<Rules *, 2> rules;
     const double reach;
     std::vector<Blocker> *blockers{};
+#ifdef NC_WITH_CUDA_COLUMNS
+    const std::array<std::shared_ptr<device::Columns>,2> *gpu{};
+    ContactWork *work{};
+#endif
     const Face &face(int side, int id) const {
         return bodies[side]->faces[id];
     }
@@ -200,6 +255,14 @@ struct Detection {
         if (added) {
             it->second.rule = face(side, id).quadrature(order);
             it->second.blocks.resize(it->second.rule.blocks.size());
+#ifdef NC_WITH_CUDA_COLUMNS
+            if(gpu) {
+                std::vector<device::RuleSite> sites;
+                for(const auto &s:it->second.rule.sites) sites.push_back({{{s.point[0],s.point[1],s.point[2]}},
+                                                                          {{s.normal[0],s.normal[1],s.normal[2]}}});
+                it->second.device_sites=std::make_shared<device::Sites>(sites);
+            }
+#endif
         }
         return it->second;
     }
@@ -442,11 +505,19 @@ struct Detection {
             int side;
         };
         std::vector<Job> jobs;
+#ifdef NC_WITH_CUDA_COLUMNS
+        std::vector<device::RuleBlock> device_jobs;
+        std::vector<int> target_ids;
+#endif
         std::size_t sites = 0;
         for (int side = 0; side < 2; ++side)
             for (auto &[id, targets] : groups[side]) {
                 auto &cached = rule(side, id, order);
                 const auto &r = cached.rule;
+#ifdef NC_WITH_CUDA_COLUMNS
+                int start=static_cast<int>(target_ids.size());
+                if(gpu) target_ids.insert(target_ids.end(),targets.begin(),targets.end());
+#endif
                 Box around;
                 for (int t : targets)
                     around.include(face(1 - side, t).box.placed(rel[1 - side]));
@@ -455,12 +526,38 @@ struct Detection {
                     if (!around.overlaps(block.box, reach))
                         continue;
                     jobs.push_back({&r, &targets, &cached.blocks[block_id], block_id, sites, side});
+#ifdef NC_WITH_CUDA_COLUMNS
+                    if(gpu) device_jobs.push_back({cached.device_sites->ptr,static_cast<int>(block.first),
+                        static_cast<int>(block.end-block.first),static_cast<int>(sites),side,start,
+                        static_cast<int>(target_ids.size())});
+#endif
                     sites += block.end - block.first;
                 }
             }
         // A block exclusively owns its column cache. Save depths so that load
         // accumulation follows the original face/block/site order on every CPU.
         std::vector<double> depths(sites, std::numeric_limits<double>::quiet_NaN());
+#ifdef NC_WITH_CUDA_COLUMNS
+        if(gpu) {
+            std::vector<device::Depth> active;
+            work->cuda_column_rays+=(*gpu)[0]->integrate(*(*gpu)[1],device_jobs,target_ids,device_pose(rel[0]),
+                                                         device_pose(rel[1]),reach,active);
+            for(const auto &hit:active) {
+                const auto &job=jobs[hit.job];
+                const auto &block=job.rule->blocks[job.block_id];
+                double depth=hit.value;
+                if(depth<0) {
+                    ++work->cuda_column_subdivisions;
+                    const auto &s=job.rule->sites[block.first+hit.local];
+                    auto root=bodies[1-job.side]->first(rel[job.side].point(s.point),
+                                                        rel[job.side].direction(scale(s.normal,-1)),reach);
+                    if(!root || !job.targets->contains(root->face)) continue;
+                    depth=root->t;
+                }
+                depths[job.offset+hit.local]=depth;
+            }
+        } else
+#endif
         contact_tasks::ranges(jobs.size(), 2, [&](std::size_t first, std::size_t end) {
             std::vector<RayRoot> scratch;
             for (auto j = first; j < end; ++j) {
@@ -639,6 +736,9 @@ class CompiledPair final : public RegionQuery {
     std::array<std::shared_ptr<const Solid>, 2> bodies_;
     double reach_;
     std::optional<LoadQuadrature> integration_;
+#ifdef NC_WITH_CUDA_COLUMNS
+    std::array<std::shared_ptr<device::Columns>,2> gpu_{};
+#endif
     mutable std::array<Rules, 2> rules_;
     mutable std::map<Pair, Seed> previous_;
     mutable std::array<WindowCache, 2> windows_{};
@@ -647,8 +747,17 @@ class CompiledPair final : public RegionQuery {
 
   public:
     CompiledPair(std::shared_ptr<const Solid> a, std::shared_ptr<const Solid> b, double reach,
-                 std::optional<LoadQuadrature> integration)
-        : bodies_{std::move(a), std::move(b)}, reach_(reach), integration_(integration) {}
+                 std::optional<LoadQuadrature> integration,bool use_cuda)
+        : bodies_{std::move(a), std::move(b)}, reach_(reach), integration_(integration) {
+        if(use_cuda) {
+#ifdef NC_WITH_CUDA_COLUMNS
+            if(integration && !integration->reference_order) throw std::invalid_argument("cuda-columns requires fixed cubature");
+            for(int i=0;i<2;++i) gpu_[i]=cuda_columns(*bodies_[i]);
+#else
+            throw std::invalid_argument("configure NC_WITH_CUDA_COLUMNS=ON to use cuda-columns");
+#endif
+        }
+    }
     bool independent_cad_patch() const override {
         return true;
     }
@@ -667,13 +776,20 @@ class CompiledPair final : public RegionQuery {
                         {Placement::between(a, b), Placement::between(b, a)},
                         {&rules_[0], &rules_[1]},
                         reach_};
+#ifdef NC_WITH_CUDA_COLUMNS
+        if(gpu_[0]) {query.gpu=&gpu_;query.work=&work;}
+#endif
         const auto tic = Clock::now();
         Candidates pairs;
         Candidates reverse;
         contact_tasks::ranges(2, 1, [&](auto first, auto end) {
             for (int side = static_cast<int>(first); side < static_cast<int>(end); ++side)
                 collect(*bodies_[side], *bodies_[1 - side], query.rel[1 - side], side, reach_,
-                        windows_[side], side ? reverse : pairs);
+                        windows_[side], side ? reverse : pairs
+#ifdef NC_WITH_CUDA_COLUMNS
+                        ,gpu_[side].get(),gpu_[1-side].get()
+#endif
+                        );
         });
         pairs.merge(reverse);
         for (auto &[ids, more] : reverse) {
@@ -828,7 +944,7 @@ class CompiledPair final : public RegionQuery {
 } // namespace
 std::shared_ptr<const RegionQuery> region_query(std::shared_ptr<const Solid> a,
                                                 std::shared_ptr<const Solid> b, double max_depth,
-                                                std::optional<LoadQuadrature> integration) {
+                                                std::optional<LoadQuadrature> integration,bool use_cuda) {
     if (!(max_depth > 0))
         throw std::invalid_argument("compiled CAD requires a positive contact depth range");
     if (integration) {
@@ -839,6 +955,6 @@ std::shared_ptr<const RegionQuery> region_query(std::shared_ptr<const Solid> a,
             (!p.reference_order && (!positive(p.force_tolerance) || !positive(p.moment_tolerance))))
             throw std::invalid_argument("invalid compiled CAD quadrature settings");
     }
-    return std::make_shared<CompiledPair>(std::move(a), std::move(b), 2000 * max_depth, integration);
+    return std::make_shared<CompiledPair>(std::move(a), std::move(b), 2000 * max_depth, integration,use_cuda);
 }
 } // namespace nc::compiled

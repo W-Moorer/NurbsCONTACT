@@ -131,6 +131,7 @@ void expect(std::istream& in,std::string_view expected) {
 
 struct SurfaceOptions {
     std::string method;
+    bool cuda_columns{};
     std::optional<ImpulseLaw> impulse_law;
     Path mesh_directory,compiled_directory;
     Path progress_file;
@@ -457,7 +458,7 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
                                                   surface_options.moment_tolerance.value_or(0),surface_options.fixed_cubature.value_or(false) ? 96 : 0,
                                                   surface_options.share_penalty_stiffness};
                 }
-                pair.regions=compiled::region_query(parts.at(files[pair.a]),parts.at(files[pair.b]),pair.material.maximum_depth,rule);
+                pair.regions=compiled::region_query(parts.at(files[pair.a]),parts.at(files[pair.b]),pair.material.maximum_depth,rule,surface_options.cuda_columns);
             }
 #ifndef NC_COMPILED_ONLY
             else if (surface_options.patch()) {
@@ -1429,7 +1430,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             "mesh_pair_bvh_builds,mesh_pair_bvh_reuses,mesh_patch_builds,mesh_patch_reuses,mesh_parallel_batches,mesh_max_workers,"
             "cad_region_index_s,cad_region_select_s,cad_region_common_s,cad_region_extract_s,"
             "cad_patch_queries,cad_patch_batches,cad_patch_batch_s,cad_patch_broad_s,cad_patch_search_s,cad_patch_group_s,cad_patch_area_s,cad_window_builds,cad_window_reuses,cad_path_reuses,cad_skipped_area_nodes,cad_pressure_clipped,cad_pressure_full,cad_full_blocks,cad_partial_blocks,cad_shared_columns,"
-            "cad_depth_tests,cad_depth_excluded,cad_depth_refinements,cad_depth_accepted,cad_depth_empty_blocks,cad_depth_interior_blocks,cad_quadrature_rules,cad_quadrature_converged\n"
+            "cad_depth_tests,cad_depth_excluded,cad_depth_refinements,cad_depth_accepted,cad_depth_empty_blocks,cad_depth_interior_blocks,cad_quadrature_rules,cad_quadrature_converged,cuda_column_rays,cuda_column_subdivisions\n"
         <<(n || surface.impulse_law ? wall : replay_s)<<','<<setup_s<<','<<steps<<','<<stats.accepted_steps<<','<<stats.subdivisions<<','<<stats.evaluations
         <<','<<stats.maximum_residual<<','<<work.pairs<<','<<work.culled<<','<<work.rays<<','<<work.missing
         <<','<<work.mesh.triangles<<','<<work.closest_queries<<','<<work.unresolved_queries<<','<<work.native_nodes
@@ -1449,6 +1450,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         <<','<<work.cad_patch_search_s<<','<<work.cad_patch_group_s<<','<<work.cad_patch_area_s<<','<<work.cad_window_builds<<','<<work.cad_window_reuses<<','<<work.cad_path_reuses<<','<<work.cad_skipped_area_nodes<<','<<work.cad_pressure_clipped<<','<<work.cad_pressure_full<<','<<work.cad_full_blocks<<','<<work.cad_partial_blocks<<','<<work.cad_shared_columns;
     for (auto value:work.cad_depth_counts) report<<','<<value;
     report<<','<<work.cad_quadrature_rules<<','<<work.cad_quadrature_converged;
+    report<<','<<work.cuda_column_rays<<','<<work.cuda_column_subdivisions;
     report<<'\n';
     if (!trace || !report) throw std::runtime_error("failed to write contact run");
 }
@@ -1528,7 +1530,7 @@ int main(int argc,char** argv) {
                         "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
                         "  or append --method bvh-aabb|bvh-obb|mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
                         "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl|finite|contour-ray] [--penalty-stiffness per-region|shared] [--geometry-update newton|predictor] [--spectral-radius RHO]\n"
-                        "  or append --method cad-compiled|cad-boundary [--compiled-dir DIR] [--force-tol-n N --moment-tol-nm NM --cubature adaptive|fixed96]\n"
+                        "  or append --method cad-compiled|cad-boundary [--device cpu|cuda-columns] [--compiled-dir DIR] [--force-tol-n N --moment-tol-nm NM --cubature adaptive|fixed96]\n"
                         "  or append --method cad-occt|cad-local|cad-patch|cad-bezier|cad-bezier-bounds|cad-bezier-relocate|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
                         "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp [--progress FILE]\n";
             return 2;
@@ -1543,6 +1545,10 @@ int main(int argc,char** argv) {
                 if (i+1==argc) throw std::invalid_argument("missing method, solver or mesh directory value");
                 const std::string_view key=argv[i], value=argv[i+1];
                 if (key=="--method") surface.method=value;
+                else if (key=="--device") {
+                    if(value!="cpu" && value!="cuda-columns") throw std::invalid_argument("unknown contact device");
+                    surface.cuda_columns=value=="cuda-columns";
+                }
                 else if (key=="--progress") surface.progress_file=argv[i+1];
                 else if (key=="--hht-replay") surface.replay_file=argv[i+1];
                 else if (key=="--compiled-dir") surface.compiled_directory=argv[i+1];
@@ -1615,6 +1621,7 @@ int main(int argc,char** argv) {
         }
         if (!named && argc>=11) event_tolerance=std::stod(argv[10]);
         if (!std::isfinite(event_tolerance) || event_tolerance<0) throw std::invalid_argument("invalid event tolerance");
+        if (surface.cuda_columns && !surface.compiled()) throw std::invalid_argument("cuda-columns requires compiled CAD");
 #ifdef NC_COMPILED_ONLY
         if (!surface.compiled()) throw std::invalid_argument("expected --method cad-compiled or cad-boundary");
 #endif

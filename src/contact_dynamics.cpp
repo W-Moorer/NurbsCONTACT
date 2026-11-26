@@ -233,6 +233,8 @@ std::vector<RegionEvaluation> batch_mesh_regions(std::span<const ContactBodyStat
         work.cad_skipped_area_nodes+=entry.work.cad_skipped_area_nodes;
         work.cad_full_blocks+=entry.work.cad_full_blocks;
         work.cad_quadrature_rules+=entry.work.cad_quadrature_rules;
+        work.cuda_column_rays+=entry.work.cuda_column_rays;
+        work.cuda_column_subdivisions+=entry.work.cuda_column_subdivisions;
         work.cad_quadrature_converged+=entry.work.cad_quadrature_converged;
         work.cad_partial_blocks+=entry.work.cad_partial_blocks;
         work.cad_shared_columns+=entry.work.cad_shared_columns;

@@ -1,4 +1,7 @@
 #include "../src/compiled_geometry.hpp"
+#ifdef NC_WITH_CUDA_COLUMNS
+#include "../src/cuda_columns.hpp"
+#endif
 #include <chrono>
 #include <fstream>
 #include <iostream>
@@ -31,7 +34,7 @@ PartFile box() {
         }
     return file;
 }
-void overlap() {
+void overlap(bool cuda=false) {
     const auto file = std::filesystem::temp_directory_path() /
                       ("nc-contact-" +
                        std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()) + ".ncpart");
@@ -44,7 +47,7 @@ void overlap() {
     } cleanup{file};
     save(box(), file);
     auto a = load_solid(file), b = load_solid(file);
-    auto pair = region_query(a, b, .0002);
+    auto pair = region_query(a, b, .0002, {}, cuda);
     dynamics::ContactPose pa, pb;
     dynamics::ContactWork work;
     for (double angle : {0., .4, -.7, .4}) {
@@ -58,6 +61,7 @@ void overlap() {
         pb.origin = pa.rotate({.0021, 0, 0});
         require(pair->regions(pa, pb, work).empty(), "a finite gap produced a load");
     }
+    require(!cuda || work.cuda_column_rays>0,"no CUDA columns were traced");
     std::filesystem::resize_file(file, 16);
     try {
         (void)load_solid(file);
@@ -119,7 +123,7 @@ void trims() {
     auto hit = part.first({.8, .1, -.1}, {0, 0, 1}, 1);
     require(hit && std::abs(hit->t - .1) < 1e-12, "lost the face surrounding the hole");
 }
-void curved_roots() {
+void curved_roots(bool cuda=false) {
     const Rect domain{{0, 1}, {0, 1}};
     for (bool rational : {false, true}) {
         PartFile file;
@@ -135,6 +139,29 @@ void curved_roots() {
             }
         file.geometry.patches.push_back({surface, domain, 1, 0});
         Solid solid(std::move(file));
+#ifdef NC_WITH_CUDA_COLUMNS
+        if(cuda) {
+            auto gpu=cuda_columns(solid);
+            std::vector<device::Ray> rays{
+                {{{.25,.49,-.2}},{{0,0,1}}}, {{{0,.49,.01}},{{1,0,0}}},
+                {{{0,.49,1e-8}},{{1,0,0}}}, {{{0,.49,-1e-6}},{{1,0,0}}},
+                {{{-1,.49,-.2}},{{0,0,1}}}
+            };
+            std::vector<device::Hit> hits;
+            gpu->trace(rays,1,hits);
+            for(size_t i=0;i<hits.size();++i) {
+                const auto &ray=rays[i];
+                const auto ref=solid.first({ray.p.x[0],ray.p.x[1],ray.p.x[2]},
+                                           {ray.d.x[0],ray.d.x[1],ray.d.x[2]},1);
+                const auto &h=hits[i];
+                if(i==0 && !rational) require(h.face==0,"regular cubic crossing was not resolved on device");
+                if(h.face!=-2) {
+                    require(h.face==(ref?ref->face:-1),"device exit face disagrees with general solver");
+                    if(ref) require(std::abs(h.t-ref->t)<1e-12,"device exit depth differs");
+                }
+            }
+        }
+#endif
         for (const double z : {.01, 1e-8, -1e-6}) {
             std::vector<RayRoot> hits;
             solid.faces[0].roots({0, .49, z}, {1, 0, 0}, 1, 1e-7, 0, hits);
@@ -151,12 +178,14 @@ void curved_roots() {
     }
 }
 } // namespace
-int main() {
+int main(int argc,char **argv) {
     try {
-        overlap();
+        bool cuda=argc==2 && std::string_view(argv[1])=="--cuda";
+        require(argc==1 || cuda,"expected --cuda or no arguments");
+        overlap(cuda);
         split_and_swap();
         trims();
-        curved_roots();
+        curved_roots(cuda);
     } catch (const std::exception &e) {
         std::cerr << e.what() << '\n';
         return 1;

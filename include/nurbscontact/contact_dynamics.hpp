@@ -57,6 +57,7 @@ struct ContactWork {
     std::array<std::size_t,6> cad_depth_counts{};
     std::size_t cad_pressure_clipped{},cad_pressure_full{};
     std::size_t cad_quadrature_rules{},cad_quadrature_converged{};
+    std::size_t cuda_column_rays{}, cuda_column_subdivisions{};
     double cad_patch_batch_s{},cad_patch_broad_s{},cad_patch_search_s{},cad_patch_group_s{},cad_patch_area_s{};
 };
 

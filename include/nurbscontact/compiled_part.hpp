@@ -40,5 +40,6 @@ class RegionQuery : public dynamics::PairRegionQuery {
                                                             GroupFaces &groups) const = 0;
 };
 std::shared_ptr<const RegionQuery> region_query(std::shared_ptr<const Solid>, std::shared_ptr<const Solid>,
-                                                double maximum_depth_m, std::optional<LoadQuadrature> = {});
+                                                double maximum_depth_m, std::optional<LoadQuadrature> = {},
+                                                bool cuda_columns = false);
 } // namespace nc::compiled

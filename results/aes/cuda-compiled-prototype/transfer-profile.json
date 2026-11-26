@@ -1,0 +1,42 @@
+{
+  "device": "RTX 3070",
+  "profile_simulated_seconds": 0.1,
+  "steps": 1000,
+  "window": "From the first GPU kernel start to the last kernel end",
+  "copies": [
+    {
+      "direction": "Device-to-Device",
+      "count": 3893,
+      "bytes": 27090360
+    },
+    {
+      "direction": "Device-to-Host",
+      "count": 22747,
+      "bytes": 32910116
+    },
+    {
+      "direction": "Host-to-Device",
+      "count": 10935,
+      "bytes": 46453224
+    }
+  ],
+  "stream_synchronizations": 13320,
+  "kernels": [
+    {
+      "kernel": "build_window",
+      "launches": 3893,
+      "accumulated_s": 0.793986399
+    },
+    {
+      "kernel": "pressure_columns",
+      "launches": 5206,
+      "accumulated_s": 2.886148985
+    },
+    {
+      "kernel": "score_window",
+      "launches": 4222,
+      "accumulated_s": 0.041734492000000005
+    }
+  ],
+  "kernel_union_s": 3.317883518
+}

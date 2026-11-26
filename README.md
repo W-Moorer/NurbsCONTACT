@@ -19,6 +19,8 @@ The frozen CAD assets have a separate [source-to-runtime equivalence audit](resu
 
 ### GPU mesh package
 
+This local development branch also contains an experimental hybrid port of precompiled CAD. Build with `NC_WITH_CUDA_COLUMNS=ON` and run the frozen `cad-compiled` case with `--device cuda-columns`. CUDA traverses contact windows and evaluates pressure columns against the stored surfaces. The host controls the integrator, confirms and groups contact regions, finishes unresolved rays and accumulates the loads. In a matched four-worker run, CPU took 219.52 s and the hybrid path took 437.67 s on an RTX 3070. Both produced the same 50,001-frame response. The fully device-resident CAD backend remains open. [Complete comparison](results/aes/cuda-compiled-prototype/comparison.json) · [CUDA transfer profile, first 1,000 steps](results/aes/cuda-compiled-prototype/transfer-profile.json) · [Response curves](results/aes/cuda-compiled-prototype/response-comparison.png)
+
 For CUDA simulation of rigid bodies on fixed parallel hinges, use the installable GPU backend. Its runtime includes mesh contact, the integrator and the native load-exchange library. [Download the GPU backend](https://github.com/W-Moorer/NurbsCONTACT/releases/tag/gpu-backend-v0.1.1) · [Installation and five-second reducer example](nurbscontact_gpu/README.md)
 
 ### Geometry core

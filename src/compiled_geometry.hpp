@@ -201,4 +201,8 @@ class Solid {
     std::optional<RayRoot> first(Vec p, Vec d, double end) const;
     std::optional<RayRoot> crossing(Vec a, Vec b) const;
 };
+#ifdef NC_WITH_CUDA_COLUMNS
+namespace device {class Columns;}
+std::shared_ptr<device::Columns> cuda_columns(const Solid &);
+#endif
 } // namespace nc::compiled
