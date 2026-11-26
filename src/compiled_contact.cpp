@@ -1,8 +1,10 @@
 #include "compiled_geometry.hpp"
+#include "contact_tasks.hpp"
 #include <chrono>
 #include <deque>
 #include <unordered_map>
 #include <set>
+#include <utility>
 
 namespace nc::compiled {
 namespace {
@@ -33,6 +35,13 @@ struct Window {
     std::vector<std::pair<int, int>> leaves;
 };
 struct WindowCache {
+    struct PlacedNode {
+        Box box;
+        Vec normal{}, point{};
+        std::size_t version{};
+    };
+    std::vector<PlacedNode> placed;
+    std::size_t version{};
     std::deque<Window> windows;
     std::unordered_multimap<std::size_t, const Window *> bins;
     const Window *active{};
@@ -100,12 +109,23 @@ void collect(const Solid &source, const Solid &target, const Placement &pose, in
             }
         if (!cache.active) {
             Window window{pose, key, {}};
+            cache.placed.resize(tree.size());
+            ++cache.version;
             auto visit = [&](auto &&self, int a, int b) -> void {
                 const auto &node = tree[b];
-                const Box box = node.box.placed(pose);
+                auto &geometry = cache.placed[b];
+                if (geometry.version != cache.version) {
+                    geometry.box = node.box.placed(pose);
+                    if (node.leaf >= 0) {
+                        const auto &tile = target.tiles[node.leaf].site;
+                        geometry.normal = pose.direction(tile.normal);
+                        geometry.point = pose.point(tile.point);
+                    }
+                    geometry.version = cache.version;
+                }
                 auto walk = [&](auto &&recurse, int i) -> void {
                     const auto &site = source.site_tree.nodes[i];
-                    if (!box.overlaps(site.box, 2 * reach + 1e-7))
+                    if (!geometry.box.overlaps(site.box, 2 * reach + 1e-7))
                         return;
                     if (node.leaf < 0 && (site.leaf >= 0 || squared(sub(node.box.hi, node.box.lo)) >
                                                                 squared(sub(site.box.hi, site.box.lo)))) {
@@ -116,9 +136,9 @@ void collect(const Solid &source, const Solid &target, const Placement &pose, in
                         recurse(recurse, site.right);
                     } else {
                         const int sample = source.material_sites[site.leaf];
-                        const auto &t = target.tiles[node.leaf].site;
                         const auto &s = source.tiles[sample].site;
-                        const auto n = pose.direction(t.normal), v = sub(s.point, pose.point(t.point));
+                        const auto &n = geometry.normal;
+                        const auto v = sub(s.point, geometry.point);
                         if (-dot3(n, s.normal) + turn + 1e-12 >= .5 &&
                             std::abs(dot3(v, n)) <= reach * (1 + std::sqrt(3.)) + length(v) * turn + 1e-7)
                             window.leaves.emplace_back(node.leaf, sample);
@@ -414,12 +434,19 @@ struct Detection {
         return w;
     }
     std::optional<Witness> integrate(const Groups &groups, int order, Vec &arm) const {
-        Integral q;
+        struct Job {
+            const Rule *rule;
+            const std::set<int> *targets;
+            BlockEntry *table;
+            std::size_t block_id, offset;
+            int side;
+        };
+        std::vector<Job> jobs;
+        std::size_t sites = 0;
         for (int side = 0; side < 2; ++side)
             for (auto &[id, targets] : groups[side]) {
                 auto &cached = rule(side, id, order);
                 const auto &r = cached.rule;
-                const auto &solid = *bodies[1 - side];
                 Box around;
                 for (int t : targets)
                     around.include(face(1 - side, t).box.placed(rel[1 - side]));
@@ -427,38 +454,61 @@ struct Detection {
                     const auto &block = r.blocks[block_id];
                     if (!around.overlaps(block.box, reach))
                         continue;
-                    Box swept = block.box;
-                    for (int k = 0; k < 3; ++k) {
-                        swept.lo[k] -= reach * std::max(0., block.normal_hi[k]) + 2e-6;
-                        swept.hi[k] -= reach * std::min(0., block.normal_lo[k]) - 2e-6;
-                    }
-                    const Box current = swept.placed(rel[side]);
-                    auto &table = cached.blocks[block_id];
-                    bool contained = true;
-                    for (int k = 0; k < 3; ++k)
-                        contained &=
-                            current.lo[k] >= table.coverage.lo[k] && current.hi[k] <= table.coverage.hi[k];
-                    if (!contained) {
-                        const Vec pad{2 * reach, 2 * reach, 2 * reach};
-                        table.coverage = {sub(current.lo, pad), add(current.hi, pad)};
-                        table.columns = solid.column_block(table.coverage);
-                    }
-                    const auto &candidates = table.columns;
-                    if (std::none_of(candidates.candidates.begin(), candidates.candidates.end(),
-                                     [&](const auto &c) { return targets.contains(c.face); }))
-                        continue;
-                    for (auto i = block.first; i < block.end; ++i) {
-                        const auto &s = r.sites[i];
-                        Vec p = rel[side].point(s.point), d = rel[side].direction(scale(s.normal, -1));
-                        if (std::none_of(targets.begin(), targets.end(),
-                                         [&](int t) { return face(1 - side, t).box.ray(p, d, reach, 1e-7); }))
-                            continue;
-                        auto root = solid.first(p, d, reach, candidates);
-                        if (root && targets.contains(root->face))
-                            sum(q, side, s, root->t);
-                    }
+                    jobs.push_back({&r, &targets, &cached.blocks[block_id], block_id, sites, side});
+                    sites += block.end - block.first;
                 }
             }
+        // A block exclusively owns its column cache. Save depths so that load
+        // accumulation follows the original face/block/site order on every CPU.
+        std::vector<double> depths(sites, std::numeric_limits<double>::quiet_NaN());
+        contact_tasks::ranges(jobs.size(), 2, [&](std::size_t first, std::size_t end) {
+            std::vector<RayRoot> scratch;
+            for (auto j = first; j < end; ++j) {
+                const auto &[rule, target_set, entry, block_id, offset, side] = jobs[j];
+                const auto &targets = *target_set;
+                const auto &r = *rule;
+                const auto &block = r.blocks[block_id];
+                const auto &solid = *bodies[1 - side];
+                Box swept = block.box;
+                for (int k = 0; k < 3; ++k) {
+                    swept.lo[k] -= reach * std::max(0., block.normal_hi[k]) + 2e-6;
+                    swept.hi[k] -= reach * std::min(0., block.normal_lo[k]) - 2e-6;
+                }
+                const Box current = swept.placed(rel[side]);
+                auto &table = *entry;
+                bool contained = true;
+                for (int k = 0; k < 3; ++k)
+                    contained &=
+                        current.lo[k] >= table.coverage.lo[k] && current.hi[k] <= table.coverage.hi[k];
+                if (!contained) {
+                    const Vec pad{2 * reach, 2 * reach, 2 * reach};
+                    table.coverage = {sub(current.lo, pad), add(current.hi, pad)};
+                    table.columns = solid.column_block(table.coverage);
+                }
+                const auto &candidates = table.columns;
+                if (std::none_of(candidates.candidates.begin(), candidates.candidates.end(),
+                                 [&](const auto &c) { return targets.contains(c.face); }))
+                    continue;
+                for (auto i = block.first; i < block.end; ++i) {
+                    const auto &s = r.sites[i];
+                    Vec p = rel[side].point(s.point), d = rel[side].direction(scale(s.normal, -1));
+                    if (std::none_of(targets.begin(), targets.end(),
+                                     [&](int t) { return face(1 - side, t).box.ray(p, d, reach, 1e-7); }))
+                        continue;
+                    auto root = solid.first(p, d, reach, candidates, scratch);
+                    if (root && targets.contains(root->face))
+                        depths[offset + (i - block.first)] = root->t;
+                }
+            }
+        });
+        Integral q;
+        for (const auto &job : jobs) {
+            const auto &block = job.rule->blocks[job.block_id];
+            for (auto i = block.first; i < block.end; ++i) {
+                const double depth = depths[job.offset + (i - block.first)];
+                if (!std::isnan(depth)) sum(q, job.side, job.rule->sites[i], depth);
+            }
+        }
         return resultant(q, arm);
     }
     using Windows = std::array<std::map<int, Rect>, 2>;
@@ -619,22 +669,39 @@ class CompiledPair final : public RegionQuery {
                         reach_};
         const auto tic = Clock::now();
         Candidates pairs;
-        for (int side = 0; side < 2; ++side)
-            collect(*bodies_[side], *bodies_[1 - side], query.rel[1 - side], side, reach_, windows_[side],
-                    pairs);
+        Candidates reverse;
+        contact_tasks::ranges(2, 1, [&](auto first, auto end) {
+            for (int side = static_cast<int>(first); side < static_cast<int>(end); ++side)
+                collect(*bodies_[side], *bodies_[1 - side], query.rel[1 - side], side, reach_,
+                        windows_[side], side ? reverse : pairs);
+        });
+        pairs.merge(reverse);
+        for (auto &[ids, more] : reverse) {
+            auto &ordered = pairs.at(ids);
+            ordered.insert(ordered.end(), more.begin(), more.end());
+        }
         for (auto &[ids, seed] : previous_)
             pairs.try_emplace(ids);
         auto now = Clock::now();
         work.cad_patch_broad_s += std::chrono::duration<double>(now - tic).count();
         std::vector<Witness> found;
         std::map<Pair, Seed> next;
-        for (auto &[ids, proposals] : pairs) {
-            auto it = previous_.find(ids);
-            auto w = query.find(ids, proposals, it == previous_.end() ? nullptr : &it->second);
-            if (w) {
-                found.push_back(*w);
-                next[ids] = w->seed;
+        std::vector<Candidates::iterator> candidates;
+        candidates.reserve(pairs.size());
+        for (auto it = pairs.begin(); it != pairs.end(); ++it) candidates.push_back(it);
+        std::vector<std::optional<Witness>> confirmed(candidates.size());
+        const auto &previous = std::as_const(previous_);
+        contact_tasks::ranges(candidates.size(), 2, [&](auto first, auto end) {
+            for (auto i = first; i < end; ++i) {
+                auto &[ids, proposals] = *candidates[i];
+                const auto seed = previous.find(ids);
+                confirmed[i] = query.find(ids, proposals, seed == previous.end() ? nullptr : &seed->second);
             }
+        });
+        for (std::size_t i = 0; i < confirmed.size(); ++i) {
+            if (!confirmed[i]) continue;
+            found.push_back(*confirmed[i]);
+            next.emplace_hint(next.end(), candidates[i]->first, confirmed[i]->seed);
         }
         previous_ = std::move(next);
         const auto search = Clock::now();

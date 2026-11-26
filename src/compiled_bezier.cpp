@@ -105,15 +105,16 @@ struct RootSolver {
     const Patch &patch;
     Vec p, d;
     double end, tol;
-    std::vector<RayRoot> roots;
+    std::vector<RayRoot>& roots;
+    std::size_t first_root;
     void record(Param uv) {
         const auto j = patch.at(uv);
         const double t = dot3(sub(j.p, p), d);
         Vec n = cross3(j.u, j.v);
         if (t < -tol || t > end + tol || length(n) < 1e-22)
             return;
-        for (const auto &hit : roots)
-            if (std::abs(hit.t - t) <= tol)
+        for (auto i=first_root; i<roots.size(); ++i)
+            if (std::abs(roots[i].t - t) <= tol)
                 return;
         roots.push_back({t, scale(n, 1 / length(n)), uv, patch.face});
     }
@@ -450,16 +451,16 @@ Jet Patch::at(Param uv) const {
     Vec p = affine(q);
     return {p, scale(project(a, p), 1 / (h * q[3])), scale(project(b, p), 1 / (k * q[3]))};
 }
-std::vector<RayRoot> Patch::roots(Vec p, Vec d, double end, double tol) const {
+void Patch::roots(Vec p, Vec d, double end, double tol, std::vector<RayRoot>& out) const {
     double a = dot3(axis, sub(p, anchor)), b = a + dot3(axis, d) * end;
     if (std::min(a, b) > far_plane + tol || std::max(a, b) < near_plane - tol)
-        return {};
+        return;
     const auto rel = sub(p, anchor);
     const Vec origin{dot3(frame[0], rel), dot3(frame[1], rel), a};
     const Vec direction{dot3(frame[0], d), dot3(frame[1], d), dot3(axis, d)};
     if (!frame_box.ray(origin, direction, end, 2 * tol))
-        return {};
-    RootSolver solver{*this, p, d, end, tol, {}};
+        return;
+    RootSolver solver{*this, p, d, end, tol, out, out.size()};
     if (cubic) {
         const SlabRay ray{origin, direction};
         const auto visit = [&](auto &&self, std::size_t i) -> bool {
@@ -471,9 +472,9 @@ std::vector<RayRoot> Patch::roots(Vec p, Vec d, double end, double tol) const {
             return 2 * i + 2 < cells.size() && self(self, 2 * i + 1) && self(self, 2 * i + 2);
         };
         if (visit(visit, 0))
-            return std::move(solver.roots);
+            return;
         if (std::abs(dot3(axis, d)) < 1e-12 && far_plane - near_plane < 1e-10)
-            return std::move(solver.roots);
+            return;
         // Clip the projected control hull before the more costly 3D subdivision,
         // especially for short nearly tangential segments between load regions.
         Vec x = std::abs(d[0]) < .7 ? cross3(d, {1, 0, 0}) : cross3(d, {0, 1, 0});
@@ -486,9 +487,8 @@ std::vector<RayRoot> Patch::roots(Vec p, Vec d, double end, double tol) const {
         }
         double pad = 4096 * std::numeric_limits<double>::epsilon() * (1 + length(p) + length(anchor));
         if (solver.clip_cubic(transverse, full, x, y, pad, 0))
-            return std::move(solver.roots);
+            return;
     }
     solver.visit(net, full, 0);
-    return std::move(solver.roots);
 }
 } // namespace nc::compiled

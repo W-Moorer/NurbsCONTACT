@@ -1,4 +1,5 @@
 #include "cpu_mesh_features.hpp"
+#include "contact_tasks.hpp"
 #include "cpu_mesh_contours.hpp"
 
 #include <numeric>
@@ -354,6 +355,9 @@ struct FiniteFeatures::Data {
     RigidPlacement saved;
     std::vector<FeaturePair> list;
     std::vector<std::array<std::size_t,2>> nearby;
+    std::vector<std::size_t> nearby_moving_faces;
+    std::vector<std::uint8_t> listed_face;
+    std::vector<std::uint8_t> decisions;
     // Recurring poses can reuse the conservative skin search as well as the
     // immediately preceding pose. Store triangle IDs only, never hits or forces.
     struct SearchWindow {
@@ -427,6 +431,8 @@ struct FiniteFeatures::Data {
     std::vector<Geometry> fixed_faces,moving_faces;
     std::vector<std::size_t> versions;
     std::size_t version{};
+    std::vector<Segment> fixed_segments,moving_segments;
+    std::vector<std::size_t> segment_versions;
     std::array<std::size_t,2> last_plane{};
     PairRows face_rows;
     std::array<PairRows,3> feature_rows;
@@ -445,7 +451,13 @@ struct FiniteFeatures::Data {
             }
         }
         moving_faces.resize(b.faces.size());
+        listed_face.resize(b.faces.size());
         versions.resize(b.faces.size());
+        fixed_segments.reserve(surfaces[0].edges.size());
+        for (std::size_t i=0;i<surfaces[0].edges.size();++i)
+            fixed_segments.push_back(segment(surfaces[0],i,{}));
+        moving_segments.resize(surfaces[1].edges.size());
+        segment_versions.resize(moving_segments.size());
         limit=maximum>0 && std::isfinite(maximum) ? 4*maximum : radius*.08;
         initial_reach=std::min(limit,radius*.006);
         reach=initial_reach;
@@ -532,36 +544,59 @@ struct FiniteFeatures::Data {
     }
     ContactRegion witness(const RigidPlacement& rel,const std::vector<FeaturePair>& candidates,bool convex,double cutoff) {
         std::array<RigidPlacement,2> local{RigidPlacement{},rel};
-        ContactRegion best{};
-        FeaturePair winner{};
-        if (convex) best.depth_m=std::numeric_limits<double>::infinity();
         const double epsilon=1e-13*std::min(surfaces[0].radius,surfaces[1].radius);
-        const auto acceptable=[&](double d) {
-            return d>=-epsilon && d<=cutoff && (convex ? d<best.depth_m : d>best.depth_m);
-        };
         for (const auto& f:candidates) {
-            if (f.kind<2) {
-                const unsigned s=f.kind,t=1-s;
-                const Vec p=local[s].point(surfaces[s].mesh.vertices[f.a]);
-                const auto& face=t ? moving(f.b,rel) : fixed_faces[f.b];
-                const double d=dot3(sub(face.tri[0],p),face.n);
-                if (!acceptable(d) || !inside(face,p)) continue;
-                const Vec n=inverse_vector(local[s],face.n);
-                if (std::ranges::any_of(surfaces[s].rays[f.a],[&](Vec edge){return dot3(n,edge)<-1e-9;})) continue;
-                best={add(p,scale(face.n,.5*d)),scale(face.n,s?1.:-1.),d};
-                winner=f;
-            } else {
-                const auto q=common_normal(segment(surfaces[0],f.a,local[0]),segment(surfaces[1],f.b,local[1]));
-                if (!q.interior) continue;
-                const double gap=dot3(q.normal,sub(q.x,q.y)),d=std::abs(gap);
-                if (!acceptable(d)) continue;
-                const Vec n=scale(q.normal,gap>0 ? 1. : -1.);
-                if (!supports_edge(surfaces[0],f.a,n) ||
-                    !supports_edge(surfaces[1],f.b,inverse_vector(rel,scale(n,-1)))) continue;
-                best={scale(add(q.x,q.y),.5),n,d};
-                winner=f;
+            if (f.kind==0) moving(f.b,rel);
+            if (f.kind==2 && segment_versions[f.b]!=version) {
+                moving_segments[f.b]=segment(surfaces[1],f.b,rel);
+                segment_versions[f.b]=version;
             }
         }
+        struct Choice { ContactRegion contact{}; FeaturePair feature{}; };
+        constexpr std::size_t block_size=192;
+        const std::size_t blocks=(candidates.size()+block_size-1)/block_size;
+        std::vector<Choice> choices(blocks);
+        const auto better=[&](double d,double current) {return convex ? d<current : d>current;};
+        contact_tasks::ranges(blocks,1,[&](auto first,auto end) {
+            for (auto block=first;block<end;++block) {
+                auto& [best,winner]=choices[block];
+                if (convex) best.depth_m=std::numeric_limits<double>::infinity();
+                const auto acceptable=[&](double d) {
+                    return d>=-epsilon && d<=cutoff && better(d,best.depth_m);
+                };
+                const auto limit=std::min(candidates.size(),(block+1)*block_size);
+                for (auto i=block*block_size;i<limit;++i) {
+                    const auto& f=candidates[i];
+                    if (f.kind<2) {
+                        const unsigned s=f.kind,t=1-s;
+                        const Vec p=local[s].point(surfaces[s].mesh.vertices[f.a]);
+                        const auto& face=t ? moving_faces[f.b] : fixed_faces[f.b];
+                        const double d=dot3(sub(face.tri[0],p),face.n);
+                        if (!acceptable(d) || !inside(face,p)) continue;
+                        const Vec n=inverse_vector(local[s],face.n);
+                        if (std::ranges::any_of(surfaces[s].rays[f.a],[&](Vec edge){return dot3(n,edge)<-1e-9;})) continue;
+                        best={add(p,scale(face.n,.5*d)),scale(face.n,s?1.:-1.),d};
+                        winner=f;
+                    } else {
+                        const auto q=common_normal(fixed_segments[f.a],moving_segments[f.b]);
+                        if (!q.interior) continue;
+                        const double gap=dot3(q.normal,sub(q.x,q.y)),d=std::abs(gap);
+                        if (!acceptable(d)) continue;
+                        const Vec n=scale(q.normal,gap>0 ? 1. : -1.);
+                        if (!supports_edge(surfaces[0],f.a,n) ||
+                            !supports_edge(surfaces[1],f.b,inverse_vector(rel,scale(n,-1)))) continue;
+                        best={scale(add(q.x,q.y),.5),n,d};
+                        winner=f;
+                    }
+                }
+            }
+        });
+        // Strict comparisons keep the earliest feature on an equal depth.
+        Choice selected{};
+        if (convex) selected.contact.depth_m=std::numeric_limits<double>::infinity();
+        for (const auto& item:choices)
+            if (better(item.contact.depth_m,selected.contact.depth_m)) selected=item;
+        auto& [best,winner]=selected;
         if (!convex && best.depth_m>epsilon) {
             if (winner.kind<2) {
                 const unsigned s=winner.kind;
@@ -679,6 +714,21 @@ struct FiniteFeatures::Data {
             if (a.lo[k]>b.hi[k]+margin || b.lo[k]>a.hi[k]+margin) return false;
         return !planes_separate(a,b,margin) && !planes_separate(b,a,margin);
     }
+    void list_moving_faces() {
+        for (auto id:nearby_moving_faces) listed_face[id]=0;
+        nearby_moving_faces.clear();
+        for (auto pair:nearby) {
+            const auto id=pair[1];
+            if (listed_face[id]) continue;
+            listed_face[id]=1;
+            nearby_moving_faces.push_back(id);
+        }
+    }
+    void place_moving_faces(const RigidPlacement& rel) {
+        contact_tasks::ranges(nearby_moving_faces.size(),96,[&](auto first,auto end) {
+            for (auto i=first;i<end;++i) moving(nearby_moving_faces[i],rel);
+        });
+    }
     // Nodes are actual intersecting finite triangle pairs. Two neighboring
     // nodes are connected only if their common mesh edge also hits the other
     // triangle. Thus a shared triangle ID alone never merges separate patches.
@@ -688,32 +738,47 @@ struct FiniteFeatures::Data {
         if (!initialized || motion_bound(rel,saved,surfaces[1].radius)>skin) {
             const auto bin=pose_bin(rel);
             if (!restore_window(rel,bin)) {
-                nearby=scene.near_pairs(poses,skin,work);
-                std::erase_if(nearby,[&](FacePair p){
-                    const auto& a=fixed_faces[p[0]]; const auto& b=moving(p[1],rel);
-                    const double margin=skin+slack;
-                    return !possible_pair(a,b,margin) || projected_relation(a,b,margin)<0 || projected_relation(b,a,margin)<0;
-                });
+                const double margin=skin+slack;
+                const TrianglePairFilter filter{
+                    [&](std::size_t target) {moving(target,rel);},
+                    [&](std::size_t source,std::size_t target) {
+                        const auto& a=fixed_faces[source];
+                        const auto& b=moving_faces[target];
+                        return possible_pair(a,b,margin) && projected_relation(a,b,margin)>=0 &&
+                               projected_relation(b,a,margin)>=0;
+                    }
+                };
+                nearby=scene.near_pairs(poses,skin,work,filter);
                 saved=rel;
                 save_window(bin);
             }
+            list_moving_faces();
             initialized=true;
         }
+        place_moving_faces(rel);
         using Pair=std::array<std::size_t,2>;
         std::vector<Pair> hits;
         std::unordered_map<std::uint64_t,std::size_t> index;
         const auto key=[](Pair p) {return (std::uint64_t(p[0])<<32)|p[1];};
-        for (auto pair:nearby) {
-            const auto& a=fixed_faces[pair[0]]; const auto& b=moving(pair[1],rel);
-            if (!possible_pair(a,b,slack)) continue;
+        const auto classify=[&](Pair pair) -> std::uint8_t {
+            const auto& a=fixed_faces[pair[0]];
+            const auto& b=moving_faces[pair[1]];
+            if (!possible_pair(a,b,slack)) return 0;
             const int first=projected_relation(a,b,slack);
-            if (first<0) continue;
+            if (first<0) return 0;
             const int second=projected_relation(b,a,slack);
-            if (second<0) continue;
-            ++work.mesh.triangles;
+            if (second<0) return 0;
             const bool planar_overlap=first && second && a.drop==b.drop && a.lo[a.drop]==a.hi[a.drop] &&
                 b.lo[a.drop]==a.lo[a.drop] && b.hi[a.drop]==a.hi[a.drop];
-            if (planar_overlap || triangle_overlap(a.tri,b.tri)) hits.push_back(pair);
+            return planar_overlap || triangle_overlap(a.tri,b.tri) ? 2 : 1;
+        };
+        decisions.resize(nearby.size());
+        contact_tasks::ranges(nearby.size(),256,[&](auto first,auto end) {
+            for (auto i=first;i<end;++i) decisions[i]=classify(nearby[i]);
+        });
+        for (std::size_t i=0;i<nearby.size();++i) {
+            work.mesh.triangles+=decisions[i]!=0;
+            if (decisions[i]==2) hits.push_back(nearby[i]);
         }
         // Contact forces are accumulated in component order. Make both the
         // representative triangle and the accumulation independent of BVH traversal.

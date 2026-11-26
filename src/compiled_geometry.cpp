@@ -269,11 +269,16 @@ bool Face::inside(Param uv) const {
     return on_boundary || winding % 2 != 0;
 }
 void Face::span_roots(int i, Vec p, Vec d, double end, double tol, std::vector<RayRoot> &out) const {
-    for (auto h : patches[i].roots(p, d, end, tol))
-        if (inside(h.uv)) {
-            h.normal = scale(h.normal, info.orientation);
-            out.push_back(h);
-        }
+    const auto first = out.size();
+    patches[i].roots(p, d, end, tol, out);
+    auto kept = first;
+    for (auto j = first; j < out.size(); ++j) {
+        if (!inside(out[j].uv)) continue;
+        out[j].normal = scale(out[j].normal, info.orientation);
+        if (kept != j) out[kept] = out[j];
+        ++kept;
+    }
+    out.resize(kept);
 }
 void Face::roots(Vec p, Vec d, double end, double tol, int id, std::vector<RayRoot> &out) const {
     if (!analytic) {
@@ -604,10 +609,10 @@ Solid::ColumnBlock Solid::column_block(const Box &swept) const {
     tree.visit(0, swept, face);
     return block;
 }
-std::optional<RayRoot> Solid::first(Vec p, Vec d, double maximum, const ColumnBlock &block) const {
+std::optional<RayRoot> Solid::first(Vec p, Vec d, double maximum, const ColumnBlock &block,
+                                   std::vector<RayRoot>& hits) const {
     const SlabRay ray{p, d};
     return select_exit(d, maximum, [&](double &end, const auto &record) {
-        std::vector<RayRoot> hits;
         for (const auto &c : block.candidates) {
             const auto &f = faces[c.face];
             if (!ray.intersects(f.box, end, 1e-6))

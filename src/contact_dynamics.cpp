@@ -1,4 +1,5 @@
 #include "nurbscontact/contact_dynamics.hpp"
+#include "contact_tasks.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -168,13 +169,18 @@ struct RegionEvaluation {
     std::exception_ptr error;
 };
 
-#ifdef _OPENMP
 // Each admitted pair owns its mutable geometry. Material response and HHT
 // assembly keep their original per-pair and per-region accumulation order.
 std::vector<RegionEvaluation> batch_mesh_regions(std::span<const ContactBodyState> bodies,
         std::span<const ContactPair> pairs,ContactWork& work) {
-    const int workers=std::min(omp_get_max_threads(),static_cast<int>(std::min<std::size_t>(4,pairs.size())));
-    if (workers<2 || omp_in_parallel()) return {};
+    const int task_workers=contact_tasks::concurrency();
+    int limit=task_workers;
+#ifdef _OPENMP
+    if (omp_in_parallel()) return {};
+    if (!task_workers) limit=std::min(4,omp_get_max_threads());
+#endif
+    const int workers=static_cast<int>(std::min<std::size_t>(limit,pairs.size()));
+    if (workers<2) return {};
     std::unordered_set<const PairRegionQuery*> seen;
     std::size_t faces=0;
     bool cad_patch=false;
@@ -188,20 +194,30 @@ std::vector<RegionEvaluation> batch_mesh_regions(std::span<const ContactBodyStat
     if (!cad_patch && faces<1024) return {};
     std::vector<RegionEvaluation> batch(pairs.size());
     const auto start=std::chrono::steady_clock::now();
-    int team=1;
+    int team=workers;
+    const auto run_pair=[&](std::size_t i) {
+        const auto& pair=pairs[i];
+        auto& evaluation=batch[i];
+        try {
+            evaluation.regions=pair.regions->regions(bodies[pair.a].pose,bodies[pair.b].pose,evaluation.work);
+        } catch (...) {evaluation.error=std::current_exception();}
+    };
+    if (task_workers>1) {
+        contact_tasks::ranges(pairs.size(),1,[&](auto first,auto end) {
+            for (auto i=first;i<end;++i) run_pair(i);
+        });
+    }
+#ifdef _OPENMP
+    else {
 #pragma omp parallel num_threads(workers)
-    {
-#pragma omp single
-        team=omp_get_num_threads();
+        {
+#pragma omp master
+            team=omp_get_num_threads();
 #pragma omp for schedule(dynamic,1)
-        for (std::ptrdiff_t i=0;i<static_cast<std::ptrdiff_t>(pairs.size());++i) {
-            const auto& pair=pairs[i];
-            auto& evaluation=batch[i];
-            try {
-                evaluation.regions=pair.regions->regions(bodies[pair.a].pose,bodies[pair.b].pose,evaluation.work);
-            } catch (...) {evaluation.error=std::current_exception();}
+            for (std::ptrdiff_t i=0;i<static_cast<std::ptrdiff_t>(pairs.size());++i) run_pair(i);
         }
     }
+#endif
     const double elapsed=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
     if (cad_patch) {work.cad_patch_batch_s+=elapsed;++work.cad_patch_batches;}
     else {
@@ -241,7 +257,6 @@ std::vector<RegionEvaluation> batch_mesh_regions(std::span<const ContactBodyStat
     }
     return batch;
 }
-#endif
 
 bool evaluate(Forces* forces, const ContactBodyState& a, const ContactBodyState& b,
               const ContactPair& pair, const Vector& velocity,
@@ -493,9 +508,7 @@ bool add_contact_forces(Forces* forces, std::span<const ContactBodyState> bodies
         observations->reserve(pairs.size());
     }
     std::vector<RegionEvaluation> prepared;
-#ifdef _OPENMP
     if (pairs.size()>1) prepared=batch_mesh_regions(bodies,pairs,work);
-#endif
     for (std::size_t i=0; i<pairs.size(); ++i) {
         const auto& pair = pairs[i];
         ContactSample sample;

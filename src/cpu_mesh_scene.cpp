@@ -1,6 +1,7 @@
 #include "nurbscontact/cpu_mesh.hpp"
 #include "cpu_mesh_solid.hpp"
 #include "cpu_mesh_contours.hpp"
+#include "cpu_mesh_window.hpp"
 #ifdef NC_WITH_MESH_CCD
 #include "cpu_mesh_ccd.hpp"
 #include "cpu_mesh_motion.hpp"
@@ -125,12 +126,28 @@ double projected_radius(const Oriented& b,const V& dir) {
     return (b.axis.transpose()*dir).cwiseAbs().dot(b.extent);
 }
 
-struct CandidateTriangle {
-    Triangle triangle;
-    Vec lo,hi;
-    std::size_t face;
-    int side;
-};
+using CandidateTriangle=WindowTriangle;
+
+// Only the portion inside the opposing body's padded support plane can
+// contain a proximity witness. Keep the original triangle for the visitor.
+void slab_bounds(CandidateTriangle& c,const std::array<double,3>& heights,double pad) {
+    c.lo={INFINITY,INFINITY,INFINITY};
+    c.hi={-INFINITY,-INFINITY,-INFINITY};
+    const auto include=[&](const Vec& p) {
+        for (int k=0;k<3;++k) {
+            c.lo[k]=std::min(c.lo[k],p[k]);
+            c.hi[k]=std::max(c.hi[k],p[k]);
+        }
+    };
+    for (int i=0;i<3;++i) {
+        const int j=(i+1)%3;
+        if (heights[i]>=0) include(c.triangle[i]);
+        if ((heights[i]<0)==(heights[j]<0)) continue;
+        const double t=heights[i]/(heights[i]-heights[j]);
+        include(dynamics::add(c.triangle[i],dynamics::scale(dynamics::sub(c.triangle[j],c.triangle[i]),t)));
+    }
+    for (int k=0;k<3;++k) {c.lo[k]-=pad;c.hi[k]+=pad;}
+}
 
 struct SurfaceWindow {
     X anchor=X::Identity();
@@ -144,7 +161,8 @@ struct SurfaceWindow {
 template<class Box,class Visitor>
 std::optional<bool> visit_contact_window(const Body& a,const Body& b,std::span<const RigidPlacement> poses,
         std::size_t& node_tests,std::size_t& triangle_tests,Visitor& visitor,double margin,
-        SurfaceWindow* cache=nullptr,dynamics::ContactWork* work=nullptr) {
+        SurfaceWindow* cache=nullptr,dynamics::ContactWork* work=nullptr,
+        std::vector<std::array<std::size_t,2>>* nearby=nullptr,const TrianglePairFilter& filter={}) {
     if (!cache && (a.mesh->faces.size()<128 || b.mesh->faces.size()<128)) return {};
     const V ca=a.world*a.local.center(),cb=b.world*b.local.center();
     const double spacing=(cb-ca).norm();
@@ -197,12 +215,17 @@ std::optional<bool> visit_contact_window(const Body& a,const Body& b,std::span<c
         const double threshold=lower+dir.dot(body.local.center());
         for (auto face:window.faces[side]) {
             const auto& f=body.mesh->faces[face];
-            if (cache && dir.dot(vector(body.mesh->vertices[f[0]]))<threshold &&
-                         dir.dot(vector(body.mesh->vertices[f[1]]))<threshold &&
-                         dir.dot(vector(body.mesh->vertices[f[2]]))<threshold) continue;
+            std::array<double,3> heights{};
+            if (cache) {
+                for (int i=0;i<3;++i)
+                    heights[i]=dir.dot(vector(body.mesh->vertices[f[i]]))-threshold+body.padding;
+                if (*std::max_element(heights.begin(),heights.end())<0) continue;
+            }
             const auto t=triangle(*body.mesh,face,poses[body.proxy->index]);
             CandidateTriangle c{t,t[0],t[0],face,side};
-            for (int k=0;k<3;++k) {
+            if (cache && *std::min_element(heights.begin(),heights.end())<0) {
+                slab_bounds(c,heights,pad);
+            } else for (int k=0;k<3;++k) {
                 c.lo[k]=std::min({t[0][k],t[1][k],t[2][k]})-pad;
                 c.hi[k]=std::max({t[0][k],t[1][k],t[2][k]})+pad;
             }
@@ -212,6 +235,10 @@ std::optional<bool> visit_contact_window(const Body& a,const Body& b,std::span<c
     append(a,ua,spacing-rb-pad,0);
     append(b,-ub,spacing-ra-pad,1);
     if (candidates.empty()) return false;
+    if (nearby) {
+        triangle_tests+=window_pairs(candidates,pad,*nearby,filter);
+        return false;
+    }
     Vec lo=candidates.front().lo,hi=candidates.front().hi,width_sum{};
     for (const auto& c:candidates) for (int k=0;k<3;++k) {
         lo[k]=std::min(lo[k],c.lo[k]);
@@ -516,6 +543,10 @@ std::vector<dynamics::ContactRegion> MeshScene::fcl_contacts(std::span<const Rig
 
 std::vector<std::array<std::size_t,2>> MeshScene::near_pairs(std::span<const RigidPlacement> poses,double margin,
                                                              dynamics::ContactWork& work) {
+    return near_pairs(poses,margin,work,{});
+}
+std::vector<std::array<std::size_t,2>> MeshScene::near_pairs(std::span<const RigidPlacement> poses,double margin,
+                                    dynamics::ContactWork& work,const TrianglePairFilter& filter) {
     auto& state=*impl_;
     if (poses.size()!=2 || margin<0) throw std::invalid_argument("invalid mesh proximity pair");
     state.place(poses);
@@ -524,13 +555,14 @@ std::vector<std::array<std::size_t,2>> MeshScene::near_pairs(std::span<const Rig
     std::vector<std::array<std::size_t,2>> result;
     if (!placed(a.local,a.world,a.padding+margin).overlap(b.proxy->getAABB())) return result;
     auto add=[&](std::size_t i,std::size_t j,const Triangle&,const Triangle&) {
-        result.push_back({i,j});
+        if (filter.place_target) filter.place_target(j);
+        if (!filter.keep || filter.keep(i,j)) result.push_back({i,j});
         return false;
     };
     const auto search=[&]<class Box>() {
         if (state.candidate_window) {
             const auto used=visit_contact_window<Box>(a,b,poses,work.mesh.nodes,work.mesh.triangles,
-                                                      add,margin,&state.near_window,&work);
+                                                      add,margin,&state.near_window,&work,&result,filter);
             if (used.has_value()) return;
         }
         ++work.mesh_pair_bvh_builds;

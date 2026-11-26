@@ -4,6 +4,7 @@
 #include "nurbscontact/contact_dynamics.hpp"
 
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <span>
 #include <string_view>
@@ -70,6 +71,12 @@ struct OverlapResult {
     bool adjacent_triangle_pair{};
 };
 
+struct TrianglePairFilter {
+    // The window places target faces before querying. keep may run concurrently
+    // and must only read the prepared geometry.
+    std::function<void(std::size_t)> place_target;
+    std::function<bool(std::size_t,std::size_t)> keep;
+};
 // Surface intersections and complete containment for closed, consistently wound solid boundaries.
 class MeshScene {
 public:
@@ -83,6 +90,8 @@ public:
                                                       dynamics::ContactWork& work);
     std::vector<std::array<std::size_t,2>> near_pairs(std::span<const RigidPlacement> poses,double margin,
                                                       dynamics::ContactWork& work);
+    std::vector<std::array<std::size_t,2>> near_pairs(std::span<const RigidPlacement> poses,double margin,
+                                                      dynamics::ContactWork& work,const TrianglePairFilter& filter);
     std::optional<Vec> interior_projection(std::size_t body,Vec local) const;
     OverlapResult overlaps(std::span<const RigidPlacement> poses, bool follow_adjacent=true);
 #ifdef NC_WITH_MESH_CCD

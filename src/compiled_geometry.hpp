@@ -141,7 +141,7 @@ struct Patch {
     std::vector<Cell> cells;
     void prepare_cells();
     Jet at(Param uv) const;
-    std::vector<RayRoot> roots(Vec p, Vec d, double end, double tol) const;
+    void roots(Vec p, Vec d, double end, double tol, std::vector<RayRoot>& out) const;
 };
 struct Rule {
     std::vector<NodeSample> sites;
@@ -197,7 +197,7 @@ class Solid {
         std::vector<BlockFace> candidates;
     };
     ColumnBlock column_block(const Box &swept) const;
-    std::optional<RayRoot> first(Vec p, Vec d, double end, const ColumnBlock &block) const;
+    std::optional<RayRoot> first(Vec p, Vec d, double end, const ColumnBlock &block, std::vector<RayRoot>& scratch) const;
     std::optional<RayRoot> first(Vec p, Vec d, double end) const;
     std::optional<RayRoot> crossing(Vec a, Vec b) const;
 };

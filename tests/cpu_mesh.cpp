@@ -302,6 +302,20 @@ void check_local_regions() {
         }
         require(near_work.mesh_pair_bvh_reuses>0 && near_work.mesh_pair_bvh_builds>1,
                 "sliding surface window must reuse and refresh its candidates");
+        // Each former intersection supplies two material points exactly .009
+        // apart after translation, including intersections inside a facet.
+        auto skew=poses;
+        const double angle=.37;
+        skew[1].basis={Vec{1,0,0},Vec{0,std::cos(angle),std::sin(angle)},
+                       Vec{0,-std::sin(angle),std::cos(angle)}};
+        skew[1].origin={.998,.13,-.07};
+        const auto crossed=geometry.intersect(skew);
+        require(!crossed.intersections.empty(),"missing skew proximity witnesses");
+        skew[1].origin[0]+=.009;
+        const auto separated=geometry.near_pairs(skew,.0091,near_work);
+        const std::set<std::array<std::size_t,2>> close(separated.begin(),separated.end());
+        for (const auto& hit:crossed.intersections)
+            require(close.contains({hit.triangle_a,hit.triangle_b}),"clipped window lost a close facet pair");
         for (int i=0;i<12;++i) {
             const double angle=.1*i;
             poses[1].origin={.98+.013*i,.025,.031};
