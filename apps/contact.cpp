@@ -133,7 +133,7 @@ struct SurfaceOptions {
     bool predictor_geometry{};
     std::optional<double> spectral_radius;
     bool chen() const { return method=="chen-2024" || method=="chen-2026"; }
-    bool patch() const { return method=="cad-patch" || method=="cad-bezier"; }
+    bool patch() const { return method=="cad-patch" || method=="cad-bezier" || method=="cad-bezier-bounds"; }
     bool cad() const { return method=="cad-occt" || method=="cad-local" || patch() || chen(); }
 };
 
@@ -416,7 +416,8 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
             const std::array centers{center(pair.a),center(pair.b)};
             if (surface_options.patch()) {
                 pair.regions=cad_patch_region_query(shapes.at(files[pair.a]),shapes.at(files[pair.b]),centers,
-                                                    pair.material.maximum_depth,surface_options.method=="cad-bezier");
+                                                    pair.material.maximum_depth,surface_options.method!="cad-patch",
+                                                    surface_options.method=="cad-bezier-bounds");
             } else if (surface_options.method=="cad-local") {
                 pair.regions=cad_local_region_query(shapes.at(files[pair.a]),shapes.at(files[pair.b]),centers,
                                                     pair.material.maximum_depth);
@@ -1375,7 +1376,8 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             "cad_region_cache_hits,cad_distance_cache_hits,cad_witness_tests,cad_witness_improvements,"
             "mesh_pair_bvh_builds,mesh_pair_bvh_reuses,mesh_patch_builds,mesh_patch_reuses,mesh_parallel_batches,mesh_max_workers,"
             "cad_region_index_s,cad_region_select_s,cad_region_common_s,cad_region_extract_s,"
-            "cad_patch_queries,cad_patch_batches,cad_patch_batch_s,cad_patch_broad_s,cad_patch_search_s,cad_patch_group_s,cad_patch_area_s,cad_window_builds,cad_window_reuses,cad_path_reuses,cad_skipped_area_nodes,cad_pressure_clipped,cad_pressure_full,cad_full_blocks,cad_partial_blocks,cad_shared_columns\n"
+            "cad_patch_queries,cad_patch_batches,cad_patch_batch_s,cad_patch_broad_s,cad_patch_search_s,cad_patch_group_s,cad_patch_area_s,cad_window_builds,cad_window_reuses,cad_path_reuses,cad_skipped_area_nodes,cad_pressure_clipped,cad_pressure_full,cad_full_blocks,cad_partial_blocks,cad_shared_columns,"
+            "cad_depth_tests,cad_depth_excluded,cad_depth_refinements,cad_depth_accepted,cad_depth_empty_blocks,cad_depth_interior_blocks\n"
         <<(n || surface.impulse_law ? wall : replay_s)<<','<<setup_s<<','<<steps<<','<<stats.accepted_steps<<','<<stats.subdivisions<<','<<stats.evaluations
         <<','<<stats.maximum_residual<<','<<work.pairs<<','<<work.culled<<','<<work.rays<<','<<work.missing
         <<','<<work.mesh.triangles<<','<<work.closest_queries<<','<<work.unresolved_queries<<','<<work.native_nodes
@@ -1392,7 +1394,9 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         <<','<<work.mesh_patch_builds<<','<<work.mesh_patch_reuses<<','<<work.mesh_parallel_batches<<','<<work.mesh_max_workers
         <<','<<work.cad_region_index_s<<','<<work.cad_region_select_s<<','<<work.cad_region_common_s<<','<<work.cad_region_extract_s
         <<','<<work.cad_patch_queries<<','<<work.cad_patch_batches<<','<<work.cad_patch_batch_s<<','<<work.cad_patch_broad_s
-        <<','<<work.cad_patch_search_s<<','<<work.cad_patch_group_s<<','<<work.cad_patch_area_s<<','<<work.cad_window_builds<<','<<work.cad_window_reuses<<','<<work.cad_path_reuses<<','<<work.cad_skipped_area_nodes<<','<<work.cad_pressure_clipped<<','<<work.cad_pressure_full<<','<<work.cad_full_blocks<<','<<work.cad_partial_blocks<<','<<work.cad_shared_columns<<'\n';
+        <<','<<work.cad_patch_search_s<<','<<work.cad_patch_group_s<<','<<work.cad_patch_area_s<<','<<work.cad_window_builds<<','<<work.cad_window_reuses<<','<<work.cad_path_reuses<<','<<work.cad_skipped_area_nodes<<','<<work.cad_pressure_clipped<<','<<work.cad_pressure_full<<','<<work.cad_full_blocks<<','<<work.cad_partial_blocks<<','<<work.cad_shared_columns;
+    for (auto value:work.cad_depth_counts) report<<','<<value;
+    report<<'\n';
     if (!trace || !report) throw std::runtime_error("failed to write contact run");
 }
 
@@ -1467,7 +1471,7 @@ int main(int argc,char** argv) {
                         "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
                         "  or append --method bvh-aabb|bvh-obb|mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
                         "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl|finite|contour-ray] [--penalty-stiffness per-region|shared] [--geometry-update newton|predictor] [--spectral-radius RHO]\n"
-                        "  or append --method cad-occt|cad-local|cad-patch|cad-bezier|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
+                        "  or append --method cad-occt|cad-local|cad-patch|cad-bezier|cad-bezier-bounds|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
                         "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp [--progress FILE]\n";
             return 2;
         }

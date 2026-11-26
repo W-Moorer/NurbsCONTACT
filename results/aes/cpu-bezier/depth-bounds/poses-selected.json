@@ -1,0 +1,154 @@
+{
+  "probes_sha256": [
+    "4da187194c44b14a1739f3be3094ffa0b4d963f9c596911e8954727dea70bb53",
+    "4da187194c44b14a1739f3be3094ffa0b4d963f9c596911e8954727dea70bb53"
+  ],
+  "trajectory_sha256": "33dfb97a3bdf7786746f0c706ae6392071a073a50c2666ec521a8255ca35d005",
+  "stages": [
+    {
+      "stage": 1,
+      "checked": 800,
+      "timed": 640,
+      "face_group_changes": 163,
+      "compared_torques": 800,
+      "max_torque_delta_Nm": 1.1492480211927614e-07,
+      "changed_states": [],
+      "changed_geometry": [],
+      "max_component_errors": {
+        "point_m": 1.0082629176011437e-12,
+        "unit_normal": 0.0,
+        "arm_m": 1.0732248423295232e-12,
+        "depth_m": 2.5487702497595938e-14
+      },
+      "max_wrench_errors": {
+        "total_normal_N": 2.038854063357576e-06,
+        "resultant_N": 2.0388542314215325e-06,
+        "moment_Nm": 1.1492480211927614e-07
+      },
+      "previous": {
+        "area_mean_ms": 2.1940962500000003,
+        "area_median_ms": 1.6806,
+        "full_query_mean_ms": 4.9958068749999995,
+        "ray_counts": [
+          521,
+          46174,
+          4359,
+          54720
+        ],
+        "area_ray_counts": [
+          444,
+          43793,
+          3755,
+          51137
+        ],
+        "full_blocks": 7363,
+        "partial_blocks": 0,
+        "shared_columns": 8
+      },
+      "current": {
+        "area_mean_ms": 1.7458243750000002,
+        "area_median_ms": 1.40095,
+        "full_query_mean_ms": 4.161274375,
+        "ray_counts": [
+          485,
+          7050,
+          4119,
+          12931
+        ],
+        "area_ray_counts": [
+          408,
+          4669,
+          3515,
+          9348
+        ],
+        "depth_bounds": {
+          "interval_tests": 29760,
+          "excluded_sites": 84,
+          "root_refinements": 39372,
+          "accepted_depths": 39372,
+          "empty_blocks": 13,
+          "interior_blocks": 6508,
+          "site_box_tests": 275758
+        },
+        "full_blocks": 7363,
+        "partial_blocks": 0,
+        "shared_columns": 0
+      }
+    },
+    {
+      "stage": 2,
+      "checked": 800,
+      "timed": 640,
+      "face_group_changes": 142,
+      "compared_torques": 800,
+      "max_torque_delta_Nm": 6.46650732960552e-10,
+      "changed_states": [],
+      "changed_geometry": [],
+      "max_component_errors": {
+        "point_m": 8.89843754237063e-14,
+        "unit_normal": 0.0,
+        "arm_m": 8.907805049140904e-14,
+        "depth_m": 1.9416028030141974e-16
+      },
+      "max_wrench_errors": {
+        "total_normal_N": 1.0453732102178037e-08,
+        "resultant_N": 1.0452789222486266e-08,
+        "moment_Nm": 6.909822611151669e-10
+      },
+      "current": {
+        "area_mean_ms": 8.07306421875,
+        "area_median_ms": 7.7163,
+        "full_query_mean_ms": 13.835430625,
+        "ray_counts": [
+          184418,
+          35496,
+          18986,
+          268819
+        ],
+        "area_ray_counts": [
+          134049,
+          28882,
+          13140,
+          130731
+        ],
+        "depth_bounds": {
+          "interval_tests": 161217,
+          "excluded_sites": 415543,
+          "root_refinements": 21509,
+          "accepted_depths": 21509,
+          "empty_blocks": 43607,
+          "interior_blocks": 27,
+          "site_box_tests": 10314456
+        },
+        "full_blocks": 652,
+        "partial_blocks": 24730,
+        "shared_columns": 0
+      },
+      "previous": {
+        "area_mean_ms": 9.077750625000002,
+        "area_median_ms": 8.725000000000001,
+        "full_query_mean_ms": 14.9395065625,
+        "ray_counts": [
+          263303,
+          55395,
+          21418,
+          373073
+        ],
+        "area_ray_counts": [
+          212934,
+          48781,
+          15572,
+          234985
+        ],
+        "full_blocks": 652,
+        "partial_blocks": 24730,
+        "shared_columns": 0
+      }
+    }
+  ],
+  "current_flags": [
+    "--depth-bounds"
+  ],
+  "reverse_order": false,
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1"
+}

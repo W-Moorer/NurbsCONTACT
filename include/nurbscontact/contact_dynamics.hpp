@@ -54,6 +54,7 @@ struct ContactWork {
     std::size_t cad_patch_queries{},cad_patch_batches{};
     std::size_t cad_window_builds{},cad_window_reuses{},cad_path_reuses{},cad_skipped_area_nodes{};
     std::size_t cad_full_blocks{},cad_partial_blocks{},cad_shared_columns{};
+    std::array<std::size_t,6> cad_depth_counts{};
     std::size_t cad_pressure_clipped{},cad_pressure_full{};
     double cad_patch_batch_s{},cad_patch_broad_s{},cad_patch_search_s{},cad_patch_group_s{},cad_patch_area_s{};
 };

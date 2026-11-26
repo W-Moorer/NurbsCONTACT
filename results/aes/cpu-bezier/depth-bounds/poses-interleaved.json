@@ -1,0 +1,143 @@
+{
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "exe_sha256": "4da187194c44b14a1739f3be3094ffa0b4d963f9c596911e8954727dea70bb53",
+  "trajectory_sha256": "33dfb97a3bdf7786746f0c706ae6392071a073a50c2666ec521a8255ca35d005",
+  "stages": [
+    {
+      "stage": 1,
+      "compared": 800,
+      "timed": 640,
+      "max_torque_delta_Nm": 1.1492480211927614e-07,
+      "previous_area_ms": 2.791585156249997,
+      "bounded_area_ms": 2.2285753125000003,
+      "previous_query_ms": 5.357511875000002,
+      "bounded_query_ms": 4.800367343749996,
+      "windows": [
+        {
+          "start": 0,
+          "previous_area_ms": 3.052651249999999,
+          "bounded_area_ms": 3.579089999999999,
+          "previous_query_ms": 6.68023875,
+          "bounded_query_ms": 7.392639999999999
+        },
+        {
+          "start": 280,
+          "previous_area_ms": 4.598212499999999,
+          "bounded_area_ms": 2.54060125,
+          "previous_query_ms": 8.65056,
+          "bounded_query_ms": 6.43419375
+        },
+        {
+          "start": 10000,
+          "previous_area_ms": 2.7381475000000006,
+          "bounded_area_ms": 1.7420875000000002,
+          "previous_query_ms": 4.641374999999998,
+          "bounded_query_ms": 3.4566199999999982
+        },
+        {
+          "start": 16650,
+          "previous_area_ms": 2.2588749999999997,
+          "bounded_area_ms": 1.738235,
+          "previous_query_ms": 4.68450875,
+          "bounded_query_ms": 4.192456249999999
+        },
+        {
+          "start": 24950,
+          "previous_area_ms": 2.61420125,
+          "bounded_area_ms": 1.6882774999999994,
+          "previous_query_ms": 4.989997500000001,
+          "bounded_query_ms": 4.148240000000001
+        },
+        {
+          "start": 33320,
+          "previous_area_ms": 2.056547500000001,
+          "bounded_area_ms": 2.4747850000000002,
+          "previous_query_ms": 3.51217375,
+          "bounded_query_ms": 3.9363475000000014
+        },
+        {
+          "start": 46290,
+          "previous_area_ms": 2.4351050000000005,
+          "bounded_area_ms": 2.430285000000001,
+          "previous_query_ms": 4.1762025000000005,
+          "bounded_query_ms": 4.200747500000002
+        },
+        {
+          "start": 49900,
+          "previous_area_ms": 2.5789412499999993,
+          "bounded_area_ms": 1.63524125,
+          "previous_query_ms": 5.525038750000002,
+          "bounded_query_ms": 4.641693750000001
+        }
+      ]
+    },
+    {
+      "stage": 2,
+      "compared": 800,
+      "timed": 640,
+      "max_torque_delta_Nm": 6.46650732960552e-10,
+      "previous_area_ms": 10.80661828124999,
+      "bounded_area_ms": 9.885810781249996,
+      "previous_query_ms": 16.95179390625001,
+      "bounded_query_ms": 15.991448437500013,
+      "windows": [
+        {
+          "start": 0,
+          "previous_area_ms": 12.541587499999999,
+          "bounded_area_ms": 11.07698125,
+          "previous_query_ms": 18.90004,
+          "bounded_query_ms": 17.25451499999999
+        },
+        {
+          "start": 280,
+          "previous_area_ms": 11.563731249999995,
+          "bounded_area_ms": 9.968798750000003,
+          "previous_query_ms": 17.46360125,
+          "bounded_query_ms": 15.730135000000006
+        },
+        {
+          "start": 10000,
+          "previous_area_ms": 10.952076249999996,
+          "bounded_area_ms": 11.1357175,
+          "previous_query_ms": 17.349047499999998,
+          "bounded_query_ms": 17.62649374999999
+        },
+        {
+          "start": 16650,
+          "previous_area_ms": 9.217078749999999,
+          "bounded_area_ms": 7.89938875,
+          "previous_query_ms": 15.361902500000006,
+          "bounded_query_ms": 13.876282499999993
+        },
+        {
+          "start": 24950,
+          "previous_area_ms": 10.770903750000002,
+          "bounded_area_ms": 9.48947,
+          "previous_query_ms": 16.661058749999995,
+          "bounded_query_ms": 15.339593750000002
+        },
+        {
+          "start": 33320,
+          "previous_area_ms": 10.999636250000002,
+          "bounded_area_ms": 10.325307500000001,
+          "previous_query_ms": 17.702432499999997,
+          "bounded_query_ms": 17.144997500000002
+        },
+        {
+          "start": 46290,
+          "previous_area_ms": 9.05806,
+          "bounded_area_ms": 8.607463749999999,
+          "previous_query_ms": 14.808861250000009,
+          "bounded_query_ms": 14.3120275
+        },
+        {
+          "start": 49900,
+          "previous_area_ms": 11.349872499999996,
+          "bounded_area_ms": 10.583358750000004,
+          "previous_query_ms": 17.367407499999995,
+          "bounded_query_ms": 16.647542500000007
+        }
+      ]
+    }
+  ]
+}

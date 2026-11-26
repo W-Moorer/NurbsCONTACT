@@ -2,6 +2,8 @@
 #include "nurbscontact/cad_contact_regions.hpp"
 #include "../src/cad_boundary_distance.hpp"
 #include "../src/cad_bezier_ray.hpp"
+#include "../src/cad_column_depth.hpp"
+#include "../src/cad_compiled_chart.hpp"
 #include "../src/cad_span_index.hpp"
 #include "../src/cad_patch_search.hpp"
 #include "../src/cad_local_solid.hpp"
@@ -14,6 +16,7 @@
 #include <BRepBuilderAPI_NurbsConvert.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <Geom_BezierSurface.hxx>
+#include <GeomConvert.hxx>
 #include <BRep_Builder.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <BRepPrimAPI_MakeCylinder.hxx>
@@ -34,6 +37,34 @@ void close(double actual,double expected,double tol,const char* what) {
 }
 
 void bezier_rays() {
+    // Bilinear z=.1*u*v embedded in a cubic control net. The two finite
+    // rays have different directions and cross at independently known points.
+    cad::ColumnDepthBound::Net net;
+    for (int i=0;i<4;++i) for (int j=0;j<4;++j) net[i][j]={i/3.,j/3.,.1*i*j/9.};
+    const cad::ColumnDepthBound bound(net);
+    const gp_XYZ v0=gp_Dir(.03,.01,1).XYZ(),v1=gp_Dir(-.02,.04,1).XYZ();
+    std::array<cad::MaterialRay,2> packet{{{gp_XYZ(.3,.45,.0135)-v0*.25,v0},
+                                          {gp_XYZ(.6,.55,.033)-v1*.27,v1}}};
+    using State=cad::ColumnDepthBound::State;
+    std::array projected{bound.project(packet[0]),bound.project(packet[1])};
+    require(bound.classify(projected,.6,1)==State::interior,"known warped packet lost");
+    require(bound.classify(projected,.05,1)==State::empty,"finite ray missed its depth limit");
+    require(bound.classify(projected,.6,-1)!=State::interior,"entry accepted as a solid exit");
+    TColgp_Array2OfPnt cubic(1,4,1,4);
+    for (int i=0;i<4;++i) for (int j=0;j<4;++j) cubic(i+1,j+1)=gp_Pnt(net[i][j]);
+    auto support=GeomConvert::SurfaceToBSplineSurface(new Geom_BezierSurface(cubic));
+    cad::CompiledChart full(BRepBuilderAPI_MakeFace(support,1e-7).Face(),true,true);
+    cad::CompiledChart cut_patch(BRepBuilderAPI_MakeFace(support,.4,.8,.2,.8,1e-7).Face(),true,true);
+    require(full.depth_bounds.size()==1 && cut_patch.depth_bounds.size()==1,"missing polynomial depth bounds");
+    double depth;
+    require(full.interior_depth(0,packet[0],.6,depth),"lost interior curved root");
+    close(depth,.25,1e-10,"curved depth refinement");
+    require(!cut_patch.interior_depth(0,packet[0],.6,depth),"interior root outside real trim");
+    require(cut_patch.interior_depth(0,packet[1],.6,depth),"lost root inside trimmed support");
+    close(depth,.27,1e-10,"second curved depth");
+    packet[0].point.SetX(-.5);
+    projected[0]=bound.project(packet[0]);
+    require(bound.classify(projected,.6,1)==State::uncertain,"packet straddling an edge was not split");
     // No assumption about spatial order of consecutive knot spans. Each leaf
     // may include extra candidates; it must preserve all overlapping spans.
     struct TestBox {gp_XYZ lo,hi;};

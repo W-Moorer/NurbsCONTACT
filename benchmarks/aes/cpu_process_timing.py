@@ -117,7 +117,7 @@ def crossed(scene, binaries, out):
 
 if __name__=="__main__":
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument("mode",choices=("crossed","mesh-obb","cad-bezier"))
+    p.add_argument("mode",choices=("crossed","mesh-obb","cad-bezier","cad-bezier-bounds"))
     p.add_argument("scene",type=Path)
     p.add_argument("out",type=Path)
     p.add_argument("binaries",nargs="+",type=Path)

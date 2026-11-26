@@ -218,6 +218,8 @@ std::vector<RegionEvaluation> batch_mesh_regions(std::span<const ContactBodyStat
         work.cad_full_blocks+=entry.work.cad_full_blocks;
         work.cad_partial_blocks+=entry.work.cad_partial_blocks;
         work.cad_shared_columns+=entry.work.cad_shared_columns;
+        for (std::size_t i=0;i<work.cad_depth_counts.size();++i)
+            work.cad_depth_counts[i]+=entry.work.cad_depth_counts[i];
         work.cad_pressure_clipped+=entry.work.cad_pressure_clipped;
         work.cad_pressure_full+=entry.work.cad_pressure_full;
         work.cad_region_select_s+=entry.work.cad_region_select_s;

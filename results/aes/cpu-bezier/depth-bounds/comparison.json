@@ -1,0 +1,224 @@
+{
+  "runs": {
+    "cad-bezier-bounds": {
+      "process_s": 915.4747142999986,
+      "exe_sha256": "3b8ffaebbd29697499dbed6d611556fbe50001d6c607670fde46f97bcf157a62",
+      "ordinary_mean_ms": 15.277908266810718,
+      "ordinary_p95_ms": 22.285239999999334,
+      "boolean_steps": [
+        1860,
+        2741,
+        4226,
+        5741,
+        9317,
+        14226,
+        15741,
+        19317,
+        24226,
+        25741,
+        29317,
+        34226,
+        35741,
+        39317,
+        44226,
+        45741,
+        49317
+      ],
+      "boolean_step_wall_s": 91.7519767,
+      "half_second_integration_s": [
+        141.9446914,
+        86.65626849999998,
+        75.78913930000002,
+        88.0746517,
+        78.01047799999998,
+        81.6097671,
+        74.46420169999999,
+        78.65101790000006,
+        72.87837249999995,
+        77.30907750000006
+      ],
+      "host_performance_median_pct": 22.41,
+      "area_pair_s": 446.42949720000234,
+      "setup_s": 46.488285,
+      "loaded_switch_steps": [
+        [
+          3
+        ],
+        [
+          3,
+          9,
+          12,
+          20,
+          21
+        ]
+      ],
+      "torque_vs_recurdyn_Nm": {
+        "rms": 42.09499825855373,
+        "max_abs": 254.7986381121492,
+        "peak_step": 24
+      },
+      "intermediate_speed_vs_recurdyn_rad_s": {
+        "rms": 0.3008164279724347,
+        "max_abs": 2.3989980570290186,
+        "peak_step": 25
+      },
+      "output_torque_at_0_5ms_Nm": 432.63084366579756
+    },
+    "cad-bezier": {
+      "process_s": 915.9753174999933,
+      "exe_sha256": "3b8ffaebbd29697499dbed6d611556fbe50001d6c607670fde46f97bcf157a62",
+      "ordinary_mean_ms": 15.38539184922874,
+      "ordinary_p95_ms": 21.859690000064766,
+      "boolean_steps": [
+        1860,
+        2741,
+        4226,
+        5741,
+        9317,
+        14226,
+        15741,
+        19317,
+        24226,
+        25741,
+        29317,
+        34226,
+        35741,
+        39317,
+        44226,
+        45741,
+        49317
+      ],
+      "boolean_step_wall_s": 89.57522479999994,
+      "half_second_integration_s": [
+        143.75295,
+        89.03818420000002,
+        78.98664079999998,
+        85.5713571,
+        73.87233700000002,
+        78.8833765,
+        75.08657449999998,
+        79.4461589,
+        75.31979109999997,
+        78.62589550000007
+      ],
+      "host_performance_median_pct": 22.37,
+      "area_pair_s": 462.8991568000055,
+      "setup_s": 44.789553,
+      "loaded_switch_steps": [
+        [
+          3
+        ],
+        [
+          3,
+          9,
+          12,
+          20,
+          21
+        ]
+      ],
+      "same_response_as_archived_control": false,
+      "torque_vs_recurdyn_Nm": {
+        "rms": 42.094656616912275,
+        "max_abs": 254.79863811185413,
+        "peak_step": 24
+      },
+      "intermediate_speed_vs_recurdyn_rad_s": {
+        "rms": 0.3008126732985893,
+        "max_abs": 2.398998057034504,
+        "peak_step": 25
+      },
+      "output_torque_at_0_5ms_Nm": 432.630843665412
+    },
+    "mesh-obb": {
+      "process_s": 326.69645269999455,
+      "exe_sha256": "3b8ffaebbd29697499dbed6d611556fbe50001d6c607670fde46f97bcf157a62",
+      "ordinary_mean_ms": 6.313691174000001,
+      "ordinary_p95_ms": 20.44862000000762,
+      "boolean_steps": [],
+      "boolean_step_wall_s": 0.0,
+      "half_second_integration_s": [
+        73.9791045,
+        52.7062583,
+        38.9992819,
+        21.57219359999999,
+        19.90003040000002,
+        23.44462969999998,
+        24.217407500000007,
+        19.802602400000012,
+        18.77450349999998,
+        22.28854690000003
+      ],
+      "host_performance_median_pct": 27.395,
+      "area_pair_s": 0.0,
+      "setup_s": 3.6740676,
+      "loaded_switch_steps": [
+        [
+          3
+        ],
+        [
+          3,
+          10,
+          13,
+          21,
+          24
+        ]
+      ],
+      "same_response_as_archived_control": true,
+      "torque_vs_recurdyn_Nm": {
+        "rms": 29.1423846001526,
+        "max_abs": 139.1397076410301,
+        "peak_step": 17
+      },
+      "intermediate_speed_vs_recurdyn_rad_s": {
+        "rms": 0.20396606883362514,
+        "max_abs": 2.013683381587583,
+        "peak_step": 6
+      },
+      "output_torque_at_0_5ms_Nm": 395.36754174056597
+    }
+  },
+  "output_torque_delta_Nm": {
+    "rms": 0.021999612156935733,
+    "max_abs": 1.7356867381175505,
+    "peak_step": 45043
+  },
+  "loaded_mismatches_vs_previous": [
+    0,
+    0
+  ],
+  "normal_load_delta_N": [
+    {
+      "rms": 1.0302419957706659,
+      "max_abs": 143.29282626536542,
+      "peak_step": 45040
+    },
+    {
+      "rms": 0.35780080644066514,
+      "max_abs": 28.928599834039233,
+      "peak_step": 45043
+    }
+  ],
+  "shaft_speed_delta_rad_s": [
+    {
+      "rms": 0.0020299735711804194,
+      "max_abs": 0.21181899306577634,
+      "peak_step": 45041
+    },
+    {
+      "rms": 0.0005644323822047467,
+      "max_abs": 0.06556166157773191,
+      "peak_step": 45041
+    },
+    {
+      "rms": 0.00021718750301085053,
+      "max_abs": 0.01704189939992773,
+      "peak_step": 45041
+    }
+  ],
+  "native_window": {
+    "at_2_5377_s_Nm": -0.0014846377439710068,
+    "max_abs_Nm": 0.06965354058417006,
+    "frames": 41
+  },
+  "frames": 50001
+}

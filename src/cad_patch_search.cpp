@@ -192,14 +192,15 @@ struct Atlas {
     std::deque<DenseRules> dense;
     std::vector<Bnd_Box> face_boxes;
     double column_reach;
+    bool bounded;
     struct StoredChart {
         Vec point, normal, lo, hi, bound_lo, bound_hi;
         std::uint64_t face, interior;
         double u, v;
     };
-    Atlas(const TopoDS_Shape& shape, int count, bool use_bezier=false,double reach=0)
+    Atlas(const TopoDS_Shape& shape, int count, bool use_bezier=false,double reach=0,bool depth_bounds=false)
         :index(shape),assets(shape),bezier(use_bezier ? std::make_shared<cad::BezierRayAtlas>(shape,assets) : nullptr),
-         rays(index,bezier),column_reach(reach) {
+         rays(index,bezier),column_reach(reach),bounded(depth_bounds) {
         TopTools_IndexedMapOfShape faces;
         TopExp::MapShapes(shape,TopAbs_FACE,faces);
         NCollection_UBTreeFiller<std::size_t,Bnd_Box> points(sites),boxes(tiles);
@@ -210,9 +211,27 @@ struct Atlas {
                 bounds.Add(cad::point(scale(xyz, 1000)));
             face_boxes.push_back(bounds);
             body_box.Add(bounds);
-            const auto face=TopoDS::Face(faces(f));
-            surfaces.emplace_back(std::make_unique<Face>(face,true));
         }
+        const auto create_charts=[&](bool prepare_depth) {
+            for (int f=1;f<=faces.Extent();++f)
+                surfaces.emplace_back(std::make_unique<Face>(TopoDS::Face(faces(f)),true,prepare_depth));
+        };
+        if (depth_bounds) {
+            struct StoredDepth {std::size_t face;cad::ColumnDepthBound geometry;};
+            const auto rows=assets.table<StoredDepth>("column-depth-v1",std::numeric_limits<std::size_t>::max()/sizeof(StoredDepth),[&] {
+                create_charts(true);
+                std::vector<StoredDepth> prepared;
+                for (std::size_t i=0;i<surfaces.size();++i)
+                    for (const auto& cell:surfaces[i]->depth_bounds) prepared.push_back({i,cell});
+                return prepared;
+            });
+            if (surfaces.empty()) {
+                create_charts(false);
+                for (const auto& row:rows) surfaces.at(row.face)->depth_bounds.push_back(row.geometry);
+                for (auto& surface:surfaces)
+                    if (surface->depth_bounds.size()!=surface->hulls.size()) surface->depth_bounds.clear();
+            }
+        } else create_charts(false);
         const auto stored = assets.table<StoredChart>(
             "charts-" + std::to_string(count), std::size_t(faces.Extent()) * count * count, [&] {
                 std::vector<StoredChart> result;
@@ -730,6 +749,8 @@ struct SurfaceQuadrature {
     int order;
     std::map<std::size_t, FaceRule> saved;
     std::size_t skipped{},full_blocks{},partial_blocks{},shared_columns{};
+    std::array<std::size_t,6> depth_counts{};
+    std::size_t site_boxes{};
     const FaceRule& rule(std::size_t id) {
         if (order == 12 || order == 24 || order == 48 || order == 96) return body.shared_rule(id, order);
         auto [it,fresh]=saved.try_emplace(id);
@@ -741,6 +762,117 @@ struct SurfaceQuadrature {
     }
 };
 struct PressurePatch {Vec center,normal,arm;double depth;};
+// Each entry represents a material quadrature site. A unique interior span
+// can supply its depth only after all other potentially occluding faces have
+// been excluded. An unresolved site keeps the ordinary trimmed CAD query.
+struct DepthPacket {
+    struct Site {unsigned candidates{};const Atlas::Face* chart{};std::size_t span{};};
+    std::array<cad::MaterialRay,8> rays;
+    struct SegmentBox {gp_XYZ lo,hi;};
+    std::array<SegmentBox,8> boxes;
+    std::array<Site,8> sites{};
+    std::array<double,8> depths;
+    std::size_t count;
+    double reach;
+    std::array<std::size_t,6>& stats;
+    std::size_t& box_tests;
+    DepthPacket(const FaceRule& rule,const NodeBlock& block,const gp_Trsf& pose,double range,
+                std::array<std::size_t,6>& stats,std::size_t& checks)
+        :count(block.end-block.begin),reach(range),stats(stats),box_tests(checks) {
+        depths.fill(-1.);
+        for (std::size_t i=0;i<count;++i) {
+            const auto& col=rule.columns[block.begin+i];
+            rays[i]={gp_Pnt(col.point).Transformed(pose).XYZ(),pose.VectorialPart()*cad::point(col.inward).XYZ()};
+            const auto& p=rays[i].point;
+            const auto q=p+rays[i].direction*reach;
+            for (int k=1;k<=3;++k) {
+                boxes[i].lo.SetCoord(k,std::min(p.Coord(k),q.Coord(k)));
+                boxes[i].hi.SetCoord(k,std::max(p.Coord(k),q.Coord(k)));
+            }
+        }
+    }
+    bool overlaps(std::size_t site,const Atlas::Face::Hull& h,double margin) {
+        ++box_tests;
+        const auto& b=boxes[site];
+        if (b.hi.X()+margin<h.lo.X() || b.lo.X()-margin>h.hi.X() ||
+            b.hi.Y()+margin<h.lo.Y() || b.lo.Y()-margin>h.hi.Y() ||
+            b.hi.Z()+margin<h.lo.Z() || b.lo.Z()-margin>h.hi.Z()) return false;
+        const auto& ray=rays[site];
+        const double start=ray.point.Dot(h.n),end=start+reach*ray.direction.Dot(h.n);
+        return std::min(start,end)<=h.high+margin && std::max(start,end)>=h.low-margin;
+    }
+    void resolve(const Atlas& other,std::span<const std::size_t> targets,std::span<const std::size_t> active,
+                 const std::vector<std::vector<std::size_t>>& spans,const cad::CompiledChart::ColumnBox& box,
+                 CadExitQuery& exit,std::span<const std::size_t>& nearby,bool& prepared) {
+        for (auto i:active) {
+            const auto& face=*other.surfaces[targets[i]-1];
+            if (face.depth_bounds.empty()) return;
+            for (auto span:spans[i]) {
+                std::array<cad::ColumnDepthBound::Projection,8> projections;
+                const auto& cell=face.depth_bounds[span];
+                std::array<std::size_t,8> indices;
+                std::size_t size=0;
+                for (std::size_t j=0;j<count;++j) {
+                    if (!overlaps(j,face.hulls[span],cell.spatial_margin())) continue;
+                    const auto& children=face.column_hulls[span];
+                    if (std::none_of(children.begin(),children.end(),[&](const auto& h){return overlaps(j,h,cell.spatial_margin());})) continue;
+                    indices[size]=j;
+                    projections[size++]=cell.project(rays[j]);
+                }
+                if (!size) continue;
+                const auto whole=size==1 ? cell.classify(projections[0],reach,face.orientation) :
+                                           cell.classify(std::span(projections).first(size),reach,face.orientation);
+                ++stats[0];
+                using State=cad::ColumnDepthBound::State;
+                if (whole==State::empty) continue;
+                for (std::size_t k=0;k<size;++k) {
+                    auto state=whole;
+                    if (whole==State::uncertain && size>1) {++stats[0];state=cell.classify(projections[k],reach,face.orientation);}
+                    if (state==State::empty) continue;
+                    const auto j=indices[k];
+                    ++sites[j].candidates;
+                    if (state==State::interior && face.rectangular) {sites[j].chart=&face;sites[j].span=span;}
+                }
+            }
+        }
+        bool has_interior=false;
+        for (std::size_t j=0;j<count;++j) {
+            if (!sites[j].candidates) {depths[j]=0.;++stats[1];}
+            has_interior|=sites[j].candidates==1 && sites[j].chart;
+        }
+        if (!has_interior) return;
+        nearby=exit.prepare_columns(scale(cad::coordinates(gp_Pnt(box.lo)),.001),scale(cad::coordinates(gp_Pnt(box.hi)),.001));
+        prepared=true;
+        std::vector<std::size_t> blocker_spans;
+        for (auto id:nearby) {
+            if (std::find(targets.begin(),targets.end(),id)!=targets.end()) continue;
+            const auto& face=*other.surfaces[id-1];
+            face.block_spans(box,blocker_spans);
+            for (std::size_t j=0;j<count;++j) {
+                auto& site=sites[j];
+                if (site.candidates!=1 || !site.chart) continue;
+                const auto& ray=rays[j];
+                Bnd_Box segment;
+                segment.Add(gp_Pnt(ray.point)); segment.Add(gp_Pnt(ray.point+ray.direction*reach));
+                segment.SetGap(8*face.face_tolerance);
+                const auto* spans=face.face_tolerance>Precision::Confusion() ? nullptr : &blocker_spans;
+                if (!other.face_boxes[id-1].IsOut(segment) &&
+                    face.column_possible(ray.point,ray.direction*reach,spans,8*face.face_tolerance))
+                    site.chart=nullptr;
+            }
+        }
+        for (std::size_t j=0;j<count;++j) {
+            const auto& site=sites[j];
+            if (site.candidates!=1 || !site.chart) continue;
+            ++stats[2];
+            double distance;
+            if (site.chart->interior_depth(site.span,rays[j],reach,distance)) {
+                depths[j]=distance*.001;
+                ++stats[3];
+            }
+        }
+    }
+};
 bool translated_columns(const Atlas& target,const NodeBlock& block,const gp_Trsf& pose,
                         const cad::CompiledChart::ColumnBox& box,std::span<const std::size_t> nearby) {
     if (!block.parallel_strip) return false;
@@ -804,6 +936,17 @@ std::optional<PressurePatch> integrate_patch(std::array<SurfaceQuadrature,2>& gr
                 }
                 bool prepared=false;
                 std::span<const std::size_t> nearby;
+                std::optional<DepthPacket> packet;
+                if (grids[other].body.bounded) {
+                    auto& stats=grids[side].depth_counts;
+                    packet.emplace(rule,block,to_target,1000*reach,stats,grids[side].site_boxes);
+                    packet->resolve(grids[other].body,targets,active,spans,swept,exit,nearby,prepared);
+                    const auto end=packet->depths.begin()+packet->count;
+                    if (std::all_of(packet->depths.begin(),end,[](double d){return d==0;})) {
+                        ++stats[4];continue;
+                    }
+                    if (std::all_of(packet->depths.begin(),end,[](double d){return d>0;})) ++stats[5];
+                }
                 const auto depth_at=[&](std::size_t j)->CadExit {
                     const auto& col=rule.columns[j];
                     if (!(col.weight>0)) return {};
@@ -827,7 +970,7 @@ std::optional<PressurePatch> integrate_patch(std::array<SurfaceQuadrature,2>& gr
                     }
                     return exit.first_exit(scale(cad::coordinates(local),.001),direction,reach,*first,tests,targets);
                 };
-                const auto head=depth_at(block.begin);
+                const auto head=packet && packet->depths[0]>=0 ? CadExit{} : depth_at(block.begin);
                 CadExit tail;
                 bool checked_tail=false,uniform=false;
                 if (head.face && block.end-block.begin>2 && head.distance_m>1e-9 &&
@@ -846,13 +989,17 @@ std::optional<PressurePatch> integrate_patch(std::array<SurfaceQuadrature,2>& gr
                     local_centroid=add(local_centroid,sub(scale(block.weighted_point,d),scale(block.area,.5*d*d)));
                     grids[side].shared_columns+=block.end-block.begin-2;
                 } else for (auto j=block.begin;j<block.end;++j) {
-                    const auto hit=j==block.begin ? head : checked_tail && j+1==block.end ? tail : depth_at(j);
-                    if (!hit.face || hit.distance_m<=0) continue;
+                    double d=packet ? packet->depths[j-block.begin] : -1.;
+                    if (d<0) {
+                        const auto hit=j==block.begin ? head : checked_tail && j+1==block.end ? tail : depth_at(j);
+                        d=hit.face ? hit.distance_m : 0.;
+                    }
+                    if (d<=0) continue;
                     mask|=1u<<(j-block.begin);
                     const auto& col=rule.columns[j];
-                    const double dv=hit.distance_m*col.weight;
+                    const double dv=d*col.weight;
                     local_volume+=dv;
-                    local_centroid=add(local_centroid,scale(add(rule.nodes[j].point,scale(col.inward,.5*hit.distance_m)),dv));
+                    local_centroid=add(local_centroid,scale(add(rule.nodes[j].point,scale(col.inward,.5*d)),dv));
                 }
                 if (uniform || mask==(1u<<(block.end-block.begin))-1) {
                     local_area=add(local_area,block.area);
@@ -912,8 +1059,8 @@ struct PatchSearch::Data {
     };
     static constexpr int worker_limit=4;
     std::array<std::unique_ptr<Worker>,worker_limit> workers;
-    Data(const TopoDS_Shape& first,const TopoDS_Shape& second,int grid,double reach,bool bezier):
-        a(first,grid,bezier,reach),b(second,grid,bezier,reach),grid(grid),reach(reach) {
+    Data(const TopoDS_Shape& first,const TopoDS_Shape& second,int grid,double reach,bool bezier,bool bounded):
+        a(first,grid,bezier,reach,bounded),b(second,grid,bezier,reach,bounded),grid(grid),reach(reach) {
         for (auto& w:workers) w=std::make_unique<Worker>(a,b);
     }
     PatchDiscovery discover(const std::array<ContactPose,2>& poses,bool indexed,bool group) {
@@ -1045,12 +1192,12 @@ struct PatchSearch::Data {
                 reused_paths};
     }
 };
-void prepare_patch_part(const TopoDS_Shape& shape,bool bezier) {
-    Atlas part(shape, 6,bezier);
+void prepare_patch_part(const TopoDS_Shape& shape,bool bezier,bool bounded) {
+    Atlas part(shape,6,bezier,0,bounded);
     part.prepare_dense();
 }
-PatchSearch::PatchSearch(const TopoDS_Shape& a,const TopoDS_Shape& b,int grid,double reach,bool bezier):
-    data_(std::make_unique<Data>(a,b,grid,reach,bezier)) {}
+PatchSearch::PatchSearch(const TopoDS_Shape& a,const TopoDS_Shape& b,int grid,double reach,bool bezier,bool bounded):
+    data_(std::make_unique<Data>(a,b,grid,reach,bezier,bounded)) {}
 PatchSearch::~PatchSearch()=default;
 void PatchSearch::prepare_dense() const {
     data_->a.prepare_dense();
@@ -1074,6 +1221,19 @@ std::array<std::size_t,3> PatchSearch::block_counts() const {
             counts[0]+=level.full_blocks; counts[1]+=level.partial_blocks; counts[2]+=level.shared_columns;
         }
     return counts;
+}
+std::array<std::size_t,6> PatchSearch::depth_counts() const {
+    std::array<std::size_t,6> counts{};
+    for (const auto& worker:data_->workers)
+        for (const auto& [order,levels]:worker->levels) for (const auto& level:levels)
+            for (std::size_t i=0;i<counts.size();++i) counts[i]+=level.depth_counts[i];
+    return counts;
+}
+std::size_t PatchSearch::site_box_tests() const {
+    std::size_t count=0;
+    for (const auto& worker:data_->workers)
+        for (const auto& [order,levels]:worker->levels) for (const auto& level:levels) count+=level.site_boxes;
+    return count;
 }
 std::array<std::size_t,4> PatchSearch::ray_counts() const {
     std::array<std::size_t,4> result{};
@@ -1118,8 +1278,8 @@ namespace {
 using namespace dynamics;
 class PatchRegionQuery final : public PairRegionQuery {
 public:
-    PatchRegionQuery(const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,double maximum,bool bezier):
-        a_(a),b_(b),search_(a,b,6,2*maximum,bezier),centers_(centers),maximum_(maximum) {}
+    PatchRegionQuery(const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,double maximum,bool bezier,bool bounded):
+        a_(a),b_(b),search_(a,b,6,2*maximum,bezier,bounded),centers_(centers),maximum_(maximum),bounded_(bounded) {}
     bool independent_cad_patch() const override {return true;}
     std::vector<ContactRegion> regions(ContactPose a,ContactPose b,ContactWork& work) const override {
         const std::array poses{a,b};
@@ -1156,6 +1316,7 @@ public:
         std::vector<std::optional<ContactRegion>> patches(groups.size());
         const auto previous_skips = search_.skipped_nodes();
         const auto before=search_.block_counts();
+        const auto before_depth=bounded_ ? search_.depth_counts() : std::array<std::size_t,6>{};
         if (!groups.empty()) {
             OSD_ThreadPool::Launcher pool(*OSD_ThreadPool::DefaultPool(),std::min(4,static_cast<int>(groups.size())));
             pool.Perform(0,static_cast<int>(groups.size()),[&](int worker,int i) {
@@ -1167,6 +1328,10 @@ public:
         work.cad_full_blocks+=after[0]-before[0];
         work.cad_partial_blocks+=after[1]-before[1];
         work.cad_shared_columns+=after[2]-before[2];
+        if (bounded_) {
+            const auto now=search_.depth_counts();
+            for (std::size_t i=0;i<now.size();++i) work.cad_depth_counts[i]+=now[i]-before_depth[i];
+        }
         std::vector<ContactRegion> result;
         for (const auto& patch:patches) {
             if (!patch) {
@@ -1250,6 +1415,7 @@ private:
     std::array<Vec,2> centers_;
     double maximum_;
     mutable std::once_flag event_init_;
+    bool bounded_;
     mutable std::shared_ptr<const PairRegionQuery> events_;
     const PairRegionQuery& events() const {
         std::call_once(event_init_,[&]{events_=cad_local_region_query(a_,b_,centers_,maximum_);});
@@ -1258,8 +1424,8 @@ private:
 };
 }
 std::shared_ptr<const dynamics::PairRegionQuery> cad_patch_region_query(
-    const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,double maximum,bool bezier) {
+    const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,double maximum,bool bezier,bool bounded) {
     if (!(maximum>0 && std::isfinite(maximum))) throw std::invalid_argument("invalid maximum depth");
-    return std::make_shared<PatchRegionQuery>(a,b,centers,maximum,bezier);
+    return std::make_shared<PatchRegionQuery>(a,b,centers,maximum,bezier,bounded);
 }
 }

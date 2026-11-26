@@ -1,5 +1,6 @@
 #pragma once
 #include "cad_span_index.hpp"
+#include "cad_column_depth.hpp"
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepTopAdaptor_FClass2d.hxx>
 #include <BRep_Tool.hxx>
@@ -30,6 +31,9 @@ struct CompiledChart {
     std::vector<Patch> patches;
     std::vector<Hull> hulls;
     std::vector<std::array<Hull,4>> column_hulls;
+    std::vector<ColumnDepthBound> depth_bounds;
+    const double orientation;
+    const double face_tolerance;
     SpanIndex column_index;
     std::vector<double> ku,kv;
     struct TranslationBand { gp_XYZ axis; double lo,hi; };
@@ -39,13 +43,14 @@ struct CompiledChart {
         return {p[0],(p[1]-p[0])*3.,((p[2]-p[1])-(p[1]-p[0]))*3.,
                 (p[3]-p[0])+(p[1]-p[2])*3.};
     }
-    explicit CompiledChart(const TopoDS_Face& f,bool refine_columns=false):surface(f),trims(f,Precision::PConfusion()),
+    explicit CompiledChart(const TopoDS_Face& f,bool refine_columns=false,bool depth=false):surface(f),trims(f,Precision::PConfusion()),
         u0(surface.FirstUParameter()),u1(surface.LastUParameter()),
         v0(surface.FirstVParameter()),v1(surface.LastVParameter()),
         eu(std::max(32*Precision::PConfusion(),1e-7*(u1-u0))),
-        ev(std::max(32*Precision::PConfusion(),1e-7*(v1-v0))) {
-        try { prepare(f,refine_columns); }
-        catch (const Standard_Failure&) {rectangular=false;patches.clear();hulls.clear();column_hulls.clear();}
+        ev(std::max(32*Precision::PConfusion(),1e-7*(v1-v0))),orientation(f.Orientation()==TopAbs_REVERSED ? -1. : 1.),
+        face_tolerance(std::max(Precision::Confusion(),BRep_Tool::Tolerance(f))) {
+        try { prepare(f,refine_columns,depth); }
+        catch (const Standard_Failure&) {rectangular=false;patches.clear();hulls.clear();column_hulls.clear();depth_bounds.clear();}
     }
     // Subdivide a tensor-product control net at its parameter midpoint. The
     // convex hull of each child encloses its entire subpatch.
@@ -76,7 +81,7 @@ struct CompiledChart {
         }
         return h;
     }
-    void prepare(const TopoDS_Face& f,bool refine_columns) {
+    void prepare(const TopoDS_Face& f,bool refine_columns,bool depth) {
         rectangular=trims.Perform(gp_Pnt2d(.5*(u0+u1),.5*(v0+v1)))==TopAbs_IN;
         for (TopExp_Explorer it(f.Oriented(TopAbs_FORWARD),TopAbs_EDGE);rectangular && it.More();it.Next()) {
             double lo,hi;
@@ -161,6 +166,7 @@ struct CompiledChart {
             }
             patches.push_back(coeff);
             hulls.push_back(hull);
+            if (depth) depth_bounds.emplace_back(poles,face_tolerance);
             if (refine_columns) {
                 std::array<Hull,4> sub;
                 int k=0;
@@ -198,9 +204,9 @@ struct CompiledChart {
             return true;
         });
     }
-    bool column_possible(const gp_XYZ& p,const gp_XYZ& segment,const std::vector<std::size_t>* spans=nullptr) const {
+    bool column_possible(const gp_XYZ& p,const gp_XYZ& segment,const std::vector<std::size_t>* spans=nullptr,
+                         double tol=2*Precision::Confusion()) const {
         if (hulls.empty()) return true;
-        const double tol=2*Precision::Confusion();
         const auto q=p+segment;
         const gp_XYZ low(std::min(p.X(),q.X())-tol,std::min(p.Y(),q.Y())-tol,std::min(p.Z(),q.Z())-tol);
         const gp_XYZ high(std::max(p.X(),q.X())+tol,std::max(p.Y(),q.Y())+tol,std::max(p.Z(),q.Z())+tol);
@@ -221,6 +227,44 @@ struct CompiledChart {
         if (rectangular && u>u0+eu && u<u1-eu && v>v0+ev && v<v1-ev) return true;
         const std::lock_guard lock(adaptor_mutex);
         return trims.Perform(gp_Pnt2d(u,v))==TopAbs_IN;
+    }
+    // Refine an already isolated interior root on the original polynomial.
+    // Distances in this routine are in mm. Reject every unverified iterate.
+    bool interior_depth(std::size_t index,const MaterialRay& ray,double reach,double& depth) const {
+        const auto& cell=depth_bounds[index];
+        const auto dir=ray.direction, offset=ray.point-cell.origin;
+        const double nd=cell.row[2].Dot(dir);
+        if (!rectangular || std::abs(nd)<.02) return false;
+        const auto plane=offset-dir*(cell.row[2].Dot(offset)/nd);
+        const auto i=index/(kv.size()-1),j=index%(kv.size()-1);
+        const double du=ku[i+1]-ku[i],dv=kv[j+1]-kv[j];
+        double u=ku[i]+cell.row[0].Dot(plane)*du,v=kv[j]+cell.row[1].Dot(plane)*dv;
+        for (int it=0;it<8;++it) {
+            if (!(u>ku[i] && u<ku[i+1] && v>kv[j] && v<kv[j+1])) return false;
+            gp_Pnt point;
+            gp_Vec a,b;
+            d1(u,v,point,a,b);
+            const auto delta=point.XYZ()-ray.point;
+            const double t=dir.Dot(delta);
+            const auto perp=delta-dir*t;
+            const auto r=b.XYZ().Crossed(dir),s=dir.Crossed(a.XYZ());
+            const double det=a.XYZ().Dot(r);
+            if (!(orientation*det>1e-8*a.Magnitude()*b.Magnitude())) return false;
+            // Banach's a posteriori bound along the chart normal. classify()
+            // establishes a contraction below .8 over the entire parameter cell.
+            const double uv_error=5*std::max(std::abs(cell.row[0].Dot(perp)-cell.row[0].Dot(dir)*cell.row[2].Dot(perp)/nd),
+                                            std::abs(cell.row[1].Dot(perp)-cell.row[1].Dot(dir)*cell.row[2].Dot(perp)/nd))+1e-13;
+            const double margin_u=du*uv_error+eu,margin_v=dv*uv_error+ev;
+            if (perp.SquareModulus()<1e-20 && (std::abs(cell.row[2].Dot(perp))+cell.gradient[2]*uv_error)/std::abs(nd)<1e-9 &&
+                u>u0+margin_u && u<u1-margin_u && v>v0+margin_v && v<v1-margin_v &&
+                t>8*Precision::Confusion() && t<reach-8*Precision::Confusion()) {
+                depth=t;
+                return true;
+            }
+            u-=perp.Dot(r)/det;
+            v-=perp.Dot(s)/det;
+        }
+        return false;
     }
     void d1(double u,double v,gp_Pnt& p,gp_Vec& du,gp_Vec& dv) const {
         if (patches.empty() || u<ku.front() || u>ku.back() || v<kv.front() || v>kv.back()) {

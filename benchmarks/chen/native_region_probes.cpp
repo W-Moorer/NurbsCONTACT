@@ -68,10 +68,12 @@ int main(int argc,char** argv) try {
         }
         return 0;
     }
+    const bool bounded=argc>=2 && std::string_view(argv[argc-1])=="--depth-bounds";
+    if (bounded) --argc;
     const bool bezier=argc>=2 && std::string_view(argv[argc-1])=="--bezier";
     if (bezier) --argc;
     if (argc>=3 && std::string_view(argv[1])=="--prepare-parts") {
-        for (int i=2;i<argc;++i) prepare_patch_part(read_step_shape(argv[i]),bezier);
+        for (int i=2;i<argc;++i) prepare_patch_part(read_step_shape(argv[i]),bezier,bounded);
         return 0;
     }
     const bool dense=argc==6 && std::string_view(argv[5])=="--prepare-all";
@@ -80,12 +82,12 @@ int main(int argc,char** argv) try {
     const bool indexed=loaded || (argc==6 && std::string_view(argv[5])=="--indexed-groups");
     const bool group=indexed || (argc==6 && std::string_view(argv[5])=="--groups");
     const bool patch=argc==7 && std::string_view(argv[5])=="--patch-wrench";
-    if (argc!=5 && !group && !patch && !prepare) throw std::invalid_argument("nc_cad_probes A.step B.step sites_per_uv_axis reach_m [--prepare|--prepare-all|--groups|--indexed-groups|--loaded|--patch-wrench ORDER] [--bezier]");
+    if (argc!=5 && !group && !patch && !prepare) throw std::invalid_argument("nc_cad_probes A.step B.step sites_per_uv_axis reach_m [--prepare|--prepare-all|--groups|--indexed-groups|--loaded|--patch-wrench ORDER] [--bezier] [--depth-bounds]");
     const int grid=std::stoi(argv[3]);
     const double reach=std::stod(argv[4]);
     if (grid<1 || grid>128 || !(reach>0 && std::isfinite(reach))) throw std::invalid_argument("invalid probe grid or reach");
     const auto start=Clock::now();
-    PatchSearch search(read_step_shape(argv[1]),read_step_shape(argv[2]),grid,reach,bezier);
+    PatchSearch search(read_step_shape(argv[1]),read_step_shape(argv[2]),grid,reach,bezier,bounded);
     std::cerr<<"prepare_s "<<std::chrono::duration<double>(Clock::now()-start).count()<<'\n';
     std::cout<<std::setprecision(17);
     if (prepare) {
@@ -125,6 +127,7 @@ int main(int argc,char** argv) try {
             std::cout<<']';
         }
         if (loaded) {
+            const auto before_area=search.ray_counts();
             const auto start_area=Clock::now();
             std::map<int,std::vector<CadChord>> groups;
             for (std::size_t i=0;i<labels.size();++i) groups[labels[i]].push_back(*found[i]);
@@ -149,6 +152,13 @@ int main(int argc,char** argv) try {
             }
             const auto counts=search.ray_counts();
             const auto blocks=search.block_counts();
+            std::cout<<"],\"area_rays\":["<<counts[0]-before_area[0];
+            for (std::size_t k=1;k<counts.size();++k) std::cout<<','<<counts[k]-before_area[k];
+            if (bounded) {
+                const auto counts=search.depth_counts();
+                std::cout<<"],\"depth_site_box_tests\":"<<search.site_box_tests()<<",\"depth_bounds\":["<<counts[0];
+                for (std::size_t k=1;k<counts.size();++k) std::cout<<','<<counts[k];
+            }
             std::cout<<"],\"block_counts\":["<<blocks[0]<<','<<blocks[1]<<','<<blocks[2]<<"],\"ray_counts\":["<<counts[0]<<','<<counts[1]<<','<<counts[2]<<','<<counts[3]
                      <<"],\"loaded_s\":"<<loaded_s;
         }

@@ -1,0 +1,25 @@
+{
+  "bytes_total": 15256313,
+  "tables": [
+    {
+      "name": "patch-v3-7.9.3-10933259581891634073-column-depth-v1.bin",
+      "byte_count": 2432727,
+      "sha256": "dd3bed160deddee9f7ddb9490f391c5da785a5e4fb8f1a7e8435dc2b492512f3"
+    },
+    {
+      "name": "patch-v3-7.9.3-1434887705722537855-column-depth-v1.bin",
+      "byte_count": 4863905,
+      "sha256": "a9a59c20d3d7df1237f3c1fa9e6544c13e60487cbd2f10175b7769c01d11a95f"
+    },
+    {
+      "name": "patch-v3-7.9.3-14840179339210495731-column-depth-v1.bin",
+      "byte_count": 5305937,
+      "sha256": "bdad0710e7dc5d3ec3bb5e4ea791fa4f2f7d1928cd38ffe7f5b841b291207cf0"
+    },
+    {
+      "name": "patch-v3-7.9.3-4668044887035707140-column-depth-v1.bin",
+      "byte_count": 2653744,
+      "sha256": "162a819b4215cff1a13de8b74a1d01ca756383c0da064ee7ba6ac695bf18d4d6"
+    }
+  ]
+}

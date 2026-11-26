@@ -86,8 +86,7 @@ def differences(y):
     return dict(rms=float(np.sqrt(np.mean(y*y))),max_abs=float(abs(y[idx])),peak_step=idx)
 
 
-def paired_geometry(scene, previous, current, out, archive=None, report_all=False):
-    archive=out.parent if archive is None else archive
+def fixed_geometry_inputs(scene,archive):
     replay=json.loads((archive/"replay.json").read_text())
     trajectory=archive.parent/"cpu-local-cad/trajectory.npz"
     if digest(trajectory)!=replay["trajectory_sha256"] or digest(scene)!=replay["scene_sha256"]:
@@ -95,20 +94,34 @@ def paired_geometry(scene, previous, current, out, archive=None, report_all=Fals
     bodies,pairs=read_model(scene)
     indices=np.concatenate([np.arange(s,s+100) for s in replay["starts"]])
     warm=np.arange(len(indices))%100>=20
-    result=dict(probes_sha256=[digest(previous),digest(current)],trajectory_sha256=digest(trajectory),stages=[])
     with np.load(trajectory) as data:
         angles,origins=data["angles_rad"],data["origins_m"]
+    return trajectory,indices,warm,bodies,pairs,angles,origins
+
+
+def stage_poses(bodies,angles,origins,indices,a,b):
+    columns=[col for i in (a,b) for col in (*origins[:,i].T,
+             *(np.full(len(angles),v) for v in bodies[i][2]),angles[:,i])]
+    return np.column_stack(columns)[indices]
+
+
+def paired_geometry(scene, previous, current, out, archive=None, report_all=False, current_flags=(), reverse_order=False):
+    archive=out.parent if archive is None else archive
+    trajectory,indices,warm,bodies,pairs,angles,origins=fixed_geometry_inputs(scene,archive)
+    result=dict(probes_sha256=[digest(previous),digest(current)],trajectory_sha256=digest(trajectory),stages=[])
+    if current_flags:
+        result.update(current_flags=list(current_flags),reverse_order=reverse_order,scene_sha256=digest(scene))
     for stage,(a,b,stiffness,limit) in enumerate(pairs,1):
-        columns=[col for i in (a,b) for col in (*origins[:,i].T,
-                 *(np.full(len(angles),v) for v in bodies[i][2]),angles[:,i])]
-        poses=np.column_stack(columns)[indices]
+        poses=stage_poses(bodies,angles,origins,indices,a,b)
         runs={}
         order=(("previous",previous),("current",current))
-        for name,exe in order if stage==1 else reversed(order):
-            runs[name]=query([exe,bodies[a][0],bodies[b][0],"6",str(2*limit),"--loaded","--bezier"],poses)
+        for name,exe in order if (stage==1)!=reverse_order else reversed(order):
+            flags=current_flags if name=="current" else ()
+            runs[name]=query([exe,bodies[a][0],bodies[b][0],"6",str(2*limit),"--loaded","--bezier",*flags],poses)
         face_switches=0
         former=None
         torque_delta=[]
+        wrench_error=np.zeros(3)
         changed_states=[]
         changed_geometry=[]
         max_error=np.zeros(4)
@@ -138,17 +151,28 @@ def paired_geometry(scene, previous, current, out, archive=None, report_all=Fals
                 moments=[wrench(row["regions"],origins[indices[frame],b],bodies[b][2],stiffness,limit,True)
                          for row in (x,y)]
                 if all(m is not None for m in moments):
-                    torque_delta.append(moments[1][-1]-moments[0][-1])
+                    diff=moments[1]-moments[0]
+                    torque_delta.append(diff[-1])
+                    wrench_error=np.maximum(wrench_error,[abs(diff[0]),np.linalg.norm(diff[1:4]),np.linalg.norm(diff[4:7])])
         entry=dict(stage=stage,checked=len(poses),timed=int(warm.sum()),face_group_changes=face_switches,
                    compared_torques=len(torque_delta),max_torque_delta_Nm=float(max(map(abs,torque_delta),default=0.)),
                    changed_states=changed_states,changed_geometry=changed_geometry,
                    max_component_errors=dict(zip(("point_m","unit_normal","arm_m","depth_m"),max_error.tolist())))
+        if current_flags:
+            entry["max_wrench_errors"]=dict(zip(("total_normal_N","resultant_N","moment_Nm"),wrench_error.tolist()))
         for name,rows in runs.items():
             area=1e3*np.array([r["loaded_s"]-r["query_s"] for r in rows])[warm]
             total=1e3*np.array([r["loaded_s"] for r in rows])[warm]
             entry[name]=dict(area_mean_ms=float(area.mean()),area_median_ms=float(np.median(area)),
                              full_query_mean_ms=float(total.mean()))
             entry[name]["ray_counts"]=rows[-1]["ray_counts"]
+            if "area_rays" in rows[-1]:
+                entry[name]["area_ray_counts"]=np.sum([r["area_rays"] for r in rows],axis=0).tolist()
+            if "depth_bounds" in rows[-1]:
+                keys=("interval_tests","excluded_sites","root_refinements","accepted_depths","empty_blocks","interior_blocks")
+                entry[name]["depth_bounds"]=dict(zip(keys,rows[-1]["depth_bounds"],strict=True))
+                if "depth_site_box_tests" in rows[-1]:
+                    entry[name]["depth_bounds"]["site_box_tests"]=rows[-1]["depth_site_box_tests"]
             if "block_counts" in rows[-1]:
                 entry[name]["full_blocks"],entry[name]["partial_blocks"],entry[name]["shared_columns"]=rows[-1]["block_counts"]
             if "column_windows" in rows[-1]:
@@ -278,6 +302,9 @@ if __name__=="__main__":
     p.add_argument("runs",type=Path)
     p.add_argument("--probes",type=Path)
     p.add_argument("--reference",type=Path,help="Independent whole-STEP pressure benchmark for three fallback poses")
+    p.add_argument("--depth-bounds",action="store_true",help="Evaluate experimental bounded depth packets in the current probe")
+    p.add_argument("--archive",type=Path,help="Parent directory of the original fixed-pose replay manifest")
+    p.add_argument("--reverse-order",action="store_true",help="Reverse the two programs in the fixed-pose timing control")
     p.add_argument("--out",type=Path,default=Path("results/aes/cpu-bezier/columns"))
     a=p.parse_args()
     a.out.mkdir(parents=True,exist_ok=True)
@@ -286,6 +313,7 @@ if __name__=="__main__":
         diagnose(a.scene,a.runs,a.probes,a.out,a.reference)
     elif a.action=="paired":
         if a.probes is None: p.error("paired requires the previous probe as runs and the current --probes")
-        paired_geometry(a.scene,a.runs,a.probes,a.out)
+        paired_geometry(a.scene,a.runs,a.probes,a.out,archive=a.archive,report_all=a.depth_bounds,
+                        current_flags=("--depth-bounds",) if a.depth_bounds else (),reverse_order=a.reverse_order)
     else:
         report(a.scene,a.runs,a.out)
