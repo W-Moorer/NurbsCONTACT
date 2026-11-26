@@ -4,7 +4,9 @@
 
 ## 冻结的 CPU 基线
 
-基线证据固定在提交 `64b70e9f0c9915415ede3888efe369364d357405`。下列记录分别保存可执行文件、场景和完整响应的 SHA-256。新方法使用独立选项和结果目录。历史失败姿态也随基线保留。
+GPU 移植使用 [1406914 的 CPU 实现](https://github.com/W-Moorer/NurbsCONTACT/tree/1406914cf11e64fefd758d91075e0d547ace5fd8) 作为对照。四线程下，五秒减速器在线耗时为网格 222.02 s、预编译 CAD 193.63 s，各自的 50,001 帧与归档响应逐字节相同。2026-11-26 重新核对了两套输出指纹及 `compiled_cad_contacts` 和 `cpu_mesh_intersections` 回归。[运行方式](../README.md#frozen-cpu-rigid-contact-baseline) · [原始测量](../results/aes/cpu-bezier/standalone/simulation-timing/cpu-worker-scaling.json)
+
+较早的双线程记录对应提交 `64b70e9f0c9915415ede3888efe369364d357405`。下列记录分别保存可执行文件、场景和完整响应的 SHA-256。历史失败姿态也随基线保留。
 
 | 角色 | 固定配置 | 5 s 在线仿真记录 |
 | --- | --- | --- |
