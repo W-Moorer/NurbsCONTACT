@@ -4,6 +4,8 @@
 
 ## 开发分支的全 GPU 路径
 
+通用网格几何入口 `IntersectionBatch` 按物体对读取当前的三维刚体相对变换。每对独立使用局部 AABB 树，候选队列和相交结果留在设备上。几何级验证逐步回放完整五秒的减速器姿态。另外用非平行坐标系、交换物体顺序和接触后分离检验三维变换。输出为相交三角片的原始编号，可进一步构造交点、交线和共面多边形。运行完整网格动力学还需要将这些几何结果转换成连续的承载区、接触深度和力矩，再反馈给积分器。[GPU 网格接口](../nurbscontact_gpu/bvh.py) · [原始测量和验收范围](../results/aes/gpu-mesh-geometry/README.md) · [三维回归](../tests/test_gpu_triangle_intersection.py)
+
 `cad-compiled --device cuda-resident` 从 `.ncpart` 加载参数曲面与裁剪边界。准备阶段生成固定方位下的局部包围盒、常用积分阶数的材料点和时间推进所需的 CUDA Graph。在线提交一次图，GPU 按当前刚体姿态查询可能接触的面，在参数域确认承载点，按连通区积分，并将合力和力矩交给隐式积分器。坐标、牛顿试算、线搜索与重试都保存在显存中。终止后集中回传轨迹和诊断。
 
 候选面的复用受相对刚体运动上界约束。多个线程并行尝试同一对面的不同起点，再按原始优先顺序选取见证点。旧连通路径上的每段都需要在新姿态重新检查。设备无法判定几何、超出工作区容量或用尽积分重试时，调用方收到错误。当前动力学入口支持转动和移动坐标、共享坐标的多级传动、无摩擦罚力、预测姿态更新和谱半径为零的广义 α 积分。
@@ -63,5 +65,7 @@ GPU 移植使用 [1406914 的 CPU 实现](https://github.com/W-Moorer/NurbsCONTA
 已有 GPU 包面向固定平行转轴，使用网格及预计算的载荷或材料点映射。可复用其中的设备常驻与载荷交换经验。新 CAD 路径按当前姿态从零件几何求载荷，需单独验收。[现有 GPU 后端范围](../nurbscontact_gpu/README.md)
 
 ## Last verified against
+
+2026-11-27 用 `profile_gpu_mesh_queries.py` 将两级共 100,000 个物体对姿态的 GPU 三角片编号集合与原双精度实现逐一核对，并用原生 CPU OBB 后端独立抽查。接触力精度和整机实时性仍按五秒闭环验收。[测量脚本](../benchmarks/aes/profile_gpu_mesh_queries.py) · [结果与复现命令](../results/aes/gpu-mesh-geometry/README.md)
 
 2026-11-26 核对了 CPU 输入、原始 STEP、编译零件及归档时程的 SHA-256。2026-11-27 在本机 RTX 3070 上复测了设备常驻的 CAD 接触，对照同一 CPU 减速器的完整五秒时程。设备端几何抽查覆盖 840 张面上的 168,948 个参数点，以及裁剪曲线上的 107,700 个点。[CPU 与 GPU 时程核对](../results/aes/cuda-compiled-resident/comparison.json) · [设备端曲面与裁剪核对](../results/aes/cuda-compiled-resident/part-audit.json) · [原始 STEP 与编译几何核对](../results/aes/cpu-bezier/standalone/part-equivalence.json)

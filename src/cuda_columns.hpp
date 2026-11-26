@@ -150,6 +150,8 @@ class Columns {
     Columns(const Columns &) = delete;
     Columns &operator=(const Columns &) = delete;
     void trace(const std::vector<Ray> &, double reach, std::vector<Hit> &);
+    // Profile fixed-size resident batches using the same material-exit kernel as trace().
+    double time_ray_batches(const std::vector<Ray> &, double reach, int batch, int repeats, std::vector<Hit> &);
     std::vector<ChartSample> sample_charts(const std::vector<ChartPoint> &) const;
 
   private:

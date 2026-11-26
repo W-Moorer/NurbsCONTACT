@@ -751,4 +751,44 @@ void Columns::trace(const std::vector<Ray> &rays, double reach, std::vector<Hit>
                           s.stream.id));
     check(cudaStreamSynchronize(s.stream.id));
 }
+double Columns::time_ray_batches(const std::vector<Ray>& rays,double reach,int batch,int repeats,
+                                 std::vector<Hit>& hits) {
+    if(rays.empty() || rays.size()>INT_MAX || batch<=0 || repeats<=0 || !(reach>0))
+        throw std::invalid_argument("invalid ray timing batch");
+    auto& s=*data;
+    s.rays.reserve(rays.size());
+    check(cudaMemcpyAsync(s.rays.ptr,rays.data(),rays.size()*sizeof(Ray),cudaMemcpyHostToDevice,s.stream.id));
+    check(cudaStreamSynchronize(s.stream.id));
+    s.hits.reserve(rays.size());
+    StepGraph schedule;
+    const int n=static_cast<int>(rays.size());
+    auto stream=s.stream.id;
+    check(cudaStreamBeginCapture(stream,cudaStreamCaptureModeThreadLocal));
+    for(size_t start=0;start<rays.size();start+=batch) {
+        const int count=std::min<int>(batch,n-static_cast<int>(start));
+        columns<<<(count+63)/64,64,0,stream>>>(s.view,s.rays.ptr+start,reach,s.hits.ptr+start,count);
+    }
+    check(cudaStreamEndCapture(stream,&schedule.graph));
+    check(cudaGraphInstantiate(&schedule.executable,schedule.graph,0));
+    const auto warm=std::chrono::steady_clock::now()+std::chrono::milliseconds(250);
+    do {
+        check(cudaGraphLaunch(schedule.executable,stream));
+        check(cudaStreamSynchronize(stream));
+    } while(std::chrono::steady_clock::now()<warm);
+    struct Event {
+        cudaEvent_t id{};
+        Event(){check(cudaEventCreate(&id));}
+        ~Event(){cudaEventDestroy(id);}
+    } first,last;
+    check(cudaEventRecord(first.id,stream));
+    for(int i=0;i<repeats;++i) check(cudaGraphLaunch(schedule.executable,stream));
+    check(cudaEventRecord(last.id,stream));
+    check(cudaEventSynchronize(last.id));
+    float ms;
+    check(cudaEventElapsedTime(&ms,first.id,last.id));
+    hits.resize(rays.size());
+    check(cudaMemcpy(hits.data(),s.hits.ptr,rays.size()*sizeof(Hit),cudaMemcpyDeviceToHost));
+    const size_t batches=(rays.size()+batch-1)/batch;
+    return 1000.*ms/(repeats*double(batches));
+}
 } // namespace nc::compiled::device

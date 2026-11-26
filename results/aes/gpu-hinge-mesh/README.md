@@ -48,7 +48,7 @@
 
 ```powershell
 python -m zipfile -e results/aes/cpu-foundation/reducer-physics/cpu-deck.zip build/gpu-model
-python benchmarks/aes/gpu_hinge_mesh.py build/gpu-deck build/gpu-windows --scene build/gpu-model/reducer-physical/common-200.scene --prepare
+python benchmarks/aes/gpu_hinge_mesh.py build/gpu-deck build/gpu-windows --scene build/gpu-model/reducer-physical/common-200.scene --method mesh-wrench --prepare
 cmake -S . -B build/gpu-exchange -DNC_WITH_OCCT=OFF
 cmake --build build/gpu-exchange --config Release --target nc_hinge_exchange
 python benchmarks/aes/gpu_hinge_mesh.py build/gpu-deck build/gpu-windows --geometry results/aes/gpu-hinge-mesh/geometry.npz --method mesh-wrench --output build/gpu-run --exchange-lib build/gpu-exchange/Release/nc_hinge_exchange.dll

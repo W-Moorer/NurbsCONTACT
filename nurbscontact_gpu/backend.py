@@ -167,7 +167,7 @@ def run(
     deck,
     work,
     destination,
-    method="mesh-wrench",
+    method,
     steps=None,
     geometry=None,
     warps=None,
@@ -481,6 +481,7 @@ def run(
     report = dict(
         device=device,
         method=method,
+        contact_basis="fixed_parallel_hinge_configuration_map",
         steps=n,
         step_s=h,
         physical_s=n * h,

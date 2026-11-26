@@ -35,81 +35,360 @@ __device__ V transform(const double* m,V p) {
                         m[8]*p.x+m[9]*p.y+m[10]*p.z+m[11]);
 }
 }
-extern "C" __global__ void leaf_candidates(const int* leaf_ids,int leaves,const double* source_bounds,
-        const double* target_bounds,const int* target_links,int nodes,
-        const double* pose,int2* candidates,int capacity,int* counts) {
-    const int i=blockIdx.x*blockDim.x+threadIdx.x;
-    if (i>=leaves) return;
-    const int leaf=leaf_ids[i]; const double* box=source_bounds+leaf*6;
-    double lo[3],hi[3];
-    for(int k=0;k<3;++k) {
-        const double* row=pose+4*k;
-        double lower=row[3],upper=row[3],absolute=fabs(row[3]);
-        for(int j=0;j<3;++j) {
-            const double p=row[j]*box[j],q=row[j]*box[3+j];
-            lower+=fmin(p,q);upper+=fmax(p,q);absolute+=fmax(fabs(p),fabs(q));
-        }
-        const double margin=16*2.2204460492503131e-16*absolute;
-        lo[k]=lower-margin;hi[k]=upper+margin;
+__device__ void collect_leaves(const int *leaf_ids, int leaves,
+                               const double *source_bounds,
+                               const float4 *target_bounds, int nodes,
+                               const double *pose, int2 *candidates,
+                               int capacity, int *counts, double skin = 0) {
+  const int i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i >= leaves)
+    return;
+  const int leaf = leaf_ids[i];
+  const double *box = source_bounds + leaf * 6;
+  float lo[3], hi[3];
+  for (int k = 0; k < 3; ++k) {
+    const double *row = pose + 4 * k;
+    double lower = row[3], upper = row[3], absolute = fabs(row[3]);
+    for (int j = 0; j < 3; ++j) {
+      const double p = row[j] * box[j], q = row[j] * box[3 + j];
+      lower += fmin(p, q);
+      upper += fmax(p, q);
+      absolute += fmax(fabs(p), fabs(q));
     }
-    for(int b=0;b<nodes;) {
-        const double* target=target_bounds+b*6;
-        const int* link=target_links+b*3;
-        if (hi[0]<target[0] || lo[0]>target[3] || hi[1]<target[1] || lo[1]>target[4] ||
-            hi[2]<target[2] || lo[2]>target[5]) {b=link[0];continue;}
-        if (link[2]) {
-            int slot=atomicAdd(counts+1,1);
-            if (slot<capacity) candidates[slot]=make_int2(leaf,b);
-        }
-        ++b;
+    const double margin =
+        skin + 16 * 2.2204460492503131e-16 * (absolute + skin);
+    lo[k] = __double2float_rd(lower - margin);
+    hi[k] = __double2float_ru(upper + margin);
+  }
+  const float4 root_lo = target_bounds[0], root_hi = target_bounds[1];
+  if (hi[0] < root_lo.x || lo[0] > root_hi.x || hi[1] < root_lo.y ||
+      lo[1] > root_hi.y || hi[2] < root_lo.z || lo[2] > root_hi.z)
+    return;
+  for (int b = 0; b < nodes;) {
+    const float4 low = target_bounds[2 * b], high = target_bounds[2 * b + 1];
+    if (hi[0] < low.x || lo[0] > high.x || hi[1] < low.y || lo[1] > high.y ||
+        hi[2] < low.z || lo[2] > high.z) {
+      b = __float_as_int(low.w);
+      continue;
     }
+    if (__float_as_int(high.w)) {
+      int slot = atomicAdd(counts + 1, 1);
+      if (slot < capacity)
+        candidates[slot] = make_int2(leaf, b);
+    }
+    ++b;
+  }
 }
-extern "C" __global__ void intersect_leaves(const V* source,const int* source_ids,const int* source_links,
-        const V* target,const int* target_ids,const int* target_links,const double* pose,
-        const int2* candidates,int candidate_capacity,int2* hits,int capacity,int* counts) {
-    const int warp=(blockIdx.x*blockDim.x+threadIdx.x)/32,lane=threadIdx.x%32;
-    const int n=counts[1]<candidate_capacity?counts[1]:candidate_capacity;
-    for(int slot=warp;slot<n;slot+=gridDim.x*blockDim.x/32) {
-        const int2 leaf=candidates[slot];
-        const int* a=source_links+3*leaf.x;const int* b=target_links+3*leaf.y;
-        for(int k=lane;k<a[2]*b[2];k+=32) {
-            const int i=a[1]+k/b[2],j=b[1]+k%b[2];
-            V tri[3];
-            for(int v=0;v<3;++v) tri[v]=transform(pose,source[3*i+v]);
-            const V* other=target+3*j;
-            if (max3(tri[0].x,tri[1].x,tri[2].x)<min3(other[0].x,other[1].x,other[2].x) ||
-                max3(other[0].x,other[1].x,other[2].x)<min3(tri[0].x,tri[1].x,tri[2].x) ||
-                max3(tri[0].y,tri[1].y,tri[2].y)<min3(other[0].y,other[1].y,other[2].y) ||
-                max3(other[0].y,other[1].y,other[2].y)<min3(tri[0].y,tri[1].y,tri[2].y) ||
-                max3(tri[0].z,tri[1].z,tri[2].z)<min3(other[0].z,other[1].z,other[2].z) ||
-                max3(other[0].z,other[1].z,other[2].z)<min3(tri[0].z,tri[1].z,tri[2].z)) continue;
-            if (!intersect(tri,other)) continue;
-            int index=atomicAdd(counts,1);
-            if(index<capacity) hits[index]=make_int2(source_ids[i],target_ids[j]);
-        }
+extern "C" __global__ void leaf_candidates(const int *leaves, int n,
+                                           const double *a, const float4 *b,
+                                           int nodes, const double *pose,
+                                           int2 *candidates, int capacity,
+                                           int *totals) {
+  collect_leaves(leaves, n, a, b, nodes, pose, candidates, capacity, totals);
+}
+namespace {
+__device__ float3 fdiff(float3 a, float3 b) {
+  return make_float3(a.x - b.x, a.y - b.y, a.z - b.z);
+}
+__device__ float3 fcross(float3 a, float3 b) {
+  return make_float3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
+                     a.x * b.y - a.y * b.x);
+}
+__device__ float fdot(float3 a, float3 b) {
+  return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+__device__ bool fgaps(float a, float b, float c, float d, float e, float f,
+                      float pad) {
+  return fminf(a, fminf(b, c)) - fmaxf(d, fmaxf(e, f)) > pad ||
+         fminf(d, fminf(e, f)) - fmaxf(a, fmaxf(b, c)) > pad;
+}
+// Any direction can prove disjointness. Enclose all six projections so a
+// rounded normal never has to be an exact separating-axis direction.
+__device__ bool fplane(float3 n, const float3 a[3], const float3 b[3],
+                       float error) {
+  float scale = fabsf(n.x) + fabsf(n.y) + fabsf(n.z);
+  if (!(scale > 1e-18f && scale < 1e18f))
+    return false;
+  return fgaps(fdot(n, a[0]), fdot(n, a[1]), fdot(n, a[2]), fdot(n, b[0]),
+               fdot(n, b[1]), fdot(n, b[2]), error * scale + 1e-30f);
+}
+__device__ float2 project2(float3 p, int drop) {
+  return drop == 0
+             ? make_float2(p.y, p.z)
+             : (drop == 1 ? make_float2(p.z, p.x) : make_float2(p.x, p.y));
+}
+__device__ bool empty_projection(const float3 a[3], const float3 b[3],
+                                 float3 normal, float pad) {
+  const float x = fabsf(normal.x), y = fabsf(normal.y), z = fabsf(normal.z);
+  const int drop = x > y && x > z ? 0 : (y > z ? 1 : 2);
+  float2 p[3], q[3];
+  for (int i = 0; i < 3; ++i) {
+    p[i] = project2(a[i], drop);
+    q[i] = project2(b[i], drop);
+  }
+  for (int i = 0; i < 6; ++i) {
+    const float2 *f = i < 3 ? p : q;
+    const float2 start = f[i % 3], end = f[(i + 1) % 3];
+    const float nx = start.y - end.y, ny = end.x - start.x;
+    const float bound = pad * (fabsf(nx) + fabsf(ny)) + 1e-30f;
+    if (fgaps(nx * p[0].x + ny * p[0].y, nx * p[1].x + ny * p[1].y,
+              nx * p[2].x + ny * p[2].y, nx * q[0].x + ny * q[0].y,
+              nx * q[1].x + ny * q[1].y, nx * q[2].x + ny * q[2].y, bound))
+      return true;
+  }
+  return false;
+}
+__device__ float3 move_proxy(float3 p, const double *m) {
+  return make_float3(
+      float(m[0]) * p.x + float(m[1]) * p.y + float(m[2]) * p.z + float(m[3]),
+      float(m[4]) * p.x + float(m[5]) * p.y + float(m[6]) * p.z + float(m[7]),
+      float(m[8]) * p.x + float(m[9]) * p.y + float(m[10]) * p.z +
+          float(m[11]));
+}
+__device__ bool separated_proxies(const float3 *a, const float3 *b,
+                                  float error) {
+  // Very large coordinates could overflow products in the single-precision
+  // projections. Leave their classification to the double-precision path.
+  if (!(error < 1e5f))
+    return false;
+  if (fgaps(a[0].x, a[1].x, a[2].x, b[0].x, b[1].x, b[2].x, error) ||
+      fgaps(a[0].y, a[1].y, a[2].y, b[0].y, b[1].y, b[2].y, error) ||
+      fgaps(a[0].z, a[1].z, a[2].z, b[0].z, b[1].z, b[2].z, error))
+    return true;
+  const float3 na = fcross(fdiff(a[1], a[0]), fdiff(a[2], a[0]));
+  return fplane(na, a, b, error) ||
+         fplane(fcross(fdiff(b[1], b[0]), fdiff(b[2], b[0])), a, b, error) ||
+         empty_projection(a, b, na, error);
+}
+__device__ bool proxy_excludes(const float3 *a, const float3 *b,
+                               const double *m, float error) {
+  const float3 placed[3] = {move_proxy(a[0], m), move_proxy(a[1], m),
+                            move_proxy(a[2], m)};
+  return separated_proxies(placed, b, error);
+}
+} // namespace
+__device__ bool finite_hit(const V tri[3], const V *other) {
+  if (max3(tri[0].x, tri[1].x, tri[2].x) <
+          min3(other[0].x, other[1].x, other[2].x) ||
+      max3(other[0].x, other[1].x, other[2].x) <
+          min3(tri[0].x, tri[1].x, tri[2].x) ||
+      max3(tri[0].y, tri[1].y, tri[2].y) <
+          min3(other[0].y, other[1].y, other[2].y) ||
+      max3(other[0].y, other[1].y, other[2].y) <
+          min3(tri[0].y, tri[1].y, tri[2].y) ||
+      max3(tri[0].z, tri[1].z, tri[2].z) <
+          min3(other[0].z, other[1].z, other[2].z) ||
+      max3(other[0].z, other[1].z, other[2].z) <
+          min3(tri[0].z, tri[1].z, tri[2].z))
+    return false;
+  return intersect(tri, other);
+}
+__device__ void test_leaves(const V *source, const int *source_ids,
+                            const int *source_links, const V *target,
+                            const int *target_ids, const int *target_links,
+                            const double *pose, const float3 *source_proxy,
+                            const float3 *target_proxy, double extent,
+                            int width, const int2 *candidates,
+                            int candidate_capacity, int2 *hits, int capacity,
+                            int *counts) {
+  const int worker = (blockIdx.x * blockDim.x + threadIdx.x) / width,
+            lane = threadIdx.x % width;
+  const int n = counts[1] < candidate_capacity ? counts[1] : candidate_capacity;
+  // A rigid transform has unit-length rows. Include conversion, placement,
+  // scalar products and the final float comparison in each projection pad.
+  const float error = __double2float_ru(
+      128 * 1.1920928955078125e-7 *
+          (4 * extent + fabs(pose[3]) + fabs(pose[7]) + fabs(pose[11])) +
+      1e-30);
+  for (int slot = worker; slot < n; slot += gridDim.x * blockDim.x / width) {
+    const int2 leaf = candidates[slot];
+    const int *a = source_links + 3 * leaf.x;
+    const int *b = target_links + 3 * leaf.y;
+    for (int k = lane; k < a[2] * b[2]; k += width) {
+      const int i = a[1] + k / b[2], j = b[1] + k % b[2];
+      if (proxy_excludes(source_proxy + 3 * i, target_proxy + 3 * j, pose,
+                         error))
+        continue;
+      V tri[3];
+      for (int v = 0; v < 3; ++v)
+        tri[v] = transform(pose, source[3 * i + v]);
+      const V *other = target + 3 * j;
+      if (!finite_hit(tri, other))
+        continue;
+      int index = atomicAdd(counts, 1);
+      if (index < capacity)
+        hits[index] = make_int2(source_ids[i], target_ids[j]);
     }
+  }
+}
+
+extern "C" __global__ void intersect_leaves(
+    const V *source, const int *source_ids, const int *source_links,
+    const V *target, const int *target_ids, const int *target_links,
+    const double *pose, const float3 *source_proxy, const float3 *target_proxy,
+    double extent, int width, const int2 *candidates, int candidate_capacity,
+    int2 *hits, int capacity, int *counts) {
+  test_leaves(source, source_ids, source_links, target, target_ids,
+              target_links, pose, source_proxy, target_proxy, extent, width,
+              candidates, candidate_capacity, hits, capacity, counts);
+}
+
+struct MeshPairView {
+  const int *leaves;
+  const double *bounds;
+  const float4 *traversal;
+  const V *a;
+  const int *a_ids;
+  const int *a_links;
+  const V *b;
+  const int *b_ids;
+  const int *b_links;
+  const float3 *a_proxy;
+  const float3 *b_proxy;
+  int2 *candidates;
+  int2 *hits;
+  int2 *filtered;
+  double extent;
+  int leaves_n, nodes, candidate_n, hit_n, width, filtered_n;
+};
+// Each cached list encloses all placements within 'skin' coordinate-wise
+// displacement of the source solid. Only poses supplied by the caller are used.
+extern "C" __global__ void check_candidate_cache(const MeshPairView *pairs,
+                                                 const double *poses,
+                                                 int *counts, int *filtered,
+                                                 int *refresh, double *anchors,
+                                                 double skin) {
+  const int pair = blockIdx.y;
+  if (threadIdx.x)
+    return;
+  const double *m = poses + 12 * pair;
+  double *old = anchors + 12 * pair;
+  const double *box = pairs[pair].bounds;
+  bool rebuild = !isfinite(old[0]);
+  for (int k = 0; k < 3 && !rebuild; ++k) {
+    double motion = fabs(m[4 * k + 3] - old[4 * k + 3]);
+    for (int j = 0; j < 3; ++j)
+      motion += fabs(m[4 * k + j] - old[4 * k + j]) *
+                fmax(fabs(box[j]), fabs(box[3 + j]));
+    rebuild = motion > skin * (1 - 16 * 2.2204460492503131e-16);
+  }
+  refresh[pair] = rebuild;
+  counts[2 * pair] = 0;
+  if (rebuild) {
+    for (int j = 0; j < 12; ++j)
+      old[j] = m[j];
+    counts[2 * pair + 1] = 0;
+    filtered[pair] = 0;
+  }
+}
+extern "C" __global__ void
+batch_leaf_candidates(const MeshPairView *pairs, const double *poses,
+                      int *counts, const int *refresh, double skin) {
+  const int i = blockIdx.y;
+  if (skin > 0 && !refresh[i])
+    return;
+  const MeshPairView &p = pairs[i];
+  collect_leaves(p.leaves, p.leaves_n, p.bounds, p.traversal, p.nodes,
+                 poses + 12 * i, p.candidates, p.candidate_n, counts + 2 * i,
+                 skin);
+}
+extern "C" __global__ void batch_filter(const MeshPairView *pairs,
+                                        const double *poses, int *counts,
+                                        int *sizes, const int *refresh,
+                                        double skin) {
+  const int pair = blockIdx.y;
+  if (skin > 0 && !refresh[pair])
+    return;
+  const MeshPairView &p = pairs[pair];
+  const double *m = poses + 12 * pair;
+  const float pad = __double2float_ru(
+      128 * 1.1920928955078125e-7 *
+          (4 * p.extent + fabs(m[3]) + fabs(m[7]) + fabs(m[11])) +
+      skin * (1 + 1e-5) + 1e-30);
+  const int width = p.width;
+  const int id = blockIdx.x * blockDim.x + threadIdx.x,
+            lane = threadIdx.x % width;
+  const int n = min(counts[2 * pair + 1], p.candidate_n);
+  for (int slot = id / width; slot < n;
+       slot += gridDim.x * blockDim.x / width) {
+    const int2 leaf = p.candidates[slot];
+    const int *a = p.a_links + 3 * leaf.x;
+    const int *b = p.b_links + 3 * leaf.y;
+    for (int k = lane; k < a[2] * b[2]; k += width) {
+      const int i = a[1] + k / b[2], j = b[1] + k % b[2];
+      if (proxy_excludes(p.a_proxy + 3 * i, p.b_proxy + 3 * j, m, pad))
+        continue;
+      const int pos = atomicAdd(sizes + pair, 1);
+      if (pos < p.filtered_n)
+        p.filtered[pos] = make_int2(i, j);
+    }
+  }
+}
+extern "C" __global__ void batch_intersections(const MeshPairView *pairs,
+                                               const double *poses, int *counts,
+                                               const int *sizes, double skin) {
+  const int i = blockIdx.y;
+  const MeshPairView &p = pairs[i];
+  if (sizes[i] > p.filtered_n) {
+    test_leaves(p.a, p.a_ids, p.a_links, p.b, p.b_ids, p.b_links,
+                poses + 12 * i, p.a_proxy, p.b_proxy, p.extent, p.width,
+                p.candidates, p.candidate_n, p.hits, p.hit_n, counts + 2 * i);
+    return;
+  }
+  for (int slot = blockIdx.x * blockDim.x + threadIdx.x; slot < sizes[i];
+       slot += gridDim.x * blockDim.x) {
+    const int2 faces = p.filtered[slot];
+    if (skin > 0) {
+      const double *m = poses + 12 * i;
+      const float error = __double2float_ru(
+          128 * 1.1920928955078125e-7 *
+              (4 * p.extent + fabs(m[3]) + fabs(m[7]) + fabs(m[11])) +
+          1e-30);
+      if (proxy_excludes(p.a_proxy + 3 * faces.x, p.b_proxy + 3 * faces.y, m,
+                         error))
+        continue;
+    }
+    V tri[3];
+    for (int v = 0; v < 3; ++v)
+      tri[v] = transform(poses + 12 * i, p.a[3 * faces.x + v]);
+    if (!finite_hit(tri, p.b + 3 * faces.y))
+      continue;
+    int pos = atomicAdd(counts + 2 * i, 1);
+    if (pos < p.hit_n)
+      p.hits[pos] = make_int2(p.a_ids[faces.x], p.b_ids[faces.y]);
+  }
 }
 
 namespace {
-__device__ V plus_v(V a,V b){return make_double3(a.x+b.x,a.y+b.y,a.z+b.z);}
-__device__ V times_v(V a,double s){return make_double3(a.x*s,a.y*s,a.z*s);}
-__device__ V lerp_v(V a,V b,double t){return plus_v(a,times_v(minus_v(b,a),t));}
-__device__ double norm_v(V a){return sqrt(proj(a,a));}
+__device__ V plus_v(V a, V b) {
+  return make_double3(a.x + b.x, a.y + b.y, a.z + b.z);
+}
+__device__ V times_v(V a, double s) {
+  return make_double3(a.x * s, a.y * s, a.z * s);
+}
+__device__ V lerp_v(V a, V b, double t) {
+  return plus_v(a, times_v(minus_v(b, a), t));
+}
+__device__ double norm_v(V a) { return sqrt(proj(a, a)); }
 
 // Return the finite edge/plane intersections. Keep the signs of sub-ulp
 // offsets around planar end caps; snapping them can turn a point into an edge.
-__device__ int plane_slice(const V tri[3],V pivot,V plane_normal,V* out) {
-    double height[3];
-    for(int i=0;i<3;++i)height[i]=proj(minus_v(tri[i],pivot),plane_normal);
-    if(height[0]==0 && height[1]==0 && height[2]==0)return 3;
-    int count=0;
-    for(int i=0;i<3;++i) {
-        const int j=(i+1)%3;
-        const double u=height[i],v=height[j];
-        if(u==0)out[count++]=tri[i];
-        if((u<0 && v>0)||(u>0 && v<0))out[count++]=lerp_v(tri[i],tri[j],u/(u-v));
-    }
-    return count;
+__device__ int plane_slice(const V tri[3], V pivot, V plane_normal, V *out) {
+  double height[3];
+  for (int i = 0; i < 3; ++i)
+    height[i] = proj(minus_v(tri[i], pivot), plane_normal);
+  if (height[0] == 0 && height[1] == 0 && height[2] == 0)
+    return 3;
+  int count = 0;
+  for (int i = 0; i < 3; ++i) {
+    const int j = (i + 1) % 3;
+    const double u = height[i], v = height[j];
+    if (u == 0)
+      out[count++] = tri[i];
+    if ((u < 0 && v > 0) || (u > 0 && v < 0))
+      out[count++] = lerp_v(tri[i], tri[j], u / (u - v));
+  }
+  return count;
 }
 __device__ double component(V p,int k){return k==0?p.x:(k==1?p.y:p.z);}
 __device__ int coplanar_polygon(const V a[3],const V b[3],V normal,double eps,V* result) {
@@ -139,7 +418,7 @@ __device__ int coplanar_polygon(const V a[3],const V b[3],V normal,double eps,V*
     }
     return count ? count : -1;
 }
-}
+} // namespace
 // Counts give point, segment, or polygon size. A negative count flags an
 // ill-conditioned construction. Hit IDs and both winding normals are preserved.
 extern "C" __global__ void intersection_geometry(const V* source,const int* source_lookup,

@@ -1,4 +1,4 @@
-# NurbsCONTACT GPU
+# Historical fixed-hinge GPU package
 
 The GPU backend integrates rigid bodies on fixed parallel revolute axes using finite triangle intersection, a precomputed contact wrench or material point map and a generalized-alpha integrator. The wheel includes the CUDA kernels and the native library for synchronous load and wrench exchange. The validated model uses a shared linear normal penalty. See the [five-second reducer validation](https://github.com/W-Moorer/NurbsCONTACT/tree/main/results/aes/gpu-hinge-mesh).
 
@@ -13,11 +13,13 @@ nc-gpu --help
 
 ## Run the reducer
 
+The development CLI requires an explicit `--method` for this configuration-map experiment. Current-pose triangle detection is available through [IntersectionBatch](bvh.py) and has a [separate validation](../results/aes/gpu-mesh-geometry/README.md).
+
 Get the [CPU scene and Gmsh meshes](https://github.com/W-Moorer/NurbsCONTACT/raw/refs/heads/main/results/aes/cpu-foundation/reducer-physics/cpu-deck.zip) and the matching [geometry table](https://github.com/W-Moorer/NurbsCONTACT/raw/refs/heads/main/results/aes/gpu-hinge-mesh/geometry.npz). From the directory containing both downloads, run:
 
 ```text
 python -m zipfile -e cpu-deck.zip model
-nc-gpu deck windows --scene model/reducer-physical/common-200.scene --prepare
+nc-gpu deck windows --scene model/reducer-physical/common-200.scene --method mesh-wrench --prepare
 nc-gpu deck windows --geometry geometry.npz --method mesh-wrench --exchange --output run
 ```
 
@@ -30,5 +32,5 @@ from nurbscontact_gpu.backend import export_scene, prepare, run
 
 export_scene("model/reducer-physical/common-200.scene", "deck", duration=5.0, step=0.0001)
 prepare("deck", "windows")
-timing = run("deck", "windows", "run", geometry="geometry.npz", exchange=True)
+timing = run("deck", "windows", "run", method="mesh-wrench", geometry="geometry.npz", exchange=True)
 ```

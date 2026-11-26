@@ -1,0 +1,55 @@
+{
+  "measurement": "complete triangle-pair detection on prescribed poses",
+  "device": "NVIDIA GeForce RTX 3070",
+  "physical_interval_s": 5.000000000001682,
+  "steps": 50000,
+  "body_pairs": [
+    [
+      0,
+      1
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "triangles": [
+    10216,
+    10240,
+    27934,
+    17342
+  ],
+  "mesh_sha256": [
+    "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+    "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+    "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+    "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0"
+  ],
+  "pose_trace_sha256": "422068b9d21aeb562bb8203c6313e469c245d4cb8f42d939d08186fc1d90595f",
+  "online_wall_s": 16.813627700001234,
+  "mean_us_per_frame": 336.2725540000246,
+  "profile_frames": 501,
+  "phase_order": [
+    "broad",
+    "narrow"
+  ],
+  "mean_us_per_pair_per_phase": [
+    [
+      61.13136926147703,
+      54.325141716566804
+    ],
+    [
+      59.410395209580734,
+      169.34629940119768
+    ]
+  ],
+  "median_hits_per_pair": [
+    61.0,
+    226.0
+  ],
+  "max_hits_per_pair": [
+    91,
+    272
+  ],
+  "count_history_sha256": "32a544ae3a01d83904b598d37118d03a8aee8555c9dbd876a473336162e1652c"
+}

@@ -1,0 +1,113 @@
+{
+  "measurement": "complete triangle-pair detection on prescribed poses",
+  "device": "NVIDIA GeForce RTX 3070",
+  "physical_interval_s": 5.000000000001682,
+  "steps": 50000,
+  "body_pairs": [
+    [
+      0,
+      1
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "triangles": [
+    10216,
+    10240,
+    27934,
+    17342
+  ],
+  "triangles_per_leaf_limit": 4,
+  "candidate_reuse_distance_m": 0.0,
+  "mesh_sha256": [
+    "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+    "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+    "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+    "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0"
+  ],
+  "pose_trace_sha256": "422068b9d21aeb562bb8203c6313e469c245d4cb8f42d939d08186fc1d90595f",
+  "online_wall_s": 6.748329399997601,
+  "online_wall_s_repeats": [
+    6.74687420000555,
+    6.748329399997601,
+    7.36180849999073
+  ],
+  "mean_us_per_frame": 134.96658799995203,
+  "profile_frames": 50000,
+  "phase_order": [
+    "broad",
+    "narrow"
+  ],
+  "pair_dispatch": "simultaneous",
+  "mean_us_per_dispatch_per_phase": [
+    [
+      49.34703104000139,
+      91.53110015999762
+    ]
+  ],
+  "profiled_detection_p99_us": 461.82399999999996,
+  "profiled_detection_steps_over_100_us": 49810,
+  "median_hits_per_pair": [
+    61.0,
+    226.0
+  ],
+  "median_candidate_leaves_per_pair": [
+    568.0,
+    3151.0
+  ],
+  "hit_count_history_sha256": "d529d93e81345deeefe820dfe7072911f32b4e92a2a4075cf1d2edfd8ee8e554",
+  "max_hits_per_pair": [
+    91,
+    272
+  ],
+  "count_history_sha256": "1a8b62b2cf2de9f3717070278a05835cef63ffe9fe25a99546f51726c0c1fbca",
+  "cpu_triangle_id_check": {
+    "steps": [
+      1,
+      3,
+      6,
+      10,
+      13,
+      21,
+      24,
+      1529,
+      2000,
+      4000,
+      6000,
+      8000,
+      10000,
+      12000,
+      14000,
+      16000,
+      18000,
+      20000,
+      22000,
+      24000,
+      26000,
+      28000,
+      30000,
+      32000,
+      34000,
+      36000,
+      38000,
+      40000,
+      42000,
+      44000,
+      46000,
+      48000,
+      50000
+    ],
+    "expected_triangle_pairs": 8795,
+    "missing": 0,
+    "extra": 0,
+    "duplicate": 0
+  },
+  "full_fp64_id_check": {
+    "body_pair_poses": 100000,
+    "source_sha256": "1cfc9641afc9d9b0a77c97d5762ea2e9fedefae8ece0d9a27b93f326d3014723",
+    "mismatches": 0,
+    "workspace_overflows": 0
+  }
+}

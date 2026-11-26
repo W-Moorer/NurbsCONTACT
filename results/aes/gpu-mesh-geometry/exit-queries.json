@@ -1,0 +1,162 @@
+[
+  {
+    "part": "reducer-1a",
+    "rays": 2452,
+    "max_batch": 128,
+    "launches_per_repeat": 20,
+    "median_mean_batch_us": {
+      "cad": 625.800526936849,
+      "mesh": 174.54079945882162,
+      "mesh_grid": 94.89920298258464
+    },
+    "trials_mean_batch_us": {
+      "cad": [
+        623.8478597005209,
+        626.0121663411459,
+        625.800526936849
+      ],
+      "mesh": [
+        174.52203114827475,
+        176.24746958414713,
+        174.54079945882162
+      ],
+      "mesh_grid": [
+        94.4264539082845,
+        95.01696268717448,
+        94.89920298258464
+      ]
+    },
+    "max_ray_mm": 0.4,
+    "graph_repeats": 30,
+    "poses": 41,
+    "ray_sha256": "d6eec34aee5611ff22f3093d74341ace618f68322b650546ce0c1261cf837e11",
+    "mesh_indices_status_differences": 0,
+    "mesh_indices_max_distance_difference_mm": 0.0,
+    "cad_hits": 1226,
+    "mesh_hits": 1184,
+    "both_hits": 1184,
+    "different_hit_status": 42,
+    "cad_unresolved": 0,
+    "common_median_distance_um": 0.05678674192666211
+  },
+  {
+    "part": "reducer-1b",
+    "rays": 2452,
+    "max_batch": 128,
+    "launches_per_repeat": 20,
+    "median_mean_batch_us": {
+      "cad": 600.9326680501302,
+      "mesh": 165.9938176472982,
+      "mesh_grid": 50.34298578898112
+    },
+    "trials_mean_batch_us": {
+      "cad": [
+        597.906748453776,
+        601.2142944335938,
+        600.9326680501302
+      ],
+      "mesh": [
+        165.9938176472982,
+        166.76352183024088,
+        164.41173553466797
+      ],
+      "mesh_grid": [
+        50.329599380493164,
+        50.375680923461914,
+        50.34298578898112
+      ]
+    },
+    "max_ray_mm": 0.4,
+    "graph_repeats": 30,
+    "poses": 41,
+    "ray_sha256": "9e661fe2c083392386029a3805ed16b63b9aaa1fdc255293f7940b266b697ce0",
+    "mesh_indices_status_differences": 0,
+    "mesh_indices_max_distance_difference_mm": 0.0,
+    "cad_hits": 1226,
+    "mesh_hits": 1211,
+    "both_hits": 1211,
+    "different_hit_status": 15,
+    "cad_unresolved": 0,
+    "common_median_distance_um": 1.2928824677516104e-09
+  },
+  {
+    "part": "reducer-2a",
+    "rays": 16170,
+    "max_batch": 128,
+    "launches_per_repeat": 127,
+    "median_mean_batch_us": {
+      "cad": 613.1244489214239,
+      "mesh": 233.61308580934218,
+      "mesh_grid": 54.023926902630826
+    },
+    "trials_mean_batch_us": {
+      "cad": [
+        621.1707728428478,
+        612.3200023581037,
+        613.1244489214239
+      ],
+      "mesh": [
+        233.61308580934218,
+        234.2992587352362,
+        233.271224855438
+      ],
+      "mesh_grid": [
+        54.023926902630826,
+        53.96614375076895,
+        54.12982129675197
+      ]
+    },
+    "max_ray_mm": 0.4,
+    "graph_repeats": 30,
+    "poses": 41,
+    "ray_sha256": "56dead885842e3ab2915d336d7fc1d82ae9d6eee93646f64aaedfaedc733225e",
+    "mesh_indices_status_differences": 0,
+    "mesh_indices_max_distance_difference_mm": 0.0,
+    "cad_hits": 7601,
+    "mesh_hits": 7605,
+    "both_hits": 7600,
+    "different_hit_status": 6,
+    "cad_unresolved": 0,
+    "common_median_distance_um": 1.433550607277831
+  },
+  {
+    "part": "reducer-2b",
+    "rays": 16170,
+    "max_batch": 128,
+    "launches_per_repeat": 127,
+    "median_mean_batch_us": {
+      "cad": 455.470351972605,
+      "mesh": 198.6406781854905,
+      "mesh_grid": 41.861442505843996
+    },
+    "trials_mean_batch_us": {
+      "cad": [
+        455.5388843606463,
+        455.1948767634514,
+        455.470351972605
+      ],
+      "mesh": [
+        198.57563809772802,
+        198.77506766732284,
+        198.6406781854905
+      ],
+      "mesh_grid": [
+        41.95199801227239,
+        41.636753833200046,
+        41.861442505843996
+      ]
+    },
+    "max_ray_mm": 0.4,
+    "graph_repeats": 30,
+    "poses": 41,
+    "ray_sha256": "c388c6830cecd7ee80180543e8ebc2e972ce50e046a3a784fdce89c793a1a6c8",
+    "mesh_indices_status_differences": 0,
+    "mesh_indices_max_distance_difference_mm": 0.0,
+    "cad_hits": 7670,
+    "mesh_hits": 7663,
+    "both_hits": 7660,
+    "different_hit_status": 13,
+    "cad_unresolved": 0,
+    "common_median_distance_um": 3.1003233075484053
+  }
+]

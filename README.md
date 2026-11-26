@@ -34,9 +34,11 @@ The executable accepts the same scene and compiled parts as the CPU reference. T
 
 The earlier hybrid prototype used `--device cuda-columns`. The host controlled the integrator, confirmed and grouped contact regions and handled unresolved rays. On the RTX 3070, this prototype and its four-worker CPU reference took 437.67 s and 219.52 s respectively. The 50,001 output frames matched exactly. [Archived hybrid comparison](results/aes/cuda-compiled-prototype/comparison.json)
 
-### GPU mesh package
+### GPU mesh contact
 
-For CUDA simulation of rigid bodies on fixed parallel hinges, use the installable GPU backend. Its runtime includes mesh contact, the integrator and the native load-exchange library. [Download the GPU backend](https://github.com/W-Moorer/NurbsCONTACT/releases/tag/gpu-backend-v0.1.1) · [Installation and five-second reducer example](nurbscontact_gpu/README.md)
+The GPU mesh query accepts one current rigid transform per body pair. It traverses local-space AABB trees, conservatively rejects separated triangles and tests the remaining finite triangles in double precision. It returns original triangle IDs and can construct intersection points, segments, polygons and winding normals. The same query handles independently moving bodies and exchanged body order. [Implementation](nurbscontact_gpu/bvh.py) · [Five-second geometry measurements and validation](results/aes/gpu-mesh-geometry/README.md)
+
+The released fixed-parallel-hinge package uses a precomputed configuration map for contact loads. Its five-second closed-loop timing applies to that configuration-map method. [Archived GPU package](https://github.com/W-Moorer/NurbsCONTACT/releases/tag/gpu-backend-v0.1.1) · [Reproduction instructions](nurbscontact_gpu/README.md)
 
 ### Geometry core
 

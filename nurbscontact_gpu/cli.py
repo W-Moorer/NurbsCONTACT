@@ -1,4 +1,4 @@
-"""Prepare and run fixed-hinge mesh contact on a CUDA GPU."""
+"""Reproduce the archived fixed-hinge configuration-map experiment on CUDA."""
 
 import argparse
 from pathlib import Path
@@ -18,7 +18,8 @@ def main():
     cli.add_argument("--step", type=float, default=0.0001)
     cli.add_argument("--bins", type=int, default=4096)
     cli.add_argument("--angle-band", type=float, default=0.0025)
-    cli.add_argument("--method", choices=("mesh-anchors", "mesh-wrench", "wrench-only"), default="mesh-wrench")
+    cli.add_argument("--method", choices=("mesh-anchors", "mesh-wrench", "wrench-only"), required=True,
+                     help="Select a fixed-hinge configuration-map method for this historical experiment")
     cli.add_argument("--output", type=Path)
     cli.add_argument("--warps", type=int, choices=(1, 2, 4),
                      help="Warps per contact pair (default: 2 for mapped exchange, otherwise 4)")
