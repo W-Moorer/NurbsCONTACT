@@ -141,6 +141,32 @@ void bezier_rays() {
     const auto corner=surface->Value(0,0).XYZ()-dir*.1;
     require(!atlas->query(1,corner,dir,.2,1e-7,interior),"Bezier corner treated as an isolated interior root");
 
+    // x=u+.25(v-.5)^2. A vertical ray can hit u=.985 while the
+    // centre linearisation puts its seed beyond the upper end of the span.
+    TColgp_Array2OfPnt shifted(1,2,1,3);
+    for (int i=1;i<=2;++i) for (int j=1;j<=3;++j)
+        shifted(i,j)=gp_Pnt(i-1+(j==2 ? -.0625 : .0625),(j-1)*.5,0.);
+    Handle(Geom_BSplineSurface) split=GeomConvert::SurfaceToBSplineSurface(new Geom_BezierSurface(shifted));
+    split->InsertUKnot(.5,1,1e-12);
+    const auto split_face=BRepBuilderAPI_MakeFace(split,1e-7).Face();
+    cad::PatchAssets split_assets(split_face);
+    cad::BezierRayAtlas fixed_seed(split_face,split_assets),relocated(split_face,split_assets,true);
+    std::array<double,2> seed{.1,.05};
+    bool recovered=false;
+    for (double u:{.985,.485,.515,.48}) {
+        const auto origin=split->Value(u,.95).XYZ()-gp_XYZ(0,0,.1);
+        recovered|=!fixed_seed.query(1,origin,{0,0,1},.2,1e-7,interior);
+        const bool resolved=relocated.query(1,origin,{0,0,1},.2,1e-7,interior,nullptr,&seed);
+        require(resolved && interior,
+                "lost a root when the initial UV crosses a span boundary");
+        close(interior->u,u,1e-9,"relocated U");
+        close(interior->t,.1,1e-10,"relocated depth");
+        seed={interior->u,interior->v};
+    }
+    require(recovered,"span relocation regression did not exercise the old fallback");
+    const auto edge=split->Value(1,.95).XYZ()-gp_XYZ(0,0,.1);
+    require(!relocated.query(1,edge,{0,0,1},.2,1e-7,interior,nullptr,&seed),"accepted an outer edge as interior");
+
     // The supporting surface also exists outside the trimmed UV rectangle.
     const auto trimmed=BRepBuilderAPI_MakeFace(surface,.25,.75,.25,.75,1e-7).Face();
     cad::PatchAssets cut_assets(trimmed);

@@ -1,15 +1,14 @@
 --- a/src/cad_bezier_ray.cpp
 +++ b/src/cad_bezier_ray.cpp
-@@ -10,6 +10,8 @@
- #include <cmath>
+@@ -11,6 +11,7 @@
  #include <limits>
  #include <numeric>
-+
-+namespace nc::audit { thread_local int reason=0; bool fail(int code) { reason=code; return false; } }
 
++namespace nc::audit { thread_local int reason=0; bool fail(int code) {reason=code;return false;} }
  namespace nc::cad {
  namespace {
-@@ -128,7 +130,7 @@
+ using Four = std::array<double, 4>;
+@@ -167,7 +168,7 @@
          const auto row_u = b.Crossed(d), row_v = d.Crossed(a);
          const double det = a.Dot(row_u);
          if (std::abs(det) <= 1e-10 * a.Modulus() * b.Modulus() || !std::isfinite(1. / det))
@@ -18,14 +17,19 @@
          const gp_XYZ rows[]{row_u / det, row_v / det};
          double contraction = 0;
          const auto f = derivative(center);
-@@ -146,13 +148,13 @@
+@@ -191,9 +192,9 @@
              contraction = std::max(contraction, r);
          }
-         if (!(contraction < .9) || xy[0] <= 0 || xy[0] >= 1 || xy[1] <= 0 || xy[1] >= 1)
+         if (!(contraction < .9))
 -            return false;
-+            return audit::fail(contraction>=.9 ? 3 : 4);
-         for (int iter = 0; iter < 8; ++iter) {
-             gp_XYZ value, du, dv;
++            return audit::fail(3);
+         if (xy[0]<=0 || xy[0]>=1 || xy[1]<=0 || xy[1]>=1) {
+-            if (!relocate) return false;
++            if (!relocate) return audit::fail(4);
+             for (int k=0;k<2;++k)
+                 if ((xy[k]<=0 || xy[k]>=1) && excludes_line(rows[k],origin,tol)) return true;
+             std::array<double,2> lower{0.,0.},upper{1.,1.};
+@@ -212,7 +213,7 @@
              double w;
              jet(xy[0], xy[1], origin, value, du, dv, w);
              if (!(w > 0))
@@ -34,7 +38,7 @@
              const double t = d.Dot(value) / w;
              const auto residual = value - d * (w * t);
              if (residual.Modulus() < 1e-9 * w) {
-@@ -162,7 +164,7 @@
+@@ -222,7 +223,7 @@
                      (std::max(std::abs(rows[0].Dot(residual)), std::abs(rows[1].Dot(residual))) + 1e-12) /
                      (1 - contraction);
                  if (radius >= std::min({xy[0], 1 - xy[0], xy[1], 1 - xy[1]}))
@@ -43,7 +47,7 @@
                  const auto recovered = origin + d * t;
                  double error = residual.Modulus();
                  for (const auto &slope : slopes) {
-@@ -174,13 +176,13 @@
+@@ -234,13 +235,13 @@
                  if (t < -tol - error || t > end + error)
                      return true;
                  if (t <= error || t >= end - error || hit)
@@ -59,7 +63,7 @@
                  n.Normalize();
                  hit = BezierRayHit{t, u0 + xy[0] * (u1 - u0), v0 + xy[1] * (v1 - v0), n};
                  return true;
-@@ -188,13 +190,13 @@
+@@ -248,16 +249,16 @@
              const auto c = dv.Crossed(d), e = d.Crossed(du);
              const double delta = du.Dot(c);
              if (delta == 0)
@@ -67,17 +71,21 @@
 +                return audit::fail(10);
              xy[0] -= residual.Dot(c) / delta;
              xy[1] -= residual.Dot(e) / delta;
-             if (!(xy[0] > 0 && xy[0] < 1 && xy[1] > 0 && xy[1] < 1))
+             if (!(xy[0] > 0 && xy[0] < 1 && xy[1] > 0 && xy[1] < 1)) {
+                 std::array<double,2> lower{0.,0.},upper{1.,1.};
+                 if (relocate && !root_box(origin,rows,errors,tol,lower,upper)) return true;
 -                return false;
+-            }
 -        }
 -        return false;
 +                return audit::fail(11);
++            }
 +        }
 +        return audit::fail(12);
      }
  };
 
-@@ -258,7 +260,7 @@
+@@ -322,7 +323,7 @@
      hit.reset();
      const auto first = part_->offsets.at(face - 1), last = part_->offsets.at(face);
      if (first == last)
@@ -86,13 +94,21 @@
      // Extend both ends for the native intersector's near-boundary decisions.
      const auto p = point - d * tol, q = point + d * (end + tol);
      const double margin = tol + 64 * std::numeric_limits<double>::epsilon() * (point.Modulus() + end + 1);
+@@ -339,7 +340,7 @@
+             return true;
+         if (candidate_spans)
+             ++*candidate_spans;
+-        return part_->spans[i].intersect(point, d, end, margin, hit,relocate_,previous_uv);
++        return part_->spans[i].intersect(point, d, end, margin, hit,relocate_ || previous_uv,previous_uv);
+     });
+ }
+ } // namespace nc::cad
 --- a/src/cad_contact_regions.cpp
 +++ b/src/cad_contact_regions.cpp
-@@ -35,6 +35,37 @@
+@@ -35,6 +35,45 @@
  #include <map>
  #include <numeric>
  #include <stdexcept>
-+
 +
 +#include <atomic>
 +#include <chrono>
@@ -103,7 +119,14 @@
 +struct NativeStats {
 +    struct Cell {std::atomic<long long> calls{}, finished{}, hits{}, ns{};};
 +    Cell data[2][15];
++    struct Comparison {std::atomic<long long> calls{}, resolved{}, discordant{}, direct_ns{}, resolved_native_ns{};};
++    Comparison cohort[2];
 +    ~NativeStats() {
++        for (int site=0;site<2;++site) {
++            const auto& c=cohort[site];
++            std::fprintf(stderr,"uv_cohort %d %lld %lld %lld %lld %lld\n",site,c.calls.load(),c.resolved.load(),
++                         c.discordant.load(),c.direct_ns.load(),c.resolved_native_ns.load());
++        }
 +        for (int site=0;site<2;++site) for (int k=0;k<15;++k) {
 +            const auto& c=data[site][k];
 +            if (c.calls.load()) std::fprintf(stderr,"native_fallback %d %d %lld %lld %lld %lld\n",
@@ -111,30 +134,35 @@
 +        }
 +    }
 +} native;
-+template<class Ray> void perform(int site,Ray& ray,const gp_Lin& line,double first,double last) {
++template<class Ray> long long perform(int site,Ray& ray,const gp_Lin& line,double first,double last) {
 +    auto& c=native.data[site][reason];
 +    ++c.calls;
 +    const auto start=std::chrono::steady_clock::now();
 +    ray->Perform(line,first,last);
-+    c.ns+=std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now()-start).count();
++    const auto ns=std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now()-start).count();
++    c.ns+=ns;
 +    if (ray->IsDone()) {
 +        ++c.finished;
 +        if (ray->NbPnt()) ++c.hits;
 +    }
++    return ns;
 +}
 +}
 
  namespace nc {
  namespace {
-@@ -359,6 +390,7 @@
-     std::shared_ptr<const cad::BezierRayAtlas> bezier;
+@@ -360,19 +399,49 @@
+     std::vector<std::optional<std::array<double,2>>> previous_uv;
      std::array<std::size_t,4> counts{}; // Resolved misses, interior hits, OCCT calls, visited span candidates.
      bool bezier_query(std::size_t i,const gp_Pnt& p,const gp_Dir& d,double end,std::optional<cad::BezierRayHit>& hit) {
 +        audit::reason=0;
          if (!bezier) return false;
          const auto& face=index.data_->faces[i].shape;
-         if (!bezier->query(i+1,p.XYZ(),d.XYZ(),end,std::max(Precision::Confusion(),BRep_Tool::Tolerance(face)),hit,&counts[3])) return false;
-@@ -367,7 +399,7 @@
+-        const auto* seed=!previous_uv.empty() && previous_uv[i] ? &*previous_uv[i] : nullptr;
++        const auto* seed=bezier->relocates() && !previous_uv.empty() && previous_uv[i] ? &*previous_uv[i] : nullptr;
+         if (!bezier->query(i+1,p.XYZ(),d.XYZ(),end,std::max(Precision::Confusion(),BRep_Tool::Tolerance(face)),hit,&counts[3],seed)) return false;
+         if (hit) {
+             auto& chart=charts[i];
              if (!chart) chart=std::make_unique<cad::CompiledChart>(face);
              // Leave trim curves, shared edges and seam ownership to OCCT.
              if (!chart->rectangular || hit->u<=chart->u0+chart->eu || hit->u>=chart->u1-chart->eu ||
@@ -143,21 +171,64 @@
          }
          ++counts[hit ? 1 : 0];
          return true;
-@@ -503,7 +535,7 @@
++    }
++    // Replay the unchanged control ray after OCCT has produced its result.
++    // Only the original centre-seed failures belong to the fixed cohort.
++    void compare_uv(int site,std::size_t i,const gp_Pnt& p,const gp_Dir& d,double end,long long native_ns) {
++        if (!bezier || bezier->relocates() || audit::reason!=4) return;
++        auto& c=audit::native.cohort[site];
++        ++c.calls;
++        const auto& face=index.data_->faces[i].shape;
++        const double tol=std::max(Precision::Confusion(),BRep_Tool::Tolerance(face));
++        const double nan=std::numeric_limits<double>::quiet_NaN();
++        const auto seed=previous_uv[i].value_or(std::array<double,2>{nan,nan});
++        std::optional<cad::BezierRayHit> direct;
++        const auto start=std::chrono::steady_clock::now();
++        bool resolved=bezier->query(i+1,p.XYZ(),d.XYZ(),end,tol,direct,nullptr,&seed);
++        if (resolved && direct) {
++            auto& chart=charts[i];
++            if (!chart) chart=std::make_unique<cad::CompiledChart>(face);
++            resolved=chart->rectangular && direct->u>chart->u0+chart->eu && direct->u<chart->u1-chart->eu
++                && direct->v>chart->v0+chart->ev && direct->v<chart->v1-chart->ev;
++        }
++        c.direct_ns+=std::chrono::duration_cast<std::chrono::nanoseconds>(
++            std::chrono::steady_clock::now()-start).count();
++        if (resolved) {
++            ++c.resolved;
++            c.resolved_native_ns+=native_ns;
++            const auto& ray=rays[i];
++            if (!ray->IsDone() || ray->IsParallel() || ray->NbPnt()!=(direct ? 1 : 0) ||
++                (direct && std::abs(ray->WParameter(1)-direct->t)>tol)) ++c.discordant;
++        }
+     }
+     bool crosses(const gp_Pnt& p,const gp_Vec& direction,double span,const CadExit* hint) {
+         if (!hint || !hint->face) return false;
+@@ -442,7 +511,7 @@
+
+ CadExitQuery::CadExitQuery(const CadContactIndex& index,std::shared_ptr<const cad::BezierRayAtlas> bezier)
+     :data_(std::make_unique<Data>(index)) {
+-    if (bezier && bezier->relocates()) data_->previous_uv.resize(index.face_count());
++    if (bezier) data_->previous_uv.resize(index.face_count());
+     data_->bezier=std::move(bezier);
+ }
+ CadExitQuery::~CadExitQuery() = default;
+@@ -508,7 +577,8 @@
          ++data_->counts[2];
          auto& ray=data_->rays[i];
          if (ray.IsNull()) ray=new IntCurvesFace_Intersector(face.shape,tol);
 -        ray->Perform(line,-tol,std::min(reach,nearest+tol));
-+        audit::perform(0,ray,line,-tol,std::min(reach,nearest+tol));
++        const auto native_ns=audit::perform(0,ray,line,-tol,std::min(reach,nearest+tol));
++        data_->compare_uv(0,i,p,d,end,native_ns);
          if (!ray->IsDone()) throw dynamics::UnresolvedContact("trimmed-face intersection failed");
          for (int k=1;k<=ray->NbPnt();++k) {
              const double t=ray->WParameter(k);
-@@ -607,7 +639,7 @@
+@@ -614,7 +684,8 @@
              ++data_->counts[2];
              auto& ray=data_->rays[i];
              if (ray.IsNull()) ray=new IntCurvesFace_Intersector(geometry.faces[i].shape,tol);
 -            ray->Perform(line,-tol,span+tol);
-+            audit::perform(1,ray,line,-tol,span+tol);
++            const auto native_ns=audit::perform(1,ray,line,-tol,span+tol);
++            data_->compare_uv(1,i,p,line.Direction(),span+tol,native_ns);
              if (!ray->IsDone() || ray->NbPnt() || ray->IsParallel()) return false;
          }
      } catch (const Standard_Failure&) {return false;}

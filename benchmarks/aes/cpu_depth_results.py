@@ -14,9 +14,11 @@ from cpu_cad_pruning import verified_dynamics
 from cpu_pressure_columns import differences, write
 
 
-def compare(scene, runs, archive, out):
+def compare(scene, runs, archive, out, relocate=False):
     out.mkdir(parents=True, exist_ok=True)
     methods=("cad-bezier-bounds","cad-bezier","mesh-obb")
+    if relocate: methods=("cad-bezier-relocate","cad-bezier-bounds","mesh-obb")
+    current_label="Relocated CAD (ours)" if relocate else "Bounded CAD (ours)"
     traces={}
     metrics={"runs":{}}
     for method in methods:
@@ -41,7 +43,7 @@ def compare(scene, runs, archive, out):
                 loaded_switch_steps=[(1+np.flatnonzero(np.diff(x>0))).tolist() for x in traces[method]["normal_N"].T])
         shutil.copyfile(path/"run.json",out/(method+"-run.json"))
         shutil.copyfile(path/"telemetry.json",out/(method+"-telemetry.json"))
-        original=archive/"blocks"/(method+"-run.json")
+        original=archive/("depth-bounds" if relocate else "blocks")/(method+"-run.json")
         if original.is_file():
             archived=json.loads(original.read_text())
             metrics["runs"][method]["same_response_as_archived_control"]=record["response_sha256"]==archived["response_sha256"]
@@ -61,6 +63,12 @@ def compare(scene, runs, archive, out):
     metrics["loaded_mismatches_vs_previous"]=((new["normal_N"]>0)!=(prior["normal_N"]>0)).sum(axis=0).tolist()
     metrics["normal_load_delta_N"]=[differences(x) for x in (new["normal_N"]-prior["normal_N"]).T]
     metrics["shaft_speed_delta_rad_s"]=[differences(x) for x in (new["speed"]-prior["speed"]).T]
+    if relocate:
+        for method,trace in traces.items():
+            values=trace["output_torque_Nm"]
+            metrics["runs"][method]["torque_range_Nm"]=[float(values.min()),float(values.max())]
+            metrics["runs"][method]["max_consecutive_torque_change_Nm"]=float(np.max(abs(np.diff(values))))
+        metrics["output_torque_delta_vs_mesh_Nm"]=differences(torque-mesh["output_torque_Nm"])
     for name,trace in traces.items():
         metrics["runs"][name]["torque_vs_recurdyn_Nm"]=differences(trace["output_torque_Nm"]-reference)
         metrics["runs"][name]["intermediate_speed_vs_recurdyn_rad_s"]=differences(trace["speed"][:,1]-reference_speed)
@@ -80,7 +88,7 @@ def compare(scene, runs, archive, out):
     fig,axes=plt.subplots(3,2,figsize=(11,8),layout="constrained")
     colors=("#187970","#656c7d","#ad6d2e")
     def overlay(ax,x,field,column=None,slice_=slice(None)):
-        for name,label,color,style in reversed(list(zip(methods,("Bounded CAD (ours)","Previous CAD","Mesh OBB"),
+        for name,label,color,style in reversed(list(zip(methods,(current_label,"Previous CAD","Mesh OBB"),
                                                        colors,("-","--",":")))):
             y=traces[name][field]
             if column is not None: y=y[:,column]
@@ -95,7 +103,7 @@ def compare(scene, runs, archive, out):
     zoom=slice(max(0,peak-15),min(len(t),peak+16))
     overlay(axes[2,1],t,"output_torque_Nm",slice_=zoom)
     labels=("Output torque (N m)","Intermediate shaft (rad/s)","Stage 1 normal load (N)",
-            "Stage 2 normal load (N)","Bounded minus previous torque (N m)","Torque near largest difference (N m)")
+            "Stage 2 normal load (N)","Current minus previous torque (N m)","Torque near largest difference (N m)")
     for ax,label in zip(axes.flat,labels):
         ax.set(xlabel="Simulation time (s)",ylabel=label)
         if ax.get_legend_handles_labels()[0]: ax.legend(frameon=False,fontsize=8)
@@ -110,7 +118,7 @@ def compare(scene, runs, archive, out):
     elapsed_ms=(t-t[25377])*1e3
     axes[1].plot(elapsed_ms[stop],native_window,"o",mfc="none",ms=4,
                  lw=.8,color="#30353b",label="Native CAD reference")
-    for name,label,style in ((methods[1],"Previous CAD","--"),(methods[0],"Bounded CAD (ours)","-")):
+    for name,label,style in ((methods[1],"Previous CAD","--"),(methods[0],current_label,"-")):
         axes[1].plot(elapsed_ms[stop],traces[name]["output_torque_Nm"][stop],style,
                      color=colors[methods.index(name)],lw=1.1,label=label)
     axes[1].set(xlabel="Time relative to 2.5377 s (ms)",ylabel="Output shaft torque (N m)")
@@ -124,4 +132,5 @@ def compare(scene, runs, archive, out):
 if __name__=="__main__":
     p=argparse.ArgumentParser(description=__doc__)
     for key in ("scene","runs","archive","out"): p.add_argument(key,type=Path)
+    p.add_argument("--relocate",action="store_true")
     compare(**vars(p.parse_args()))

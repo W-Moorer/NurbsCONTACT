@@ -357,11 +357,13 @@ struct CadExitQuery::Data {
     std::vector<std::optional<std::vector<Cell>>> cells;
     std::vector<std::unique_ptr<cad::CompiledChart>> charts;
     std::shared_ptr<const cad::BezierRayAtlas> bezier;
+    std::vector<std::optional<std::array<double,2>>> previous_uv;
     std::array<std::size_t,4> counts{}; // Resolved misses, interior hits, OCCT calls, visited span candidates.
     bool bezier_query(std::size_t i,const gp_Pnt& p,const gp_Dir& d,double end,std::optional<cad::BezierRayHit>& hit) {
         if (!bezier) return false;
         const auto& face=index.data_->faces[i].shape;
-        if (!bezier->query(i+1,p.XYZ(),d.XYZ(),end,std::max(Precision::Confusion(),BRep_Tool::Tolerance(face)),hit,&counts[3])) return false;
+        const auto* seed=!previous_uv.empty() && previous_uv[i] ? &*previous_uv[i] : nullptr;
+        if (!bezier->query(i+1,p.XYZ(),d.XYZ(),end,std::max(Precision::Confusion(),BRep_Tool::Tolerance(face)),hit,&counts[3],seed)) return false;
         if (hit) {
             auto& chart=charts[i];
             if (!chart) chart=std::make_unique<cad::CompiledChart>(face);
@@ -439,7 +441,10 @@ struct CadExitQuery::Data {
 };
 
 CadExitQuery::CadExitQuery(const CadContactIndex& index,std::shared_ptr<const cad::BezierRayAtlas> bezier)
-    :data_(std::make_unique<Data>(index)) {data_->bezier=std::move(bezier);}
+    :data_(std::make_unique<Data>(index)) {
+    if (bezier && bezier->relocates()) data_->previous_uv.resize(index.face_count());
+    data_->bezier=std::move(bezier);
+}
 CadExitQuery::~CadExitQuery() = default;
 std::array<std::size_t,4> CadExitQuery::ray_counts() const {return data_->counts;}
 
@@ -567,7 +572,9 @@ CadExit CadExitQuery::first_exit(Vec origin, Vec direction, double reach_m, std:
       catch (const dynamics::UnresolvedContact&) { return {}; }
     if (!required_faces.empty() && std::find(required_faces.begin(),required_faces.end(),hit.face)==required_faces.end())
         return {};
-    return ambiguous || boundary ? CadExit{} : hit;
+    if (ambiguous || boundary) return {};
+    if (hit.face && !data_->previous_uv.empty()) data_->previous_uv[hit.face-1]=hit.uv;
+    return hit;
 }
 
 bool CadExitQuery::crosses_from_hints(Vec a, Vec b, const CadExit& near_a, const CadExit& near_b) {

@@ -117,8 +117,47 @@ struct BezierRayAtlas::Span {
         dv = xyz(b) - origin * b[3];
         w = q[3];
     }
+    // With positive weights the signed distance numerator lies in the
+    // convex hull of these 16 Bernstein coefficients. One strict sign
+    // excludes a crossing of the infinite line anywhere in this span.
+    bool excludes_line(const gp_XYZ& row,const gp_XYZ& origin,double tol) const {
+        const double projection=row.Dot(origin);
+        const double length=row.Modulus();
+        bool positive=true,negative=true;
+        for (const auto& strip:poles) for (const auto& h:strip) {
+            const double value=row.Dot(xyz(h))-h[3]*projection;
+            const double pad=length*h[3]*tol+64*std::numeric_limits<double>::epsilon()*
+                (absolute(row).Dot(absolute(xyz(h))+absolute(origin)*h[3])+1.);
+            positive &= value>pad;
+            negative &= value< -pad;
+            if (!positive && !negative) return false;
+        }
+        return true;
+    }
+    // Every projected root z satisfies z = c-R*f(c)+(I-R*J)*(z-c).
+    // Intersect its enclosure with the previous box, also allowing the face
+    // tolerance. An empty box is the only negative answer issued here.
+    bool root_box(const gp_XYZ& origin,const gp_XYZ (&rows)[2],const double (&errors)[2][2],
+                  double tol,std::array<double,2>& lower,std::array<double,2>& upper) const {
+        for (int pass=0;pass<4;++pass) {
+            const double x=(lower[0]+upper[0])*.5,y=(lower[1]+upper[1])*.5;
+            const double hx=(upper[0]-lower[0])*.5,hy=(upper[1]-lower[1])*.5;
+            gp_XYZ value,du,dv;
+            double w;
+            jet(x,y,origin,value,du,dv,w);
+            for (int k=0;k<2;++k) {
+                const double center=(k==0 ? x : y)-rows[k].Dot(value);
+                const double radius=errors[k][0]*hx+errors[k][1]*hy+
+                    rows[k].Modulus()*max_weight*tol+1e-11*(1+std::abs(center));
+                lower[k]=std::max(lower[k],center-radius);
+                upper[k]=std::min(upper[k],center+radius);
+                if (lower[k]>upper[k]) return false;
+            }
+        }
+        return true;
+    }
     bool intersect(const gp_XYZ &point, const gp_XYZ &d, double end, double tol,
-                   std::optional<BezierRayHit> &hit) const {
+                   std::optional<BezierRayHit> &hit,bool relocate,const std::array<double,2>* previous_uv) const {
         const auto origin = point - anchor;
         const double p = axis.Dot(origin), q = p + axis.Dot(d) * end;
         if (std::min(p, q) > high + tol || std::max(p, q) < low - tol)
@@ -133,11 +172,17 @@ struct BezierRayAtlas::Span {
         double contraction = 0;
         const auto f = derivative(center);
         double xy[]{.5, .5};
+        double errors[2][2]{};
         for (int k = 0; k < 2; ++k) {
             double r = 0;
-            for (const auto &slope : slopes)
-                r += absolute(rows[k]).Dot(xyz(slope.radius)) +
-                     std::abs(rows[k].Dot(origin)) * slope.radius[3];
+            for (int j=0;j<2;++j) {
+                const auto& slope=slopes[j];
+                const double variation=absolute(rows[k]).Dot(xyz(slope.radius))+
+                                       std::abs(rows[k].Dot(origin))*slope.radius[3];
+                const double midpoint_error=std::abs((k==j ? 1. : 0.)-rows[k].Dot(derivative(slope.mid)));
+                errors[k][j]=variation+midpoint_error+1e-10*(1+variation);
+                r+=variation;
+            }
             r += 1e-10 * (1 + r);
             xy[k] -= rows[k].Dot(f);
             const double pad = tol * rows[k].Modulus() * max_weight;
@@ -145,8 +190,23 @@ struct BezierRayAtlas::Span {
                 return true;
             contraction = std::max(contraction, r);
         }
-        if (!(contraction < .9) || xy[0] <= 0 || xy[0] >= 1 || xy[1] <= 0 || xy[1] >= 1)
+        if (!(contraction < .9))
             return false;
+        if (xy[0]<=0 || xy[0]>=1 || xy[1]<=0 || xy[1]>=1) {
+            if (!relocate) return false;
+            for (int k=0;k<2;++k)
+                if ((xy[k]<=0 || xy[k]>=1) && excludes_line(rows[k],origin,tol)) return true;
+            std::array<double,2> lower{0.,0.},upper{1.,1.};
+            if (!root_box(origin,rows,errors,tol,lower,upper)) return true;
+            // The spatial tree also visits adjacent spans on the same face.
+            // Express the last face UV in this span, including an adjacent
+            // seed near its edge. Every root still needs the original proof.
+            if (previous_uv) {
+                const double u=((*previous_uv)[0]-u0)/(u1-u0),v=((*previous_uv)[1]-v0)/(v1-v0);
+                if (u>=-1 && u<=2 && v>=-1 && v<=2) {xy[0]=u;xy[1]=v;}
+            }
+            for (int k=0;k<2;++k) xy[k]=std::clamp(xy[k],lower[k],upper[k]);
+        }
         for (int iter = 0; iter < 8; ++iter) {
             gp_XYZ value, du, dv;
             double w;
@@ -191,8 +251,11 @@ struct BezierRayAtlas::Span {
                 return false;
             xy[0] -= residual.Dot(c) / delta;
             xy[1] -= residual.Dot(e) / delta;
-            if (!(xy[0] > 0 && xy[0] < 1 && xy[1] > 0 && xy[1] < 1))
+            if (!(xy[0] > 0 && xy[0] < 1 && xy[1] > 0 && xy[1] < 1)) {
+                std::array<double,2> lower{0.,0.},upper{1.,1.};
+                if (relocate && !root_box(origin,rows,errors,tol,lower,upper)) return true;
                 return false;
+            }
         }
         return false;
     }
@@ -207,7 +270,7 @@ struct BezierRayAtlas::Part {
     std::vector<std::size_t> offsets;
     std::vector<SpanIndex> indices;
 };
-BezierRayAtlas::BezierRayAtlas(const TopoDS_Shape &shape, PatchAssets &assets) {
+BezierRayAtlas::BezierRayAtlas(const TopoDS_Shape &shape, PatchAssets &assets,bool relocate):relocate_(relocate) {
     TopTools_IndexedMapOfShape faces;
     TopExp::MapShapes(shape, TopAbs_FACE, faces);
     auto part = std::make_shared<Part>();
@@ -254,7 +317,8 @@ BezierRayAtlas::BezierRayAtlas(const TopoDS_Shape &shape, PatchAssets &assets) {
     part_ = std::move(part);
 }
 bool BezierRayAtlas::query(std::size_t face, const gp_XYZ &point, const gp_XYZ &d, double end, double tol,
-                           std::optional<BezierRayHit> &hit, std::size_t *candidate_spans) const {
+                           std::optional<BezierRayHit> &hit, std::size_t *candidate_spans,
+                           const std::array<double,2>* previous_uv) const {
     hit.reset();
     const auto first = part_->offsets.at(face - 1), last = part_->offsets.at(face);
     if (first == last)
@@ -275,7 +339,7 @@ bool BezierRayAtlas::query(std::size_t face, const gp_XYZ &point, const gp_XYZ &
             return true;
         if (candidate_spans)
             ++*candidate_spans;
-        return part_->spans[i].intersect(point, d, end, margin, hit);
+        return part_->spans[i].intersect(point, d, end, margin, hit,relocate_,previous_uv);
     });
 }
 } // namespace nc::cad

@@ -198,8 +198,8 @@ struct Atlas {
         std::uint64_t face, interior;
         double u, v;
     };
-    Atlas(const TopoDS_Shape& shape, int count, bool use_bezier=false,double reach=0,bool depth_bounds=false)
-        :index(shape),assets(shape),bezier(use_bezier ? std::make_shared<cad::BezierRayAtlas>(shape,assets) : nullptr),
+    Atlas(const TopoDS_Shape& shape, int count, bool use_bezier=false,double reach=0,bool depth_bounds=false,bool relocate=false)
+        :index(shape),assets(shape),bezier(use_bezier ? std::make_shared<cad::BezierRayAtlas>(shape,assets,relocate) : nullptr),
          rays(index,bezier),column_reach(reach),bounded(depth_bounds) {
         TopTools_IndexedMapOfShape faces;
         TopExp::MapShapes(shape,TopAbs_FACE,faces);
@@ -1059,8 +1059,8 @@ struct PatchSearch::Data {
     };
     static constexpr int worker_limit=4;
     std::array<std::unique_ptr<Worker>,worker_limit> workers;
-    Data(const TopoDS_Shape& first,const TopoDS_Shape& second,int grid,double reach,bool bezier,bool bounded):
-        a(first,grid,bezier,reach,bounded),b(second,grid,bezier,reach,bounded),grid(grid),reach(reach) {
+    Data(const TopoDS_Shape& first,const TopoDS_Shape& second,int grid,double reach,bool bezier,bool bounded,bool relocate):
+        a(first,grid,bezier,reach,bounded,relocate),b(second,grid,bezier,reach,bounded,relocate),grid(grid),reach(reach) {
         for (auto& w:workers) w=std::make_unique<Worker>(a,b);
     }
     PatchDiscovery discover(const std::array<ContactPose,2>& poses,bool indexed,bool group) {
@@ -1196,8 +1196,8 @@ void prepare_patch_part(const TopoDS_Shape& shape,bool bezier,bool bounded) {
     Atlas part(shape,6,bezier,0,bounded);
     part.prepare_dense();
 }
-PatchSearch::PatchSearch(const TopoDS_Shape& a,const TopoDS_Shape& b,int grid,double reach,bool bezier,bool bounded):
-    data_(std::make_unique<Data>(a,b,grid,reach,bezier,bounded)) {}
+PatchSearch::PatchSearch(const TopoDS_Shape& a,const TopoDS_Shape& b,int grid,double reach,bool bezier,bool bounded,bool relocate):
+    data_(std::make_unique<Data>(a,b,grid,reach,bezier,bounded,relocate)) {}
 PatchSearch::~PatchSearch()=default;
 void PatchSearch::prepare_dense() const {
     data_->a.prepare_dense();
@@ -1278,8 +1278,8 @@ namespace {
 using namespace dynamics;
 class PatchRegionQuery final : public PairRegionQuery {
 public:
-    PatchRegionQuery(const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,double maximum,bool bezier,bool bounded):
-        a_(a),b_(b),search_(a,b,6,2*maximum,bezier,bounded),centers_(centers),maximum_(maximum),bounded_(bounded) {}
+    PatchRegionQuery(const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,double maximum,bool bezier,bool bounded,bool relocate):
+        a_(a),b_(b),search_(a,b,6,2*maximum,bezier,bounded,relocate),centers_(centers),maximum_(maximum),bounded_(bounded) {}
     bool independent_cad_patch() const override {return true;}
     std::vector<ContactRegion> regions(ContactPose a,ContactPose b,ContactWork& work) const override {
         const std::array poses{a,b};
@@ -1424,8 +1424,8 @@ private:
 };
 }
 std::shared_ptr<const dynamics::PairRegionQuery> cad_patch_region_query(
-    const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,double maximum,bool bezier,bool bounded) {
+    const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,double maximum,bool bezier,bool bounded,bool relocate) {
     if (!(maximum>0 && std::isfinite(maximum))) throw std::invalid_argument("invalid maximum depth");
-    return std::make_shared<PatchRegionQuery>(a,b,centers,maximum,bezier,bounded);
+    return std::make_shared<PatchRegionQuery>(a,b,centers,maximum,bezier,bounded,relocate);
 }
 }

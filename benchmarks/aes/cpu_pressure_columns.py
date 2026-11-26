@@ -105,18 +105,20 @@ def stage_poses(bodies,angles,origins,indices,a,b):
     return np.column_stack(columns)[indices]
 
 
-def paired_geometry(scene, previous, current, out, archive=None, report_all=False, current_flags=(), reverse_order=False):
+def paired_geometry(scene, previous, current, out, archive=None, report_all=False, current_flags=(), reverse_order=False, previous_flags=()):
     archive=out.parent if archive is None else archive
     trajectory,indices,warm,bodies,pairs,angles,origins=fixed_geometry_inputs(scene,archive)
     result=dict(probes_sha256=[digest(previous),digest(current)],trajectory_sha256=digest(trajectory),stages=[])
     if current_flags:
         result.update(current_flags=list(current_flags),reverse_order=reverse_order,scene_sha256=digest(scene))
+    if previous_flags:
+        result["previous_flags"]=list(previous_flags)
     for stage,(a,b,stiffness,limit) in enumerate(pairs,1):
         poses=stage_poses(bodies,angles,origins,indices,a,b)
         runs={}
         order=(("previous",previous),("current",current))
         for name,exe in order if (stage==1)!=reverse_order else reversed(order):
-            flags=current_flags if name=="current" else ()
+            flags=current_flags if name=="current" else previous_flags
             runs[name]=query([exe,bodies[a][0],bodies[b][0],"6",str(2*limit),"--loaded","--bezier",*flags],poses)
         face_switches=0
         former=None
@@ -303,6 +305,7 @@ if __name__=="__main__":
     p.add_argument("--probes",type=Path)
     p.add_argument("--reference",type=Path,help="Independent whole-STEP pressure benchmark for three fallback poses")
     p.add_argument("--depth-bounds",action="store_true",help="Evaluate experimental bounded depth packets in the current probe")
+    p.add_argument("--relocate",action="store_true",help="Compare bounded CAD with and without span relocation")
     p.add_argument("--archive",type=Path,help="Parent directory of the original fixed-pose replay manifest")
     p.add_argument("--reverse-order",action="store_true",help="Reverse the two programs in the fixed-pose timing control")
     p.add_argument("--out",type=Path,default=Path("results/aes/cpu-bezier/columns"))
@@ -313,7 +316,9 @@ if __name__=="__main__":
         diagnose(a.scene,a.runs,a.probes,a.out,a.reference)
     elif a.action=="paired":
         if a.probes is None: p.error("paired requires the previous probe as runs and the current --probes")
-        paired_geometry(a.scene,a.runs,a.probes,a.out,archive=a.archive,report_all=a.depth_bounds,
-                        current_flags=("--depth-bounds",) if a.depth_bounds else (),reverse_order=a.reverse_order)
+        previous=("--depth-bounds",) if a.relocate else ()
+        current=("--depth-bounds","--relocate") if a.relocate else ("--depth-bounds",) if a.depth_bounds else ()
+        paired_geometry(a.scene,a.runs,a.probes,a.out,archive=a.archive,report_all=bool(current),
+                        previous_flags=previous,current_flags=current,reverse_order=a.reverse_order)
     else:
         report(a.scene,a.runs,a.out)

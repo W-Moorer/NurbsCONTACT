@@ -133,7 +133,7 @@ struct SurfaceOptions {
     bool predictor_geometry{};
     std::optional<double> spectral_radius;
     bool chen() const { return method=="chen-2024" || method=="chen-2026"; }
-    bool patch() const { return method=="cad-patch" || method=="cad-bezier" || method=="cad-bezier-bounds"; }
+    bool patch() const { return method=="cad-patch" || method=="cad-bezier" || method=="cad-bezier-bounds" || method=="cad-bezier-relocate"; }
     bool cad() const { return method=="cad-occt" || method=="cad-local" || patch() || chen(); }
 };
 
@@ -417,7 +417,8 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
             if (surface_options.patch()) {
                 pair.regions=cad_patch_region_query(shapes.at(files[pair.a]),shapes.at(files[pair.b]),centers,
                                                     pair.material.maximum_depth,surface_options.method!="cad-patch",
-                                                    surface_options.method=="cad-bezier-bounds");
+                                                    surface_options.method=="cad-bezier-bounds" || surface_options.method=="cad-bezier-relocate",
+                                                    surface_options.method=="cad-bezier-relocate");
             } else if (surface_options.method=="cad-local") {
                 pair.regions=cad_local_region_query(shapes.at(files[pair.a]),shapes.at(files[pair.b]),centers,
                                                     pair.material.maximum_depth);
@@ -1471,7 +1472,7 @@ int main(int argc,char** argv) {
                         "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
                         "  or append --method bvh-aabb|bvh-obb|mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
                         "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl|finite|contour-ray] [--penalty-stiffness per-region|shared] [--geometry-update newton|predictor] [--spectral-radius RHO]\n"
-                        "  or append --method cad-occt|cad-local|cad-patch|cad-bezier|cad-bezier-bounds|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
+                        "  or append --method cad-occt|cad-local|cad-patch|cad-bezier|cad-bezier-bounds|cad-bezier-relocate|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
                         "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp [--progress FILE]\n";
             return 2;
         }

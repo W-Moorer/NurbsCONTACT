@@ -68,6 +68,8 @@ int main(int argc,char** argv) try {
         }
         return 0;
     }
+    const bool relocate=argc>=2 && std::string_view(argv[argc-1])=="--relocate";
+    if (relocate) --argc;
     const bool bounded=argc>=2 && std::string_view(argv[argc-1])=="--depth-bounds";
     if (bounded) --argc;
     const bool bezier=argc>=2 && std::string_view(argv[argc-1])=="--bezier";
@@ -82,12 +84,12 @@ int main(int argc,char** argv) try {
     const bool indexed=loaded || (argc==6 && std::string_view(argv[5])=="--indexed-groups");
     const bool group=indexed || (argc==6 && std::string_view(argv[5])=="--groups");
     const bool patch=argc==7 && std::string_view(argv[5])=="--patch-wrench";
-    if (argc!=5 && !group && !patch && !prepare) throw std::invalid_argument("nc_cad_probes A.step B.step sites_per_uv_axis reach_m [--prepare|--prepare-all|--groups|--indexed-groups|--loaded|--patch-wrench ORDER] [--bezier] [--depth-bounds]");
+    if (argc!=5 && !group && !patch && !prepare) throw std::invalid_argument("nc_cad_probes A.step B.step sites_per_uv_axis reach_m [--prepare|--prepare-all|--groups|--indexed-groups|--loaded|--patch-wrench ORDER] [--bezier] [--depth-bounds] [--relocate]");
     const int grid=std::stoi(argv[3]);
     const double reach=std::stod(argv[4]);
     if (grid<1 || grid>128 || !(reach>0 && std::isfinite(reach))) throw std::invalid_argument("invalid probe grid or reach");
     const auto start=Clock::now();
-    PatchSearch search(read_step_shape(argv[1]),read_step_shape(argv[2]),grid,reach,bezier,bounded);
+    PatchSearch search(read_step_shape(argv[1]),read_step_shape(argv[2]),grid,reach,bezier,bounded,relocate);
     std::cerr<<"prepare_s "<<std::chrono::duration<double>(Clock::now()-start).count()<<'\n';
     std::cout<<std::setprecision(17);
     if (prepare) {

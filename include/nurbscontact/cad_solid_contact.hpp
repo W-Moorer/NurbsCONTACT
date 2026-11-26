@@ -11,7 +11,7 @@ std::shared_ptr<const dynamics::PairRegionQuery> cad_local_region_query(
     const TopoDS_Shape& a, const TopoDS_Shape& b, std::array<Vec,2> centers, double maximum_depth_m);
 std::shared_ptr<const dynamics::PairRegionQuery> cad_patch_region_query(
     const TopoDS_Shape& a,const TopoDS_Shape& b,std::array<Vec,2> centers,double maximum_depth_m,bool bezier=false,
-    bool depth_bounds=false);
+    bool depth_bounds=false,bool relocate=false);
 inline std::shared_ptr<const dynamics::PairRegionQuery> cad_solid_region_query(
     const TopoDS_Shape& a, const TopoDS_Shape& b, std::array<Vec,2> centers, bool chen_events) {
     return cad_solid_region_query(a,b,centers,chen_events ? CadEventMethod::chen_2024 : CadEventMethod::conservative_advancement);

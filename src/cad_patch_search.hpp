@@ -14,7 +14,7 @@ struct PatchDiscovery {
 enum class PressureFailure { none, no_columns, no_resultant, centroid_chord };
 class PatchSearch {
 public:
-    PatchSearch(const TopoDS_Shape&,const TopoDS_Shape&,int grid,double reach,bool bezier=false,bool depth_bounds=false);
+    PatchSearch(const TopoDS_Shape&,const TopoDS_Shape&,int grid,double reach,bool bezier=false,bool depth_bounds=false,bool relocate=false);
     ~PatchSearch();
     void prepare_dense() const;
     std::array<std::size_t,2> asset_counts() const;
