@@ -349,13 +349,17 @@ IVec Arc::box(Interval parameters) const {
     return eval(parameters);
 }
 
+std::optional<int> trim_crossings(const Curve& curve, Vec uv) {
+    const auto* line = linear_curve(curve);
+    return line ? line_winding(*line, uv) : winding(curve, {0, 1}, uv, 22);
+}
+
 TrimClass TrimDomain::classify(Vec uv) const {
     if (loops.empty()) return TrimClass::inside;
     int crossings = 0;
     for (const auto& loop : loops) {
         for (const TrimCurve& trim : loop) {
-            const auto* line = linear_curve(trim.geometry);
-            const auto value = line ? line_winding(*line, uv) : winding(trim.geometry, {0, 1}, uv, 22);
+            const auto value = trim_crossings(trim.geometry, uv);
             if (!value) return TrimClass::mixed;
             crossings += *value;
         }

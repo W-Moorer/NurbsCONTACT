@@ -2,6 +2,7 @@
 
 #include "nurbscontact/contact_dynamics.hpp"
 #include "nurbscontact/occt.hpp"
+#include "nurbscontact/pair_options.hpp"
 #include "nurbscontact/query.hpp"
 
 namespace nc {
@@ -11,14 +12,6 @@ namespace nc {
 std::shared_ptr<const dynamics::ContactSurface> contact_surface(
     const TopoDS_Shape& shape, double deflection_m = 0);
 
-enum class PairBackend { occt, mesh, brep };
-
-struct PairSearchOptions {
-    double tolerance_m{2e-6};
-    std::size_t max_nodes{30'000};
-};
-
-class PairGeometry;
 std::shared_ptr<const PairGeometry> pair_geometry(const TopoDS_Shape& shape, PairBackend backend,
                                                   double deflection_m);
 std::shared_ptr<const dynamics::PairContactQuery> pair_contact_query(

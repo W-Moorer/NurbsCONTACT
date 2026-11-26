@@ -86,8 +86,9 @@ def replay(scene, previous, current, executable, output, current_method="cad-bez
 if __name__=="__main__":
     p=argparse.ArgumentParser(description=__doc__)
     for name in ("scene","previous","current","executable","output"): p.add_argument(name,type=Path)
-    p.add_argument("--current-method",choices=("cad-bezier","cad-bezier-bounds","cad-bezier-relocate"),default="cad-bezier")
-    p.add_argument("--previous-method",choices=("cad-bezier","cad-bezier-bounds"),default="cad-bezier")
+    methods=("cad-bezier","cad-bezier-bounds","cad-bezier-relocate","cad-compiled")
+    p.add_argument("--current-method",choices=methods,default="cad-bezier")
+    p.add_argument("--previous-method",choices=methods,default="cad-bezier")
     p.add_argument("--window-steps",type=int,default=3)
     p.add_argument("--steps",type=int,nargs="+",help="Subset of differing integration decisions")
     p.add_argument("--final-width-only",action="store_true",help="Replay only the requested window length")

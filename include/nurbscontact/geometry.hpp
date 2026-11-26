@@ -120,6 +120,9 @@ struct TrimDomain {
     TrimClass classify(Vec uv) const;
     TrimClass classify(Rect rect) const;
 };
+// Signed contribution to a positive-u winding ray. An undecidable boundary
+// crossing has no value; callers can then apply their boundary convention.
+std::optional<int> trim_crossings(const Curve& curve, Vec uv);
 
 struct FacePatch {
     Surface surface;

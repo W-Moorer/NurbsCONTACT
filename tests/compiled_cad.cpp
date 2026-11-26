@@ -1,0 +1,129 @@
+#include "../src/compiled_geometry.hpp"
+#include <chrono>
+#include <fstream>
+#include <iostream>
+
+namespace {
+using namespace nc;
+using namespace nc::compiled;
+
+void require(bool condition, const char *message) {
+    if (!condition)
+        throw std::runtime_error(message);
+}
+IVec point(Vec x) {
+    return {Interval{x[0]}, Interval{x[1]}, Interval{x[2]}};
+}
+
+PartFile box() {
+    PartFile file;
+    file.geometry.trims.emplace_back();
+    Rect domain{{-1, 1}, {-1, 1}};
+    for (int axis = 0; axis < 3; ++axis)
+        for (int sign : {-1, 1}) {
+            Vec center{}, x{}, y{}, lo{-1, -1, -1}, hi{1, 1, 1};
+            center[axis] = lo[axis] = hi[axis] = sign;
+            x[(axis + 1) % 3] = 1;
+            y[(axis + 2) % 3] = sign;
+            file.faces.push_back({domain, lo, hi, 1e-7, 1, true});
+            file.geometry.patches.push_back(
+                {Plane{point(center), point(x), point(y)}, domain, file.faces.size(), 0});
+        }
+    return file;
+}
+void overlap() {
+    const auto file = std::filesystem::temp_directory_path() /
+                      ("nc-contact-" +
+                       std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()) + ".ncpart");
+    struct Cleanup {
+        std::filesystem::path file;
+        ~Cleanup() {
+            std::error_code e;
+            std::filesystem::remove(file, e);
+        }
+    } cleanup{file};
+    save(box(), file);
+    auto a = load_solid(file), b = load_solid(file);
+    auto pair = region_query(a, b, .0002);
+    dynamics::ContactPose pa, pb;
+    dynamics::ContactWork work;
+    for (double angle : {0., .4, -.7, .4}) {
+        pa.angle = pb.angle = angle;
+        pb.origin = pa.rotate({.0019, 0, 0});
+        auto regions = pair->regions(pa, pb, work);
+        require(regions.size() == 1, "one connected overlapping box region expected");
+        require(std::abs(regions[0].depth_m - .0001) < 1e-11, "wrong box penetration");
+        require(dot3(regions[0].normal, pa.rotate({1, 0, 0})) > 1 - 1e-10, "wrong box normal");
+        require(length(sub(regions[0].point, pa.rotate({.00095, 0, 0}))) < 1e-10, "wrong pressure centroid");
+        pb.origin = pa.rotate({.0021, 0, 0});
+        require(pair->regions(pa, pb, work).empty(), "a finite gap produced a load");
+    }
+    std::filesystem::resize_file(file, 16);
+    try {
+        (void)load_solid(file);
+    } catch (const std::exception &) {
+        return;
+    }
+    throw std::runtime_error("accepted a truncated part");
+}
+void trims() {
+    PartFile file;
+    Rect domain{{-2, 2}, {-2, 2}};
+    TrimDomain trim;
+    for (double r : {2., .5}) {
+        std::array<Vec, 4> pts{{{-r, -r, 0}, {r, -r, 0}, {r, r, 0}, {-r, r, 0}}};
+        trim.loops.emplace_back();
+        for (int i = 0; i < 4; ++i)
+            trim.loops.back().push_back(
+                {BezierCurve{{homogeneous(point(pts[i])), homogeneous(point(pts[(i + 1) % 4]))}}, {}, {}, {}});
+    }
+    file.geometry.trims.push_back(trim);
+    file.faces.push_back({domain, {-2, -2, 0}, {2, 2, 0}, 1e-7, 1, false});
+    file.geometry.patches.push_back({Plane{point({}), point({1, 0, 0}), point({0, 1, 0})}, domain, 1, 0});
+    Solid part(std::move(file));
+    require(!part.first({.2, .1, -.1}, {0, 0, 1}, 1), "a hole generated a material exit");
+    auto hit = part.first({.8, .1, -.1}, {0, 0, 1}, 1);
+    require(hit && std::abs(hit->t - .1) < 1e-12, "lost the face surrounding the hole");
+}
+void curved_roots() {
+    const Rect domain{{0, 1}, {0, 1}};
+    for (bool rational : {false, true}) {
+        PartFile file;
+        file.geometry.trims.emplace_back();
+        file.faces.push_back({domain, {0, 0, -.09}, {1, 1, .25}, 1e-7, 1, true});
+        BezierSurface surface{4, 4, {}, domain};
+        for (int i = 0; i < 4; ++i)
+            for (int j = 0; j < 4; ++j) {
+                // Extrusion of z=(u-1/2)^2. V-dependent weights reparameterize
+                // the extrusion without changing the two analytic crossings.
+                const Vec pole{i / 3., j / 3., .25 - i / 3. + i * (i - 1) / 6.};
+                surface.poles.push_back(homogeneous(point(pole), rational ? 1 + .1 * j : 1.));
+            }
+        file.geometry.patches.push_back({surface, domain, 1, 0});
+        Solid solid(std::move(file));
+        for (const double z : {.01, 1e-8, -1e-6}) {
+            std::vector<RayRoot> hits;
+            solid.faces[0].roots({0, .49, z}, {1, 0, 0}, 1, 1e-7, 0, hits);
+            if (z < 0) {
+                require(hits.empty(), "near-tangent miss generated a curved root");
+                continue;
+            }
+            std::sort(hits.begin(), hits.end(), [](const auto &a, const auto &b) { return a.t < b.t; });
+            require(hits.size() == 2, "lost a near-tangent root");
+            require(std::abs(hits[0].t - (.5 - std::sqrt(z))) < 2e-6 &&
+                        std::abs(hits[1].t - (.5 + std::sqrt(z))) < 2e-6,
+                    "incorrect curved root positions");
+        }
+    }
+}
+} // namespace
+int main() {
+    try {
+        overlap();
+        trims();
+        curved_roots();
+    } catch (const std::exception &e) {
+        std::cerr << e.what() << '\n';
+        return 1;
+    }
+}

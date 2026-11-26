@@ -1,13 +1,20 @@
 #include "nurbscontact/predictor_regions.hpp"
+#include "nurbscontact/compiled_part.hpp"
+#include "nurbscontact/pair_options.hpp"
+#ifndef NC_COMPILED_ONLY
 #include "nurbscontact/cad_contact_regions.hpp"
 #include "nurbscontact/cad_solid_contact.hpp"
+#endif
 #include "nurbscontact/free_rigid.hpp"
 #include "nurbscontact/surface_impulse.hpp"
+#ifndef NC_COMPILED_ONLY
 #include "nurbscontact/occt_contact.hpp"
+#endif
 #ifdef NC_WITH_CPU_MESH
 #include "nurbscontact/cpu_mesh.hpp"
 #endif
 
+#ifndef NC_COMPILED_ONLY
 #include <BRepAlgoAPI_Cut.hxx>
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepBndLib.hxx>
@@ -23,6 +30,7 @@
 #include <TopExp.hxx>
 #include <TopoDS.hxx>
 
+#endif
 #include <algorithm>
 #include <chrono>
 #include <filesystem>
@@ -124,7 +132,7 @@ void expect(std::istream& in,std::string_view expected) {
 struct SurfaceOptions {
     std::string method;
     std::optional<ImpulseLaw> impulse_law;
-    Path mesh_directory;
+    Path mesh_directory,compiled_directory;
     Path progress_file;
     Path replay_file;
     double distance_tolerance{1e-7};
@@ -133,7 +141,7 @@ struct SurfaceOptions {
     bool predictor_geometry{};
     std::optional<double> spectral_radius;
     bool chen() const { return method=="chen-2024" || method=="chen-2026"; }
-    bool patch() const { return method=="cad-patch" || method=="cad-bezier" || method=="cad-bezier-bounds" || method=="cad-bezier-relocate"; }
+    bool patch() const { return method=="cad-compiled" || method=="cad-patch" || method=="cad-bezier" || method=="cad-bezier-bounds" || method=="cad-bezier-relocate"; }
     bool cad() const { return method=="cad-occt" || method=="cad-local" || patch() || chen(); }
 };
 
@@ -160,7 +168,11 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
             throw std::invalid_argument("invalid coordinate inertia or spring");
         input.coordinates.push_back(data);
     }
+#ifndef NC_COMPILED_ONLY
     std::map<Path,TopoDS_Shape> shapes;
+#endif
+    std::map<Path,std::shared_ptr<const compiled::Solid>> parts;
+    std::map<Path,Path> part_sources;
     std::vector<Path> files;
 #ifdef NC_WITH_CPU_MESH
     std::map<Path,std::shared_ptr<const cpu::MeshData>> mesh_cache;
@@ -171,7 +183,17 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         std::string filename;
         if (!(in>>std::quoted(filename))) throw std::invalid_argument("missing body STEP file");
         const auto file=path.parent_path()/filename;
-        if (surface_options.method.empty() || surface_options.cad()) {
+        if (surface_options.method=="cad-compiled") {
+            auto asset=surface_options.compiled_directory.empty() ? file : surface_options.compiled_directory/file.filename();
+            asset.replace_extension(".ncpart");
+            const auto source=file.lexically_normal();
+            const auto [owner,inserted]=part_sources.emplace(asset.lexically_normal(),source);
+            if (!inserted && owner->second!=source)
+                throw std::invalid_argument("distinct model files resolve to the same compiled part: "+asset.string());
+            if (!parts.contains(file)) parts.emplace(file,compiled::load_solid(asset));
+        }
+#ifndef NC_COMPILED_ONLY
+        else if (surface_options.method.empty() || surface_options.cad()) {
             if (!shapes.contains(file)) shapes.emplace(file,read_step_shape(file));
         } else {
 #ifdef NC_WITH_CPU_MESH
@@ -190,6 +212,7 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
             throw std::invalid_argument("rebuild nc_contact with NC_WITH_CPU_MESH for mesh contact");
 #endif
         }
+#endif
         files.push_back(file);
         Body body{{},number(in),{vector(in),unit(vector(in)),number(in)},vector(in),{},
                   take<int>(in),vector(in)};
@@ -204,6 +227,7 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         }
         input.bodies.push_back(std::move(body));
     }
+#ifndef NC_COMPILED_ONLY
     std::map<Path,std::shared_ptr<const ContactSurface>> ray_geometry;
     std::map<Path,std::shared_ptr<const PairGeometry>> closest_geometry;
     std::map<Path,std::shared_ptr<const PairGeometry>> native_geometry;
@@ -216,6 +240,7 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         }
         return it->second;
     };
+#endif
     for (unsigned i=0;i<pairs;++i) {
         const auto type=take<std::string>(in);
         const auto a=take<unsigned>(in),b=take<unsigned>(in);
@@ -224,6 +249,7 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         if (type=="surface") {
             if (surface_options.method.empty()) throw std::invalid_argument("surface pair requires a surface method");
             pair.share_penalty_stiffness=surface_options.share_penalty_stiffness;
+#ifndef NC_COMPILED_ONLY
         } else if (type=="closest") {
             if (!has_drives || !pair_backend) throw std::invalid_argument("closest requires a v2 scene and a pair backend");
             pair.activation=number(in);
@@ -249,15 +275,18 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
                     input.bodies[id].surface=it->second;
                 }
             }
+#endif
         } else throw std::invalid_argument("expected surface, probe or closest contact");
         pair.material={number(in),number(in),number(in),number(in),number(in),number(in)};
         const auto& m=pair.material;
         if (!(m.stiffness>0 && m.exponent>=1 && m.rate>=0 && m.friction>=0 && m.slip_speed>0 &&
                 m.maximum_depth>0)) throw std::invalid_argument("invalid contact material");
+#ifndef NC_COMPILED_ONLY
         if (detect_events && surface_options.method.empty()) {
             if (!pair.closest || count==0) throw std::invalid_argument("step CCD requires dynamic closest-pair contacts");
             input.event_geometry.emplace_back(load_pair_geometry(a,PairBackend::brep),load_pair_geometry(b,PairBackend::brep));
         }
+#endif
         input.pairs.push_back(std::move(pair));
     }
     if (has_drives) {
@@ -414,7 +443,11 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         };
         for (auto& pair:input.pairs) {
             const std::array centers{center(pair.a),center(pair.b)};
-            if (surface_options.patch()) {
+            if (surface_options.method=="cad-compiled") {
+                pair.regions=compiled::region_query(parts.at(files[pair.a]),parts.at(files[pair.b]),pair.material.maximum_depth);
+            }
+#ifndef NC_COMPILED_ONLY
+            else if (surface_options.patch()) {
                 pair.regions=cad_patch_region_query(shapes.at(files[pair.a]),shapes.at(files[pair.b]),centers,
                                                     pair.material.maximum_depth,surface_options.method!="cad-patch",
                                                     surface_options.method=="cad-bezier-bounds" || surface_options.method=="cad-bezier-relocate",
@@ -432,6 +465,7 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
                                                     centers,cpu::mesh_region_mode(surface_options.mesh_regions),pair.material.maximum_depth);
 #endif
             }
+#endif
         }
     }
     for (std::size_t i=0;i<input.event_geometry.size();++i) {
@@ -531,6 +565,7 @@ std::ofstream open_output(const Path& path) {
     return out;
 }
 
+#ifndef NC_COMPILED_ONLY
 void report_line_loads(const CadContactIndex& a,const CadContactIndex& b,ContactPose pose,double cutoff,
                        double stiffness,const std::string& prefix,std::span<const CadContactSeed> seeds) {
     const auto query_start=Clock::now();
@@ -853,6 +888,7 @@ void cad_surface_samples(int argc,char** argv) {
     if (!output) throw std::runtime_error("failed to write CAD surface samples");
 }
 
+#endif
 double sampled_load(const std::vector<LoadSample>& table,double time) {
     if (table.empty()) return 0;
     const auto right=std::upper_bound(table.begin()+1,table.end()-1,time,
@@ -1118,6 +1154,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                     }
                     continue;
                 }
+#ifndef NC_COMPILED_ONLY
                 const auto& [a,b]=input.event_geometry[i];
                 const auto result=fixed_axis_pair_sweep(*a,*b,first[pair.a].pose,last[pair.a].pose,
                     first[pair.b].pose,last[pair.b].pose,pair.activation,std::min(.25,event_tolerance/dt_trial),pair_options);
@@ -1134,6 +1171,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                 }
                 const auto endpoint=pair.closest->closest(last[pair.a].pose,last[pair.b].pose,pair.activation,work);
                 if (endpoint.status!=PairStatus::within_cutoff) return .5;
+#endif
             }
             return std::nullopt;
         };
@@ -1401,6 +1439,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     if (!trace || !report) throw std::runtime_error("failed to write contact run");
 }
 
+#ifndef NC_COMPILED_ONLY
 void export_fixture(int argc,char** argv) {
     const std::string_view kind=argv[2];
     TopoDS_Shape shape;
@@ -1442,10 +1481,12 @@ void export_fixture(int argc,char** argv) {
         throw std::runtime_error("could not write STEP fixture");
 }
 
+#endif
 } // namespace
 
 int main(int argc,char** argv) {
     try {
+#ifndef NC_COMPILED_ONLY
         if (argc>=2 && std::string_view(argv[1])=="cad-surface-samples") {
             cad_surface_samples(argc,argv);
             return 0;
@@ -1466,13 +1507,14 @@ int main(int argc,char** argv) {
             export_fixture(argc,argv);
             return 0;
         }
+#endif
         const bool named=argc>7 && std::string_view(argv[7]).starts_with("--");
         if (argc<7 || (!named && argc>11)) {
             std::cerr<<"nc_contact SCENE DEFLECTION_M DT_S DURATION_S OUTPUT_STRIDE OUTPUT_PREFIX "
                         "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
                         "  or append --method bvh-aabb|bvh-obb|mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
                         "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl|finite|contour-ray] [--penalty-stiffness per-region|shared] [--geometry-update newton|predictor] [--spectral-radius RHO]\n"
-                        "  or append --method cad-occt|cad-local|cad-patch|cad-bezier|cad-bezier-bounds|cad-bezier-relocate|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
+                        "  or append --method cad-compiled [--compiled-dir DIR]|cad-occt|cad-local|cad-patch|cad-bezier|cad-bezier-bounds|cad-bezier-relocate|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
                         "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp [--progress FILE]\n";
             return 2;
         }
@@ -1488,6 +1530,7 @@ int main(int argc,char** argv) {
                 if (key=="--method") surface.method=value;
                 else if (key=="--progress") surface.progress_file=argv[i+1];
                 else if (key=="--hht-replay") surface.replay_file=argv[i+1];
+                else if (key=="--compiled-dir") surface.compiled_directory=argv[i+1];
                 else if (key=="--mesh-dir") surface.mesh_directory=argv[i+1];
                 else if (key=="--spectral-radius") surface.spectral_radius=std::stod(argv[i+1]);
                 else if (key=="--geometry-update") {
@@ -1547,12 +1590,19 @@ int main(int argc,char** argv) {
         }
         if (!named && argc>=11) event_tolerance=std::stod(argv[10]);
         if (!std::isfinite(event_tolerance) || event_tolerance<0) throw std::invalid_argument("invalid event tolerance");
+#ifdef NC_COMPILED_ONLY
+        if (surface.method!="cad-compiled") throw std::invalid_argument("expected --method cad-compiled");
+#endif
         simulate(argv[1],std::stod(argv[2]),std::stod(argv[3]),std::stod(argv[4]),
                  static_cast<unsigned>(std::stoul(argv[5])),argv[6],pair_backend,settings,event_tolerance,surface);
-    } catch (const Standard_Failure& error) {
+    }
+#ifndef NC_COMPILED_ONLY
+    catch (const Standard_Failure& error) {
         std::cerr<<error.GetMessageString()<<'\n';
         return 1;
-    } catch (const std::exception& error) {
+    }
+#endif
+    catch (const std::exception& error) {
         std::cerr<<error.what()<<'\n';
         return 1;
     }
