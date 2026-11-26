@@ -1,0 +1,186 @@
+{
+  "case": "Two-stage reducer, 5 s, dt=0.1 ms, mesh-obb contour-ray, shared penalty, predictor HHT rho=0.",
+  "executable_sha256": "0d5ef684f2f6940a0c44e395a4a6849e07c6ee7af89949ac79ee5ef744336779",
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "response_sha256": "422068b9d21aeb562bb8203c6313e469c245d4cb8f42d939d08186fc1d90595f",
+  "mesh_sha256": {
+    "reducer-1a.msh": "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+    "reducer-1b.msh": "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+    "reducer-2a.msh": "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+    "reducer-2b.msh": "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0"
+  },
+  "work": {
+    "triangle_tests": 420692832,
+    "force_evaluations": 151547,
+    "mesh_parallel_batches": 50051,
+    "mesh_max_workers": 2,
+    "subdivisions": 25,
+    "mesh_pair_bvh_builds": 7530,
+    "mesh_pair_bvh_reuses": 12638,
+    "mesh_patch_builds": 91228,
+    "mesh_patch_reuses": 4
+  },
+  "runs": {
+    "historical_fastest": {
+      "integration_wall_s": 130.01146,
+      "mesh_detection_wall_s": 127.42113689999987,
+      "other_integration_wall_s": 2.590323100000134,
+      "setup_s": 1.9508146
+    },
+    "earlier_project_isolated": {
+      "integration_wall_s": 293.9445467,
+      "mesh_detection_wall_s": 287.509190799996,
+      "other_integration_wall_s": 6.4353559000039695,
+      "setup_s": 3.2570494,
+      "whole_process_telemetry": {
+        "samples": 101,
+        "process_wall_s": 304.5012,
+        "process_user_s": 409.265625,
+        "process_kernel_s": 111.71875,
+        "process_average_logical_processors": 1.7109435857724042,
+        "process_cycles": 2189947858298,
+        "median_host_busy_pct": 28.04,
+        "median_host_processor_performance_pct": 28.5
+      }
+    },
+    "first_boundary_batch": {
+      "integration_wall_s": 457.9492001,
+      "mesh_detection_wall_s": 447.05400289999983,
+      "other_integration_wall_s": 10.895197200000155,
+      "setup_s": 4.1030626
+    },
+    "second_boundary_batch": {
+      "integration_wall_s": 654.5828283,
+      "mesh_detection_wall_s": 636.6114786000063,
+      "other_integration_wall_s": 17.971349699993652,
+      "setup_s": 7.3206268
+    },
+    "new_mesh_only": {
+      "integration_wall_s": 613.7520886,
+      "mesh_detection_wall_s": 598.489908700004,
+      "other_integration_wall_s": 15.262179899996,
+      "setup_s": 6.7621867,
+      "whole_process_telemetry": {
+        "samples": 200,
+        "process_wall_s": 636.9021,
+        "process_user_s": 791.125,
+        "process_kernel_s": 189.140625,
+        "process_average_logical_processors": 1.5391150774977818,
+        "process_cycles": 4552505968080,
+        "median_host_busy_pct": 30.335,
+        "median_host_processor_performance_pct": 14.035
+      }
+    }
+  },
+  "batches": {
+    "main_steps": 5000,
+    "triangle_tests": [
+      123959351,
+      79429828,
+      46785971,
+      24084485,
+      21884539,
+      26523309,
+      28304754,
+      23088228,
+      20284176,
+      26314738
+    ],
+    "integration_wall_s": {
+      "first_boundary_batch": [
+        99.5108,
+        68.4164,
+        46.7768,
+        29.5198,
+        27.025,
+        31.2132,
+        37.7138,
+        38.6638,
+        37.8904,
+        41.1813
+      ],
+      "second_boundary_batch": [
+        141.9323,
+        103.2267,
+        69.3571,
+        44.0324,
+        42.0298,
+        49.9486,
+        52.1807,
+        50.6159,
+        44.2623,
+        56.9324
+      ],
+      "new_mesh_only": [
+        139.2453,
+        98.4776,
+        68.1011,
+        43.5638,
+        40.9913,
+        46.4092,
+        49.2229,
+        41.9821,
+        39.3997,
+        46.2892
+      ],
+      "historical_fastest": [
+        31.450410599999998,
+        20.956948500000003,
+        14.074118400000003,
+        9.221832599999999,
+        8.491438500000001,
+        9.452669499999999,
+        10.4074758,
+        8.825170200000002,
+        7.813711799999993,
+        9.299189800000008
+      ],
+      "earlier_project_isolated": [
+        65.0299892,
+        46.98715130000001,
+        36.24927309999998,
+        20.87234670000001,
+        18.811901699999993,
+        20.938923000000017,
+        23.763018999999986,
+        20.049445700000007,
+        19.047842400000008,
+        22.163418999999976
+      ]
+    }
+  },
+  "previous_job_log_local_windows": {
+    "full_cpp_build_log": [
+      "2026-11-26T16:28:19",
+      "2026-11-26T16:41:34"
+    ],
+    "early_adaptive_cad_progress": [
+      "2026-11-26T15:27:20",
+      "2026-11-26T15:57:00"
+    ],
+    "first_boundary_batch": [
+      "2026-11-26T15:25:30",
+      "2026-11-26T15:33:28"
+    ],
+    "second_boundary_batch": [
+      "2026-11-26T16:26:26",
+      "2026-11-26T16:37:50"
+    ]
+  },
+  "new_mesh_only_samples": {
+    "samples_during_run": 68,
+    "other_watched_project_programs": [],
+    "watched_program_names": [
+      "nc_contact.exe",
+      "nc_contact_runtime.exe",
+      "nc_compiled_poses.exe",
+      "nc_cad_distance_benchmark.exe",
+      "cl.exe",
+      "msbuild.exe",
+      "cmake.exe"
+    ],
+    "median_total_cpu_percent": 30.9,
+    "median_available_MiB": 16400.5
+  },
+  "timing_scope": "Integration and mesh detection use wall clocks; process CPU and cycle counters include setup and export. Whole-host processor counters do not identify individual solver core frequencies."
+}
