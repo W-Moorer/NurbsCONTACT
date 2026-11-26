@@ -1,0 +1,21 @@
+{
+  "step_s": 0.0001,
+  "duration_s": 3.2,
+  "solver": "penalty",
+  "penalty_stiffness": "shared",
+  "geometry_update": "predictor",
+  "spectral_radius": 0,
+  "cad_runtime_sha256": "68e0923fdcf6a91846dec5e021308f60ae21400e6b81d1c704833eb1e4b46119",
+  "mesh_runtime_sha256": "0d5ef684f2f6940a0c44e395a4a6849e07c6ee7af89949ac79ee5ef744336779",
+  "mesh_assets": {
+    "cam.msh": "aecb805dbe6b05795f30ed096e5199437b2f01ef32dea524e9a4ab57466b7a86",
+    "follower.msh": "e9227b933196759560ef37fa6471927624549f25897cbaefb75feb4d420f4d87"
+  },
+  "scene_sha256": "2ff53e766010c255493f3fcceccae02e6ae19406b833b68f1f17b895dc04ec77",
+  "compiled_parts": {
+    "cam.ncpart": "54b0ce3d3d6436d55806db14108e621b1a0d72b379c76102cf2b651c0556b4b3",
+    "follower.ncpart": "0466b5215d5c67b820da7ac36e92e6fd02da71676181e0730fdc611cc10abe51"
+  },
+  "strict_failure": "HHT residual or clearance guard did not converge within the subdivision budget at t=0.085800 (9 unresolved pair force evaluations, 0 unresolved step sweeps)",
+  "whole_face_only_failure": "HHT residual or clearance guard did not converge within the subdivision budget at t=0.583000 (9 unresolved pair force evaluations, 0 unresolved step sweeps)"
+}

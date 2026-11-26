@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from _gpu_source import read_model
-from cpu_backend_run import digest, run
+from cpu_backend_run import digest, quadrature_options, quadrature_settings, run
 from cpu_cad_pressure_report import history, wrench
 from cpu_pressure_columns import differences, fixed_geometry_inputs, query, stage_poses
 
@@ -96,7 +96,7 @@ def cycle(args):
     os.environ["OMP_NUM_THREADS"] = str(args.threads)
     args.out.mkdir(parents=True, exist_ok=False)
     scene = args.scene.resolve()
-    if args.method == "cad-compiled":
+    if args.method in ("cad-compiled", "cad-boundary"):
         # A previous scene can retain its STEP body names. Only compiled parts
         # are delivered to the isolated directory; never resolve a STEP asset.
         from shlex import split
@@ -128,6 +128,7 @@ def cycle(args):
         "shared",
         "predictor",
         0,
+        quadrature=args.quadrature,
     )
 
 
@@ -412,7 +413,8 @@ if __name__ == "__main__":
     runner = commands.add_parser("run")
     for name in ("scene", "exe", "out"):
         runner.add_argument(name, type=Path)
-    runner.add_argument("--method", choices=("cad-compiled", "mesh-obb"), required=True)
+    runner.add_argument("--method", choices=("cad-compiled", "cad-boundary", "mesh-obb"), required=True)
+    quadrature_options(runner)
     runner.add_argument("--parts", type=Path)
     runner.add_argument("--threads", type=int, default=2)
     comp = commands.add_parser("compare")
@@ -431,8 +433,10 @@ if __name__ == "__main__":
     for name in ("scene", "archive", "probe", "native", "parts", "out"):
         face.add_argument(name, type=Path)
     args = p.parse_args()
-    if args.command == "run" and args.method == "cad-compiled" and args.parts is None:
-        p.error("cad-compiled requires --parts")
+    if args.command == "run":
+        args.quadrature = quadrature_settings(p, args)
+        if args.method in ("cad-compiled", "cad-boundary") and args.parts is None:
+            p.error("compiled CAD requires --parts")
     {
         "prepare": prepare,
         "run": cycle,

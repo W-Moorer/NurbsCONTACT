@@ -66,6 +66,40 @@ void overlap() {
     }
     throw std::runtime_error("accepted a truncated part");
 }
+void split_and_swap() {
+    auto split = box();
+    const auto second = split.geometry.patches[1];
+    auto right = split.faces[1];
+    split.faces[1].domain.u.hi = 0;
+    split.faces[1].hi[1] = 0;
+    split.geometry.patches[1].domain = split.faces[1].domain;
+    right.domain.u.lo = 0;
+    right.lo[1] = 0;
+    split.faces.push_back(right);
+    split.geometry.patches.push_back({second.surface, right.domain, split.faces.size(), second.trim_id});
+    auto divided = std::make_shared<Solid>(std::move(split), DiscoverySites::trim_boundary);
+    auto plain = std::make_shared<Solid>(box(), DiscoverySites::trim_boundary);
+    const LoadQuadrature rule{1e7, 1, 1e-6, 1e-8, 0, true};
+    auto forward = region_query(divided, plain, .0002, rule);
+    auto reverse = region_query(plain, divided, .0002, rule);
+    dynamics::ContactPose a, b;
+    dynamics::ContactWork work;
+    for (double angle : {0., .2, -.4, .2}) {
+        a.angle = b.angle = angle;
+        b.origin = a.rotate({.0019, 0, 0});
+        const auto left = forward->regions(a, b, work), right_side = reverse->regions(b, a, work);
+        require(left.size() == 1 && right_side.size() == 1, "split face duplicated contact");
+        auto check = [&](const dynamics::ContactRegion &r, double sign) {
+            const Vec f = scale(r.normal, rule.stiffness * r.depth_m);
+            const Vec moment = add(cross3(r.point, f), scale(r.pressure_arm, length(f)));
+            require(length(sub(f, a.rotate({sign * 1000, 0, 0}))) < 1e-6, "split or reversed force");
+            require(length(moment) < 1e-8, "split or reversed moment about shared origin");
+        };
+        check(left.front(), 1);
+        check(right_side.front(), -1);
+    }
+    require(work.cad_quadrature_converged == 8, "split box missed quadrature convergence");
+}
 void trims() {
     PartFile file;
     Rect domain{{-2, 2}, {-2, 2}};
@@ -120,6 +154,7 @@ void curved_roots() {
 int main() {
     try {
         overlap();
+        split_and_swap();
         trims();
         curved_roots();
     } catch (const std::exception &e) {

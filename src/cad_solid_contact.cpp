@@ -87,7 +87,7 @@ private:
     int coordinate_;
 };
 
-Vec vector_area(const TopoDS_Face& face,const gp_Pnt& origin,Vec* moment) {
+Vec vector_area(const TopoDS_Face& face,const gp_Pnt& origin,Vec* moment,double tolerance) {
     Vec area{};
     for (TopExp_Explorer it(face,TopAbs_EDGE);it.More();it.Next()) {
         const auto edge=TopoDS::Edge(it.Current());
@@ -99,7 +99,7 @@ Vec vector_area(const TopoDS_Face& face,const gp_Pnt& origin,Vec* moment) {
         for (int i=1;i<knots.Upper();++i) {
             for (int k=0;k<(moment ? 6 : 3);++k) {
                 AreaIntegrand function(curve,origin,k+1);
-                math_KronrodSingleIntegration integral(function,knots(i),knots(i+1),15,1e-8,8);
+                math_KronrodSingleIntegration integral(function,knots(i),knots(i+1),15,tolerance,8);
                 if (!integral.IsDone()) throw UnresolvedContact("CAD contact boundary integration failed");
                 if (k<3) area[k]+=sign*integral.Value();
                 else (*moment)[k-3]+=sign*integral.Value();
@@ -122,7 +122,8 @@ TopTools_IndexedMapOfShape source_faces(const TopoDS_Shape& shape,BRepAlgoAPI_Co
 namespace cad {
 std::vector<dynamics::ContactRegion> solid_regions(const TopoDS_Shape& first,const TopoDS_Shape& second,
                                                   dynamics::ContactWork& work,bool measure_span,
-                                                  std::vector<Vec>* pressure_moment_arms,bool parallel_oriented_boxes) try {
+                                                  std::vector<Vec>* pressure_moment_arms,bool parallel_oriented_boxes,
+                                                  double integration_tolerance) try {
     ++work.cad_boolean_queries;
     BRepAlgoAPI_Common op;
     TopTools_ListOfShape args,tools;
@@ -148,7 +149,7 @@ std::vector<dynamics::ContactRegion> solid_regions(const TopoDS_Shape& first,con
     for (;solids.More();solids.Next()) {
         const auto& solid=solids.Current();
         GProp_GProps props;
-        BRepGProp::VolumeProperties(solid,props,1e-8,true);
+        BRepGProp::VolumeProperties(solid,props,integration_tolerance,true);
         if (!(props.Mass()>0)) throw UnresolvedContact("invalid CAD intersection volume");
         const auto origin=props.CentreOfMass();
         Vec direction{},moment{};
@@ -161,7 +162,7 @@ std::vector<dynamics::ContactRegion> solid_regions(const TopoDS_Shape& first,con
             if (on_a==on_b) continue;
             source_a|=on_a; source_b|=on_b;
             Vec local_moment{};
-            const Vec area=vector_area(face,origin,pressure_moment_arms ? &local_moment : nullptr);
+            const Vec area=vector_area(face,origin,pressure_moment_arms ? &local_moment : nullptr,integration_tolerance);
             direction=add(direction,scale(area,on_a ? 1. : -1.));
             moment=add(moment,scale(local_moment,on_a ? 1. : -1.));
             total+=length(area);

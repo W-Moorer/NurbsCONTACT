@@ -461,44 +461,113 @@ struct Detection {
             }
         return resultant(q, arm);
     }
-    // Local quadrature around confirmed penetration for narrow regions that all
-    // four whole-face rules miss. Scale the integration domain from each witness.
-    std::optional<Witness> local_integral(std::span<const Witness> witnesses, const Groups &groups,
-                                          Vec &arm) const {
+    using Windows = std::array<std::map<int, Rect>, 2>;
+    Rect footprint(int side, int id, const std::set<int> &targets, std::span<const Witness> witnesses) const {
+        const auto &f = face(side, id);
+        Rect r{{infinity, -infinity}, {infinity, -infinity}};
+        for (const auto &w : witnesses)
+            if (w.faces[side] == id) {
+                Param uv = w.exits[side].uv;
+                for (int k = 0; k < 2; ++k) {
+                    const Interval range = k ? f.info.domain.v : f.info.domain.u;
+                    for (int sign : {-1, 1}) {
+                        double h = range.width() / 192, delta = 0;
+                        for (int j = 0; j < 10; ++j) {
+                            Param trial = uv;
+                            trial[k] = std::clamp(uv[k] + sign * h, range.lo, range.hi);
+                            delta = trial[k] - uv[k];
+                            if (!f.inside(trial))
+                                break;
+                            auto s = node(side, id, trial);
+                            auto t = bodies[1 - side]->first(rel[side].point(s.point),
+                                                             rel[side].direction(scale(s.normal, -1)), reach);
+                            if (!t || !targets.contains(t->face) || trial[k] == range.lo ||
+                                trial[k] == range.hi)
+                                break;
+                            h *= 2;
+                        }
+                        auto &a = k ? r.v : r.u;
+                        a.lo = std::min(a.lo, uv[k] + delta);
+                        a.hi = std::max(a.hi, uv[k] + delta);
+                    }
+                }
+            }
+        return r;
+    }
+    // Clip material intervals on each integration line. Plain midpoint rules
+    // otherwise change an entire cell's weight when a narrow strip crosses it.
+    void strip_integral(Integral &q, int side, int id, const std::set<int> &targets, Rect r,
+                        int order) const {
+        const auto &f = face(side, id);
+        const auto &solid = *bodies[1 - side];
+        const bool transpose = r.u.width() / f.info.domain.u.width() < r.v.width() / f.info.domain.v.width();
+        const Interval outer = transpose ? r.v : r.u, inner = transpose ? r.u : r.v;
+        auto column = [&](double u, double v, double weight) {
+            const Param uv = transpose ? Param{v, u} : Param{u, v};
+            if (!f.inside(uv))
+                return false;
+            auto s = node(side, id, uv);
+            auto hit = solid.first(rel[side].point(s.point), rel[side].direction(scale(s.normal, -1)), reach);
+            if (!hit || !targets.contains(hit->face))
+                return false;
+            if (weight > 0) {
+                s.area *= weight;
+                sum(q, side, s, hit->t);
+            }
+            return true;
+        };
+        const double du = outer.width() / order;
+        const int scans = std::max(6, order);
+        for (int i = 0; i < order; ++i) {
+            const double u = outer.lo + (i + .5) * du;
+            auto integrate_span = [&](double lo, double hi) {
+                const double half = (hi - lo) * .5, mid = std::midpoint(lo, hi);
+                for (double sign : {-1., 1.})
+                    column(u, mid + sign * half / std::sqrt(3.), du * half);
+            };
+            double last_v = inner.lo, start = last_v;
+            bool loaded = column(u, last_v, 0);
+            for (int j = 1; j <= scans; ++j) {
+                const double v = inner.lo + j * inner.width() / scans;
+                const bool next = column(u, v, 0);
+                if (next != loaded) {
+                    double lo = last_v, hi = v;
+                    for (int k = 0; k < 10; ++k) {
+                        const double mid = std::midpoint(lo, hi);
+                        if (column(u, mid, 0) == loaded)
+                            lo = mid;
+                        else
+                            hi = mid;
+                    }
+                    const double cut = std::midpoint(lo, hi);
+                    if (next)
+                        start = cut;
+                    else
+                        integrate_span(start, cut);
+                }
+                if (j == scans && next)
+                    integrate_span(start, v);
+                loaded = next;
+                last_v = v;
+            }
+        }
+    }
+    std::optional<Witness> local_integral(std::span<const Witness> witnesses, const Groups &groups, Vec &arm,
+                                          int order = 24, Windows *windows = nullptr) const {
         Integral q;
         for (int side = 0; side < 2; ++side)
-            for (auto &[id, targets] : groups[side]) {
+            for (const auto &[id, targets] : groups[side]) {
                 const auto &f = face(side, id);
-                Rect r{{infinity, -infinity}, {infinity, -infinity}};
-                for (const auto &w : witnesses)
-                    if (w.faces[side] == id) {
-                        Param uv = w.exits[side].uv;
-                        for (int k = 0; k < 2; ++k) {
-                            const Interval range = k ? f.info.domain.v : f.info.domain.u;
-                            for (int sign : {-1, 1}) {
-                                double h = range.width() / 192, delta = 0;
-                                for (int j = 0; j < 10; ++j) {
-                                    Param trial = uv;
-                                    trial[k] = std::clamp(uv[k] + sign * h, range.lo, range.hi);
-                                    delta = trial[k] - uv[k];
-                                    if (!f.inside(trial))
-                                        break;
-                                    auto s = node(side, id, trial);
-                                    auto t = bodies[1 - side]->first(rel[side].point(s.point),
-                                                                     rel[side].direction(scale(s.normal, -1)),
-                                                                     reach);
-                                    if (!t || !targets.contains(t->face) || trial[k] == range.lo ||
-                                        trial[k] == range.hi)
-                                        break;
-                                    h *= 2;
-                                }
-                                auto &a = k ? r.v : r.u;
-                                a.lo = std::min(a.lo, uv[k] + delta);
-                                a.hi = std::max(a.hi, uv[k] + delta);
-                            }
-                        }
-                    }
-                const int order = 24;
+                Rect r;
+                if (windows) {
+                    auto [it, inserted] = (*windows)[side].try_emplace(id);
+                    if (inserted)
+                        it->second = footprint(side, id, targets, witnesses);
+                    r = it->second;
+                    strip_integral(q, side, id, targets, r, order);
+                    continue;
+                }
+                r = footprint(side, id, targets, witnesses);
                 for (int i = 0; i < order; ++i)
                     for (int j = 0; j < order; ++j) {
                         Param uv{r.u.lo + (i + .5) * r.u.width() / order,
@@ -519,6 +588,7 @@ struct Detection {
 class CompiledPair final : public RegionQuery {
     std::array<std::shared_ptr<const Solid>, 2> bodies_;
     double reach_;
+    std::optional<LoadQuadrature> integration_;
     mutable std::array<Rules, 2> rules_;
     mutable std::map<Pair, Seed> previous_;
     mutable std::array<WindowCache, 2> windows_{};
@@ -526,8 +596,9 @@ class CompiledPair final : public RegionQuery {
     mutable std::map<std::pair<Pair, Pair>, std::vector<Blocker>> blockers_;
 
   public:
-    CompiledPair(std::shared_ptr<const Solid> a, std::shared_ptr<const Solid> b, double reach)
-        : bodies_{std::move(a), std::move(b)}, reach_(reach) {}
+    CompiledPair(std::shared_ptr<const Solid> a, std::shared_ptr<const Solid> b, double reach,
+                 std::optional<LoadQuadrature> integration)
+        : bodies_{std::move(a), std::move(b)}, reach_(reach), integration_(integration) {}
     bool independent_cad_patch() const override {
         return true;
     }
@@ -624,9 +695,54 @@ class CompiledPair final : public RegionQuery {
                     faces[i][w.faces[i]].insert(w.faces[1 - i]);
             Vec arm{};
             std::optional<Witness> w;
-            for (int order : {12, 24, 48, 96})
-                if ((w = query.integrate(faces, order, arm)))
-                    break;
+            if (integration_) {
+                const auto &law = *integration_;
+                // At this geometry pose the strictly positive elastic loads
+                // are averaged by the shared law and summed by the other law.
+                const double count = law.shared_stiffness ? 1. : double(components.size());
+                std::optional<std::array<Vec, 3>> last;
+                Detection::Windows windows;
+                for (int order : {3, 6, 12, 24, 48, 96}) {
+                    if (law.reference_order && order != law.reference_order)
+                        continue;
+                    w = law.reference_order ? query.integrate(faces, order, arm)
+                                            : query.local_integral(witnesses, faces, arm, order, &windows);
+                    ++work.cad_quadrature_rules;
+                    if (!w) {
+                        last.reset();
+                        continue;
+                    }
+                    if (law.reference_order)
+                        break;
+                    const double load = law.stiffness * std::pow(.001 * w->depth, law.exponent);
+                    const Vec force = scale(w->normal, load);
+                    const Vec moment = scale(add(cross3(w->point, force), scale(arm, load)), .001);
+                    const Vec other = sub(moment, scale(cross3(query.rel[1].offset, force), .001));
+                    const std::array current{force, moment, other};
+                    if (last && length(sub(force, (*last)[0])) * count <= law.force_tolerance &&
+                        std::max(length(sub(moment, (*last)[1])), length(sub(other, (*last)[2]))) * count <=
+                            law.moment_tolerance) {
+                        ++work.cad_quadrature_converged;
+                        break;
+                    }
+                    last = current;
+                    w.reset();
+                }
+                if (!w && law.reference_order) {
+                    // A known contact can be narrower than a whole-face cell.
+                    // Apply the same fixed order on its local material footprint.
+                    w = query.local_integral(witnesses, faces, arm, law.reference_order, &windows);
+                    ++work.cad_quadrature_rules;
+                }
+                if (!w)
+                    throw UnresolvedContact(law.reference_order
+                                                ? "fixed CAD quadrature missed the contact region"
+                                                : "compiled CAD force/moment quadrature did not converge");
+            } else {
+                for (int order : {12, 24, 48, 96})
+                    if ((w = query.integrate(faces, order, arm)))
+                        break;
+            }
             if (!w)
                 w = query.local_integral(witnesses, faces, arm);
             if (!w)
@@ -643,10 +759,19 @@ class CompiledPair final : public RegionQuery {
     }
 };
 } // namespace
-std::shared_ptr<const RegionQuery> region_query(std::shared_ptr<const Solid> a, std::shared_ptr<const Solid> b,
-                                                double max_depth) {
+std::shared_ptr<const RegionQuery> region_query(std::shared_ptr<const Solid> a,
+                                                std::shared_ptr<const Solid> b, double max_depth,
+                                                std::optional<LoadQuadrature> integration) {
     if (!(max_depth > 0))
         throw std::invalid_argument("compiled CAD requires a positive contact depth range");
-    return std::make_shared<CompiledPair>(std::move(a), std::move(b), 2000 * max_depth);
+    if (integration) {
+        const auto &p = *integration;
+        const auto positive=[](double x) { return std::isfinite(x) && x>0; };
+        if (!positive(p.stiffness) || !positive(p.exponent) ||
+            (p.reference_order != 0 && p.reference_order != 96) ||
+            (!p.reference_order && (!positive(p.force_tolerance) || !positive(p.moment_tolerance))))
+            throw std::invalid_argument("invalid compiled CAD quadrature settings");
+    }
+    return std::make_shared<CompiledPair>(std::move(a), std::move(b), 2000 * max_depth, integration);
 }
 } // namespace nc::compiled

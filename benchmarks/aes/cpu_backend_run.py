@@ -17,9 +17,11 @@ def digest(path):
 
 
 def run(exe, scene, directory, method, scope, solver, penalty_stiffness=None, geometry_update=None,
-        spectral_radius=None, substeps_per_output=1, launch=subprocess.run):
+        spectral_radius=None, substeps_per_output=1, launch=subprocess.run, *, quadrature=None):
     if not isinstance(substeps_per_output, int) or substeps_per_output < 1:
         raise ValueError("Expected a positive integer number of integration steps per output")
+    if quadrature and method != "cad-boundary":
+        raise ValueError("Load quadrature requires cad-boundary")
     dt=.0001/substeps_per_output
     directory.mkdir(parents=True, exist_ok=False)
     prefix = directory / "response"
@@ -34,6 +36,11 @@ def run(exe, scene, directory, method, scope, solver, penalty_stiffness=None, ge
         args += ["--geometry-update", geometry_update]
     if spectral_radius is not None:
         args += ["--spectral-radius", str(spectral_radius)]
+    if quadrature:
+        mode, force_n, moment_nm = quadrature
+        args += ["--cubature", mode]
+        if force_n is not None:
+            args += ["--force-tol-n", str(force_n), "--moment-tol-nm", str(moment_nm)]
     tic = perf_counter()
     status = "complete"
     exit_code = None
@@ -56,6 +63,8 @@ def run(exe, scene, directory, method, scope, solver, penalty_stiffness=None, ge
     report = dict(method=method, solver=solver, scope=scope if method.startswith("mesh") else None,
                   executable_sha256=digest(exe), scene_sha256=digest(scene), requested_s=5, dt_s=dt, output_dt_s=.0001,
                   budget_s=1800, process_s=wall, status=status, exit_code=exit_code, last_accepted=last)
+    if quadrature:
+        report["load_quadrature"] = dict(mode=mode, force_N=force_n, moment_Nm=moment_nm)
     if penalty_stiffness: report["penalty_stiffness"]=penalty_stiffness
     if geometry_update: report["geometry_update"]=geometry_update
     if spectral_radius is not None: report["spectral_radius"]=spectral_radius
@@ -84,17 +93,37 @@ def run(exe, scene, directory, method, scope, solver, penalty_stiffness=None, ge
     print(json.dumps(report, ensure_ascii=True), flush=True)
 
 
+def quadrature_options(parser):
+    parser.add_argument("--cubature", choices=("adaptive", "fixed96"))
+    parser.add_argument("--force-tol-n", type=float)
+    parser.add_argument("--moment-tol-nm", type=float)
+
+
+def quadrature_settings(parser, args):
+    settings = (args.cubature, args.force_tol_n, args.moment_tol_nm)
+    if all(v is None for v in settings):
+        return None
+    if settings == ("fixed96", None, None) and args.method == "cad-boundary":
+        return settings
+    if (args.method != "cad-boundary" or args.force_tol_n is None or args.moment_tol_nm is None
+            or not all(np.isfinite(x) and x > 0 for x in settings[1:])):
+        parser.error("use positive --force-tol-n and --moment-tol-nm together with --method cad-boundary")
+    return (args.cubature or "adaptive", *settings[1:])
+
+
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__)
     for name in ("exe", "scene", "out"):
         p.add_argument(name, type=Path)
-    p.add_argument("--method", required=True, choices=("mesh-obb", "mesh-aabb", "mesh-sap", "cad-occt", "cad-patch", "cad-bezier", "cad-bezier-bounds", "cad-bezier-relocate", "cad-compiled"))
+    p.add_argument("--method", required=True, choices=("mesh-obb", "mesh-aabb", "mesh-sap", "cad-occt", "cad-patch", "cad-bezier", "cad-bezier-bounds", "cad-bezier-relocate", "cad-compiled", "cad-boundary"))
     p.add_argument("--scope", choices=("local", "full", "fcl", "finite", "contour-ray"), default="local")
     p.add_argument("--solver", default="penalty")
     p.add_argument("--penalty-stiffness", choices=("per-region","shared"))
     p.add_argument("--geometry-update", choices=("newton","predictor"))
     p.add_argument("--spectral-radius", type=float)
     p.add_argument("--substeps-per-output", type=int, default=1)
+    quadrature_options(p)
     a = p.parse_args()
     run(a.exe.resolve(), a.scene.resolve(), a.out.resolve(), a.method, a.scope, a.solver,
-        a.penalty_stiffness,a.geometry_update,a.spectral_radius,a.substeps_per_output)
+        a.penalty_stiffness,a.geometry_update,a.spectral_radius,a.substeps_per_output,
+        quadrature=quadrature_settings(p, a))

@@ -1,0 +1,81 @@
+{
+  "mesh-obb": {
+    "integration_s": 457.9492001,
+    "steps": 50000,
+    "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+    "executable_sha256": "0d5ef684f2f6940a0c44e395a4a6849e07c6ee7af89949ac79ee5ef744336779",
+    "response_sha256": "422068b9d21aeb562bb8203c6313e469c245d4cb8f42d939d08186fc1d90595f",
+    "peak_abs_torque_Nm": 432.7064738330969,
+    "time_at_peak_s": 0.0006000000000000001,
+    "largest_adjacent_torque_jump_Nm": 210.147734328168,
+    "time_after_jump_s": 0.0004,
+    "torque_rms_vs_RecurDyn_Nm": 29.1423846001526,
+    "intermediate_speed_rms_vs_RecurDyn_rad_s": 0.20396606883362514,
+    "active_switches_s": [
+      [
+        0.00030000000000000003
+      ],
+      [
+        0.00030000000000000003,
+        0.0010000000000000002,
+        0.0013000000000000004,
+        0.0021000000000000003,
+        0.0024
+      ]
+    ]
+  },
+  "cad-compiled": {
+    "integration_s": 529.2706549,
+    "steps": 50000,
+    "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+    "executable_sha256": "b6d1985ca235e86ac963829410aa1d035c4fb8e02ed6da957cecae6601cea3c2",
+    "response_sha256": "53e8c424b4b8cdd13bc3221ef73f0ebe1d87278f1a68290462ca1a91b22e50dd",
+    "peak_abs_torque_Nm": 432.63084367488136,
+    "time_at_peak_s": 0.0005,
+    "largest_adjacent_torque_jump_Nm": 259.99144360339017,
+    "time_after_jump_s": 0.0004,
+    "torque_rms_vs_RecurDyn_Nm": 42.09473973297086,
+    "intermediate_speed_rms_vs_RecurDyn_rad_s": 0.30081427904913544,
+    "active_switches_s": [
+      [
+        0.00030000000000000003
+      ],
+      [
+        0.00030000000000000003,
+        0.0009000000000000002,
+        0.0012000000000000003,
+        0.0020000000000000005,
+        0.0021000000000000003
+      ]
+    ]
+  },
+  "cad-boundary": {
+    "integration_s": 934.3622947,
+    "steps": 50000,
+    "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+    "executable_sha256": "f3d5401fdd01cac328958e5a1fb7e24e17e6ae760e523128d9be0ccdf6f956bb",
+    "response_sha256": "6650d23e95668ceb83889edb3c2731f9a825de5d2f2ee67819f5c2326b66e92a",
+    "peak_abs_torque_Nm": 432.63084367488136,
+    "time_at_peak_s": 0.0005,
+    "largest_adjacent_torque_jump_Nm": 259.99144360339017,
+    "time_after_jump_s": 0.0004,
+    "torque_rms_vs_RecurDyn_Nm": 35.42875547125875,
+    "intermediate_speed_rms_vs_RecurDyn_rad_s": 0.2683915274634695,
+    "active_switches_s": [
+      [
+        0.00030000000000000003
+      ],
+      [
+        0.00030000000000000003,
+        0.0009000000000000002,
+        0.0012000000000000003,
+        0.0020000000000000005,
+        0.0022
+      ]
+    ]
+  },
+  "RecurDyn": {
+    "peak_abs_torque_Nm": 509.32494922780234,
+    "time_at_peak_s": 0.0017000000000000006
+  }
+}

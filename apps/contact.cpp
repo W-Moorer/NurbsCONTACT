@@ -140,8 +140,11 @@ struct SurfaceOptions {
     bool share_penalty_stiffness{};
     bool predictor_geometry{};
     std::optional<double> spectral_radius;
+    std::optional<double> force_tolerance, moment_tolerance;
+    std::optional<bool> fixed_cubature;
     bool chen() const { return method=="chen-2024" || method=="chen-2026"; }
-    bool patch() const { return method=="cad-compiled" || method=="cad-patch" || method=="cad-bezier" || method=="cad-bezier-bounds" || method=="cad-bezier-relocate"; }
+    bool compiled() const { return method=="cad-compiled" || method=="cad-boundary"; }
+    bool patch() const { return compiled() || method=="cad-patch" || method=="cad-bezier" || method=="cad-bezier-bounds" || method=="cad-bezier-relocate"; }
     bool cad() const { return method=="cad-occt" || method=="cad-local" || patch() || chen(); }
 };
 
@@ -183,14 +186,15 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         std::string filename;
         if (!(in>>std::quoted(filename))) throw std::invalid_argument("missing body STEP file");
         const auto file=path.parent_path()/filename;
-        if (surface_options.method=="cad-compiled") {
+        if (surface_options.compiled()) {
             auto asset=surface_options.compiled_directory.empty() ? file : surface_options.compiled_directory/file.filename();
             asset.replace_extension(".ncpart");
             const auto source=file.lexically_normal();
             const auto [owner,inserted]=part_sources.emplace(asset.lexically_normal(),source);
             if (!inserted && owner->second!=source)
                 throw std::invalid_argument("distinct model files resolve to the same compiled part: "+asset.string());
-            if (!parts.contains(file)) parts.emplace(file,compiled::load_solid(asset));
+            const auto sites=surface_options.method=="cad-boundary" ? compiled::DiscoverySites::trim_boundary : compiled::DiscoverySites::face_grid;
+            if (!parts.contains(file)) parts.emplace(file,compiled::load_solid(asset,sites));
         }
 #ifndef NC_COMPILED_ONLY
         else if (surface_options.method.empty() || surface_options.cad()) {
@@ -443,8 +447,17 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
         };
         for (auto& pair:input.pairs) {
             const std::array centers{center(pair.a),center(pair.b)};
-            if (surface_options.method=="cad-compiled") {
-                pair.regions=compiled::region_query(parts.at(files[pair.a]),parts.at(files[pair.b]),pair.material.maximum_depth);
+            if (surface_options.compiled()) {
+                std::optional<compiled::LoadQuadrature> rule;
+                if (surface_options.force_tolerance || surface_options.fixed_cubature.value_or(false)) {
+                    const auto &m=pair.material;
+                    if (m.rate!=0 || m.friction!=0 || m.impact_dissipation!=0)
+                        throw std::invalid_argument("load quadrature requires frictionless elastic penalty contact");
+                    rule=compiled::LoadQuadrature{m.stiffness,m.exponent,surface_options.force_tolerance.value_or(0),
+                                                  surface_options.moment_tolerance.value_or(0),surface_options.fixed_cubature.value_or(false) ? 96 : 0,
+                                                  surface_options.share_penalty_stiffness};
+                }
+                pair.regions=compiled::region_query(parts.at(files[pair.a]),parts.at(files[pair.b]),pair.material.maximum_depth,rule);
             }
 #ifndef NC_COMPILED_ONLY
             else if (surface_options.patch()) {
@@ -1416,7 +1429,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             "mesh_pair_bvh_builds,mesh_pair_bvh_reuses,mesh_patch_builds,mesh_patch_reuses,mesh_parallel_batches,mesh_max_workers,"
             "cad_region_index_s,cad_region_select_s,cad_region_common_s,cad_region_extract_s,"
             "cad_patch_queries,cad_patch_batches,cad_patch_batch_s,cad_patch_broad_s,cad_patch_search_s,cad_patch_group_s,cad_patch_area_s,cad_window_builds,cad_window_reuses,cad_path_reuses,cad_skipped_area_nodes,cad_pressure_clipped,cad_pressure_full,cad_full_blocks,cad_partial_blocks,cad_shared_columns,"
-            "cad_depth_tests,cad_depth_excluded,cad_depth_refinements,cad_depth_accepted,cad_depth_empty_blocks,cad_depth_interior_blocks\n"
+            "cad_depth_tests,cad_depth_excluded,cad_depth_refinements,cad_depth_accepted,cad_depth_empty_blocks,cad_depth_interior_blocks,cad_quadrature_rules,cad_quadrature_converged\n"
         <<(n || surface.impulse_law ? wall : replay_s)<<','<<setup_s<<','<<steps<<','<<stats.accepted_steps<<','<<stats.subdivisions<<','<<stats.evaluations
         <<','<<stats.maximum_residual<<','<<work.pairs<<','<<work.culled<<','<<work.rays<<','<<work.missing
         <<','<<work.mesh.triangles<<','<<work.closest_queries<<','<<work.unresolved_queries<<','<<work.native_nodes
@@ -1435,6 +1448,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         <<','<<work.cad_patch_queries<<','<<work.cad_patch_batches<<','<<work.cad_patch_batch_s<<','<<work.cad_patch_broad_s
         <<','<<work.cad_patch_search_s<<','<<work.cad_patch_group_s<<','<<work.cad_patch_area_s<<','<<work.cad_window_builds<<','<<work.cad_window_reuses<<','<<work.cad_path_reuses<<','<<work.cad_skipped_area_nodes<<','<<work.cad_pressure_clipped<<','<<work.cad_pressure_full<<','<<work.cad_full_blocks<<','<<work.cad_partial_blocks<<','<<work.cad_shared_columns;
     for (auto value:work.cad_depth_counts) report<<','<<value;
+    report<<','<<work.cad_quadrature_rules<<','<<work.cad_quadrature_converged;
     report<<'\n';
     if (!trace || !report) throw std::runtime_error("failed to write contact run");
 }
@@ -1514,7 +1528,8 @@ int main(int argc,char** argv) {
                         "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
                         "  or append --method bvh-aabb|bvh-obb|mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
                         "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl|finite|contour-ray] [--penalty-stiffness per-region|shared] [--geometry-update newton|predictor] [--spectral-radius RHO]\n"
-                        "  or append --method cad-compiled [--compiled-dir DIR]|cad-occt|cad-local|cad-patch|cad-bezier|cad-bezier-bounds|cad-bezier-relocate|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
+                        "  or append --method cad-compiled|cad-boundary [--compiled-dir DIR] [--force-tol-n N --moment-tol-nm NM --cubature adaptive|fixed96]\n"
+                        "  or append --method cad-occt|cad-local|cad-patch|cad-bezier|cad-bezier-bounds|cad-bezier-relocate|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
                         "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp [--progress FILE]\n";
             return 2;
         }
@@ -1531,6 +1546,12 @@ int main(int argc,char** argv) {
                 else if (key=="--progress") surface.progress_file=argv[i+1];
                 else if (key=="--hht-replay") surface.replay_file=argv[i+1];
                 else if (key=="--compiled-dir") surface.compiled_directory=argv[i+1];
+                else if (key=="--force-tol-n") surface.force_tolerance=std::stod(argv[i+1]);
+                else if (key=="--moment-tol-nm") surface.moment_tolerance=std::stod(argv[i+1]);
+                else if (key=="--cubature") {
+                    if (value!="adaptive" && value!="fixed96") throw std::invalid_argument("invalid cubature policy");
+                    surface.fixed_cubature=value=="fixed96";
+                }
                 else if (key=="--mesh-dir") surface.mesh_directory=argv[i+1];
                 else if (key=="--spectral-radius") surface.spectral_radius=std::stod(argv[i+1]);
                 else if (key=="--geometry-update") {
@@ -1564,6 +1585,10 @@ int main(int argc,char** argv) {
             }
             if (surface.patch() && surface.impulse_law)
                 throw std::invalid_argument("distributed CAD pressure requires the penalty solver");
+            if (surface.force_tolerance.has_value()!=surface.moment_tolerance.has_value() ||
+                ((surface.force_tolerance || surface.fixed_cubature) && surface.method!="cad-boundary") ||
+                (surface.fixed_cubature && !*surface.fixed_cubature && !surface.force_tolerance))
+                throw std::invalid_argument("adaptive CAD quadrature requires both load tolerances; cubature requires cad-boundary");
             if (surface.predictor_geometry && (surface.impulse_law || (surface.cad() && !surface.patch())))
                 throw std::invalid_argument("predictor geometry requires a mesh or cad-patch penalty method");
             if (surface.share_penalty_stiffness && surface.impulse_law)
@@ -1591,7 +1616,7 @@ int main(int argc,char** argv) {
         if (!named && argc>=11) event_tolerance=std::stod(argv[10]);
         if (!std::isfinite(event_tolerance) || event_tolerance<0) throw std::invalid_argument("invalid event tolerance");
 #ifdef NC_COMPILED_ONLY
-        if (surface.method!="cad-compiled") throw std::invalid_argument("expected --method cad-compiled");
+        if (!surface.compiled()) throw std::invalid_argument("expected --method cad-compiled or cad-boundary");
 #endif
         simulate(argv[1],std::stod(argv[2]),std::stod(argv[3]),std::stod(argv[4]),
                  static_cast<unsigned>(std::stoul(argv[5])),argv[6],pair_backend,settings,event_tolerance,surface);

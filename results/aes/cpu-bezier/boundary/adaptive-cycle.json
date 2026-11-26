@@ -1,0 +1,19 @@
+{
+  "status": "timeout",
+  "requested_s": 5,
+  "hard_process_limit_s": 1800,
+  "driver_step_s": 0.0001,
+  "shared_stiffness": true,
+  "geometry_update": "predictor",
+  "spectral_radius": 0,
+  "force_tolerance_N": 10,
+  "moment_tolerance_Nm": 0.5,
+  "last_accepted_step": 25070,
+  "last_accepted_s": 2.5070000000008648,
+  "last_integration_s": 1777.712285,
+  "note": "Pre-freeze adaptive strip implementation. No complete response or extrapolated timing.",
+  "search_s": 88.87694309999982,
+  "broad_s": 651.2862313,
+  "group_s": 12.013427299999927,
+  "area_s": 1492.5130115000054
+}

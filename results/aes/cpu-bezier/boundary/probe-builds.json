@@ -1,0 +1,92 @@
+{
+  "mesh-obb": {
+    "method": "mesh-obb",
+    "reverse_sequence": false,
+    "executable_sha256": "53f071ea2d5212e5df13f202566b4c3b4efeb54a5eb78022d6d0988d9a39b4f1",
+    "assets": {
+      "reducer-1a.msh": "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+      "reducer-1b.msh": "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+      "reducer-2a.msh": "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+      "reducer-2b.msh": "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0"
+    },
+    "quadrature_tolerances": null
+  },
+  "cad-compiled": {
+    "method": "cad-compiled",
+    "reverse_sequence": false,
+    "executable_sha256": "c11848b29071196e06c1a19370c3399852f939e34f42c933c728d5ebaf4582d0",
+    "assets": {
+      "reducer-1a.ncpart": "da49161ea7cd13eb0bb003b4c24a6459a21aff0a1b87bff7c112d69318b460dc",
+      "reducer-1b.ncpart": "67d74054f362f0b7b0d8d6f1bffb66ef565a4e2cb90fd28625150cda52210b48",
+      "reducer-2a.ncpart": "c3c292c1a22baa70ceecf542be54486d252b61b0284d56e68253e59c1d6e0e31",
+      "reducer-2b.ncpart": "ec870e7dccfa05a08176039ec056000c2fb7063b3b295cd41e15469bead56f4f"
+    },
+    "quadrature_tolerances": null
+  },
+  "cad-boundary": {
+    "method": "cad-boundary",
+    "reverse_sequence": false,
+    "executable_sha256": "c11848b29071196e06c1a19370c3399852f939e34f42c933c728d5ebaf4582d0",
+    "assets": {
+      "reducer-1a.ncpart": "da49161ea7cd13eb0bb003b4c24a6459a21aff0a1b87bff7c112d69318b460dc",
+      "reducer-1b.ncpart": "67d74054f362f0b7b0d8d6f1bffb66ef565a4e2cb90fd28625150cda52210b48",
+      "reducer-2a.ncpart": "c3c292c1a22baa70ceecf542be54486d252b61b0284d56e68253e59c1d6e0e31",
+      "reducer-2b.ncpart": "ec870e7dccfa05a08176039ec056000c2fb7063b3b295cd41e15469bead56f4f"
+    },
+    "quadrature_tolerances": null
+  },
+  "adaptive": {
+    "method": "adaptive",
+    "reverse_sequence": false,
+    "executable_sha256": "c11848b29071196e06c1a19370c3399852f939e34f42c933c728d5ebaf4582d0",
+    "assets": {
+      "reducer-1a.ncpart": "da49161ea7cd13eb0bb003b4c24a6459a21aff0a1b87bff7c112d69318b460dc",
+      "reducer-1b.ncpart": "67d74054f362f0b7b0d8d6f1bffb66ef565a4e2cb90fd28625150cda52210b48",
+      "reducer-2a.ncpart": "c3c292c1a22baa70ceecf542be54486d252b61b0284d56e68253e59c1d6e0e31",
+      "reducer-2b.ncpart": "ec870e7dccfa05a08176039ec056000c2fb7063b3b295cd41e15469bead56f4f"
+    },
+    "quadrature_tolerances": [
+      10.0,
+      0.5
+    ]
+  },
+  "fixed96": {
+    "method": "fixed96",
+    "reverse_sequence": false,
+    "executable_sha256": "cf3039a3a459fe6fc0446b24a6fbae1bf959bfc86974972876fa3321a8e4e70a",
+    "assets": {
+      "reducer-1a.ncpart": "da49161ea7cd13eb0bb003b4c24a6459a21aff0a1b87bff7c112d69318b460dc",
+      "reducer-1b.ncpart": "67d74054f362f0b7b0d8d6f1bffb66ef565a4e2cb90fd28625150cda52210b48",
+      "reducer-2a.ncpart": "c3c292c1a22baa70ceecf542be54486d252b61b0284d56e68253e59c1d6e0e31",
+      "reducer-2b.ncpart": "ec870e7dccfa05a08176039ec056000c2fb7063b3b295cd41e15469bead56f4f"
+    },
+    "quadrature_tolerances": null
+  },
+  "cad-boundary-reverse": {
+    "method": "cad-boundary",
+    "reverse_sequence": true,
+    "executable_sha256": "c11848b29071196e06c1a19370c3399852f939e34f42c933c728d5ebaf4582d0",
+    "assets": {
+      "reducer-1a.ncpart": "da49161ea7cd13eb0bb003b4c24a6459a21aff0a1b87bff7c112d69318b460dc",
+      "reducer-1b.ncpart": "67d74054f362f0b7b0d8d6f1bffb66ef565a4e2cb90fd28625150cda52210b48",
+      "reducer-2a.ncpart": "c3c292c1a22baa70ceecf542be54486d252b61b0284d56e68253e59c1d6e0e31",
+      "reducer-2b.ncpart": "ec870e7dccfa05a08176039ec056000c2fb7063b3b295cd41e15469bead56f4f"
+    },
+    "quadrature_tolerances": null
+  },
+  "adaptive-reverse": {
+    "method": "adaptive",
+    "reverse_sequence": true,
+    "executable_sha256": "c11848b29071196e06c1a19370c3399852f939e34f42c933c728d5ebaf4582d0",
+    "assets": {
+      "reducer-1a.ncpart": "da49161ea7cd13eb0bb003b4c24a6459a21aff0a1b87bff7c112d69318b460dc",
+      "reducer-1b.ncpart": "67d74054f362f0b7b0d8d6f1bffb66ef565a4e2cb90fd28625150cda52210b48",
+      "reducer-2a.ncpart": "c3c292c1a22baa70ceecf542be54486d252b61b0284d56e68253e59c1d6e0e31",
+      "reducer-2b.ncpart": "ec870e7dccfa05a08176039ec056000c2fb7063b3b295cd41e15469bead56f4f"
+    },
+    "quadrature_tolerances": [
+      10.0,
+      0.5
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+Internal ctest changing into directory: G:/NurbsCONTACT/build/compiled-contact/cpu-validation/clean-build
+Test project G:/NurbsCONTACT/build/compiled-contact/cpu-validation/clean-build
+    Start 1: compiled_cad_contacts
+1/5 Test #1: compiled_cad_contacts ............   Passed    0.58 sec
+    Start 2: safeguarded_tdib_envelopes
+2/5 Test #2: safeguarded_tdib_envelopes .......   Passed    0.39 sec
+    Start 3: surface_impulse_laws
+3/5 Test #3: surface_impulse_laws .............   Passed    0.44 sec
+    Start 4: geometry_and_queries
+4/5 Test #4: geometry_and_queries .............   Passed    0.55 sec
+    Start 5: hht_and_triangle_bvh
+5/5 Test #5: hht_and_triangle_bvh .............   Passed    0.49 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =   2.62 sec

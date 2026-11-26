@@ -58,7 +58,7 @@ int regions(const TopoDS_Shape& a,const TopoDS_Shape& b) {
     return 0;
 }
 
-int pressure_patches(const TopoDS_Shape& a,const TopoDS_Shape& b,double reach) {
+int pressure_patches(const TopoDS_Shape& a,const TopoDS_Shape& b,double reach,double tolerance) {
     using namespace dynamics;
     CadExitQuery ray_a{CadContactIndex(a)},ray_b{CadContactIndex(b)};
     std::cout<<std::setprecision(17);
@@ -71,7 +71,7 @@ int pressure_patches(const TopoDS_Shape& a,const TopoDS_Shape& b,double reach) {
         bool resolved=true;
         try {
             regions=cad::solid_regions(a.Moved(TopLoc_Location(cad::placement(poses[0]))),
-                                       b.Moved(TopLoc_Location(cad::placement(poses[1]))),work,false,&arms);
+                                       b.Moved(TopLoc_Location(cad::placement(poses[1]))),work,false,&arms,false,tolerance);
             for (auto& region:regions) {
                 std::size_t tests=0;
                 auto chord=local_chord(ray_a,ray_b,poses,region.point,region.normal,reach,{},tests);
@@ -342,14 +342,15 @@ int main(int argc,char** argv) {
     try {
         const bool local=argc==5 && std::string_view(argv[4])=="--local";
         const bool local_profile=argc==5 && std::string_view(argv[3])=="--profile-local-regions";
-        const bool pressure=argc==5 && std::string_view(argv[3])=="--pressure-patches";
-        if (argc!=4 && !local && !local_profile && !pressure) throw std::invalid_argument("nc_cad_distance_benchmark A.step B.step CAP_MM [--local] | --regions | --profile-regions | --profile-local-regions MAX_DEPTH_M | --pressure-patches REACH_M | --normal-chords | --local-chords | --entry < poses.txt");
+        const bool refined=argc==5 && std::string_view(argv[3])=="--refined-pressure-patches";
+        const bool pressure=refined || (argc==5 && std::string_view(argv[3])=="--pressure-patches");
+        if (argc!=4 && !local && !local_profile && !pressure) throw std::invalid_argument("nc_cad_distance_benchmark A.step B.step CAP_MM [--local] | --regions | --profile-regions | --profile-local-regions MAX_DEPTH_M | --pressure-patches REACH_M | --refined-pressure-patches REACH_M | --normal-chords | --local-chords | --entry < poses.txt");
         const auto a=read_step_shape(argv[1]),b=read_step_shape(argv[2]);
         if (std::string_view(argv[3])=="--regions") return regions(a,b);
         if (pressure) {
             const auto reach=std::stod(argv[4]);
             if (!(reach>0 && std::isfinite(reach))) throw std::invalid_argument("invalid patch reach");
-            return pressure_patches(a,b,reach);
+            return pressure_patches(a,b,reach,refined ? 1e-10 : 1e-8);
         }
         if (local_profile) {
             const auto limit=std::stod(argv[4]);

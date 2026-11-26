@@ -216,6 +216,8 @@ std::vector<RegionEvaluation> batch_mesh_regions(std::span<const ContactBodyStat
         work.cad_path_reuses+=entry.work.cad_path_reuses;
         work.cad_skipped_area_nodes+=entry.work.cad_skipped_area_nodes;
         work.cad_full_blocks+=entry.work.cad_full_blocks;
+        work.cad_quadrature_rules+=entry.work.cad_quadrature_rules;
+        work.cad_quadrature_converged+=entry.work.cad_quadrature_converged;
         work.cad_partial_blocks+=entry.work.cad_partial_blocks;
         work.cad_shared_columns+=entry.work.cad_shared_columns;
         for (std::size_t i=0;i<work.cad_depth_counts.size();++i)

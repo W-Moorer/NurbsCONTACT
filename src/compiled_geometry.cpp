@@ -498,8 +498,55 @@ Solid::Solid(PartFile f, DiscoverySites discovery) : file_(std::move(f)), faces(
             }
         }
     }
-    site_tree.build(point_boxes);
     tile_tree.build(tile_boxes);
+    // Boundary proposals are sources only. Newton still starts on the target's
+    // finite chart tiles; adding degenerate target boxes multiplies pair work.
+    if (discovery == DiscoverySites::trim_boundary) {
+        for (int id = 0; id < int(faces.size()); ++id) {
+            const auto &f = faces[id];
+            const auto &r = f.info.domain;
+            auto propose = [&](Param uv) {
+                if (!f.inside(uv) || (!f.analytic && !f.patch(uv)))
+                    return;
+                const auto jet = f.at(uv);
+                const Vec normal = cross3(jet.u, jet.v);
+                const double mag = length(normal);
+                if (mag < 1e-14)
+                    return;
+                Box box{jet.p, jet.p};
+                point_boxes.push_back(box);
+                material_sites.push_back(int(tiles.size()));
+                tiles.push_back({{jet.p, scale(normal, f.info.orientation / mag), uv, 0}, box, id, true});
+            };
+            constexpr double inset = 1. / 6144.;
+            if (f.info.rectangle) {
+                for (double edge : {inset, 1 - inset}) {
+                    for (int i = 0; i < 12; ++i) {
+                        const double t = (i + .5) / 12;
+                        propose({r.u.lo + edge * r.u.width(), r.v.lo + t * r.v.width()});
+                        propose({r.u.lo + t * r.u.width(), r.v.lo + edge * r.v.width()});
+                    }
+                    for (double v : {inset, 1 - inset})
+                        propose({r.u.lo + edge * r.u.width(), r.v.lo + v * r.v.width()});
+                }
+            } else {
+                for (const auto &edge : f.boundary)
+                    for (double t : {inset, .125, .375, .625, .875, 1 - inset}) {
+                        const auto uv = middle(evaluate(*edge.curve, t));
+                        const auto before = middle(evaluate(*edge.curve, t - inset));
+                        const auto after = middle(evaluate(*edge.curve, t + inset));
+                        const double du = (after[0] - before[0]) / r.u.width();
+                        const double dv = (after[1] - before[1]) / r.v.width();
+                        const double mag = std::hypot(du, dv);
+                        if (mag > 0)
+                            for (double sign : {-1., 1.})
+                                propose({uv[0] - sign * inset * dv / mag * r.u.width(),
+                                         uv[1] + sign * inset * du / mag * r.v.width()});
+                    }
+            }
+        }
+    }
+    site_tree.build(point_boxes);
 }
 namespace {
 template <class Visit> std::optional<RayRoot> select_exit(Vec d, double end, Visit visit) {
