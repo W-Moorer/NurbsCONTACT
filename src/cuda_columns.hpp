@@ -16,9 +16,19 @@ struct Range {
 struct Ray {
     V p, d;
 };
+struct ChartPoint {
+    int face;
+    double u, v;
+};
+struct ChartSample {
+    V point, normal;
+    int material, defined;
+};
 struct Hit {
     double t;
     int face;
+    double u{}, v{};
+    V normal{};
 }; // -1 is clear, -2 requests the general compiled solver.
 struct Node {
     Bounds box;
@@ -28,12 +38,19 @@ struct FaceData {
     Bounds box;
     V frame[3], origin;
     int first, end, orientation, kind;
-    double tol, radius;
+    double tol, radius, meridian_radius{}, radial_slope{}, height_slope{1};
+    Range domain{};
+    int trim_first{}, trim_end{}, grid{}, knots_u{}, knots_v{}, nu{}, nv{};
+    bool rectangle{};
+    int rule_start{-1};
 };
 struct Span {
+    V axis;
+    double plane_width;
     V power[16];
     Range range;
     int cell;
+    int count;
 };
 struct Cell {
     Bounds box;
@@ -46,6 +63,18 @@ struct SpanFrame {
 struct Tile {
     Bounds box;
     V point, normal;
+    double u, v;
+    int face;
+};
+struct TrimPiece {
+    Bounds box;
+    Bounds endpoints[2];
+    double first_y, last_y, du, dv, roundoff;
+    int start, count;
+    double angle, turn, last_angle;
+};
+struct Pole {
+    double x, y, w;
 };
 struct Pose {
     V cols[3], offset;
@@ -56,6 +85,20 @@ struct Candidate {
 };
 struct RuleSite {
     V point, normal;
+};
+struct WeightedSite {
+    V point, normal;
+    double area;
+};
+struct RayPrimitive {
+    int face, span_node;
+};
+struct RayGrid {
+    V low, inverse_width;
+    int size[3]{};
+    double reach{};
+    const int *offsets, *ids;
+    const RayPrimitive *primitives;
 };
 struct RuleBlock {
     const RuleSite *sites;
@@ -73,6 +116,9 @@ struct Sites {
     RuleSite *ptr{};
 };
 struct Tables {
+    RayGrid ray_grid{};
+    std::vector<int> ray_offsets, ray_ids;
+    std::vector<RayPrimitive> ray_primitives;
     std::vector<Node> faces, spans;
     std::vector<FaceData> charts;
     std::vector<Span> patches;
@@ -81,9 +127,18 @@ struct Tables {
     std::vector<Node> site_tree;
     std::vector<Tile> tiles;
     std::vector<int> target_ids;
+    std::vector<Node> trim_tree;
+    std::vector<TrimPiece> trims;
+    std::vector<Pole> trim_poles;
+    std::vector<Bounds> trim_intervals;
+    std::vector<double> knots;
+    std::vector<int> grid;
+    std::vector<WeightedSite> rule_sites;
 };
 class Columns {
   public:
+    struct Storage;
+    const Storage &storage() const { return *data; }
     struct Window;
     std::shared_ptr<Window> window(const Columns &target, Pose, double reach, double turn, size_t &bytes);
     void candidates(const Columns &target, const Window &, Pose, double reach, std::vector<Candidate> &out);
@@ -95,9 +150,41 @@ class Columns {
     Columns(const Columns &) = delete;
     Columns &operator=(const Columns &) = delete;
     void trace(const std::vector<Ray> &, double reach, std::vector<Hit> &);
+    std::vector<ChartSample> sample_charts(const std::vector<ChartPoint> &) const;
 
   private:
-    struct Storage;
     Storage *data;
 };
+struct AxisCoordinate {
+    double mass, q, v, k, c, rest, load;
+    int first, end;
+};
+struct LoadPoint {
+    double t, value;
+};
+struct JointBody {
+    V origin, axis, pivot;
+    double angle;
+    int hinge, translation;
+    V direction;
+};
+struct ContactLaw {
+    int a, b;
+    double k, exponent, rate, max_depth;
+    bool shared;
+};
+struct ResidentScene {
+    std::vector<AxisCoordinate> coordinates;
+    std::vector<LoadPoint> loads;
+    std::vector<JointBody> bodies;
+    std::vector<ContactLaw> pairs;
+    std::vector<std::shared_ptr<Columns>> geometry;
+};
+struct ResidentResult {
+    std::vector<double> frames;
+    double online_s{}, maximum_residual{};
+    unsigned long long queries{}, forces{}, splits{}, missed_deadlines{};
+    double phase_s[5]{}, p50_s{}, p99_s{}, maximum_step_s{};
+};
+ResidentResult advance_resident(const ResidentScene &, double step, int steps);
 } // namespace nc::compiled::device

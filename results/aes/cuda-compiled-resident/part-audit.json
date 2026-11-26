@@ -1,0 +1,58 @@
+[
+  {
+    "part": "reducer-1a.ncpart",
+    "faces": 147,
+    "samples": 29385,
+    "trim_samples": 18732,
+    "max_position_mm": 0,
+    "max_face_tolerance_fraction": 0,
+    "max_normal_rad": 1.3939560108436188e-16,
+    "chart_failures": 0,
+    "material_mismatches": 0,
+    "trim_mismatches": 0,
+    "material_unresolved": 0,
+    "trim_unresolved": 0
+  },
+  {
+    "part": "reducer-1b.ncpart",
+    "faces": 291,
+    "samples": 58761,
+    "trim_samples": 37452,
+    "max_position_mm": 0,
+    "max_face_tolerance_fraction": 0,
+    "max_normal_rad": 1.3412644381372534e-16,
+    "chart_failures": 0,
+    "material_mismatches": 0,
+    "trim_mismatches": 0,
+    "material_unresolved": 0,
+    "trim_unresolved": 0
+  },
+  {
+    "part": "reducer-2a.ncpart",
+    "faces": 135,
+    "samples": 26937,
+    "trim_samples": 17172,
+    "max_position_mm": 0,
+    "max_face_tolerance_fraction": 0,
+    "max_normal_rad": 1.287389641533802e-16,
+    "chart_failures": 0,
+    "material_mismatches": 0,
+    "trim_mismatches": 0,
+    "material_unresolved": 0,
+    "trim_unresolved": 0
+  },
+  {
+    "part": "reducer-2b.ncpart",
+    "faces": 267,
+    "samples": 53865,
+    "trim_samples": 34344,
+    "max_position_mm": 3.552713678800501e-15,
+    "max_face_tolerance_fraction": 3.552713678800501e-08,
+    "max_normal_rad": 1.2458550129081067e-16,
+    "chart_failures": 0,
+    "material_mismatches": 0,
+    "trim_mismatches": 0,
+    "material_unresolved": 0,
+    "trim_unresolved": 0
+  }
+]

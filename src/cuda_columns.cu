@@ -1,9 +1,17 @@
 #include "cuda_columns.hpp"
+#include <algorithm>
+#include <cfloat>
+#include <chrono>
+#include <climits>
 #include <cmath>
+#include <cooperative_groups.h>
 #include <cuda_runtime.h>
+#include <iomanip>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 
 namespace nc::compiled::device {
 namespace {
@@ -35,6 +43,16 @@ struct Stream {
     Stream() { check(cudaStreamCreateWithFlags(&id, cudaStreamNonBlocking)); }
     ~Stream() { cudaStreamDestroy(id); }
 };
+struct StepGraph {
+    cudaGraph_t graph{};
+    cudaGraphExec_t executable{};
+    ~StepGraph() {
+        if (executable)
+            cudaGraphExecDestroy(executable);
+        if (graph)
+            cudaGraphDestroy(graph);
+    }
+};
 struct View {
     const Node *faces, *spans;
     const FaceData *charts;
@@ -42,6 +60,14 @@ struct View {
     const SpanFrame *frames;
     const Cell *cells;
     int n;
+    const Node *trim_tree;
+    const TrimPiece *trims;
+    const Pole *trim_poles;
+    const int *grid;
+    const double *knots;
+    const WeightedSite *rules;
+    const Bounds *trim_intervals;
+    const RayGrid *ray_grid;
 };
 __device__ V sub(V a, V b) { return {{a.x[0] - b.x[0], a.x[1] - b.x[1], a.x[2] - b.x[2]}}; }
 __device__ V scale(V a, double b) { return {{a.x[0] * b, a.x[1] * b, a.x[2] * b}}; }
@@ -94,7 +120,8 @@ __device__ double spread(V a, V b) {
 }
 // The unit-cell contraction encloses every root. When it cannot decide the
 // column, retain its exact source/target ray for the general subdivision path.
-__device__ int isolate(const Span &s, const Cell &c, Ray ray, double tol, double end, double &t, V &normal) {
+__device__ int isolate(const Span &s, const Cell &c, Ray ray, double tol, double end, double &t, V &normal,
+                       double &u, double &v) {
     V a = cross(c.sv, ray.d), b = cross(ray.d, c.su);
     double det = dot(c.su, a);
     if (det == 0 || fabs(det) <= 1e-14 * norm(c.su) * norm(c.sv))
@@ -138,6 +165,8 @@ __device__ int isolate(const Span &s, const Cell &c, Ray ray, double tol, double
         t = dot(f, ray.d);
         f = sub(f, scale(ray.d, t));
         if (dot(f, f) < 1e-20) {
+            u = r.u + x * du;
+            v = r.v + y * dv;
             if (t < -tol || t > end + tol)
                 return -1;
             normal = cross(jet.u, jet.v);
@@ -154,83 +183,35 @@ __device__ int isolate(const Span &s, const Cell &c, Ray ray, double tol, double
             return -2;
         x -= dot(f, a) / (det * du);
         y -= dot(f, b) / (det * dv);
-        if (x < 0 || x > 1 || y < 0 || y > 1)
+        if (x < -1e-10 || x > 1 + 1e-10 || y < -1e-10 || y > 1 + 1e-10)
             return -2;
     }
     return -2;
 }
-__device__ Hit first(View g, Ray ray, double end) {
-    Hit best{0, -1};
-    V normal{};
-    for (int i = 0; i < g.n;) {
-        const auto n = g.faces[i];
-        if (!intersects(n.box, ray, end, 1e-6)) {
-            i = n.next;
-            continue;
-        }
-        ++i;
-        if (n.leaf < 0)
-            continue;
-        const auto f = g.charts[n.leaf];
-        if (f.first < 0) {
-            if (f.kind == 1) {
-                auto normal = cross(f.frame[0], f.frame[1]);
-                double den = dot(normal, ray.d);
-                if (fabs(den) < 1e-14)
-                    continue;
-                double t = -dot(normal, sub(ray.p, f.origin)) / den;
-                if (t < -f.tol || t > end + f.tol)
-                    continue;
-            } else if (f.kind == 2) {
-                auto p = basis(f.frame, sub(ray.p, f.origin)), d = basis(f.frame, ray.d);
-                double a = p.x[0], b = p.x[1], h = hypot(a, b), speed = hypot(d.x[0], d.x[1]);
-                if (fabs(h - f.radius) > speed * (end + 2 * f.tol) + 2 * f.tol)
-                    continue;
-            }
-            return {0, -2};
-        }
-        Ray local{basis(f.frame, ray.p), basis(f.frame, ray.d)};
-        for (int j = f.first; j < f.end;) {
-            const auto node = g.spans[j];
-            if (!intersects(node.box, local, end, 2 * f.tol)) {
-                j = node.next;
-                continue;
-            }
-            ++j;
-            if (node.leaf < 0)
-                continue;
-            const auto &s = g.patches[node.leaf];
-            if (s.cell < 0)
-                return {0, -2};
-            const auto frame = g.frames[node.leaf];
-            const auto &c = g.cells[s.cell];
-            Ray cellray{basis(frame.axes, sub(ray.p, frame.origin)), basis(frame.axes, ray.d)};
-            if (!intersects(c.box, cellray, end, 2 * f.tol))
-                continue;
-            double t;
-            V new_normal;
-            int result = isolate(s, c, ray, f.tol, end, t, new_normal);
-            if (result == -2)
-                return {0, -2};
-            if (result == -1 || t > end)
-                continue;
-            if (best.face >= 0 && fabs(best.t - t) <= f.tol)
-                return {0, -2};
-            if (best.face < 0 || t < best.t - f.tol) {
-                normal = scale(new_normal, f.orientation);
-                best = {t, n.leaf};
-                end = t + f.tol;
-            }
-        }
-    }
-    if (best.face >= 0 && (best.t <= 1e-7 || dot(normal, ray.d) <= 1e-8))
-        return {0, -1};
-    return best;
-}
+#include "cuda_cad_roots.cuh"
 __global__ void columns(View view, const Ray *rays, double reach, Hit *hits, int n) {
     const int i = threadIdx.x + blockIdx.x * blockDim.x;
     if (i < n)
         hits[i] = first(view, rays[i], reach);
+}
+__global__ void chart_samples(View view, const ChartPoint *uv, ChartSample *result, int count) {
+    int i = threadIdx.x + blockIdx.x * blockDim.x;
+    if (i >= count)
+        return;
+    const auto x = uv[i];
+    const auto &face = view.charts[x.face];
+    Jet j{};
+    ChartSample sample{};
+    sample.material = face_contains(view, face, x.u, x.v);
+    sample.defined = face_jet(view, x.face, x.u, x.v, j);
+    if (sample.defined) {
+        sample.point = j.p;
+        V n = cross(j.u, j.v);
+        double length = norm(n);
+        if (length > 0)
+            sample.normal = scale(n, face.orientation / length);
+    }
+    result[i] = sample;
 }
 struct Leaf {
     int site, tile;
@@ -337,13 +318,26 @@ __global__ void pressure_columns(View a, View b, const RuleBlock *jobs, int coun
             out[k] = {hit.face == -2 ? -1. : hit.t, j, local};
     }
 }
+#include "cuda_resident_geometry.cuh"
+#include "cuda_resident_step.cuh"
 } // namespace
 struct Columns::Storage {
+    Buffer<RayGrid> grid_descriptor;
+    Buffer<int> short_offsets, short_ids;
+    Buffer<RayPrimitive> short_primitives;
+    bool resident_supported{};
+    Buffer<WeightedSite> rule_sites;
     Buffer<Node> faces, spans;
     Buffer<FaceData> charts;
     Buffer<Span> patches;
     Buffer<SpanFrame> frames;
     Buffer<Cell> cells;
+    Buffer<Node> trim_tree;
+    Buffer<TrimPiece> trims;
+    Buffer<Pole> trim_poles;
+    Buffer<Bounds> trim_intervals;
+    Buffer<double> knots;
+    Buffer<int> grid;
     Buffer<Ray> rays;
     Buffer<Hit> hits;
     Stream stream;
@@ -373,12 +367,33 @@ Sites::Sites(const std::vector<RuleSite> &sites) {
 Sites::~Sites() { cudaFree(ptr); }
 Columns::Columns(const Tables &t) {
     auto s = std::make_unique<Storage>();
+    s->resident_supported =
+        std::all_of(t.patches.begin(), t.patches.end(), [](const auto &p) { return p.cell >= 0; }) &&
+        std::all_of(t.charts.begin(), t.charts.end(),
+                    [](const auto &f) { return f.first >= 0 || (f.kind >= 1 && f.kind <= 3); });
     s->faces.upload(t.faces);
+    s->rule_sites.upload(t.rule_sites);
     s->spans.upload(t.spans);
     s->charts.upload(t.charts);
     s->patches.upload(t.patches);
     s->frames.upload(t.frames);
     s->cells.upload(t.cells);
+    s->trim_tree.upload(t.trim_tree);
+    s->trims.upload(t.trims);
+    s->trim_poles.upload(t.trim_poles);
+    s->trim_intervals.upload(t.trim_intervals);
+    if (t.ray_grid.reach > 0) {
+        s->short_offsets.upload(t.ray_offsets);
+        s->short_ids.upload(t.ray_ids);
+        s->short_primitives.upload(t.ray_primitives);
+        auto grid = t.ray_grid;
+        grid.offsets = s->short_offsets.ptr;
+        grid.ids = s->short_ids.ptr;
+        grid.primitives = s->short_primitives.ptr;
+        s->grid_descriptor.upload({grid});
+    }
+    s->grid.upload(t.grid);
+    s->knots.upload(t.knots);
     s->tiles.upload(t.tiles);
     s->sites.upload(t.site_tree);
     s->ids.upload(t.target_ids);
@@ -389,10 +404,248 @@ Columns::Columns(const Tables &t) {
                s->patches.ptr,
                s->frames.ptr,
                s->cells.ptr,
-               static_cast<int>(t.faces.size())};
+               static_cast<int>(t.faces.size()),
+               s->trim_tree.ptr,
+               s->trims.ptr,
+               s->trim_poles.ptr,
+               s->grid.ptr,
+               s->knots.ptr,
+               s->rule_sites.ptr,
+               s->trim_intervals.ptr,
+               s->grid_descriptor.ptr};
     data = s.release();
 }
 Columns::~Columns() { delete data; }
+std::vector<ChartSample> Columns::sample_charts(const std::vector<ChartPoint> &queries) const {
+    if (queries.empty())
+        return {};
+    if (queries.size() > INT_MAX)
+        throw std::length_error("too many chart probes");
+    for (const auto &p : queries)
+        if (p.face < 0 || static_cast<size_t>(p.face) >= data->charts.capacity)
+            throw std::out_of_range("invalid CAD face");
+    Buffer<ChartPoint> uv;
+    uv.upload(queries);
+    Buffer<ChartSample> values;
+    values.reserve(queries.size());
+    chart_samples<<<(queries.size() + 127) / 128, 128>>>(data->view, uv.ptr, values.ptr,
+                                                         static_cast<int>(queries.size()));
+    check(cudaGetLastError());
+    std::vector<ChartSample> out(queries.size());
+    check(cudaMemcpy(out.data(), values.ptr, out.size() * sizeof(out[0]), cudaMemcpyDeviceToHost));
+    return out;
+}
+ResidentResult advance_resident(const ResidentScene &scene, double step, int steps) {
+    if (scene.coordinates.empty() || scene.coordinates.size() > coordinate_limit ||
+        scene.geometry.size() != scene.bodies.size() || steps < 1 || steps == INT_MAX || !(step > 0) ||
+        !std::isfinite(step))
+        throw std::invalid_argument("unsupported resident scene dimensions");
+    for (const auto &c : scene.coordinates) {
+        if (!(c.mass > 0) || c.first < 0 || c.end < c.first || c.end > scene.loads.size() ||
+            c.end - c.first == 1)
+            throw std::invalid_argument("invalid resident coordinate or load table");
+        for (int j = c.first + 1; j < c.end; ++j)
+            if (!(scene.loads[j].t > scene.loads[j - 1].t))
+                throw std::invalid_argument("resident load samples require increasing times");
+    }
+    for (const auto &b : scene.bodies)
+        if (b.hinge < -1 || b.translation < -1 || b.hinge >= int(scene.coordinates.size()) ||
+            b.translation >= int(scene.coordinates.size()))
+            throw std::invalid_argument("resident joint coordinate is out of range");
+    for (const auto &p : scene.pairs)
+        if (p.a < 0 || p.b < 0 || p.a == p.b || p.a >= scene.bodies.size() || p.b >= scene.bodies.size() ||
+            !(p.k > 0) || !(p.exponent >= 1) || !(p.rate >= 0) || !(p.max_depth > 0))
+            throw std::invalid_argument("invalid resident contact law or body pair");
+    int dev = 0;
+    check(cudaGetDevice(&dev));
+    cudaDeviceProp props{};
+    check(cudaGetDeviceProperties(&props, dev));
+    if (!props.cooperativeLaunch)
+        throw std::runtime_error("resident CAD requires CUDA cooperative launch");
+    size_t stack = 0;
+    check(cudaDeviceGetLimit(&stack, cudaLimitStackSize));
+    if (stack < 16384)
+        check(cudaDeviceSetLimit(cudaLimitStackSize, 16384));
+    Buffer<BodyView> bodies;
+    std::vector<BodyView> views;
+    for (auto &part : scene.geometry) {
+        if (!part)
+            throw std::invalid_argument("missing resident CAD solid");
+        const auto &s = part->storage();
+        if (!s.resident_supported || !s.view.n)
+            throw std::invalid_argument(
+                "resident CAD requires supported analytic or polynomial bicubic charts");
+        views.push_back({s.view, s.tiles.ptr, s.sites.ptr, s.ids.ptr, static_cast<int>(s.sites.capacity),
+                         static_cast<int>(s.ids.capacity)});
+    }
+    bodies.upload(views);
+    Buffer<AxisCoordinate> coords;
+    coords.upload(scene.coordinates);
+    Buffer<JointBody> joints;
+    joints.upload(scene.bodies);
+    Buffer<ContactLaw> laws;
+    laws.upload(scene.pairs);
+    Buffer<LoadPoint> loads;
+    loads.upload(scene.loads);
+    const int n = static_cast<int>(scene.coordinates.size()), np = static_cast<int>(scene.pairs.size());
+    constexpr int limit = 512, capacity = 65536, column_capacity = 96 * 96 * 32;
+    Buffer<Suggestion> proposals;
+    proposals.reserve(capacity);
+    Buffer<Group> groups;
+    groups.reserve(limit);
+    Buffer<Witness> witnesses, confirmed;
+    witnesses.reserve(limit);
+    confirmed.reserve(limit);
+    Buffer<int> flags;
+    flags.reserve(6 * limit);
+    Buffer<SampleDepth> columns;
+    columns.reserve(column_capacity);
+    Buffer<unsigned> masks;
+    masks.reserve((column_capacity + 31) / 32);
+    Buffer<Region> regions;
+    regions.reserve(limit);
+    Buffer<Anchor> anchors;
+    anchors.reserve(np * limit);
+    Buffer<SavedSeed> previous;
+    previous.reserve(np * limit);
+    std::vector<PairScratch> slots(np);
+    Buffer<Connection> paths;
+    paths.reserve(2 * static_cast<size_t>(np) * limit);
+    size_t tile_count = 0;
+    for (auto &p : scene.pairs)
+        tile_count += views.at(p.a).nt + views.at(p.b).nt;
+    Buffer<int> window_tiles;
+    window_tiles.reserve(tile_count);
+    size_t offset = 0;
+    for (int i = 0; i < np; ++i) {
+        slots[i].previous = previous.ptr + i * limit;
+        slots[i].anchor = anchors.ptr + i * limit;
+        slots[i].paths = paths.ptr + 2 * static_cast<size_t>(i) * limit;
+        slots[i].next_paths = slots[i].paths + limit;
+        for (int side = 0; side < 2; ++side) {
+            slots[i].windows[side].tiles = window_tiles.ptr + offset;
+            offset += views[side ? scene.pairs[i].a : scene.pairs[i].b].nt;
+        }
+    }
+    Buffer<PairScratch> cache;
+    cache.upload(slots);
+    Buffer<StepControl> control;
+    control.reserve(1);
+    check(cudaMemset(control.ptr, 0, sizeof(StepControl)));
+    Workspace w{};
+    w.capacity = capacity;
+    w.limit = limit;
+    w.proposals = proposals.ptr;
+    w.group = groups.ptr;
+    w.witnesses = witnesses.ptr;
+    w.confirmed = confirmed.ptr;
+    w.valid = flags.ptr;
+    w.labels = flags.ptr + limit;
+    w.sides = flags.ptr + 2 * limit;
+    w.faces = flags.ptr + 4 * limit;
+    w.columns = columns.ptr;
+    w.column_capacity = column_capacity;
+    w.active_columns = masks.ptr;
+    w.result = regions.ptr;
+    w.status = &control.ptr->status;
+    w.unresolved_face = -1;
+    Buffer<Range> windows;
+    windows.reserve(2 * limit);
+    w.windows = windows.ptr;
+    Buffer<ConnectionTrial> bridges;
+    bridges.reserve(connection_batch);
+    w.bridges = bridges.ptr;
+    Buffer<Workspace> work;
+    work.upload({w});
+    Buffer<double> observed, frames;
+    observed.reserve(3 * np);
+    frames.reserve(static_cast<size_t>(steps + 1) * (1 + 4 * n + 3 * np));
+    Buffer<unsigned long long> finished;
+    finished.reserve(steps + 1);
+    DeviceScene s{coords.ptr,
+                  joints.ptr,
+                  laws.ptr,
+                  loads.ptr,
+                  bodies.ptr,
+                  n,
+                  static_cast<int>(views.size()),
+                  np,
+                  cache.ptr,
+                  work.ptr,
+                  control.ptr,
+                  observed.ptr,
+                  frames.ptr,
+                  finished.ptr};
+    int block = 64, occupancy = 0;
+    check(cudaOccupancyMaxActiveBlocksPerMultiprocessor(&occupancy, resident_steps, block, 0));
+    int grid = props.multiProcessorCount * std::min(occupancy, 1);
+    if (grid < 1)
+        throw std::runtime_error("resident CAD launch does not fit device");
+    Stream stream;
+    StepGraph schedule;
+    check(cudaStreamBeginCapture(stream.id, cudaStreamCaptureModeThreadLocal));
+    for (int begin = 0; begin < steps;) {
+        int end = std::min(steps, begin + (np ? 1 : 64));
+        if (np) {
+            void *args[] = {&s, &begin, &end, &step};
+            check(cudaLaunchCooperativeKernel(reinterpret_cast<const void *>(resident_steps), grid, block,
+                                              args, 0, stream.id));
+        } else {
+            unconstrained_steps<<<1, 1, 0, stream.id>>>(s, begin, end, step);
+            check(cudaGetLastError());
+        }
+        begin = end;
+    }
+    check(cudaStreamEndCapture(stream.id, &schedule.graph));
+    check(cudaGraphInstantiate(&schedule.executable, schedule.graph, 0));
+    check(cudaGraphUpload(schedule.executable, stream.id));
+    check(cudaStreamSynchronize(stream.id));
+    auto start = std::chrono::steady_clock::now();
+    check(cudaGraphLaunch(schedule.executable, stream.id));
+    check(cudaStreamSynchronize(stream.id));
+    StepControl final{};
+    check(cudaMemcpy(&final, control.ptr, sizeof(final), cudaMemcpyDeviceToHost));
+    check(cudaMemcpy(&w, work.ptr, sizeof(w), cudaMemcpyDeviceToHost));
+    if (final.status) {
+        std::ostringstream ray;
+        ray << std::setprecision(17) << " side=" << w.failed_side << " crossing=" << w.failed_any << " ray=";
+        for (double x : w.failed_ray.p.x)
+            ray << x << ' ';
+        for (double x : w.failed_ray.d.x)
+            ray << x << ' ';
+        ray << w.failed_end;
+        throw std::runtime_error(
+            "device CAD unresolved: status=" + std::to_string(final.status) +
+            " step=" + std::to_string(final.last_step + 1) + " pair=" + std::to_string(final.current_pair) +
+            " face=" + std::to_string(w.unresolved_face) + " time_s=" + std::to_string(final.state.time) +
+            " geometry_queries=" + std::to_string(w.queries) + ray.str());
+    }
+    ResidentResult result;
+    result.queries = w.queries;
+    result.forces = w.evaluations;
+    result.splits = w.subdivisions;
+    result.maximum_residual = w.maximum_residual;
+    result.frames.resize(frames.capacity);
+    check(cudaMemcpy(result.frames.data(), frames.ptr, frames.capacity * sizeof(double),
+                     cudaMemcpyDeviceToHost));
+    std::vector<unsigned long long> clocks(steps + 1);
+    check(cudaMemcpy(clocks.data(), finished.ptr, clocks.size() * sizeof(clocks[0]), cudaMemcpyDeviceToHost));
+    result.online_s = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+    const unsigned long long phases[]{w.broad_ns, w.sort_ns, w.search_ns, w.group_ns, w.integral_ns};
+    for (int i = 0; i < 5; ++i)
+        result.phase_s[i] = phases[i] * 1e-9;
+    std::vector<double> durations(steps);
+    for (int i = 0; i < steps; ++i) {
+        durations[i] = (clocks[i + 1] - clocks[i]) * 1e-9;
+        if (durations[i] > step)
+            ++result.missed_deadlines;
+    }
+    std::sort(durations.begin(), durations.end());
+    result.p50_s = durations[(steps - 1) / 2];
+    result.p99_s = durations[static_cast<size_t>(std::ceil(.99 * steps)) - 1];
+    result.maximum_step_s = durations.back();
+    return result;
+}
 size_t Columns::integrate(const Columns &other, const std::vector<RuleBlock> &blocks,
                           const std::vector<int> &targets, Pose forward, Pose reverse, double reach,
                           std::vector<Depth> &out) {

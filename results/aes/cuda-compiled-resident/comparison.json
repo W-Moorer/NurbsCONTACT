@@ -1,0 +1,235 @@
+{
+  "frames": 50001,
+  "final_time_s": 5.0000000000016795,
+  "prefix": false,
+  "gpu_wall_s": 444.0175429,
+  "cpu_wall_s": 193.6289707,
+  "realtime": {
+    "steps": 50000,
+    "deadline_s": 0.00010000000000003359,
+    "duration_s": 5.0000000000016795,
+    "online_s": 444.0175429,
+    "wall_over_simulated": 88.80350857997017,
+    "missed_deadlines": 50000,
+    "p50_s": 0.008331264,
+    "p99_s": 0.015115264000000002,
+    "max_s": 0.276156416,
+    "kept_up": false,
+    "all_steps_on_time": false
+  },
+  "cpu_response_sha256": "53e8c424b4b8cdd13bc3221ef73f0ebe1d87278f1a68290462ca1a91b22e50dd",
+  "gpu_response_sha256": "0b3c1efeb81f86b7c60b380b74b63f3357a1d097b75a5dbe8a570d867ed420bb",
+  "columns": {
+    "time_s": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0
+    },
+    "q0": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 3.149125404888764e-11,
+      "rms": 3.7021375077915886e-12
+    },
+    "v0": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 5.1050108140771044e-08,
+      "rms": 3.4462149827680074e-09
+    },
+    "a0": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.00032176213926504715,
+      "rms": 1.2994775015334433e-05
+    },
+    "q1": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 1.5802470443304628e-11,
+      "rms": 1.8703160242152497e-12
+    },
+    "v1": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 1.8733416595750896e-08,
+      "rms": 1.6405196589926402e-09
+    },
+    "a1": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 8.11153859103797e-05,
+      "rms": 3.846645200742333e-06
+    },
+    "q2": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 8.469669410260394e-12,
+      "rms": 9.479448566606577e-13
+    },
+    "v2": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 1.2536609972357837e-08,
+      "rms": 8.984391657391928e-10
+    },
+    "a2": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 4.5987402131686395e-05,
+      "rms": 2.553673125221349e-06
+    },
+    "b0_x_m": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0
+    },
+    "b0_y_m": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0
+    },
+    "b0_z_m": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0
+    },
+    "b0_angle_rad": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 3.149125404888764e-11,
+      "rms": 3.702137507791586e-12
+    },
+    "b1_x_m": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0
+    },
+    "b1_y_m": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0
+    },
+    "b1_z_m": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0
+    },
+    "b1_angle_rad": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 1.5802470443304628e-11,
+      "rms": 1.8703160273522417e-12
+    },
+    "b2_x_m": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0
+    },
+    "b2_y_m": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0
+    },
+    "b2_z_m": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0
+    },
+    "b2_angle_rad": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 1.5802470443304628e-11,
+      "rms": 1.8703160242152376e-12
+    },
+    "b3_x_m": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0
+    },
+    "b3_y_m": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0
+    },
+    "b3_z_m": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0
+    },
+    "b3_angle_rad": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 8.469669410260394e-12,
+      "rms": 9.48167987719333e-13
+    },
+    "p0_gap_m": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 9.06337383073906e-14,
+      "rms": 3.7381452669537744e-15
+    },
+    "p0_normal_N": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 1.3370271744861384e-05,
+      "rms": 5.818936630485136e-07,
+      "cpu_peak": 2852.1322139633558,
+      "gpu_peak": 2852.132213963192,
+      "cpu_peak_s": 0.0004,
+      "gpu_peak_s": 0.0004
+    },
+    "p0_friction_N": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0
+    },
+    "p0_hit": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0,
+      "disagreeing_frames": 0,
+      "cpu_switches": 1,
+      "gpu_switches": 1
+    },
+    "p1_gap_m": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 7.26496567440317e-14,
+      "rms": 4.0196491573733495e-15
+    },
+    "p1_normal_N": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 1.0956343430734705e-05,
+      "rms": 6.275967472908633e-07,
+      "cpu_peak": 6970.545216035871,
+      "gpu_peak": 6970.545216035732,
+      "cpu_peak_s": 0.0005,
+      "gpu_peak_s": 0.0005
+    },
+    "p1_friction_N": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0
+    },
+    "p1_hit": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 0.0,
+      "rms": 0.0,
+      "disagreeing_frames": 0,
+      "cpu_switches": 5,
+      "gpu_switches": 5
+    },
+    "generalized_force0": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 4.1379993120926883e-07,
+      "rms": 1.6106798920730348e-08,
+      "cpu_peak": -51.06064445131328,
+      "gpu_peak": -51.06064445130855,
+      "cpu_peak_s": 0.0004,
+      "gpu_peak_s": 0.0004
+    },
+    "generalized_force1": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 8.072189245922345e-07,
+      "rms": 3.41084984344221e-08,
+      "cpu_peak": -116.5617779703117,
+      "gpu_peak": -116.56177797029544,
+      "cpu_peak_s": 0.0006000000000000001,
+      "gpu_peak_s": 0.0006000000000000001
+    },
+    "generalized_force2": {
+      "finite_mask_mismatches": 0,
+      "max_abs": 6.783463959436631e-07,
+      "rms": 3.882968900594405e-08,
+      "cpu_peak": 284.402392518857,
+      "gpu_peak": 284.4023925188485,
+      "cpu_peak_s": 0.0005,
+      "gpu_peak_s": 0.0005
+    }
+  }
+}

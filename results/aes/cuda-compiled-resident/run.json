@@ -1,0 +1,155 @@
+{
+  "device": "NVIDIA GeForce RTX 3070",
+  "api": "CUDA",
+  "compute_capability": "8.6",
+  "dt_s": 0.0001,
+  "executable_sha256": "2fda527a1f5bd293e634c2b869f423608092d3899368f1b95e81b9a4d5187302",
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "source_audited_part_sha256": {
+    "reducer-1a.ncpart": "da49161ea7cd13eb0bb003b4c24a6459a21aff0a1b87bff7c112d69318b460dc",
+    "reducer-1b.ncpart": "67d74054f362f0b7b0d8d6f1bffb66ef565a4e2cb90fd28625150cda52210b48",
+    "reducer-2a.ncpart": "c3c292c1a22baa70ceecf542be54486d252b61b0284d56e68253e59c1d6e0e31",
+    "reducer-2b.ncpart": "ec870e7dccfa05a08176039ec056000c2fb7063b3b295cd41e15469bead56f4f"
+  },
+  "methods": {
+    "geometry": "cad-compiled",
+    "solver": "penalty",
+    "geometry_update": "predictor",
+    "penalty_stiffness": "shared",
+    "spectral_radius": 0
+  },
+  "full_run": {
+    "setup_s": 5.897304099999975,
+    "wall_s": 444.0175429,
+    "steps": 50000.0,
+    "accepted": 50044.0,
+    "subdivisions": 44.0,
+    "force_evaluations": 185760.0,
+    "max_residual": 9.14561809395309E-07
+  },
+  "device_timing": {
+    "online_s": 444.0175429,
+    "broad_s": 29.818374144000003,
+    "sort_s": 13.54345984,
+    "search_s": 173.68612454400002,
+    "group_s": 99.987111936,
+    "integral_s": 90.33739776,
+    "p50_step_s": 0.008331264,
+    "p99_step_s": 0.015115264000000002,
+    "max_step_s": 0.276156416,
+    "missed_deadlines": 50000.0,
+    "steps": 50000.0
+  },
+  "previous_same_model": {
+    "before_indices": {
+      "online_s": "788.00030040000001",
+      "broad_s": "30.045826048000002",
+      "sort_s": "88.229788672000012",
+      "search_s": "195.71380019200001",
+      "group_s": "172.37435084800001",
+      "integral_s": "259.712077824",
+      "p50_step_s": "0.014881792000000001",
+      "p99_step_s": "0.024617984000000002",
+      "max_step_s": "0.61062041600000005",
+      "missed_deadlines": "50000",
+      "steps": "50000"
+    },
+    "indexed_sequential_groups": {
+      "online_s": "532.71722",
+      "broad_s": "29.907980288000001",
+      "sort_s": "13.514728448000001",
+      "search_s": "183.11214182400002",
+      "group_s": "173.69325875200002",
+      "integral_s": "90.419066880000003",
+      "p50_step_s": "0.01003008",
+      "p99_step_s": "0.018972671999999999",
+      "max_step_s": "0.32006348800000001",
+      "missed_deadlines": "50000",
+      "steps": "50000"
+    }
+  },
+  "no_contact_diagnostic": {
+    "collective": {
+      "measurement": "HHT_without_contact",
+      "steps": "50000",
+      "dt_s": "0.0001",
+      "online_s": "3.71843",
+      "geometry_queries": "0",
+      "force_evaluations": "100001",
+      "p50_s": "7.2704e-05",
+      "p99_s": "8.0896e-05",
+      "max_s": "0.00068608",
+      "missed_deadlines": "153"
+    },
+    "scalar": {
+      "measurement": "HHT_without_contact",
+      "steps": "50000",
+      "dt_s": "0.0001",
+      "online_s": "1.89226",
+      "geometry_queries": "0",
+      "force_evaluations": "100001",
+      "p50_s": "3.6864e-05",
+      "p99_s": "5.5296e-05",
+      "max_s": "0.000618496",
+      "missed_deadlines": "98"
+    }
+  },
+  "profile_200_steps": {
+    "resident_kernels": 200,
+    "graph_launches": 1,
+    "online_copies": [],
+    "device_interval_s": 1.811698483
+  },
+  "cuda_memcheck": "passed nc_compiled_tests --cuda",
+  "five_second_realtime": false,
+  "launch_sweep_200_steps": [
+    {
+      "threads_per_block": 32,
+      "requested_blocks_per_sm": 1,
+      "online_seconds": [
+        1.7729791,
+        1.752318
+      ]
+    },
+    {
+      "threads_per_block": 32,
+      "requested_blocks_per_sm": 4,
+      "online_seconds": [
+        2.1418487,
+        2.1409027
+      ]
+    },
+    {
+      "threads_per_block": 64,
+      "requested_blocks_per_sm": 1,
+      "online_seconds": [
+        1.8230965,
+        1.8056977
+      ]
+    },
+    {
+      "threads_per_block": 64,
+      "requested_blocks_per_sm": 2,
+      "online_seconds": [
+        2.1303307,
+        2.1231123
+      ]
+    },
+    {
+      "threads_per_block": 128,
+      "requested_blocks_per_sm": 1,
+      "online_seconds": [
+        1.9617695,
+        1.9327964
+      ]
+    },
+    {
+      "threads_per_block": 256,
+      "requested_blocks_per_sm": 1,
+      "online_seconds": [
+        2.3299621,
+        2.3123395
+      ]
+    }
+  ]
+}

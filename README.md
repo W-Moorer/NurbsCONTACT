@@ -17,9 +17,24 @@ Build Release with `NC_WITH_CPU_MESH=ON` and oneTBB available for the comparison
 
 The frozen CAD assets have a separate [source-to-runtime equivalence audit](results/aes/cpu-bezier/standalone/README.md#source-to-runtime-geometry-check). It compares the compiled contact charts with the original STEP solids.
 
-### GPU mesh package
+### Precompiled CAD on CUDA
 
-This local development branch also contains an experimental hybrid port of precompiled CAD. Build with `NC_WITH_CUDA_COLUMNS=ON` and run the frozen `cad-compiled` case with `--device cuda-columns`. CUDA traverses contact windows and evaluates pressure columns against the stored surfaces. The host controls the integrator, confirms and groups contact regions, finishes unresolved rays and accumulates the loads. In a matched four-worker run, CPU took 219.52 s and the hybrid path took 437.67 s on an RTX 3070. Both produced the same 50,001-frame response. The fully device-resident CAD backend remains open. [Complete comparison](results/aes/cuda-compiled-prototype/comparison.json) · [CUDA transfer profile, first 1,000 steps](results/aes/cuda-compiled-prototype/transfer-profile.json) · [Response curves](results/aes/cuda-compiled-prototype/response-comparison.png)
+Build with `NC_WITH_CUDA_COLUMNS=ON`. The experimental `cuda-resident` path uploads the compiled surface charts, spatial indices, quadrature data, joint coordinates and input loads during setup. A CUDA graph advances contact discovery, pressure integration, penalty forces and generalized-alpha time integration. After the graph finishes, the runtime downloads its status, dynamics trace and step timings. An unresolved geometric query, insufficient workspace or exhausted integration retries stops the simulation and reports the failing step.
+
+```text
+nc_contact_runtime <scene> 0 0.0001 5 1 gpu --method cad-compiled --device cuda-resident --solver penalty --penalty-stiffness shared --geometry-update predictor --spectral-radius 0
+python benchmarks/aes/compare_compiled_devices.py cpu.csv gpu.csv comparison --plot
+```
+
+The five-second two-stage reducer took **444.02 s online on an RTX 3070**, with 5.90 s of setup. The frozen four-worker CPU run took 193.63 s. Both completed 50,000 main steps and 44 subdivisions. The two contact-pair flags agreed on all 50,001 frames and the largest absolute normal-load difference was 0.0000134 N. The median GPU step took 8.33 ms and every step exceeded its 0.10 ms deadline. Add `--require-realtime` to the comparison command to require both end-to-end throughput and zero missed step deadlines. [Run and phase timings](results/aes/cuda-compiled-resident/run.json) · [Responses and errors over five seconds](results/aes/cuda-compiled-resident/responses.png)
+
+All four uploaded parts match the SHA-256 digests from the STEP equivalence audit. Device evaluation on 168,948 chart samples and 107,700 trim samples agreed with CPU material classification. The largest sampled position discrepancy was 3.56e-15 mm. The source audit also reports the continuous control-net bound for the polynomial surface spans. [GPU chart and boundary checks](results/aes/cuda-compiled-resident/part-audit.json) · [Original STEP checks](results/aes/cpu-bezier/standalone/part-equivalence.json)
+
+The executable accepts the same scene and compiled parts as the CPU reference. This path currently supports up to 16 scalar coordinates, hinge and prismatic motion, prescribed coordinate loads and frictionless penalty regions. It checks the supported charts and solver settings during setup. The `.gpu.csv` report records online wall time, geometry phase times, step-duration percentiles and the number of missed step deadlines. Initialization and graph upload are included in `setup_s`.
+
+The earlier hybrid prototype used `--device cuda-columns`. The host controlled the integrator, confirmed and grouped contact regions and handled unresolved rays. On the RTX 3070, this prototype and its four-worker CPU reference took 437.67 s and 219.52 s respectively. The 50,001 output frames matched exactly. [Archived hybrid comparison](results/aes/cuda-compiled-prototype/comparison.json)
+
+### GPU mesh package
 
 For CUDA simulation of rigid bodies on fixed parallel hinges, use the installable GPU backend. Its runtime includes mesh contact, the integrator and the native load-exchange library. [Download the GPU backend](https://github.com/W-Moorer/NurbsCONTACT/releases/tag/gpu-backend-v0.1.1) · [Installation and five-second reducer example](nurbscontact_gpu/README.md)
 

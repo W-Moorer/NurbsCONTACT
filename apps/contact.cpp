@@ -1,5 +1,9 @@
 #include "nurbscontact/predictor_regions.hpp"
 #include "nurbscontact/compiled_part.hpp"
+#ifdef NC_WITH_CUDA_COLUMNS
+#include "../src/compiled_geometry.hpp"
+#include "../src/cuda_columns.hpp"
+#endif
 #include "nurbscontact/pair_options.hpp"
 #ifndef NC_COMPILED_ONLY
 #include "nurbscontact/cad_contact_regions.hpp"
@@ -103,6 +107,7 @@ struct Input {
     std::vector<TranslationalBushing> bushings;
     std::vector<Accelerometer> accelerometers;
     std::vector<std::vector<LoadSample>> loads;
+    std::vector<std::shared_ptr<const compiled::Solid>> compiled_parts;
 };
 
 template<class T> T take(std::istream& in) {
@@ -132,6 +137,7 @@ void expect(std::istream& in,std::string_view expected) {
 struct SurfaceOptions {
     std::string method;
     bool cuda_columns{};
+    bool resident{};
     std::optional<ImpulseLaw> impulse_law;
     Path mesh_directory,compiled_directory;
     Path progress_file;
@@ -196,6 +202,7 @@ Input read_scene(const Path& path,double deflection,std::optional<PairBackend> p
                 throw std::invalid_argument("distinct model files resolve to the same compiled part: "+asset.string());
             const auto sites=surface_options.method=="cad-boundary" ? compiled::DiscoverySites::trim_boundary : compiled::DiscoverySites::face_grid;
             if (!parts.contains(file)) parts.emplace(file,compiled::load_solid(asset,sites));
+            if (surface_options.resident) input.compiled_parts.push_back(parts.at(file));
         }
 #ifndef NC_COMPILED_ONLY
         else if (surface_options.method.empty() || surface_options.cad()) {
@@ -1032,7 +1039,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         predictors.push_back(proxy);
         pair.regions=std::move(proxy);
     }
-    const double setup_s=std::chrono::duration<double>(Clock::now()-setup).count();
+    double setup_s=std::chrono::duration<double>(Clock::now()-setup).count();
     const auto n=input.coordinates.size();
     const bool has_history=std::any_of(input.pairs.begin(),input.pairs.end(),
                                       [](const auto& pair) {return pair.material.approach_floor>0;});
@@ -1232,7 +1239,77 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
     };
     std::size_t impulse_solves=0,impulse_regions=0,impulse_iterations=0;
     double impulse_residual=0.;
-    if (surface.impulse_law) {
+    std::optional<double> device_wall;
+    if (surface.resident) {
+#ifdef NC_WITH_CUDA_COLUMNS
+        namespace dev=compiled::device;
+        if (surface.method!="cad-compiled" || !surface.predictor_geometry || surface.spectral_radius!=0.0 ||
+            surface.impulse_law || has_history || !input.bushings.empty() || !input.resistances.empty() ||
+            !surface.replay_file.empty() || event_tolerance>0 || surface.force_tolerance ||
+            surface.moment_tolerance || surface.fixed_cubature || steps>std::numeric_limits<int>::max())
+            throw std::invalid_argument("cuda-resident requires compiled CAD, predictor penalty and spectral radius zero");
+        dev::ResidentScene model;
+        auto vec=[](Vec v){return dev::V{{v[0],v[1],v[2]}};};
+        for (std::size_t i=0;i<n;++i) {
+            const auto &c=input.coordinates[i];
+            int first=static_cast<int>(model.loads.size());
+            if (i<input.loads.size()) for (auto &sample:input.loads[i]) model.loads.push_back({sample.time,sample.force});
+            model.coordinates.push_back({c.mass,c.position,c.velocity,c.stiffness,c.damping,c.rest,c.load,
+                                         first,static_cast<int>(model.loads.size())});
+        }
+        std::map<const compiled::Solid*,std::shared_ptr<dev::Columns>> uploads;
+        std::map<const compiled::Solid*,double> reach;
+        for(const auto &p:input.pairs)for(auto body:{p.a,p.b}){
+            auto &r=reach[input.compiled_parts.at(body).get()];
+            r=std::max(r,2000*p.material.maximum_depth);
+        }
+        for (std::size_t i=0;i<input.bodies.size();++i) {
+            const auto &b=input.bodies[i];
+            if (b.free || !std::holds_alternative<std::monostate>(b.drive) || b.translations.size()>1 ||
+                (b.mass!=0 && length(input.gravity)>0))
+                throw std::invalid_argument("unsupported resident joint, drive or gravitational loading");
+            int axis=b.translations.empty() ? -1 : static_cast<int>(b.translations.front().coordinate);
+            auto direction=b.translations.empty() ? Vec{} : b.translations.front().direction;
+            model.bodies.push_back({vec(b.reference.origin),vec(b.reference.axis),vec(b.pivot),b.reference.angle,
+                                    b.hinge,axis,vec(direction)});
+            auto &part=input.compiled_parts.at(i);
+            auto &upload=uploads[part.get()];
+            if (!upload) upload=compiled::cuda_columns(*part,true,reach[part.get()]);
+            model.geometry.push_back(upload);
+        }
+        for (auto &p:input.pairs) {
+            const auto &m=p.material;
+            if (m.friction!=0 || p.activation!=0) throw std::invalid_argument("unsupported resident friction or activation");
+            model.pairs.push_back({static_cast<int>(p.a),static_cast<int>(p.b),m.stiffness,m.exponent,m.rate,
+                                   m.maximum_depth,p.share_penalty_stiffness});
+        }
+        auto result=dev::advance_resident(model,dt,static_cast<int>(steps));
+        device_wall=result.online_s;
+        setup_s+=std::chrono::duration<double>(Clock::now()-start).count()-*device_wall;
+        stats.evaluations=result.forces;
+        stats.maximum_residual=result.maximum_residual;
+        stats.subdivisions=result.splits;
+        stats.accepted_steps=steps+result.splits;
+        work.cad_patch_queries=result.queries;
+        auto gpu_stats=open_output(output.string()+".gpu.csv");
+        gpu_stats<<"online_s,broad_s,sort_s,search_s,group_s,integral_s,p50_step_s,p99_step_s,max_step_s,missed_deadlines,steps\n";
+        gpu_stats<<*device_wall;
+        for(double t:result.phase_s)gpu_stats<<','<<t;
+        gpu_stats<<','<<result.p50_s<<','<<result.p99_s<<','<<result.maximum_step_s<<','<<result.missed_deadlines<<','<<steps<<'\n';
+        const auto width=1+4*n+3*input.pairs.size();
+        for (std::size_t i=0;i<=steps;++i) {
+            if (i%stride && i!=steps) continue;
+            auto f=result.frames.data()+i*width;
+            State s{*f++,Vector(n),Vector(n),Vector(n),Vector(n)};
+            for (std::size_t j=0;j<n;++j) {s.q[j]=*f++; s.v[j]=*f++; s.a[j]=*f++; s.force[j]=*f++;}
+            samples.push_back(std::move(s));
+            auto &row=observed_contacts.emplace_back(input.pairs.size());
+            for (auto &p:row) {p.gap=*f++; p.normal_force=*f++; p.resolved=*f++!=0;}
+        }
+#else
+        throw std::invalid_argument("rebuild with NC_WITH_CUDA_COLUMNS for cuda-resident");
+#endif
+    } else if (surface.impulse_law) {
         std::optional<Hht> smooth;
         std::size_t smooth_evaluations=0;
         if (n) smooth.emplace(mass,[&](const Vector& x,const Vector& u,double t) {
@@ -1349,7 +1426,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             if (s%stride==0 || s==steps) samples.push_back({s*dt,{},{},{},{}});
         }
     }
-    const double wall=std::chrono::duration<double>(Clock::now()-start).count();
+    const double wall=device_wall.value_or(std::chrono::duration<double>(Clock::now()-start).count());
     auto trace=open_output(output.string()+".csv");
     trace<<"time_s";
     for (std::size_t i=0;i<n;++i) trace<<",q"<<i<<",v"<<i<<",a"<<i;
@@ -1530,7 +1607,7 @@ int main(int argc,char** argv) {
                         "[pair-occt|pair-mesh|pair-brep [DISTANCE_TOL_M [MAX_NODES [EVENT_TOL_S]]]]\n"
                         "  or append --method bvh-aabb|bvh-obb|mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
                         "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl|finite|contour-ray] [--penalty-stiffness per-region|shared] [--geometry-update newton|predictor] [--spectral-radius RHO]\n"
-                        "  or append --method cad-compiled|cad-boundary [--device cpu|cuda-columns] [--compiled-dir DIR] [--force-tol-n N --moment-tol-nm NM --cubature adaptive|fixed96]\n"
+                        "  or append --method cad-compiled|cad-boundary [--device cpu|cuda-columns|cuda-resident] [--compiled-dir DIR] [--force-tol-n N --moment-tol-nm NM --cubature adaptive|fixed96]\n"
                         "  or append --method cad-occt|cad-local|cad-patch|cad-bezier|cad-bezier-bounds|cad-bezier-relocate|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
                         "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp [--progress FILE]\n";
             return 2;
@@ -1546,8 +1623,9 @@ int main(int argc,char** argv) {
                 const std::string_view key=argv[i], value=argv[i+1];
                 if (key=="--method") surface.method=value;
                 else if (key=="--device") {
-                    if(value!="cpu" && value!="cuda-columns") throw std::invalid_argument("unknown contact device");
+                    if(value!="cpu" && value!="cuda-columns" && value!="cuda-resident") throw std::invalid_argument("unknown contact device");
                     surface.cuda_columns=value=="cuda-columns";
+                    surface.resident=value=="cuda-resident";
                 }
                 else if (key=="--progress") surface.progress_file=argv[i+1];
                 else if (key=="--hht-replay") surface.replay_file=argv[i+1];

@@ -203,6 +203,6 @@ class Solid {
 };
 #ifdef NC_WITH_CUDA_COLUMNS
 namespace device {class Columns;}
-std::shared_ptr<device::Columns> cuda_columns(const Solid &);
+std::shared_ptr<device::Columns> cuda_columns(const Solid &,bool prepare_rules=false,double ray_reach_mm=0);
 #endif
 } // namespace nc::compiled

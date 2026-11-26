@@ -1,6 +1,14 @@
 # 刚体接触后端技术路线
 
-本阶段以 CPU 为开发和验收平台。用户在同一场景中用 `method` 选择接触几何，用 `solver` 选择接触响应。设备选择是未来独立的一项配置。当前研究对象是有有限侵入深度的离散接触；整步扫掠与首次接触时刻属于独立查询。
+用户在同一场景中用 `method` 选择接触几何，用 `solver` 选择接触响应，用 `device` 选择执行设备。冻结的 CPU 实现提供迁移的对照。当前动力学算例通过离散接触的侵入深度计算载荷。
+
+## 开发分支的全 GPU 路径
+
+`cad-compiled --device cuda-resident` 从 `.ncpart` 加载参数曲面与裁剪边界。准备阶段生成固定方位下的局部包围盒、常用积分阶数的材料点和时间推进所需的 CUDA Graph。在线提交一次图，GPU 按当前刚体姿态查询可能接触的面，在参数域确认承载点，按连通区积分，并将合力和力矩交给隐式积分器。坐标、牛顿试算、线搜索与重试都保存在显存中。终止后集中回传轨迹和诊断。
+
+候选面的复用受相对刚体运动上界约束。多个线程并行尝试同一对面的不同起点，再按原始优先顺序选取见证点。旧连通路径上的每段都需要在新姿态重新检查。设备无法判定几何、超出工作区容量或用尽积分重试时，调用方收到错误。当前动力学入口支持转动和移动坐标、共享坐标的多级传动、无摩擦罚力、预测姿态更新和谱半径为零的广义 α 积分。
+
+编译时打开 `NC_WITH_CUDA_COLUMNS`。运行参数和五秒减速器的比较命令见 [README](../README.md#precompiled-cad-on-cuda)。使用 `nc_compiled_tests --cuda` 检验接触加载与释放，使用 `nc_compiled_tests --audit-parts <part.ncpart> ...` 检查设备端点位、法向和裁剪分类。接触搜索、区域积分和时间推进分别见 [GPU 几何](../src/cuda_resident_geometry.cuh) 与 [GPU 积分器](../src/cuda_resident_step.cuh)。
 
 ## 冻结的 CPU 基线
 
@@ -41,9 +49,9 @@ GPU 移植使用 [1406914 的 CPU 实现](https://github.com/W-Moorer/NurbsCONTA
 
 25 个减速器姿态中含 12 个追加留出的姿态。凸轮有独立运动方程核对。减速器以原 STEP 实体相交给出同姿态几何和载荷参考，再以 RecurDyn 作整机交叉核对。固定 96 格模式在减速器上达到 30 min 进程上限时完成 1.0063 s；主要开销是已发现承载区的积分。原始记录、响应曲线及命令见[本轮 CPU 验收记录](../results/aes/cpu-bezier/boundary/README.md)。
 
-## 未来 GPU 后端
+## GPU 后端的接口与验收
 
-CPU 验收后再移植。现在确定可移植的数据与计算语义，现阶段不开发或运行新的 GPU 接触算法。
+冻结的 CPU 时程提供移植对照。开发分支已接通设备常驻的罚力与隐式积分，下表还列出对外交换载荷时的计时要求。
 
 | 接口边界 | GPU 迁移方案 |
 | --- | --- |
@@ -56,4 +64,4 @@ CPU 验收后再移植。现在确定可移植的数据与计算语义，现阶�
 
 ## Last verified against
 
-2026-11-26 核对了两份输入压缩包、场景、原始 STEP、编译零件及三份已存程序和响应文件的 SHA-256。冻结计时来自原记录，新增 CPU 实现的数值证据见上方验收记录。GPU 迁移为后续设计。[编译零件接口](../include/nurbscontact/compiled_part.hpp) · [现有 CAD 区域查询](../src/compiled_contact.cpp) · [现有网格区域查询](../src/cpu_mesh_regions.cpp)
+2026-11-26 核对了 CPU 输入、原始 STEP、编译零件及归档时程的 SHA-256。2026-11-27 在本机 RTX 3070 上复测了设备常驻的 CAD 接触，对照同一 CPU 减速器的完整五秒时程。设备端几何抽查覆盖 840 张面上的 168,948 个参数点，以及裁剪曲线上的 107,700 个点。[CPU 与 GPU 时程核对](../results/aes/cuda-compiled-resident/comparison.json) · [设备端曲面与裁剪核对](../results/aes/cuda-compiled-resident/part-audit.json) · [原始 STEP 与编译几何核对](../results/aes/cpu-bezier/standalone/part-equivalence.json)

@@ -5,6 +5,7 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 
 namespace {
 using namespace nc;
@@ -34,6 +35,103 @@ PartFile box() {
         }
     return file;
 }
+#ifdef NC_WITH_CUDA_COLUMNS
+bool audit_part(const std::filesystem::path &path) {
+    const auto solid=load_solid(path);
+    auto gpu=cuda_columns(*solid);
+    std::vector<device::ChartPoint> points;
+    std::vector<bool> boundary;
+    for(size_t id=0;id<solid->faces.size();++id) {
+        const auto &f=solid->faces[id];
+        auto probe=[&](Rect r){
+            for(Param p:{Param{.07,.81},Param{.5,.5},Param{.91,.19}}){
+                points.push_back({static_cast<int>(id),r.u.lo+p[0]*r.u.width(),r.v.lo+p[1]*r.v.width()});
+                boundary.push_back(false);
+            }
+        };
+        if(f.analytic)probe(f.info.domain);
+        else for(const auto &s:f.patches)probe(s.domain);
+        for(const auto &edge:f.boundary)for(double t:{0.,.5,1.}){
+            const auto uv=evaluate(*edge.curve,t);
+            points.push_back({static_cast<int>(id),uv[0].center(),uv[1].center()});
+            boundary.push_back(true);
+        }
+    }
+    auto samples=gpu->sample_charts(points);
+    size_t counts[2]{},mixed[2]{},mismatch[2]{},missing=0;
+    double position=0,angle=0,fraction=0;
+    auto vector=[](device::V v)->Vec{return {v.x[0],v.x[1],v.x[2]};};
+    for(size_t i=0;i<points.size();++i){
+        const auto &p=points[i];const auto &s=samples[i];const auto &f=solid->faces[p.face];
+        const int k=boundary[i];++counts[k];
+        const Param uv{p.u,p.v};
+        if(s.material<0)++mixed[k];else mismatch[k]+=bool(s.material)!=f.inside(uv);
+        if(!f.analytic && !f.patch(uv)){missing+=s.defined;continue;}
+        if(!s.defined){++missing;continue;}
+        auto ref=f.at(uv);double delta=length(sub(vector(s.point),ref.p));
+        if(!std::isfinite(delta))throw std::runtime_error("nonfinite chart sample");
+        position=std::max(position,delta);
+        fraction=std::max(fraction,delta/f.info.tolerance);
+        auto n=scale(cross3(ref.u,ref.v),f.info.orientation);auto m=vector(s.normal);
+        if(length(n)>0 && length(m)>0)angle=std::max(angle,std::atan2(length(cross3(n,m)),dot3(n,m)));
+        else if((length(n)>0)!=(length(m)>0))++missing;
+    }
+    std::cout<<std::setprecision(17)<<"{\"part\":"<<std::quoted(path.filename().string())
+             <<",\"faces\":"<<solid->faces.size()<<",\"samples\":"<<counts[0]<<",\"trim_samples\":"<<counts[1]
+             <<",\"max_position_mm\":"<<position<<",\"max_face_tolerance_fraction\":"<<fraction
+             <<",\"max_normal_rad\":"<<angle<<",\"chart_failures\":"<<missing
+             <<",\"material_mismatches\":"<<mismatch[0]<<",\"trim_mismatches\":"<<mismatch[1]
+             <<",\"material_unresolved\":"<<mixed[0]<<",\"trim_unresolved\":"<<mixed[1]<<"}\n";
+    return !missing && !mismatch[0] && !mismatch[1] && !mixed[0] && !mixed[1] && fraction<=1;
+}
+void revolved_rays() {
+    const double pi=std::acos(-1.);
+    for(int shape=0;shape<3;++shape){
+        const double major=shape==1?0.:2.,minor=shape==0?0.:.5;
+        Rect r{{-pi,pi},shape==0?Interval{-1,1}:shape==1?Interval{-pi/2,pi/2}:Interval{-pi,pi}};
+        PartFile part;
+        part.geometry.trims.emplace_back();
+        part.faces.push_back({r,{-3,-3,-1},{3,3,1},1e-7,1,true});
+        Revolved chart{point({}),point({1,0,0}),point({0,1,0}),point({0,0,1}),
+                       major,shape==0?.2:0.,shape==0?1.:0.,minor};
+        part.geometry.patches.push_back({chart,r,1,0});
+        Solid solid(std::move(part));
+        auto gpu=cuda_columns(solid,false,3.);
+        const double x=shape==0?1.:major;
+        std::vector<device::Hit> hits;
+        gpu->trace({{{{x,0,0}},{{1,0,0}}}},3.,hits);
+        const auto ref=solid.first({x,0,0},{1,0,0},3.);
+        require(ref && hits.size()==1 && hits[0].face==ref->face &&
+                std::abs(hits[0].t-(shape==0?1.:.5))<1e-10 && std::abs(hits[0].t-ref->t)<1e-10,
+                "revolved chart ray differs from analytic exit");
+    }
+}
+void resident_boxes() {
+    const auto geometry=cuda_columns(Solid(box()),true,.4);
+    device::ResidentScene scene;
+    scene.geometry={geometry,geometry};
+    scene.coordinates={{1,0,0,0,0,0,0,0,0}};
+    const device::V zero{},x{{1,0,0}},z{{0,0,1}};
+    scene.bodies={{zero,z,zero,0,-1,-1,zero},{{{.0019,0,0}},z,zero,0,-1,0,x}};
+    scene.pairs={{0,1,1e4,1,0,.0002,true}};
+    constexpr double dt=1e-4;
+    constexpr int steps=220;
+    auto result=device::advance_resident(scene,dt,steps);
+    constexpr std::size_t width=8;
+    require(result.frames.size()==(steps+1)*width,"missing resident states");
+    require(std::abs(result.frames[6]-1.)<1e-10,"initial box penalty force");
+    int switch_step=0;
+    for(int i=0;i<=steps;++i) {
+        const double *r=result.frames.data()+width*i;
+        const double t=i*dt,release=.5*std::acos(-1.)/100.;
+        double expected=t<=release?1e-4*(1-std::cos(100*t)):1e-4+.01*(t-release);
+        require(std::isfinite(r[1]) && std::abs(r[1]-expected)<1e-8,"resident box displacement");
+        require(std::abs(r[6]-1e4*std::max(0.,1e-4-r[1]))<1e-8,"resident box force");
+        if(i && !r[7] && !switch_step)switch_step=i;
+    }
+    require(switch_step==158,"resident box release step");
+}
+#endif
 void overlap(bool cuda=false) {
     const auto file = std::filesystem::temp_directory_path() /
                       ("nc-contact-" +
@@ -141,7 +239,7 @@ void curved_roots(bool cuda=false) {
         Solid solid(std::move(file));
 #ifdef NC_WITH_CUDA_COLUMNS
         if(cuda) {
-            auto gpu=cuda_columns(solid);
+            auto gpu=cuda_columns(solid,false,1.);
             std::vector<device::Ray> rays{
                 {{{.25,.49,-.2}},{{0,0,1}}}, {{{0,.49,.01}},{{1,0,0}}},
                 {{{0,.49,1e-8}},{{1,0,0}}}, {{{0,.49,-1e-6}},{{1,0,0}}},
@@ -180,12 +278,22 @@ void curved_roots(bool cuda=false) {
 } // namespace
 int main(int argc,char **argv) {
     try {
+#ifdef NC_WITH_CUDA_COLUMNS
+        if(argc>2 && std::string_view(argv[1])=="--audit-parts"){
+            bool passed=true;
+            for(int i=2;i<argc;++i)passed=audit_part(argv[i]) && passed;
+            return passed?0:1;
+        }
+#endif
         bool cuda=argc==2 && std::string_view(argv[1])=="--cuda";
         require(argc==1 || cuda,"expected --cuda or no arguments");
         overlap(cuda);
         split_and_swap();
         trims();
         curved_roots(cuda);
+#ifdef NC_WITH_CUDA_COLUMNS
+        if (cuda) {revolved_rays();resident_boxes();}
+#endif
     } catch (const std::exception &e) {
         std::cerr << e.what() << '\n';
         return 1;
