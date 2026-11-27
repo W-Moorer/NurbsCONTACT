@@ -89,6 +89,12 @@ struct SampleDepth {
     double depth;
     int side;
 };
+// Only block zero uses this scratch space. Allocate one copy per trajectory
+// and reuse it for every region and trial in the device graph.
+struct OrderedScratch {
+    int ids[32 * 32];
+    double terms[32][10];
+};
 __device__ unsigned long long timer_ns() {
     unsigned long long value;
     asm volatile("mov.u64 %0, %%globaltimer;" : "=l"(value));
@@ -102,6 +108,7 @@ struct Workspace {
     Witness *witnesses, *confirmed;
     int *valid, *labels, *sides, *faces;
     SampleDepth *columns;
+    OrderedScratch *ordered;
     unsigned *active_columns;
     Range *windows;
     ConnectionTrial *bridges;
@@ -799,8 +806,8 @@ __device__ bool make_region(Query &q, const IntegralSum &sum, Region &region) {
 // contributions together, and assign one original FP64 sum to each component.
 // Keeping each scalar addition in order preserves threshold decisions in HHT.
 __device__ __noinline__ IntegralSum ordered_columns(const Query &q, int count, int lane) {
-    __shared__ int ids[32 * 32];
-    __shared__ double terms[32][10];
+    auto &ids = q.work->ordered->ids;
+    auto &terms = q.work->ordered->terms;
     constexpr unsigned full = 0xffffffffu;
     const auto &w = *q.work;
     const int words = (count + 31) / 32;

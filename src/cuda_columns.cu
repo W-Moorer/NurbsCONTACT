@@ -500,6 +500,8 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     flags.reserve(6 * limit);
     Buffer<SampleDepth> columns;
     columns.reserve(column_capacity);
+    Buffer<OrderedScratch> ordered;
+    if (np && (reduction == RegionReduction::ordered || reduction == RegionReduction::audit)) ordered.reserve(1);
     Buffer<unsigned> masks;
     masks.reserve((column_capacity + 31) / 32);
     Buffer<Region> regions;
@@ -554,6 +556,7 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     w.sides = flags.ptr + 2 * limit;
     w.faces = flags.ptr + 4 * limit;
     w.columns = columns.ptr;
+    w.ordered = ordered.ptr;
     w.column_capacity = column_capacity;
     w.active_columns = masks.ptr;
     w.result = regions.ptr;

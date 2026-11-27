@@ -68,6 +68,8 @@ GPU 移植使用 [1406914 的 CPU 实现](https://github.com/W-Moorer/NurbsCONTA
 
 ## Last verified against
 
+2026-11-27 在同一台 RTX 3070 上用同一减速器、50,000 个 0.1 ms 主步比较串行与保序并行归约。独立推进的时程与原 GPU 参考文件具有相同的 SHA-256。同姿态测试逐承载区比较世界系合力及关于两个刚体原点的力矩，并核查进入和退出承载面的相邻步。[复现命令与记录](../results/aes/cuda-region-reduction/README.md) · [对照脚本](../benchmarks/aes/compare_region_reduction.py)
+
 2026-11-27 用 `profile_gpu_mesh_queries.py` 将两级共 100,000 个物体对姿态的 GPU 三角片编号集合与原双精度实现逐一核对，并用原生 CPU OBB 后端独立抽查。接触力精度和整机实时性仍按五秒闭环验收。[测量脚本](../benchmarks/aes/profile_gpu_mesh_queries.py) · [结果与复现命令](../results/aes/gpu-mesh-geometry/README.md)
 
 2026-11-26 核对了 CPU 输入、原始 STEP、编译零件及归档时程的 SHA-256。2026-11-27 在本机 RTX 3070 上复测了设备常驻的 CAD 接触，对照同一 CPU 减速器的完整五秒时程。设备端几何抽查覆盖 840 张面上的 168,948 个参数点，以及裁剪曲线上的 107,700 个点。[CPU 与 GPU 时程核对](../results/aes/cuda-compiled-resident/comparison.json) · [设备端曲面与裁剪核对](../results/aes/cuda-compiled-resident/part-audit.json) · [原始 STEP 与编译几何核对](../results/aes/cpu-bezier/standalone/part-equivalence.json)

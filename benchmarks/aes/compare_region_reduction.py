@@ -208,6 +208,19 @@ def main(args):
             len(split[k]) == info[k]["subdivisions"] for k in split
         ),
     }
+    region_errors_zero = all(
+        np.all(np.asarray(values["all"]) == 0)
+        for stage in stages
+        for values in stage["max_component_errors"].values()
+    )
+    metric["identical_region_and_trajectory_result"] = bool(
+        region_errors_zero
+        and len({info[k]["response_sha256"] for k in paths}) == 1
+        and np.array_equal(split["serial"], split["parallel"])
+        and metric["substep_history"]["all_subdivisions_accounted_for"]
+    )
+    if args.require_identical and not metric["identical_region_and_trajectory_result"]:
+        raise ValueError("region wrenches, trajectory file or HHT subdivision history changed")
     metric["largest_closed_loop_torque_difference"] = {
         "step": worst,
         "time_s": float(t[worst]),
@@ -255,7 +268,7 @@ def main(args):
     (args.out / "comparison.json").write_text(
         json.dumps(metric, indent=2, allow_nan=False) + "\n"
     )
-    fig, ax = plt.subplots(2, 2, figsize=(10, 5.5), layout="constrained")
+    fig, ax = plt.subplots(3, 2, figsize=(10, 7.6), layout="constrained")
     for key, color, style in (
         ("serial", "#2c6681", "-"),
         ("parallel", "#be6d32", "--"),
@@ -263,7 +276,9 @@ def main(args):
         y = traces[key]
         ax[0, 0].plot(t, y["output_torque_Nm"], style, color=color, lw=0.8, label=key)
         ax[0, 1].plot(t, y["speed"][:, 1], style, color=color, lw=0.8)
-    ax[1, 0].plot(t, delta, color="#216c65", lw=0.65)
+        for stage in range(2):
+            ax[1, stage].plot(t, y["normal_N"][:, stage], style, color=color, lw=0.8)
+    ax[2, 0].plot(t, delta, color="#216c65", lw=0.65)
     # Zoom on the largest absolute output-torque jump coinciding with a change in confirmed faces.
     jumps = np.abs(np.diff(traces["serial"]["output_torque_Nm"], prepend=0))
     at = worst if np.any(delta) else int(np.argmax(np.where(event, jumps, -1)))
@@ -277,20 +292,22 @@ def main(args):
         ("serial", "#2c6681", "-"),
         ("parallel", "#be6d32", "--"),
     ):
-        ax[1, 1].plot(
+        ax[2, 1].plot(
             t[window],
             traces[key]["output_torque_Nm"][window],
             style,
             color=color,
             lw=1.3,
         )
-    ax[1, 1].axvline(t[at], color="#68737a", lw=0.8, ls=":")
+    ax[2, 1].axvline(t[at], color="#68737a", lw=0.8, ls=":")
     ax[0, 0].legend()
     for panel, label in zip(
         ax.flat,
         (
             "Output contact torque [N m]",
             "Intermediate speed [rad/s]",
+            "Stage 1 normal load [N]",
+            "Stage 2 normal load [N]",
             "Parallel minus serial [N m]",
             zoom_label,
         ),
@@ -305,6 +322,10 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--require-identical", action="store_true",
+        help="require zero same-pose wrench error and the original closed-loop trajectory",
+    )
     parser.add_argument("--parallel-repeat", type=Path)
     parser.add_argument("--serial-repeat", type=Path)
     parser.add_argument("--original-binary", type=Path)
