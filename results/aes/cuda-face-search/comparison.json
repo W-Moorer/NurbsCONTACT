@@ -1,0 +1,331 @@
+{
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "executables_sha256": {
+    "before": "09fd5a728821c33299521ffb9e9dcb85b0d02510d8dd9970cf7a12db5615a327",
+    "jet": "6d3d60f3b81f168366fcdde3ed941e4d604583a002e073b08b22483312b90e80",
+    "bridge": "0a0bfadde3e6e2cb49c43d79998f23c2cdde2d685dee8df4f392608b717f75fa",
+    "slabs": "31656b819b647908a87c71f200cb8f0f324e8dcb4b3bd2285da2361cef30625a",
+    "final": "71c544ca56e6ec020604a892c3f4125547ed2b246ee315e4950b51d2e71c588d"
+  },
+  "scalar_warp_connections_checked": 652575,
+  "runs": {
+    "before": {
+      "wall_s": 436.3248241,
+      "phase_s": {
+        "broad_s": 29.623987200000002,
+        "sort_s": 13.511416832,
+        "search_s": 170.847801344,
+        "group_s": 99.939035136,
+        "integral_s": 85.771341824,
+        "reduction_s": 1.171944448
+      },
+      "reductions": 256013,
+      "queries": 101649,
+      "evaluations": 185760,
+      "subdivisions": 44,
+      "missed_deadlines": 50000,
+      "response_sha256": "0b3c1efeb81f86b7c60b380b74b63f3357a1d097b75a5dbe8a570d867ed420bb",
+      "step_ms": {
+        "p50": 8.180736000000001,
+        "p99": 14.934016000000002,
+        "max": 274.676736
+      }
+    },
+    "jet": {
+      "wall_s": 409.8408969,
+      "phase_s": {
+        "broad_s": 29.601845248000004,
+        "sort_s": 13.481904128,
+        "search_s": 144.17874534400002,
+        "group_s": 99.80399820800001,
+        "integral_s": 85.75070105600001,
+        "reduction_s": 1.1741603840000001
+      },
+      "reductions": 256013,
+      "queries": 101649,
+      "evaluations": 185760,
+      "subdivisions": 44,
+      "missed_deadlines": 50000,
+      "response_sha256": "0b3c1efeb81f86b7c60b380b74b63f3357a1d097b75a5dbe8a570d867ed420bb",
+      "step_ms": {
+        "p50": 7.655424,
+        "p99": 14.410752,
+        "max": 264.154112
+      }
+    },
+    "bridge": {
+      "wall_s": 404.7021244,
+      "phase_s": {
+        "broad_s": 29.738066944000003,
+        "sort_s": 13.466545152,
+        "search_s": 143.425687552,
+        "group_s": 95.31336704,
+        "integral_s": 85.803119616,
+        "reduction_s": 1.206828032
+      },
+      "reductions": 256013,
+      "queries": 101649,
+      "evaluations": 185760,
+      "subdivisions": 44,
+      "missed_deadlines": 50000,
+      "response_sha256": "0b3c1efeb81f86b7c60b380b74b63f3357a1d097b75a5dbe8a570d867ed420bb",
+      "step_ms": {
+        "p50": 7.549952,
+        "p99": 14.263296000000002,
+        "max": 259.78880000000004
+      }
+    },
+    "slabs": {
+      "wall_s": 402.4109714,
+      "phase_s": {
+        "broad_s": 29.7420544,
+        "sort_s": 13.472594944,
+        "search_s": 143.097986048,
+        "group_s": 95.504441344,
+        "integral_s": 83.609966592,
+        "reduction_s": 1.231704064
+      },
+      "reductions": 256013,
+      "queries": 101649,
+      "evaluations": 185760,
+      "subdivisions": 44,
+      "missed_deadlines": 50000,
+      "response_sha256": "0b3c1efeb81f86b7c60b380b74b63f3357a1d097b75a5dbe8a570d867ed420bb",
+      "step_ms": {
+        "p50": 7.5048960000000005,
+        "p99": 14.246912,
+        "max": 259.659776
+      }
+    },
+    "before_repeat": {
+      "wall_s": 435.5344137,
+      "phase_s": {
+        "broad_s": 29.627192320000002,
+        "sort_s": 13.491246080000002,
+        "search_s": 170.532845568,
+        "group_s": 99.73083136000001,
+        "integral_s": 85.52661196800001,
+        "reduction_s": 1.175443456
+      },
+      "reductions": 256013,
+      "queries": 101649,
+      "evaluations": 185760,
+      "subdivisions": 44,
+      "missed_deadlines": 50000,
+      "response_sha256": "0b3c1efeb81f86b7c60b380b74b63f3357a1d097b75a5dbe8a570d867ed420bb",
+      "step_ms": {
+        "p50": 8.164352,
+        "p99": 14.885888000000001,
+        "max": 273.247232
+      }
+    },
+    "final": {
+      "wall_s": 402.7764461,
+      "phase_s": {
+        "broad_s": 29.721501696,
+        "sort_s": 13.46211328,
+        "search_s": 143.332980736,
+        "group_s": 95.49092147200001,
+        "integral_s": 83.6205056,
+        "reduction_s": 1.2210124800000002
+      },
+      "reductions": 256013,
+      "queries": 101649,
+      "evaluations": 185760,
+      "subdivisions": 44,
+      "missed_deadlines": 50000,
+      "response_sha256": "0b3c1efeb81f86b7c60b380b74b63f3357a1d097b75a5dbe8a570d867ed420bb",
+      "step_ms": {
+        "p50": 7.510016,
+        "p99": 14.232576,
+        "max": 259.857408
+      }
+    },
+    "repeat": {
+      "wall_s": 402.7677092,
+      "phase_s": {
+        "broad_s": 29.735569408000003,
+        "sort_s": 13.45856,
+        "search_s": 143.32107776,
+        "group_s": 95.478567936,
+        "integral_s": 83.622230016,
+        "reduction_s": 1.220456448
+      },
+      "reductions": 256013,
+      "queries": 101649,
+      "evaluations": 185760,
+      "subdivisions": 44,
+      "missed_deadlines": 50000,
+      "response_sha256": "0b3c1efeb81f86b7c60b380b74b63f3357a1d097b75a5dbe8a570d867ed420bb",
+      "step_ms": {
+        "p50": 7.514112000000001,
+        "p99": 14.267392000000001,
+        "max": 259.395584
+      }
+    },
+    "audit": {
+      "wall_s": 548.0525679,
+      "phase_s": {
+        "broad_s": 29.730254848,
+        "sort_s": 13.427489792000001,
+        "search_s": 143.289878528,
+        "group_s": 189.44638668800002,
+        "integral_s": 123.172022272,
+        "reduction_s": 1.231601664
+      },
+      "reductions": 256013,
+      "queries": 101649,
+      "evaluations": 185760,
+      "subdivisions": 44,
+      "missed_deadlines": 50000,
+      "response_sha256": "0b3c1efeb81f86b7c60b380b74b63f3357a1d097b75a5dbe8a570d867ed420bb",
+      "step_ms": {
+        "p50": 9.951232000000001,
+        "p99": 23.087104,
+        "max": 426.34956800000003
+      }
+    }
+  },
+  "regions_by_stage": [
+    {
+      "pair": 0,
+      "fresh_queries": 50091,
+      "regions_compared": 89619,
+      "entering_face_pairs": 4570,
+      "exiting_face_pairs": 4569,
+      "switch_steps": 8576,
+      "region_count_changes": 7230,
+      "compared_regions_in_switch_windows": 35049,
+      "max_component_errors": {
+        "force_N": {
+          "all": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "switch_plus_minus_one_step": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "torque_A_Nm": {
+          "all": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "switch_plus_minus_one_step": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "torque_B_Nm": {
+          "all": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "switch_plus_minus_one_step": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      }
+    },
+    {
+      "pair": 1,
+      "fresh_queries": 51558,
+      "regions_compared": 150005,
+      "entering_face_pairs": 8611,
+      "exiting_face_pairs": 8606,
+      "switch_steps": 12148,
+      "region_count_changes": 3310,
+      "compared_regions_in_switch_windows": 79660,
+      "max_component_errors": {
+        "force_N": {
+          "all": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "switch_plus_minus_one_step": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "torque_A_Nm": {
+          "all": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "switch_plus_minus_one_step": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "torque_B_Nm": {
+          "all": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "switch_plus_minus_one_step": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      }
+    }
+  ],
+  "per_step_region_audit_sha256": "a09a12ae75d37426df768abc568d3b9f94fed4f03cd17536861e568b98e9002f",
+  "response_error_against_before": {
+    "speed": {
+      "max_abs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rms": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "output_torque_Nm": {
+      "max_abs": 0.0,
+      "rms": 0.0
+    },
+    "normal_N": {
+      "max_abs": [
+        0.0,
+        0.0
+      ],
+      "rms": [
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "all_equal_to_before": {
+    "before": true,
+    "jet": true,
+    "bridge": true,
+    "slabs": true,
+    "before_repeat": true,
+    "final": true,
+    "repeat": true,
+    "audit": true
+  },
+  "plotted_switch_s": 0.0004,
+  "output_torque_peak": {
+    "time_s": 0.0005,
+    "Nm": 432.6308436748728
+  }
+}

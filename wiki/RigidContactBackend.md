@@ -4,6 +4,8 @@
 
 ## 开发分支的全 GPU 路径
 
+确认候选面时，GPU 在加载零件时为每块曲面保存参数中心的位置和两个一阶导数，供每次牛顿投影的第一轮读取。后续迭代按新参数求值。合并承载区时，同一线程束并行检查连线的四个端点条件，再检查该线段是否穿过两侧实体的边界。曲线路径仍按原次序搜索。短射线空间索引和包围盒树都复用同一坐标系内的射线方向倒数。这些操作只依赖曲面、射线和当前姿态。[曲面与连通判定](../src/cuda_resident_geometry.cuh) · [射线与包围盒](../src/cuda_cad_roots.cuh) · [完整减速器对照](../results/aes/cuda-face-search/README.md)
+
 承载区积分在有效列上累加十个双精度分量，随后重建形心、法向、压入深度和分布力矩。保序实现按原列序压紧索引，并行生成各列贡献，再让十个线程分别累加各自的分量。`--region-reduction serial` 提供原顺序的单线程对照，`audit` 在同一试算姿态、同一区域上检查全部累加结果和世界坐标系下两刚体各自的三轴力矩。`warp` 与 `audit-warp` 保留改变加法顺序的树形归约，用于数值消融。[设备端累加](../src/cuda_resident_geometry.cuh) · [同姿态力矩核验](../src/cuda_resident_step.cuh) · [减速器实验](../results/aes/cuda-region-reduction/README.md)
 
 通用网格几何入口 `IntersectionBatch` 按物体对读取当前的三维刚体相对变换。每对独立使用局部 AABB 树，候选队列和相交结果留在设备上。几何级验证逐步回放完整五秒的减速器姿态。另外用非平行坐标系、交换物体顺序和接触后分离检验三维变换。输出为相交三角片的原始编号，可进一步构造交点、交线和共面多边形。运行完整网格动力学还需要将这些几何结果转换成连续的承载区、接触深度和力矩，再反馈给积分器。[GPU 网格接口](../nurbscontact_gpu/bvh.py) · [原始测量和验收范围](../results/aes/gpu-mesh-geometry/README.md) · [三维回归](../tests/test_gpu_triangle_intersection.py)
@@ -67,6 +69,8 @@ GPU 移植使用 [1406914 的 CPU 实现](https://github.com/W-Moorer/NurbsCONTA
 已有 GPU 包面向固定平行转轴，使用网格及预计算的载荷或材料点映射。可复用其中的设备常驻与载荷交换经验。新 CAD 路径按当前姿态从零件几何求载荷，需单独验收。[现有 GPU 后端范围](../nurbscontact_gpu/README.md)
 
 ## Last verified against
+
+2026-11-27 完成确认面、区域连通性和射线包围盒三项 GPU 消融。最终版两次五秒闭环用时 402.78 和 402.77 秒。逐连线诊断在相同姿态与原串行算法核对 652,575 次判定及接受路径的全部拐点。CPU 与 CUDA 解析回归通过，首次出现连通检查的 50 步通过 Compute Sanitizer 内存检查。[验收数据](../results/aes/cuda-face-search/comparison.json) · [对照脚本](../benchmarks/aes/compare_gpu_face_search.py)
 
 2026-11-27 在同一台 RTX 3070 上用同一减速器、50,000 个 0.1 ms 主步比较串行与保序并行归约。独立推进的时程与原 GPU 参考文件具有相同的 SHA-256。同姿态测试逐承载区比较世界系合力及关于两个刚体原点的力矩，并核查进入和退出承载面的相邻步。[复现命令与记录](../results/aes/cuda-region-reduction/README.md) · [对照脚本](../benchmarks/aes/compare_region_reduction.py)
 

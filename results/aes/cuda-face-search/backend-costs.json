@@ -1,0 +1,372 @@
+{
+  "device": "NVIDIA GeForce RTX 3070",
+  "cpu_runs_from_archive": {
+    "cad-compiled": {
+      "method": "cad-compiled",
+      "threads": 4,
+      "steps": 50000,
+      "dt_s": 0.0001,
+      "wall_s": 193.6289707,
+      "setup_s": 2.7190652,
+      "sampled_logical_cores": 2.3922609359940847,
+      "executable_sha256": "9a1db86e9050fb56df45e55e35d86942aede390eb063c8cb10a6e0be142ae2a0",
+      "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+      "response_sha256": "53e8c424b4b8cdd13bc3221ef73f0ebe1d87278f1a68290462ca1a91b22e50dd",
+      "matched_reference_rows": 50001,
+      "force_evaluations": 185691,
+      "subdivisions": 44,
+      "triangle_tests": 0,
+      "cad_queries": 101648,
+      "sample_count_in_simulation": 64,
+      "host_median_busy_pct": 29.795,
+      "host_median_performance_pct": 20.19,
+      "variant": "fused",
+      "run_directory_created_utc": "2026-11-26T14:42:01.710000+00:00",
+      "phase_timers": {
+        "cad_patch_batch_s": 174.78442059999912,
+        "cad_patch_broad_s": 80.68733280000046,
+        "cad_patch_search_s": 39.89857690000016,
+        "cad_patch_group_s": 15.439424700000785,
+        "cad_patch_area_s": 99.29862789999869
+      }
+    },
+    "mesh-obb": {
+      "method": "mesh-obb",
+      "threads": 4,
+      "steps": 50000,
+      "dt_s": 0.0001,
+      "wall_s": 222.0156881,
+      "setup_s": 3.2270212,
+      "sampled_logical_cores": 1.3313944877296855,
+      "executable_sha256": "9a1db86e9050fb56df45e55e35d86942aede390eb063c8cb10a6e0be142ae2a0",
+      "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+      "response_sha256": "422068b9d21aeb562bb8203c6313e469c245d4cb8f42d939d08186fc1d90595f",
+      "matched_reference_rows": 50001,
+      "force_evaluations": 151547,
+      "subdivisions": 25,
+      "triangle_tests": 322653715,
+      "cad_queries": 0,
+      "variant": "fused",
+      "run_directory_created_utc": "2026-11-26T14:02:05.300000+00:00",
+      "sample_count_in_simulation": 73,
+      "host_median_performance_pct": 22.35,
+      "host_median_busy_pct": 26.31,
+      "phase_timers": {
+        "mesh_detection_s": 213.12842819999832
+      }
+    }
+  },
+  "closed_loop_s": {
+    "CPU mesh OBB": 222.0156881,
+    "CPU compiled CAD": 193.6289707,
+    "GPU sampled mesh": 128.39921430000686,
+    "GPU compiled CAD": 402.77207765
+  },
+  "sampled_gpu_mesh": {
+    "gpu": "NVIDIA GeForce RTX 3070",
+    "method": "mesh",
+    "broad_phase": "blocks",
+    "include_vertices": false,
+    "stiffness_scope": "pair",
+    "physical_s": 5.0,
+    "requested_s": 5.0,
+    "step_s": 9.999999999999999e-05,
+    "terminated": "complete",
+    "coordinates": 3,
+    "pairs": 2,
+    "contact_samples": 16,
+    "minimum_step_s": 2.4414062499999998e-08,
+    "explicit_crossing_enabled": true,
+    "explicit_crossings": 0,
+    "directional_probes": [
+      [
+        10608,
+        3888
+      ],
+      [
+        12848,
+        21956
+      ]
+    ],
+    "steps": 50000,
+    "trials": 1603242,
+    "lanes": 4,
+    "contact_floor_nm": 0.0001,
+    "accepted_increments": 799815,
+    "setup_s": 82.39724520000163,
+    "online_s": 128.39921430000686,
+    "p99_us": 3694.602240000002,
+    "over_budget": 50000,
+    "device_pool_MiB": 210.3740234375,
+    "peak_normal_N": [
+      4420.400228123352,
+      9391.60538064749
+    ],
+    "max_active_regions": [
+      1.0,
+      1.0
+    ],
+    "phase_profile": {
+      "prepare_s": 30.594990432000003,
+      "search_s": 67.380285344,
+      "merge_and_hht_s": 29.851488640000003,
+      "online_trials": 1603241,
+      "trials_after_newton_update": 803393,
+      "directional_probe_visits": [
+        979336128,
+        753267251,
+        1140806433,
+        4315506693
+      ]
+    },
+    "guard_mm": 0.8,
+    "directional_rebuilds": [
+      190549,
+      98109,
+      112983,
+      62770
+    ],
+    "directional_probe_visits": [
+      979336128,
+      753267251,
+      1140806433,
+      4315506693
+    ]
+  },
+  "gpu_mesh_bvh_geometry_replay": {
+    "measurement": "complete triangle-pair detection on prescribed poses",
+    "device": "NVIDIA GeForce RTX 3070",
+    "physical_interval_s": 5.000000000001682,
+    "steps": 50000,
+    "body_pairs": [
+      [
+        0,
+        1
+      ],
+      [
+        2,
+        3
+      ]
+    ],
+    "triangles": [
+      10216,
+      10240,
+      27934,
+      17342
+    ],
+    "triangles_per_leaf_limit": 4,
+    "candidate_reuse_distance_m": 0.0,
+    "mesh_sha256": [
+      "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+      "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+      "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+      "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0"
+    ],
+    "pose_trace_sha256": "422068b9d21aeb562bb8203c6313e469c245d4cb8f42d939d08186fc1d90595f",
+    "online_wall_s": 6.843420699995477,
+    "online_wall_s_repeats": [
+      7.038538100023288,
+      6.83462629999849,
+      6.843420699995477
+    ],
+    "mean_us_per_frame": 136.86841399990954,
+    "profile_frames": 50000,
+    "phase_order": [
+      "broad",
+      "narrow"
+    ],
+    "pair_dispatch": "simultaneous",
+    "mean_us_per_dispatch_per_phase": [
+      [
+        43.38900992000357,
+        90.72269311999966
+      ]
+    ],
+    "profiled_detection_p99_us": 351.24224000000214,
+    "profiled_detection_steps_over_100_us": 49802,
+    "median_hits_per_pair": [
+      61.0,
+      226.0
+    ],
+    "median_candidate_leaves_per_pair": [
+      568.0,
+      3151.0
+    ],
+    "hit_count_history_sha256": "d529d93e81345deeefe820dfe7072911f32b4e92a2a4075cf1d2edfd8ee8e554",
+    "max_hits_per_pair": [
+      91,
+      272
+    ],
+    "count_history_sha256": "1a8b62b2cf2de9f3717070278a05835cef63ffe9fe25a99546f51726c0c1fbca"
+  },
+  "identical_rays": [
+    {
+      "part": "reducer-1a",
+      "rays": 2452,
+      "max_batch": 128,
+      "launches_per_repeat": 20,
+      "median_mean_batch_us": {
+        "cad": 610.4524739583334,
+        "mesh": 172.8870391845703,
+        "mesh_grid": 93.56629053751628
+      },
+      "trials_mean_batch_us": {
+        "cad": [
+          613.0756123860677,
+          610.1879374186198,
+          610.4524739583334
+        ],
+        "mesh": [
+          172.8870391845703,
+          171.83743794759116,
+          173.00479888916016
+        ],
+        "mesh_grid": [
+          93.91957600911458,
+          93.49119822184245,
+          93.56629053751628
+        ]
+      },
+      "max_ray_mm": 0.4,
+      "graph_repeats": 30,
+      "poses": 41,
+      "ray_sha256": "d6eec34aee5611ff22f3093d74341ace618f68322b650546ce0c1261cf837e11",
+      "mesh_indices_status_differences": 0,
+      "mesh_indices_max_distance_difference_mm": 0.0,
+      "cad_hits": 1226,
+      "mesh_hits": 1184,
+      "both_hits": 1184,
+      "different_hit_status": 42,
+      "cad_unresolved": 0,
+      "common_median_distance_um": 0.05678674192666211
+    },
+    {
+      "part": "reducer-1b",
+      "rays": 2452,
+      "max_batch": 128,
+      "launches_per_repeat": 20,
+      "median_mean_batch_us": {
+        "cad": 584.3882751464844,
+        "mesh": 164.11307017008463,
+        "mesh_grid": 49.70143953959147
+      },
+      "trials_mean_batch_us": {
+        "cad": [
+          583.2635498046875,
+          585.0674438476562,
+          584.3882751464844
+        ],
+        "mesh": [
+          164.11307017008463,
+          163.03274790445963,
+          164.2291259765625
+        ],
+        "mesh_grid": [
+          52.73754755655924,
+          49.67424074808756,
+          49.70143953959147
+        ]
+      },
+      "max_ray_mm": 0.4,
+      "graph_repeats": 30,
+      "poses": 41,
+      "ray_sha256": "9e661fe2c083392386029a3805ed16b63b9aaa1fdc255293f7940b266b697ce0",
+      "mesh_indices_status_differences": 0,
+      "mesh_indices_max_distance_difference_mm": 0.0,
+      "cad_hits": 1226,
+      "mesh_hits": 1211,
+      "both_hits": 1211,
+      "different_hit_status": 15,
+      "cad_unresolved": 0,
+      "common_median_distance_um": 1.2928824677516104e-09
+    },
+    {
+      "part": "reducer-2a",
+      "rays": 16170,
+      "max_batch": 128,
+      "launches_per_repeat": 127,
+      "median_mean_batch_us": {
+        "cad": 606.5859016158137,
+        "mesh": 233.85123505679954,
+        "mesh_grid": 53.66324277061803
+      },
+      "trials_mean_batch_us": {
+        "cad": [
+          606.5859016158137,
+          606.7551980807086,
+          606.25640789042
+        ],
+        "mesh": [
+          233.85123505679954,
+          233.9001432804298,
+          233.70045739521817
+        ],
+        "mesh_grid": [
+          53.65464418266076,
+          54.052417985410514,
+          53.66324277061803
+        ]
+      },
+      "max_ray_mm": 0.4,
+      "graph_repeats": 30,
+      "poses": 41,
+      "ray_sha256": "56dead885842e3ab2915d336d7fc1d82ae9d6eee93646f64aaedfaedc733225e",
+      "mesh_indices_status_differences": 0,
+      "mesh_indices_max_distance_difference_mm": 0.0,
+      "cad_hits": 7601,
+      "mesh_hits": 7605,
+      "both_hits": 7600,
+      "different_hit_status": 6,
+      "cad_unresolved": 0,
+      "common_median_distance_um": 1.433550607277831
+    },
+    {
+      "part": "reducer-2b",
+      "rays": 16170,
+      "max_batch": 128,
+      "launches_per_repeat": 127,
+      "median_mean_batch_us": {
+        "cad": 452.70259186351706,
+        "mesh": 199.9941848394439,
+        "mesh_grid": 41.99528731699065
+      },
+      "trials_mean_batch_us": {
+        "cad": [
+          451.78395669291336,
+          452.70259186351706,
+          452.9506733411253
+        ],
+        "mesh": [
+          199.8987713510909,
+          199.9941848394439,
+          200.05520397596786
+        ],
+        "mesh_grid": [
+          41.78726316437008,
+          42.145796648160676,
+          41.99528731699065
+        ]
+      },
+      "max_ray_mm": 0.4,
+      "graph_repeats": 30,
+      "poses": 41,
+      "ray_sha256": "c388c6830cecd7ee80180543e8ebc2e972ce50e046a3a784fdce89c793a1a6c8",
+      "mesh_indices_status_differences": 0,
+      "mesh_indices_max_distance_difference_mm": 0.0,
+      "cad_hits": 7670,
+      "mesh_hits": 7663,
+      "both_hits": 7660,
+      "different_hit_status": 13,
+      "cad_unresolved": 0,
+      "common_median_distance_um": 3.1003233075484053
+    }
+  ],
+  "hinge_map_archived_median_s": 2.190414300000157,
+  "rms_sampled_gpu_mesh_minus_gpu_cad_torque_Nm": 32.355488960313394,
+  "peak_sampled_mesh_cad_Nm": [
+    580.0216121705524,
+    432.6308436748728
+  ],
+  "sampled_response_sha256": "ebd31ebad2c3400f0589b3e2afc484dce821f1df3bc005f149e67cbca24893c5",
+  "sampled_archive_sha256": "ebd31ebad2c3400f0589b3e2afc484dce821f1df3bc005f149e67cbca24893c5"
+}
