@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-27",
+  "device": "RTX 3070",
+  "backend_base_commit": "c127dd3",
+  "commands": [
+    {
+      "command": "python benchmarks/aes/mesh_bvh_dynamics.py ../github-cpu-recheck/00d0f2a2/inputs/scene/common-200.scene ../mesh-bvh-dynamics/step-1ms-retry --duration 5 --step 0.001 --blocks 46 --execution graph",
+      "exit_code": 0
+    },
+    {
+      "command": "python benchmarks/aes/mesh_bvh_dynamics.py ../github-cpu-recheck/00d0f2a2/inputs/scene/common-200.scene ../mesh-bvh-dynamics/step-1ms-retry-repeat --duration 5 --step 0.001 --blocks 46 --execution graph",
+      "exit_code": 0
+    },
+    {
+      "command": "python benchmarks/aes/mesh_bvh_dynamics.py ../github-cpu-recheck/00d0f2a2/inputs/scene/common-200.scene ../mesh-bvh-dynamics/step-01ms-retry-regression --duration 5 --step 0.0001 --blocks 46 --execution graph",
+      "exit_code": 0
+    },
+    {
+      "command": "python -m unittest discover -s tests -p test_gpu_mesh_dynamics.py -v",
+      "exit_code": 0
+    },
+    {
+      "command": "compute-sanitizer --tool memcheck --error-exitcode 99 python -m unittest test_gpu_mesh_dynamics.MeshDynamicsTest.test_large_predictor_retries_from_accepted_state test_gpu_mesh_dynamics.MeshDynamicsTest.test_initial_enclosure_still_fails_without_time_retry -v",
+      "exit_code": 0
+    },
+    {
+      "command": "python benchmarks/aes/compare_mesh_step_attempt.py results/aes/gpu-mesh-dynamics/responses.npz results/aes/gpu-mesh-dynamics/step-1ms-repaired results/aes/gpu-mesh-dynamics/step-1ms-repaired",
+      "exit_code": 0
+    },
+    {
+      "command": "python C:/Users/W/.codex/skills/repo-wiki-maintainer/scripts/wiki_audit.py",
+      "exit_code": 0
+    }
+  ],
+  "complete_coarse_repeat_identical": true,
+  "coarse_substep_time_sum_s": 5.0,
+  "fine_complete_response_unchanged": true,
+  "fine_response_sha256": "fb18a68d05430015acc80ca8eaeb8387cfe57fd730a334a3d9a8639ceae1d2ec",
+  "coarse_response_sha256": "cba33ae4bdb283be6cb15cb3de0b5438cbd53c102b33796c9e83ac0018d1c5ae",
+  "final_regressions_passed": 9,
+  "memcheck_new_tests_passed": 2,
+  "memcheck_errors": 0,
+  "exploratory_energy_assertion_passed": false,
+  "exploratory_energy_scope": "Under-resolved 20 ms stiff tip-plane test: 0.025766141198088014 J final vs 0.005 J initial; retained as limitation, not part of time-recovery acceptance.",
+  "temporal_accuracy_accepted": false,
+  "cpu_peak_equivalence_accepted": false,
+  "real_time_accepted": false,
+  "plot_qa": "Python PIL rendered previews inspected; full 0-5 s interval retained.",
+  "wiki_audit": "Eight historical missing optional pages; no new page warnings introduced.",
+  "agents_md_changed": false,
+  "log_normalization": "Trailing whitespace and terminal blank lines removed; numerical values and test outcomes unchanged."
+}

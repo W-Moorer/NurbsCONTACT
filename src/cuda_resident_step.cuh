@@ -518,6 +518,18 @@ template <class Grid> __device__ void advance_steps(Grid grid, DeviceScene s, in
         for (;;) {
             bool ok = solve_step(grid, s, ldexp(dt, -static_cast<int>(level)));
             grid.sync();
+#ifdef NC_MESH_RESIDENT
+            // Read the error uniformly before any lane clears it. The accepted
+            // state is unchanged by a failed geometry query or Newton trial.
+            const int contact_status = c.status;
+            grid.sync();
+            if (retryable_mesh_contact(contact_status) && level < 8) {
+                if (!lane)
+                    c.status = 0;
+                ok = false;
+            }
+            grid.sync();
+#endif
             if (c.status)
                 return;
             if (!ok) {

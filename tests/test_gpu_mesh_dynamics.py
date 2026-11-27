@@ -48,7 +48,8 @@ def tip():
     )
 
 
-def make_scene(folder, meshes, *, initial_q=0.0, moving=False):
+def make_scene(folder, meshes, *, initial_q=0.0, initial_v=0.0, moving=False,
+               stiffness=1000.0, max_depth=0.1):
     for i, (v, f) in enumerate(meshes):
         meshio.write(
             folder / f"{i}.msh",
@@ -66,7 +67,7 @@ def make_scene(folder, meshes, *, initial_q=0.0, moving=False):
     lines = [
         "nc-contact-v2",
         "gravity 0 0 0 1 2 1",
-        f"coordinate 1 {initial_q} 0 0 0 0 0",
+        f"coordinate 1 {initial_q} {initial_v} 0 0 0 0",
     ]
     lines += [
         'body "0.msh" 0 0 0 0 0 0 1 0 0 0 0 -1 0 0 0 0',
@@ -75,7 +76,7 @@ def make_scene(folder, meshes, *, initial_q=0.0, moving=False):
         + " 0 0 1 0 0 0 0 -1 0 0 0 "
         + ("1 0 0 0 1" if moving else "0"),
     ]
-    lines += ["surface 0 1 1000 1 0 0 .0005 .1", "drives 0", "loads 0"]
+    lines += [f"surface 0 1 {stiffness} 1 0 0 .0005 {max_depth}", "drives 0", "loads 0"]
     path = folder / "test.scene"
     path.write_text("\n".join(lines) + "\n")
     return path
@@ -237,6 +238,45 @@ class MeshDynamicsTest(unittest.TestCase):
                 path.write_text(text)
                 with self.assertRaises(ValueError):
                     read_scene(path)
+
+    def test_large_predictor_retries_from_accepted_state(self):
+        # A separated tip approaches a stiff plane. The first predictor crosses
+        # beyond the finite-feature reach; the physical impact is much shallower.
+        previous = None
+        for execution in ("graph", "cooperative"):
+            with self.subTest(execution=execution), tempfile.TemporaryDirectory() as folder:
+                path = make_scene(
+                    Path(folder), [box(), tip()], initial_q=0.001, initial_v=-0.1,
+                    moving=True, stiffness=1e8, max_depth=0.0001,
+                )
+                model = self.driver(path, 5, capacity=128, blocks=4)
+                data, status = model.run(0.02, execution=execution)
+                np.testing.assert_allclose(data[:, 0], np.arange(6) * 0.02, atol=1e-14)
+                self.assertEqual(status["status"][0], 0)
+                self.assertGreater(status["status"][4], 0)
+                self.assertGreaterEqual(data[-1, 1], 0)
+                self.assertGreater(data[-1, 2], 0)
+                # This deliberately under-resolved impact exercises recovery,
+                # not energy/trajectory accuracy. Those require step refinement;
+                # the unchanged HHT scheme has no nonlinear energy acceptance test.
+                self.assertTrue(np.isfinite(data[:, 1:5]).all())
+                if execution == "graph":
+                    telemetry = status["integration"]
+                    self.assertGreater(telemetry["geometry_retries_by_status"]["26"], 0)
+                    histogram = np.array(telemetry["accepted_substeps_by_level"])
+                    self.assertEqual(histogram.sum(), 5 + status["status"][4])
+                    self.assertAlmostEqual(np.sum(histogram * 0.02 / 2.**np.arange(9)), 0.1)
+                    self.assertEqual(telemetry["first_geometry_failure"][1], 0.0)
+                if previous is not None:
+                    np.testing.assert_allclose(data, previous, atol=1e-11, rtol=1e-11)
+                previous = data
+
+    def test_initial_enclosure_still_fails_without_time_retry(self):
+        model = self.model([box(), tip()], initial_q=-0.6, moving=True)
+        with self.assertRaisesRegex(RuntimeError, "25.0"):
+            model.run(0.001, execution="graph")
+        self.assertEqual(model.status()[1], 0.0)
+        self.assertEqual(model.status()[4], 0.0)
 
     def test_overflow_does_not_return_incomplete_contacts(self):
         with tempfile.TemporaryDirectory() as folder:

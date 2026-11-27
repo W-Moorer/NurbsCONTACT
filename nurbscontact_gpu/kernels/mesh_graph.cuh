@@ -6,6 +6,8 @@ struct MeshGraphState {
     int step, end, level, cell, iter, evaluated, initial, support_blocks;
     double base_dt, dt, fraction;
     U64 stamp, step_condition, newton_condition, fresh_condition;
+    U64 accepted_by_level[9], geometry_retries[2], newton_rejections;
+    double first_geometry_failure[4]; // status, accepted time, trial time, dt
 };
 __device__ Trial &graph_trial(DeviceScene &s, MeshGraphState &g) {
     return g.evaluated ? s.control->next : s.control->working;
@@ -318,6 +320,21 @@ extern "C" __global__ void mesh_graph_newton(DeviceScene *s, MeshGraphState *g) 
 }
 extern "C" __global__ void mesh_graph_finish_step(DeviceScene *s, MeshGraphState *g) {
     auto &c = *s->control;
+    if (retryable_mesh_contact(c.status) && g->level < 8) {
+        if (!g->geometry_retries[0] && !g->geometry_retries[1]) {
+            g->first_geometry_failure[0] = c.status;
+            g->first_geometry_failure[1] = c.state.time;
+            g->first_geometry_failure[2] = graph_trial(*s, *g).state.time;
+            g->first_geometry_failure[3] = g->dt;
+        }
+        ++g->geometry_retries[c.status - 26];
+        c.status = 0;
+        // No trial with incomplete contacts has been committed to c.state.
+        // prepare_step clears every contact cache before the retry.
+        c.dispatch = reject_step;
+    } else if (!c.status && c.dispatch == reject_step) {
+        ++g->newton_rejections;
+    }
     if (!c.status) {
         if (c.dispatch == reject_step) {
             if (g->level == 8)
@@ -328,6 +345,7 @@ extern "C" __global__ void mesh_graph_finish_step(DeviceScene *s, MeshGraphState
                 ++s->workspace->subdivisions;
             }
         } else {
+            ++g->accepted_by_level[g->level];
             ++g->cell;
             while (g->level && !(g->cell & 1)) {
                 g->cell /= 2;
@@ -342,4 +360,44 @@ extern "C" __global__ void mesh_graph_finish_step(DeviceScene *s, MeshGraphState
         }
     }
     cudaGraphSetConditional(g->step_condition, !c.status && g->step < g->end);
+}
+
+extern "C" __global__ void mesh_graph_telemetry(MeshGraphState *g, double *out) {
+    for (int i = 0; i < 9; ++i)
+        out[i] = g->accepted_by_level[i];
+    out[9] = g->geometry_retries[0];
+    out[10] = g->geometry_retries[1];
+    out[11] = g->newton_rejections;
+    for (int i = 0; i < 4; ++i)
+        out[12 + i] = g->first_geometry_failure[i];
+}
+
+// Download only after the graph has stopped; never exchanges trial poses online.
+extern "C" __global__ void mesh_graph_snapshot(DeviceScene *s, MeshGraphState *g, double *out,
+                                                double *placements) {
+    const auto &c = *s->control;
+    const auto &trial = graph_trial(*s, *g).state;
+    out[0] = c.status;
+    out[1] = g->step;
+    out[2] = g->level;
+    out[3] = g->cell;
+    out[4] = g->iter;
+    out[5] = g->evaluated;
+    out[6] = c.state.time;
+    out[7] = trial.time;
+    out[8] = g->dt;
+    out[9] = c.current_pair;
+    out[10] = s->workspace->counts[0];
+    out[11] = s->workspace->groups;
+    for (int i = 0; i < s->b; ++i) {
+        auto p = body_pose(s->bodies[i], trial.q);
+        double *v = placements + 7 * i;
+        v[0] = p.origin.x;
+        v[1] = p.origin.y;
+        v[2] = p.origin.z;
+        v[3] = p.axis.x;
+        v[4] = p.axis.y;
+        v[5] = p.axis.z;
+        v[6] = p.angle;
+    }
 }

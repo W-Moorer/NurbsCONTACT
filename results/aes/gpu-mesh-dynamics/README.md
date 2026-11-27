@@ -65,7 +65,7 @@ A second diagnostic uses predictors from 154 saved states (308 body-pair queries
 
 ## Reproduction
 
-**1 ms step experiment:** the unchanged backend was also asked to advance 5 s with a 1 ms main step. Two attempts stopped after saving 0.005 s, with unresolved finite contact information (status 27). Partial startup responses differ substantially from the 0.1 ms trace. There is no completed-run timing or valid long-time speedup for 1 ms. See the [attempt, repeat, curves and failure analysis](step-1ms/README.md).
+**1 ms step experiment:** the original attempts stopped after saving 0.005 s with unresolved finite contact information (status 27). A subsequent repair routes recoverable trial geometry failures into device-side time subdivision. The same reducer now completes 5 s in 21.84 s with 5,583 accepted substeps. A repaired 0.1 ms regression takes 91.99 s and reproduces the archived response exactly. The larger-step responses differ, so temporal accuracy is not accepted from completion alone. See the [complete curves, substep histogram, diagnosis and limitations](step-1ms-repaired/README.md); the [original failed attempts](step-1ms/README.md) remain archived.
 
 Use the [original input deck](../cpu-foundation/reducer-physics/cpu-deck.zip). Supply the extracted `common-200.scene` with its relative Gmsh paths intact. Scene and mesh SHA-256 digests are recorded in every run JSON. Run only one GPU simulation at a time.
 

@@ -227,6 +227,7 @@ def main():
                 "not a completed simulation timing."
             ),
             last_saved_step=last,
+            integration=getattr(model, "integration_stats", None),
         )
     np.save(a.out / "response.npy", data)
     stats.update(

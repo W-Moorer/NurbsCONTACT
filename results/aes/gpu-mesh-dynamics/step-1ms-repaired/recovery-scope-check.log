@@ -1,0 +1,32 @@
+test_crossed_edges_in_a_spatial_frame (test_gpu_mesh_dynamics.MeshDynamicsTest.test_crossed_edges_in_a_spatial_frame) ... ok
+test_disconnected_supports_and_enclosure (test_gpu_mesh_dynamics.MeshDynamicsTest.test_disconnected_supports_and_enclosure) ... ok
+test_filtered_plane_signs_against_decimal (test_gpu_mesh_dynamics.MeshDynamicsTest.test_filtered_plane_signs_against_decimal) ... ok
+test_implicit_unilateral_oscillator (test_gpu_mesh_dynamics.MeshDynamicsTest.test_implicit_unilateral_oscillator) ... ok
+test_initial_enclosure_still_fails_without_time_retry (test_gpu_mesh_dynamics.MeshDynamicsTest.test_initial_enclosure_still_fails_without_time_retry) ... ok
+test_large_predictor_retries_from_accepted_state (test_gpu_mesh_dynamics.MeshDynamicsTest.test_large_predictor_retries_from_accepted_state) ...
+  test_large_predictor_retries_from_accepted_state (test_gpu_mesh_dynamics.MeshDynamicsTest.test_large_predictor_retries_from_accepted_state) (execution='graph') ... FAIL
+  test_large_predictor_retries_from_accepted_state (test_gpu_mesh_dynamics.MeshDynamicsTest.test_large_predictor_retries_from_accepted_state) (execution='cooperative') ... FAIL
+test_overflow_does_not_return_incomplete_contacts (test_gpu_mesh_dynamics.MeshDynamicsTest.test_overflow_does_not_return_incomplete_contacts) ... ok
+test_scene_validation (test_gpu_mesh_dynamics.MeshDynamicsTest.test_scene_validation) ... ok
+test_tip_plane_separation_and_body_order (test_gpu_mesh_dynamics.MeshDynamicsTest.test_tip_plane_separation_and_body_order) ... ok
+
+======================================================================
+FAIL: test_large_predictor_retries_from_accepted_state (test_gpu_mesh_dynamics.MeshDynamicsTest.test_large_predictor_retries_from_accepted_state) (execution='graph')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "G:\NurbsCONTACT\build\cad-device-source\tests\test_gpu_mesh_dynamics.py", line 259, in test_large_predictor_retries_from_accepted_state
+    self.assertLessEqual(0.5 * data[-1, 2] ** 2, 0.5 * 0.1**2 * (1 + 1e-10))
+AssertionError: np.float64(0.025766141198088014) not less than or equal to 0.005000000000500001
+
+======================================================================
+FAIL: test_large_predictor_retries_from_accepted_state (test_gpu_mesh_dynamics.MeshDynamicsTest.test_large_predictor_retries_from_accepted_state) (execution='cooperative')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "G:\NurbsCONTACT\build\cad-device-source\tests\test_gpu_mesh_dynamics.py", line 259, in test_large_predictor_retries_from_accepted_state
+    self.assertLessEqual(0.5 * data[-1, 2] ** 2, 0.5 * 0.1**2 * (1 + 1e-10))
+AssertionError: np.float64(0.025766141198088014) not less than or equal to 0.005000000000500001
+
+----------------------------------------------------------------------
+Ran 9 tests in 85.082s
+
+FAILED (failures=2)

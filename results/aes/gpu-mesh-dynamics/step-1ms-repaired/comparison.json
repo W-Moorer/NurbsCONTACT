@@ -1,0 +1,150 @@
+{
+  "completed": true,
+  "requested_duration_s": 5.0,
+  "observed_interval_s": [
+    0.0,
+    4.999999999999965
+  ],
+  "common_samples": 5001,
+  "scope": "Differences at saved common times only; not continuous-time extrema or accuracy against truth.",
+  "long_time_validation_available": true,
+  "reference_sha256": "e12f2294662d438e3eb9b10921c31d02e2adeb2cc599844d4e37fe1dd9e20bdf",
+  "attempt_sha256": "cba33ae4bdb283be6cb15cb3de0b5438cbd53c102b33796c9e83ac0018d1c5ae",
+  "response_differences": {
+    "v0": {
+      "max_abs": 8.561032046905495,
+      "rms": 0.3075941616172879
+    },
+    "v1": {
+      "max_abs": 2.752966825408322,
+      "rms": 0.10744007885413907
+    },
+    "v2": {
+      "max_abs": 4.370734423276275,
+      "rms": 0.1414130365533416
+    },
+    "force0": {
+      "max_abs": 23.04979776296195,
+      "rms": 2.238355686960057
+    },
+    "force1": {
+      "max_abs": 106.03790331430848,
+      "rms": 5.566816259230392
+    },
+    "force2": {
+      "max_abs": 306.0545902662882,
+      "rms": 11.953695236911877
+    },
+    "normal_load0": {
+      "max_abs": 831.7055689382589,
+      "rms": 81.35437334058257
+    },
+    "normal_load1": {
+      "max_abs": 4928.974901342108,
+      "rms": 192.63397190470005
+    }
+  },
+  "native_saved_grid_statistics": {
+    "v0": {
+      "reference": {
+        "saved_min": 182.0578311936602,
+        "saved_max": 200.0951129840656,
+        "trapezoidal_integral": 942.4795546463242
+      },
+      "attempt": {
+        "saved_min": 182.19863996233497,
+        "saved_max": 191.36760026837692,
+        "trapezoidal_integral": 942.4554331219495
+      }
+    },
+    "v1": {
+      "reference": {
+        "saved_min": 91.12800215285657,
+        "saved_max": 96.46192244029413,
+        "trapezoidal_integral": 471.23868524724844
+      },
+      "attempt": {
+        "saved_min": 92.42270342960383,
+        "saved_max": 95.14847068902147,
+        "trapezoidal_integral": 471.22917158034477
+      }
+    },
+    "v2": {
+      "reference": {
+        "saved_min": 42.87144945039336,
+        "saved_max": 49.710212213635884,
+        "trapezoidal_integral": 235.61836156282018
+      },
+      "attempt": {
+        "saved_min": 44.714004108199674,
+        "saved_max": 47.958464772912954,
+        "trapezoidal_integral": 235.63115515988272
+      }
+    },
+    "force0": {
+      "reference": {
+        "saved_min": -47.725987290240255,
+        "saved_max": 37.0,
+        "trapezoidal_integral": -4.219516969928698e-05
+      },
+      "attempt": {
+        "saved_min": -10.998680157513732,
+        "saved_max": 37.0,
+        "trapezoidal_integral": -0.0499930711252877
+      }
+    },
+    "force1": {
+      "reference": {
+        "saved_min": -127.21470276213181,
+        "saved_max": 80.57677382678766,
+        "trapezoidal_integral": -0.0002694373462211791
+      },
+      "attempt": {
+        "saved_min": -52.1800064183052,
+        "saved_max": 8.157341155009632,
+        "trapezoidal_integral": -0.12280638243688646
+      }
+    },
+    "force2": {
+      "reference": {
+        "saved_min": -149.59634798812263,
+        "saved_max": 284.2784755480692,
+        "trapezoidal_integral": 0.002686539207285035
+      },
+      "attempt": {
+        "saved_min": -148.0005732821371,
+        "saved_max": 157.24243994155063,
+        "trapezoidal_integral": 0.5398012653675814
+      }
+    },
+    "normal_load0": {
+      "reference": {
+        "saved_min": 0.0,
+        "saved_max": 2722.531588265885,
+        "trapezoidal_integral": 6109.824480850096
+      },
+      "attempt": {
+        "saved_min": 0.0,
+        "saved_max": 1784.4464860147862,
+        "trapezoidal_integral": 6116.395397912385
+      }
+    },
+    "normal_load1": {
+      "reference": {
+        "saved_min": 0.0,
+        "saved_max": 6963.5320635878425,
+        "trapezoidal_integral": 11111.889038663096
+      },
+      "attempt": {
+        "saved_min": 0.0,
+        "saved_max": 4928.974901342108,
+        "trapezoidal_integral": 11127.054080312231
+      }
+    }
+  },
+  "native_statistics_scope": "Extrema and trapezoidal integrals of saved samples; internal substep peaks are not recorded.",
+  "contact_presence_mismatches": {
+    "contact0": 0,
+    "contact1": 1
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "normalization": "UTF-8 text with LF line endings",
+  "files": {
+    "src/cuda_resident_step.cuh": "823f894a0bbadb718cd84812add7c51a667a85796dc1d69f407206b39d511623",
+    "src/cpu_mesh_features.cpp": "60cc4a43651025d8034cedaacd3c990dc10ef1e7427dc403f77f3c14e4f43db9",
+    "nurbscontact_gpu/mesh_dynamics.py": "77ca2c4e53033841e872ee094a79e597e6683b3633df1fd8b057c9c91b197eca",
+    "nurbscontact_gpu/mesh_topology.py": "a5d64d77f804e25860b33bb0396053200a45f110ca99e19c12b5637274525786",
+    "nurbscontact_gpu/mesh_graph.py": "456e97a83998d86d812fb0e2fda654327f0cf0f1c539f5b7a3c9430a2f74f78a",
+    "nurbscontact_gpu/conditional_graph.py": "baece497a9eea2e009d6add86730d15eecf7855c78da11c019d14c1c43212934",
+    "nurbscontact_gpu/kernels/gpu_triangle_intersections.cu": "44b73a96da546057dfdf4455ec0beb555c5d4270d35108466545ad6fbf0c7b93",
+    "nurbscontact_gpu/kernels/mesh_resident.cuh": "23ef5c6cc145f30590777ab3eac5918a8ec8aab1a8cebb613eef4c0a4efee76b",
+    "nurbscontact_gpu/kernels/mesh_resident_bind.cuh": "c03281bff7ad95792c37e0e0f60dab828e993efc71b268d84aaeef9bba99dbda",
+    "nurbscontact_gpu/kernels/mesh_graph.cuh": "da24080f560c0cb2d2fe924cedc69c91c96c11f1129044b430acb1093bb88706",
+    "benchmarks/aes/mesh_bvh_dynamics.py": "203d583d24c85f53050014376d3d99a077652203475db8b67f0845e17103773e",
+    "benchmarks/aes/compare_mesh_dynamics.py": "3cb7eb7bf02b46deb44f458c30fade0749119c199b9e5d433cc01c9d0b86f4bd",
+    "tests/test_gpu_mesh_dynamics.py": "bc0448574b1257480548bbbb1c0a178aaa5fd0cc5226cddf9d3ef2e5716a21a7",
+    "tests/cpu_mesh.cpp": "578d2b8fab69c585e459aae6f59cfe989bea64c7367ca92e47fe2ef22263f1c6",
+    "benchmarks/aes/compare_mesh_step_attempt.py": "b32290c50918f868b83f7873c9f11b10a7fb77ce712ff0550c7c3c9293ac8a99"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "command": [
+    "../mesh-bvh-cpu-reference/Release/nc_mesh.exe",
+    "--method",
+    "mesh-obb",
+    "--regions",
+    "contour-ray",
+    "--axis-angle",
+    "--max-depth-m",
+    ".0002",
+    "G:\\NurbsCONTACT\\build\\github-cpu-recheck\\00d0f2a2\\inputs\\cpu-contact\\reducer-edge-compact\\reducer-1a.msh",
+    "G:\\NurbsCONTACT\\build\\github-cpu-recheck\\00d0f2a2\\inputs\\cpu-contact\\reducer-edge-compact\\reducer-1b.msh"
+  ],
+  "returncode": 1,
+  "stdout": "",
+  "stderr": "intersecting patch has no finite feature witness\n"
+}

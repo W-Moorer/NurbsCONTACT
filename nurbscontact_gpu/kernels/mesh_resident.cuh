@@ -117,6 +117,11 @@ struct Query {
     Workspace *work;
 };
 
+// These errors can be caused by an excessive implicit trial displacement.
+// A retry must rebuild contacts from the last accepted state at a smaller dt.
+// Capacity, topology and enclosure errors are deliberately not recoverable.
+__device__ bool retryable_mesh_contact(int status) { return status == 26 || status == 27; }
+
 extern "C" __global__ void
 bind_mesh_body(BodyView *out, const V *vertices, const int3 *faces, const V *normals, const int4 *edges,
                const int3 *face_edges, const int *panels, const int *panel_offsets, const int *panel_faces,

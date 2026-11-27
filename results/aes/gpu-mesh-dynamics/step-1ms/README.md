@@ -1,5 +1,7 @@
 # Reducer with a 1 ms main step: incomplete attempt
 
+Historical record before trial-geometry retry was added. The [subsequent repair and complete five-second result](../step-1ms-repaired/README.md) are archived separately; the failure records below are unchanged.
+
 The unchanged current-pose GPU mesh backend was asked to advance the same reducer for 5 s, using a 1 ms main step (5,000 main steps), on the local RTX 3070. Scene, meshes, loads, penalty law, HHT parameters and contact algorithms were unchanged. The reference is the archived 0.1 ms **GPU numerical trace**, not an analytical solution. CPU timing was not rerun.
 
 | Main step | Requested duration | Last saved time | Completed main steps | Completed-run online time |

@@ -76,6 +76,15 @@ def run(model, step):
         stream.synchronize()
         elapsed = perf_counter() - start
         status = model.status()
+        counts = cp.empty(16)
+        module.get_function("mesh_graph_telemetry")((1,), (1,), (state, counts))
+        values = counts.get()
+        model.integration_stats = dict(
+            accepted_substeps_by_level=values[:9].astype(int).tolist(),
+            geometry_retries_by_status={"26": int(values[9]), "27": int(values[10])},
+            newton_rejections=int(values[11]),
+            first_geometry_failure=(values[12:].tolist() if values[12] else None),
+        )
         if status[0] or abs(status[1] - model.steps * step) > 1e-8:
             raise RuntimeError(("Incomplete graph mesh dynamics", status.tolist()))
         return model.output.get(), dict(
@@ -83,6 +92,7 @@ def run(model, step):
             setup_s=model.setup_s + preparation,
             graph_setup_s=preparation,
             status=status.tolist(),
+            integration=model.integration_stats,
             execution="device conditional CUDA graph",
             p99_step_s=float(np.percentile(np.diff(model.finished.get()) * 1e-9, 99)),
             kernels={name: f.attributes for name, f in functions.items()},
