@@ -1,9 +1,21 @@
 // Runtime workspace for one trajectory. Work is indexed by CAD topology, independent of tooth counts.
+struct TileJet {
+    Jet jet;
+    bool defined;
+};
+__global__ void prepare_tile_jets(View g, const Tile *tiles, int count, TileJet *out) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < count) {
+        const auto &t = tiles[i];
+        out[i].defined = face_jet(g, t.face, t.u, t.v, out[i].jet);
+    }
+}
 struct BodyView {
     View g;
     const Tile *tiles;
     const Node *sites;
     const int *target_ids;
+    const TileJet *tile_jets;
     int ns, nt;
 };
 struct MatPose {
@@ -209,7 +221,15 @@ struct Query {
         V p = point(rel[side], site.p), d = direction(rel[side], scale(site.n, -1));
         for (int iter = 0; iter < 8; ++iter) {
             Jet j;
-            if (!face_jet(g, id, u, v, j)) {
+            // Every projection starts at the same material tile centre, at every pose.
+            if (!iter) {
+                const auto &initial = b[1 - side].tile_jets[seed.tile];
+                if (!initial.defined) {
+                    fail(5, id);
+                    return false;
+                }
+                j = initial.jet;
+            } else if (!face_jet(g, id, u, v, j)) {
                 fail(5, id);
                 return false;
             }

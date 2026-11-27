@@ -343,6 +343,7 @@ struct Columns::Storage {
     Stream stream;
     View view{};
     Buffer<Tile> tiles;
+    Buffer<TileJet> tile_jets;
     Buffer<Node> sites;
     Buffer<int> ids, count;
     Buffer<Leaf> staging;
@@ -413,6 +414,13 @@ Columns::Columns(const Tables &t) {
                s->rule_sites.ptr,
                s->trim_intervals.ptr,
                s->grid_descriptor.ptr};
+    if (s->resident_supported && !t.tiles.empty()) {
+        s->tile_jets.reserve(t.tiles.size());
+        prepare_tile_jets<<<(t.tiles.size() + 127) / 128, 128, 0, s->stream.id>>>(
+            s->view, s->tiles.ptr, static_cast<int>(t.tiles.size()), s->tile_jets.ptr);
+        check(cudaGetLastError());
+        check(cudaStreamSynchronize(s->stream.id));
+    }
     data = s.release();
 }
 Columns::~Columns() { delete data; }
@@ -475,7 +483,7 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
         if (!s.resident_supported || !s.view.n)
             throw std::invalid_argument(
                 "resident CAD requires supported analytic or polynomial bicubic charts");
-        views.push_back({s.view, s.tiles.ptr, s.sites.ptr, s.ids.ptr, static_cast<int>(s.sites.capacity),
+        views.push_back({s.view, s.tiles.ptr, s.sites.ptr, s.ids.ptr, s.tile_jets.ptr, static_cast<int>(s.sites.capacity),
                          static_cast<int>(s.ids.capacity)});
     }
     bodies.upload(views);
