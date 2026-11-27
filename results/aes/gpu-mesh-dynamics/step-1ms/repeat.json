@@ -1,0 +1,31 @@
+{
+  "completed": false,
+  "error": "('Incomplete graph mesh dynamics', [27.0, 0.005, 269.0, 188.0, 7.0, 0.025848768, 0.012560320000000002, 0.199122976, 0.260841472, 1.1357741414030897e-06])",
+  "status": [
+    27.0,
+    0.005,
+    269.0,
+    188.0,
+    7.0,
+    0.025848768,
+    0.012560320000000002,
+    0.199122976,
+    0.260841472,
+    1.1357741414030897e-06
+  ],
+  "setup_s": 18.10063520001131,
+  "attempt_wall_s": 0.5831051999994088,
+  "attempt_timing_scope": "Includes graph instantiation when applicable and error/status downloads; not a completed simulation timing.",
+  "last_saved_step": 5,
+  "duration_s": 5.0,
+  "step_s": 0.001,
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "mesh_sha256": [
+    "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+    "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+    "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+    "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0"
+  ],
+  "method": "GPU BVH triangle intersection + finite/contour-ray support",
+  "steps": 5000
+}

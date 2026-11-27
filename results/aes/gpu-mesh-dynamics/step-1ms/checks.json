@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-27",
+  "device": "RTX 3070",
+  "backend_base_commit": "8967e24",
+  "repeat_response_identical": true,
+  "repeat_status_counts_identical": true,
+  "scene_and_mesh_hashes_identical": true,
+  "saved_frames": 6,
+  "repeat_expected_exit_code": 1,
+  "source_changes": "Benchmark failure preservation only; no geometry, force or integrator modifications.",
+  "commands": [
+    "python benchmarks/aes/mesh_bvh_dynamics.py ../github-cpu-recheck/00d0f2a2/inputs/scene/common-200.scene ../mesh-bvh-dynamics/step-1ms-repeat --duration 5 --step 0.001 --blocks 46 --execution graph",
+    "python benchmarks/aes/compare_mesh_step_attempt.py results/aes/gpu-mesh-dynamics/responses.npz results/aes/gpu-mesh-dynamics/step-1ms results/aes/gpu-mesh-dynamics/step-1ms"
+  ]
+}

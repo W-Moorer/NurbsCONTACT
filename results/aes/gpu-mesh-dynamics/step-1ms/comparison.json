@@ -1,0 +1,51 @@
+{
+  "completed": false,
+  "requested_duration_s": 5.0,
+  "observed_interval_s": [
+    0.0,
+    0.005
+  ],
+  "common_samples": 6,
+  "scope": "Differences at saved common times only; not continuous-time extrema or accuracy against truth.",
+  "long_time_validation_available": false,
+  "reference_sha256": "e12f2294662d438e3eb9b10921c31d02e2adeb2cc599844d4e37fe1dd9e20bdf",
+  "attempt_sha256": "d9d676e647ed382434907d16cb88c3f743c0c5c215e6a474583985683bc2fea6",
+  "response_differences": {
+    "v0": {
+      "max_abs": 8.561032046905495,
+      "rms": 3.7180236623785925
+    },
+    "v1": {
+      "max_abs": 2.752966825408322,
+      "rms": 1.1945336210877795
+    },
+    "v2": {
+      "max_abs": 4.370734423276275,
+      "rms": 1.8204138024575578
+    },
+    "force0": {
+      "max_abs": 23.04979776296195,
+      "rms": 11.667354206196595
+    },
+    "force1": {
+      "max_abs": 106.03790331430848,
+      "rms": 50.179093810809526
+    },
+    "force2": {
+      "max_abs": 306.0545902662882,
+      "rms": 143.90174535961773
+    },
+    "normal_load0": {
+      "max_abs": 831.7055689382589,
+      "rms": 405.9131315257965
+    },
+    "normal_load1": {
+      "max_abs": 4928.974901342108,
+      "rms": 2318.716706877804
+    }
+  },
+  "contact_presence_mismatches": {
+    "contact0": 0,
+    "contact1": 1
+  }
+}

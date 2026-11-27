@@ -76,6 +76,8 @@ CPU `relative()` 与 GPU `between()` 增加了旋转基正交化，消除旋转�
 
 ## Last verified against
 
+2026-11-27：将当前 GPU 网格闭环的主步长改为 1 ms，仍请求推进 5 s。两次均在保存 0.005 s 后触发接触信息构造状态 27，部分时程完全一致。现有自适应只对无几何错误的 Newton 拒绝进行减步，此类几何失败直接退出。本次仅增加测试脚本的失败记录，未修改接触或积分算法；不能给出 1 ms 完整五秒的性能或精度结论。[试跑与启动段曲线](../results/aes/gpu-mesh-dynamics/step-1ms/README.md) · [实测命令及校验](../results/aes/gpu-mesh-dynamics/step-1ms/checks.json)。已有 0.1 ms 与 CPU 结果本轮未重跑。
+
 2026-11-27：新增当前姿态 GPU 网格闭环、设备端条件图调度和近共面三角片复核。完整五秒时程已核对；加密诊断的 308 次物体对查询仍有 9 次接触区数量差异，故未升级为固定基线。解析回归、Compute Sanitizer 内存检查和共享 CAD 积分器回归的命令及结果见 [验证报告](../results/aes/gpu-mesh-dynamics/README.md)。
 
 2026-11-27：`IntersectionBatch` 的双精度细检测改为八个 CUDA 线程协作计算分离轴，保留单线程对照。完整五秒姿态回放的三次中位耗时由 6.713 s 降到 6.160 s；两级共 100,000 个物体对姿态的相交编号集合全部相同。五项三角片回归及 Compute Sanitizer 内存检查通过。独立的采样网格动力学程序按输入自由度缩小局部 HHT 矩阵，两次五秒闭环用时 124.838 s 和 124.833 s。该程序与 CPU 的轮廓射线接触力定义不同，几何回放也不包含承载区构造及动力学求解；整机实时性尚未通过。[完整测量与范围](../results/aes/gpu-mesh-speed/README.md) · [细检测对照](../benchmarks/aes/compare_mesh_predicates.py)

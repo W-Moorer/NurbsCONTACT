@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+from time import perf_counter
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 import _gpu_source
@@ -204,7 +205,29 @@ def main():
         )
     if a.audit_only:
         return
-    data, stats = model.run(a.step, execution=a.execution)
+    started = perf_counter()
+    try:
+        data, stats = model.run(a.step, execution=a.execution)
+        stats["completed"] = True
+    except RuntimeError as error:
+        status = model.status().tolist()
+        if not status[0]:
+            raise
+        saved = np.flatnonzero(model.finished.get())
+        last = int(saved[-1]) if len(saved) else -1
+        data = model.output.get()[: last + 1]
+        stats = dict(
+            completed=False,
+            error=str(error),
+            status=status,
+            setup_s=model.setup_s,
+            attempt_wall_s=perf_counter() - started,
+            attempt_timing_scope=(
+                "Includes graph instantiation when applicable and error/status downloads; "
+                "not a completed simulation timing."
+            ),
+            last_saved_step=last,
+        )
     np.save(a.out / "response.npy", data)
     stats.update(
         duration_s=a.duration,
@@ -215,7 +238,9 @@ def main():
         steps=model.steps,
     )
     (a.out / "run.json").write_text(json.dumps(stats, indent=2) + "\n")
-    print(json.dumps(stats, indent=2), flush=True)
+    print(json.dumps({k: v for k, v in stats.items() if k != "kernels"}, indent=2), flush=True)
+    if not stats["completed"]:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

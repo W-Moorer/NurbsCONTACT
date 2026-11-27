@@ -65,6 +65,8 @@ A second diagnostic uses predictors from 154 saved states (308 body-pair queries
 
 ## Reproduction
 
+**1 ms step experiment:** the unchanged backend was also asked to advance 5 s with a 1 ms main step. Two attempts stopped after saving 0.005 s, with unresolved finite contact information (status 27). Partial startup responses differ substantially from the 0.1 ms trace. There is no completed-run timing or valid long-time speedup for 1 ms. See the [attempt, repeat, curves and failure analysis](step-1ms/README.md).
+
 Use the [original input deck](../cpu-foundation/reducer-physics/cpu-deck.zip). Supply the extracted `common-200.scene` with its relative Gmsh paths intact. Scene and mesh SHA-256 digests are recorded in every run JSON. Run only one GPU simulation at a time.
 
 ```text
