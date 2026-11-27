@@ -135,6 +135,35 @@ class TriangleIntersectionTest(unittest.TestCase):
             self.assertEqual(queries.refresh.item(), rebuild)
             self.assertEqual(len(queries.queries[0].read()), count)
 
+    def test_grouped_predicates_match_scalar_in_spatial_motion(self):
+        from nurbscontact_gpu.bvh import TriangleMesh, IntersectionBatch
+        from scipy.spatial.transform import Rotation
+
+        rng = np.random.default_rng(61824)
+        first = rng.normal(size=(31, 3, 3))
+        second = rng.normal(size=(23, 3, 3))
+        # Include coplanar, touching and barely separated input facets.
+        second[:3] = first[:3]
+        second[1] += 1e-15
+        for leaf_size, lanes in ((1,4), (4,8), (8,16), (32,32)):
+            a = TriangleMesh(first.reshape(-1, 3), np.arange(first.size//3).reshape(-1, 3), leaf_size)
+            b = TriangleMesh(second.reshape(-1, 3), np.arange(second.size//3).reshape(-1, 3), leaf_size)
+            staged = IntersectionBatch([(a, b), (b, a)], fine_lanes=1)
+            grouped = IntersectionBatch([(a, b), (b, a)], fine_lanes=lanes)
+            for angle, offset in [(np.zeros(3), np.zeros(3)), *zip(rng.normal(size=(12,3)), rng.normal(size=(12,3))),
+                                  (np.zeros(3), np.array([20.,0.,0.]))]:
+                r = Rotation.from_rotvec(angle).as_matrix()
+                transforms = cp.asarray(np.stack((np.c_[r,offset], np.c_[r.T,-r.T@offset])))
+                staged.enqueue(transforms)
+                grouped.enqueue(transforms)
+                for ref, trial in zip(staged.queries, grouped.queries):
+                    expected = sorted(map(tuple,ref.read()))
+                    actual = sorted(map(tuple,trial.read()))
+                    self.assertEqual(actual, expected)
+            small = IntersectionBatch([(a,b)], capacity=1, fine_lanes=lanes)
+            small.enqueue(cp.asarray(np.eye(4)[None,:3].copy()))
+            with self.assertRaises(OverflowError): small.queries[0].read()
+
 
 if __name__ == "__main__":
     unittest.main()

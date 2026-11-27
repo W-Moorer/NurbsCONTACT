@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-27",
+  "checks": [
+    {
+      "command": "python -m unittest discover -s tests -p test_gpu_triangle_intersection.py -v",
+      "tests": 5,
+      "result": "passed"
+    },
+    {
+      "command": "compute-sanitizer --tool memcheck --error-exitcode 99 python -m unittest discover -s tests -p test_gpu_triangle_intersection.py -v",
+      "result": "passed",
+      "error_summary": 0
+    },
+    {
+      "command": "python -m unittest discover -s tests -p test_gpu_resident_layout.py -v",
+      "tests": 1,
+      "coordinate_counts": [
+        1,
+        2,
+        8
+      ],
+      "result": "passed"
+    },
+    {
+      "command": "wiki_audit.py",
+      "result": "completed with eight pre-existing missing optional-page warnings"
+    }
+  ],
+  "full_simulation": "Two original-layout runs and two scene-sized-layout runs; 5 s and 0.1 ms main step",
+  "cpu_simulation_rerun": false,
+  "generic_cpu_contour_ray_gpu_dynamics_verified": false,
+  "real_time_verified": false
+}

@@ -291,7 +291,10 @@ def run(
     reference_source,
     profile_all,
     repeats,
+    fine_lanes=1,
 ):
+    if serial and fine_lanes != 1:
+        raise ValueError("grouped predicates use the batched-pair entry point")
     files, pairs, transforms, times = read_poses(scene, response)
     meshes = []
     for name in files:
@@ -300,7 +303,7 @@ def run(
             TriangleMesh(m.points, m.get_cells_type("triangle"), leaf_size=leaf_size)
         )
     batch_query = IntersectionBatch(
-        [(meshes[a], meshes[b]) for a, b in pairs], reuse_distance=reuse_distance
+        [(meshes[a], meshes[b]) for a, b in pairs], reuse_distance=reuse_distance, fine_lanes=fine_lanes
     )
     transforms = cp.stack(transforms, axis=1)
     elapsed, counts, _ = measure(batch_query, transforms, False, serial)
@@ -330,6 +333,7 @@ def run(
         "triangles": [m.count for m in meshes],
         "triangles_per_leaf_limit": leaf_size,
         "candidate_reuse_distance_m": reuse_distance,
+        "fine_lanes": fine_lanes,
         "mesh_sha256": [hashlib.sha256(f.read_bytes()).hexdigest() for f in files],
         "pose_trace_sha256": hashlib.sha256(response.read_bytes()).hexdigest(),
         "online_wall_s": elapsed,
@@ -385,6 +389,7 @@ if __name__ == "__main__":
     for key in ("scene", "response", "output"):
         parser.add_argument(key, type=Path)
     parser.add_argument("--leaf-size", type=int, default=8)
+    parser.add_argument("--fine-lanes", type=int, choices=(1,4,8,16,32), default=1)
     parser.add_argument(
         "--serial",
         action="store_true",

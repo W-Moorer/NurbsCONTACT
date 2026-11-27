@@ -2,6 +2,10 @@
 // hinge/slider; several bodies can reference the same generalized coordinate.
 constexpr int maxCoordinates = 8;
 constexpr int ticksPerStep = ASSEMBLY_TICKS;
+// Size only the local linear system; the shared state ABI remains unchanged.
+// Zero keeps the runtime-sized control for performance comparisons.
+constexpr int solverCoordinates = NC_ASSEMBLY_COORDINATES ? NC_ASSEMBLY_COORDINATES : maxCoordinates;
+static_assert(solverCoordinates >= 1 && solverCoordinates <= maxCoordinates);
 struct AssemblyState {
     double q[maxCoordinates], v[maxCoordinates], a[maxCoordinates], previous[maxCoordinates];
     double x[maxCoordinates], speed[maxCoordinates], trial[maxCoordinates], base[maxCoordinates],
@@ -52,7 +56,7 @@ extern "C" __global__ void assembly_start(AssemblyState *s, const double *coord,
 extern "C" __global__ void
 assembly_advance(AssemblyState *state, unsigned char *views, State *frames, const SearchOrder *orders,
                  const Joint *joints, const int *map, const int *prefer, const double *coord,
-                 const double *stiff, const double *loads, int n, int pairs, double h, int stop,
+                 const double *stiff, const double *loads, int coordinateCount, int pairs, double h, int stop,
                  int contactSamples, int allowExplicit, double *trace, unsigned long long *elapsed
 #ifdef NC_PATCHES
                  , PatchIndex *patches
@@ -80,6 +84,11 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
                  int regionStep, double *regionAudit, int *regionCount, int regionCapacity
 #endif
 ) {
+#if NC_ASSEMBLY_COORDINATES
+    constexpr int n = solverCoordinates;
+#else
+    const int n = coordinateCount;
+#endif
     auto all = cg::this_grid();
     int worker = blockIdx.x * blockDim.x + threadIdx.x;
 #ifdef NC_SEARCH_COUNTS
@@ -189,7 +198,7 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
             searched = gpu_time();
 #endif
             ++s.attempts;
-            double K[maxCoordinates][maxCoordinates] = {}, applied[maxCoordinates], err = 0, scale = 0,
+            double K[solverCoordinates][solverCoordinates] = {}, applied[solverCoordinates], err = 0, scale = 0,
                    frequency2 = 0;
             int active = 0;
             double frac = double(s.tick + s.span) / ticksPerStep;
@@ -285,7 +294,7 @@ assembly_advance(AssemblyState *state, unsigned char *views, State *frames, cons
                 out[2 * n + 4 * p + 2] = tb;
                 out[2 * n + 4 * p + 3] = bearing;
             }
-            double residual[maxCoordinates];
+            double residual[solverCoordinates];
             for (int i = 0; i < n; ++i) {
                 residual[i] = coord[4 * i] * s.trial[i] - .9 * applied[i] - .1 * s.previous[i];
                 err = isfinite(residual[i]) ? fmax(err, fabs(residual[i]))

@@ -70,6 +70,8 @@ GPU 移植使用 [1406914 的 CPU 实现](https://github.com/W-Moorer/NurbsCONTA
 
 ## Last verified against
 
+2026-11-27：`IntersectionBatch` 的双精度细检测改为八个 CUDA 线程协作计算分离轴，保留单线程对照。完整五秒姿态回放的三次中位耗时由 6.713 s 降到 6.160 s；两级共 100,000 个物体对姿态的相交编号集合全部相同。五项三角片回归及 Compute Sanitizer 内存检查通过。独立的采样网格动力学程序按输入自由度缩小局部 HHT 矩阵，两次五秒闭环用时 124.838 s 和 124.833 s。该程序与 CPU 的轮廓射线接触力定义不同，几何回放也不包含承载区构造及动力学求解；整机实时性尚未通过。[完整测量与范围](../results/aes/gpu-mesh-speed/README.md) · [细检测对照](../benchmarks/aes/compare_mesh_predicates.py)
+
 2026-11-27 完成确认面、区域连通性和射线包围盒三项 GPU 消融。最终版两次五秒闭环用时 402.78 和 402.77 秒。逐连线诊断在相同姿态与原串行算法核对 652,575 次判定及接受路径的全部拐点。CPU 与 CUDA 解析回归通过，首次出现连通检查的 50 步通过 Compute Sanitizer 内存检查。[验收数据](../results/aes/cuda-face-search/comparison.json) · [对照脚本](../benchmarks/aes/compare_gpu_face_search.py)
 
 2026-11-27 在同一台 RTX 3070 上用同一减速器、50,000 个 0.1 ms 主步比较串行与保序并行归约。独立推进的时程与原 GPU 参考文件具有相同的 SHA-256。同姿态测试逐承载区比较世界系合力及关于两个刚体原点的力矩，并核查进入和退出承载面的相邻步。[复现命令与记录](../results/aes/cuda-region-reduction/README.md) · [对照脚本](../benchmarks/aes/compare_region_reduction.py)

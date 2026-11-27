@@ -41,8 +41,7 @@ __device__ void collect_leaves(const int *leaf_ids, int leaves,
                                const double *pose, int2 *candidates,
                                int capacity, int *counts, double skin = 0) {
   const int i = blockIdx.x * blockDim.x + threadIdx.x;
-  if (i >= leaves)
-    return;
+  if (i >= leaves) return;
   const int leaf = leaf_ids[i];
   const double *box = source_bounds + leaf * 6;
   float lo[3], hi[3];
@@ -167,7 +166,7 @@ __device__ bool proxy_excludes(const float3 *a, const float3 *b,
   return separated_proxies(placed, b, error);
 }
 } // namespace
-__device__ bool finite_hit(const V tri[3], const V *other) {
+__device__ bool finite_box_hit(const V tri[3], const V *other) {
   if (max3(tri[0].x, tri[1].x, tri[2].x) <
           min3(other[0].x, other[1].x, other[2].x) ||
       max3(other[0].x, other[1].x, other[2].x) <
@@ -181,7 +180,35 @@ __device__ bool finite_hit(const V tri[3], const V *other) {
       max3(other[0].z, other[1].z, other[2].z) <
           min3(tri[0].z, tri[1].z, tri[2].z))
     return false;
-  return intersect(tri, other);
+  return true;
+}
+__device__ bool finite_hit(const V tri[3], const V *other) {
+  return finite_box_hit(tri, other) && intersect(tri, other);
+}
+template<int W> __device__ bool finite_parallel_hit(const V first[3], const V second[3]) {
+  if (!finite_box_hit(first, second)) return false;
+  V a[3], b[3];
+  for (int i=0;i<3;++i) { a[i]=minus_v(first[i],first[0]); b[i]=minus_v(second[i],first[0]); }
+  V ea0=minus_v(a[1],a[0]),ea1=minus_v(a[2],a[1]),ea2=minus_v(a[0],a[2]);
+  V eb0=minus_v(b[1],b[0]),eb1=minus_v(b[2],b[1]),eb2=minus_v(b[0],b[2]);
+  V na=cross_v(ea0,ea1), nb=cross_v(eb0,eb1);
+  int lane=threadIdx.x%W;
+  bool separated=false;
+  for(int axis=lane;axis<17;axis+=W) {
+    V n;
+    if(axis==0) n=na;
+    else if(axis==1) n=nb;
+    else if(axis<8) {
+      int i=(axis-2)/2;
+      n=(axis%2==0)?cross_v(na,i==0?ea0:i==1?ea1:ea2):cross_v(nb,i==0?eb0:i==1?eb1:eb2);
+    } else {
+      int i=(axis-8)/3,j=(axis-8)%3;
+      n=cross_v(i==0?ea0:i==1?ea1:ea2,j==0?eb0:j==1?eb1:eb2);
+    }
+    separated=separated || separates(n,a,b);
+  }
+  const unsigned mask=(0xffffffffu>>(32-W))<<((threadIdx.x%32)/W*W);
+  return !__any_sync(mask,separated);
 }
 __device__ void test_leaves(const V *source, const int *source_ids,
                             const int *source_links, const V *target,
@@ -357,6 +384,39 @@ extern "C" __global__ void batch_intersections(const MeshPairView *pairs,
     if (pos < p.hit_n)
       p.hits[pos] = make_int2(p.a_ids[faces.x], p.b_ids[faces.y]);
   }
+}
+
+template<int W> __device__ void parallel_intersections(const MeshPairView &p,const double *pose,
+                                                       int *counts,int size,double skin) {
+  int lane=threadIdx.x%W;
+  for(int slot=(blockIdx.x*blockDim.x+threadIdx.x)/W;slot<size;slot+=gridDim.x*blockDim.x/W) {
+    int2 faces=p.filtered[slot];
+    if(skin>0) {
+      const float error=__double2float_ru(128*1.1920928955078125e-7*
+          (4*p.extent+fabs(pose[3])+fabs(pose[7])+fabs(pose[11]))+1e-30);
+      if(proxy_excludes(p.a_proxy+3*faces.x,p.b_proxy+3*faces.y,pose,error)) continue;
+    }
+    V tri[3];
+    for(int v=0;v<3;++v) tri[v]=transform(pose,p.a[3*faces.x+v]);
+    if(!finite_parallel_hit<W>(tri,p.b+3*faces.y)) continue;
+    if(!lane) {
+      int pos=atomicAdd(counts,1);
+      if(pos<p.hit_n) p.hits[pos]=make_int2(p.a_ids[faces.x],p.b_ids[faces.y]);
+    }
+  }
+}
+extern "C" __global__ void batch_group_intersections(const MeshPairView *pairs,const double *poses,
+                                                       int *counts,const int *sizes,double skin,int width) {
+  int i=blockIdx.y;const auto &p=pairs[i];
+  if(sizes[i]>p.filtered_n) {
+    test_leaves(p.a,p.a_ids,p.a_links,p.b,p.b_ids,p.b_links,poses+12*i,p.a_proxy,p.b_proxy,p.extent,
+                p.width,p.candidates,p.candidate_n,p.hits,p.hit_n,counts+2*i);
+    return;
+  }
+  if(width==4) parallel_intersections<4>(p,poses+12*i,counts+2*i,sizes[i],skin);
+  else if(width==8) parallel_intersections<8>(p,poses+12*i,counts+2*i,sizes[i],skin);
+  else if(width==16) parallel_intersections<16>(p,poses+12*i,counts+2*i,sizes[i],skin);
+  else parallel_intersections<32>(p,poses+12*i,counts+2*i,sizes[i],skin);
 }
 
 namespace {

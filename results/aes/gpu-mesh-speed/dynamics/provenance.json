@@ -1,0 +1,16 @@
+{
+  "source_sha256": {
+    "benchmarks\\aes\\resident_assembly.py": "735484a8ba061c7afad3772bdcd6443e6980a9f783e910e3bb0cc81c0e38ffb8",
+    "benchmarks\\aes\\resident_assembly.cuh": "876a691d196dd8b85db10f56fedb6412a507f899e83b195b3480aa98476a7560",
+    "benchmarks\\aes\\resident_contact.cu": "d4e9458e82ada16c204215baa4519bb2d61a0904a0da91534a6d4ef876c79379",
+    "benchmarks\\aes\\resident_blocks.cuh": "4f8fb82f041defdb43e370627f4e1a659cb6c312370c81c63050ee329fa072db"
+  },
+  "input_sha256": {
+    "assembly.npz": "d20b595d6ceeddc75814abd91f0edaddb420944d598da91fb8d217bb083273cc",
+    "reducer-1a.npz": "6afc0784992076845dbe7df7aa4972ef4ea7ed6c5ee56d2ddb0e88a28fa2ffc6",
+    "reducer-1b.npz": "27f6582741bd75235242a5285e624ce6dfeb2375ba65eeee515fe897e87ee049",
+    "reducer-2a.npz": "2a61bae507764c436383c8078e7777e41f8b985b02b72eea9e6ae365f0d51d23",
+    "reducer-2b.npz": "685a397ccb88b5bb66aeaa95e3d00dd4947e2bc492211cfcb886e6d0fb78bd3d",
+    "models.json": "5db8c8fb3fb906c0ea1bbf14866f84a353ac5019f5e2f8fccd75b2a42e5c6f03"
+  }
+}

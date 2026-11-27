@@ -1,0 +1,65 @@
+{
+  "measurement": "triangle-pair detection only, prescribed full 5 s trajectory",
+  "gpu": "NVIDIA GeForce RTX 3070",
+  "steps": 50000,
+  "physical_s": 5.000000000001682,
+  "triangles": [
+    10216,
+    10240,
+    27934,
+    17342
+  ],
+  "mesh_sha256": [
+    "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+    "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+    "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+    "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0"
+  ],
+  "response_sha256": "422068b9d21aeb562bb8203c6313e469c245d4cb8f42d939d08186fc1d90595f",
+  "runs": {
+    "lanes-1": {
+      "online_s": [
+        6.620793199981563,
+        6.71298859998933,
+        6.834378200001083
+      ],
+      "median_s": 6.71298859998933,
+      "fine_lanes": 1
+    },
+    "lanes-8": {
+      "online_s": [
+        5.9894643999869,
+        6.329572100017685,
+        6.160272800014354
+      ],
+      "median_s": 6.160272800014354,
+      "fine_lanes": 8
+    }
+  },
+  "best": "lanes-8",
+  "hit_count_sha256": "d529d93e81345deeefe820dfe7072911f32b4e92a2a4075cf1d2edfd8ee8e554",
+  "full_fp64_id_check": {
+    "body_pair_poses": 100000,
+    "source_sha256": "1cfc9641afc9d9b0a77c97d5762ea2e9fedefae8ece0d9a27b93f326d3014723",
+    "mismatches": 0,
+    "workspace_overflows": 0
+  },
+  "baseline_mean_phase_us": [
+    [
+      43.33135872000306,
+      91.25449727999784
+    ]
+  ],
+  "source_sha256": {
+    "nurbscontact_gpu\\bvh.py": "a4f8ab389c7914ace4862723deda8b72d3b8d69a0d09968a1f7850f63782a4a0",
+    "nurbscontact_gpu\\kernels\\gpu_triangle_intersections.cu": "7106d6d6cd3408ce4027638b13d3cf1cde3fcecf78227dfcb1d7106f00527700"
+  },
+  "mean_phase_us": [
+    [
+      55.36958464000104,
+      56.2455347200054
+    ]
+  ],
+  "p99_us": 412.672,
+  "steps_over_100_us": 8746
+}

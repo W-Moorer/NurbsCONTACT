@@ -141,10 +141,13 @@ class IntersectionBatch:
     across pairs. Workspaces and counts stay on the device.
     """
 
-    def __init__(self, mesh_pairs, capacity=8192, *, reuse_distance=0.0):
+    def __init__(self, mesh_pairs, capacity=8192, *, reuse_distance=0.0, fine_lanes=8):
         if not np.isfinite(reuse_distance) or reuse_distance < 0:
             raise ValueError("reuse distance must be finite and nonnegative")
         self.skin = np.float64(reuse_distance)
+        if fine_lanes not in (1, 4, 8, 16, 32):
+            raise ValueError("fine_lanes must be 1, 4, 8, 16 or 32")
+        self.fine_lanes = fine_lanes
         self.queries = [IntersectionQuery(a, b, capacity) for a, b in mesh_pairs]
         if not self.queries:
             raise ValueError("at least one mesh pair is required")
@@ -218,6 +221,7 @@ class IntersectionBatch:
         self.broad = module.get_function("batch_leaf_candidates")
         self.filter = module.get_function("batch_filter")
         self.narrow = module.get_function("batch_intersections")
+        self.group_narrow = module.get_function("batch_group_intersections")
 
     def _launch(self, kernel, blocks, transforms, *arrays, skin=False):
         for first in range(0, len(self.queries), 65535):
@@ -255,7 +259,14 @@ class IntersectionBatch:
         self._launch(
             self.filter, 128, transforms, self.filtered_counts, self.refresh, skin=True
         )
-        self._launch(self.narrow, 64, transforms, self.filtered_counts, skin=True)
+        if self.fine_lanes == 1:
+            self._launch(self.narrow, 64, transforms, self.filtered_counts, skin=True)
+        else:
+            for first in range(0, len(self.queries), 65535):
+                count = min(65535, len(self.queries) - first)
+                self.group_narrow((64, count), (128,),
+                    (self.views[first:], transforms[first:], self.counts[first:], self.filtered_counts[first:],
+                     self.skin, np.int32(self.fine_lanes)))
 
     def enqueue(self, transforms, *, geometry=False):
         self.enqueue_candidates(transforms)

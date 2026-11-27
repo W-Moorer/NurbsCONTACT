@@ -1,0 +1,636 @@
+{
+  "scope": "sampled-mesh closed loop; distinct from CPU contour-ray force definition",
+  "steps": 50000,
+  "duration_s": 5.0,
+  "step_s": 9.999999999999999e-05,
+  "runs": {
+    "reference": {
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "method": "mesh",
+      "broad_phase": "blocks",
+      "include_vertices": false,
+      "stiffness_scope": "pair",
+      "physical_s": 5.0,
+      "requested_s": 5.0,
+      "step_s": 9.999999999999999e-05,
+      "terminated": "complete",
+      "coordinates": 3,
+      "pairs": 2,
+      "contact_samples": 16,
+      "minimum_step_s": 2.4414062499999998e-08,
+      "explicit_crossing_enabled": true,
+      "explicit_crossings": 0,
+      "directional_probes": [
+        [
+          10608,
+          3888
+        ],
+        [
+          12848,
+          21956
+        ]
+      ],
+      "steps": 50000,
+      "trials": 1603242,
+      "lanes": 4,
+      "aggregate_winners": false,
+      "kernel_attributes": {
+        "max_threads_per_block": 384,
+        "shared_size_bytes": 0,
+        "const_size_bytes": 0,
+        "local_size_bytes": 696,
+        "num_regs": 142,
+        "ptx_version": 86,
+        "binary_version": 86,
+        "cache_mode_ca": 0,
+        "max_dynamic_shared_size_bytes": 49152,
+        "preferred_shared_memory_carveout": -1
+      },
+      "contact_floor_nm": 0.0001,
+      "accepted_increments": 799815,
+      "setup_s": 40.58784990001004,
+      "online_s": 128.58107179999934,
+      "p99_us": 3689.472,
+      "over_budget": 50000,
+      "device_pool_MiB": 210.3740234375,
+      "peak_normal_N": [
+        4420.400228123352,
+        9391.60538064749
+      ],
+      "max_active_regions": [
+        1.0,
+        1.0
+      ],
+      "phase_profile": {
+        "prepare_s": 30.636972992,
+        "search_s": 67.486302112,
+        "merge_and_hht_s": 29.892492544000003,
+        "online_trials": 1603241,
+        "trials_after_newton_update": 803393,
+        "directional_probe_visits": [
+          979336128,
+          753267251,
+          1140806433,
+          4315506693
+        ]
+      },
+      "guard_mm": 0.8,
+      "directional_rebuilds": [
+        190549,
+        98109,
+        112983,
+        62770
+      ],
+      "directional_probe_visits": [
+        979336128,
+        753267251,
+        1140806433,
+        4315506693
+      ]
+    },
+    "winners": {
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "method": "mesh",
+      "broad_phase": "blocks",
+      "include_vertices": false,
+      "stiffness_scope": "pair",
+      "physical_s": 5.0,
+      "requested_s": 5.0,
+      "step_s": 9.999999999999999e-05,
+      "terminated": "complete",
+      "coordinates": 3,
+      "pairs": 2,
+      "contact_samples": 16,
+      "minimum_step_s": 2.4414062499999998e-08,
+      "explicit_crossing_enabled": true,
+      "explicit_crossings": 0,
+      "directional_probes": [
+        [
+          10608,
+          3888
+        ],
+        [
+          12848,
+          21956
+        ]
+      ],
+      "steps": 50000,
+      "trials": 1603242,
+      "lanes": 4,
+      "aggregate_winners": true,
+      "kernel_attributes": {
+        "max_threads_per_block": 384,
+        "shared_size_bytes": 0,
+        "const_size_bytes": 0,
+        "local_size_bytes": 696,
+        "num_regs": 142,
+        "ptx_version": 86,
+        "binary_version": 86,
+        "cache_mode_ca": 0,
+        "max_dynamic_shared_size_bytes": 49152,
+        "preferred_shared_memory_carveout": -1
+      },
+      "contact_floor_nm": 0.0001,
+      "accepted_increments": 799815,
+      "setup_s": 73.78260810000938,
+      "online_s": 128.67481769999722,
+      "p99_us": 3689.472,
+      "over_budget": 50000,
+      "device_pool_MiB": 210.3740234375,
+      "peak_normal_N": [
+        4420.400228123352,
+        9391.60538064749
+      ],
+      "max_active_regions": [
+        1.0,
+        1.0
+      ],
+      "phase_profile": {
+        "prepare_s": 30.522589344000004,
+        "search_s": 67.598403648,
+        "merge_and_hht_s": 29.99857408,
+        "online_trials": 1603241,
+        "trials_after_newton_update": 803393,
+        "directional_probe_visits": [
+          979336128,
+          753267251,
+          1140806433,
+          4315506693
+        ]
+      },
+      "guard_mm": 0.8,
+      "directional_rebuilds": [
+        190549,
+        98109,
+        112983,
+        62770
+      ],
+      "directional_probe_visits": [
+        979336128,
+        753267251,
+        1140806433,
+        4315506693
+      ]
+    },
+    "predictor": {
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "method": "mesh",
+      "broad_phase": "blocks",
+      "include_vertices": false,
+      "stiffness_scope": "pair",
+      "physical_s": 5.0,
+      "requested_s": 5.0,
+      "step_s": 9.999999999999999e-05,
+      "terminated": "complete",
+      "coordinates": 3,
+      "pairs": 2,
+      "contact_samples": 16,
+      "minimum_step_s": 2.4414062499999998e-08,
+      "explicit_crossing_enabled": true,
+      "explicit_crossings": 0,
+      "directional_probes": [
+        [
+          10608,
+          3888
+        ],
+        [
+          12848,
+          21956
+        ]
+      ],
+      "steps": 50000,
+      "trials": 1603242,
+      "lanes": 4,
+      "contact_floor_nm": 0.0001,
+      "accepted_increments": 799815,
+      "setup_s": 47.267198299989104,
+      "online_s": 127.55296579998685,
+      "p99_us": 3683.328,
+      "over_budget": 50000,
+      "device_pool_MiB": 210.3740234375,
+      "peak_normal_N": [
+        4420.400228123352,
+        9391.60538064749
+      ],
+      "max_active_regions": [
+        1.0,
+        1.0
+      ],
+      "phase_profile": {
+        "prepare_s": 28.344209792,
+        "search_s": 67.54313881600001,
+        "merge_and_hht_s": 31.116600608000002,
+        "online_trials": 1603241,
+        "trials_after_newton_update": 803393,
+        "directional_probe_visits": [
+          979336128,
+          753267251,
+          1140806433,
+          4315506693
+        ]
+      },
+      "guard_mm": 0.8,
+      "directional_rebuilds": [
+        190549,
+        98109,
+        112983,
+        62770
+      ],
+      "directional_probe_visits": [
+        979336128,
+        753267251,
+        1140806433,
+        4315506693
+      ]
+    },
+    "sized-solver": {
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "method": "mesh",
+      "broad_phase": "blocks",
+      "include_vertices": false,
+      "stiffness_scope": "pair",
+      "physical_s": 5.0,
+      "requested_s": 5.0,
+      "step_s": 9.999999999999999e-05,
+      "terminated": "complete",
+      "coordinates": 3,
+      "pairs": 2,
+      "contact_samples": 16,
+      "minimum_step_s": 2.4414062499999998e-08,
+      "explicit_crossing_enabled": true,
+      "explicit_crossings": 0,
+      "directional_probes": [
+        [
+          10608,
+          3888
+        ],
+        [
+          12848,
+          21956
+        ]
+      ],
+      "steps": 50000,
+      "trials": 1603264,
+      "lanes": 4,
+      "contact_floor_nm": 0.0001,
+      "accepted_increments": 799815,
+      "setup_s": 56.63430399997742,
+      "online_s": 124.83781620001537,
+      "p99_us": 3616.768,
+      "over_budget": 50000,
+      "device_pool_MiB": 210.3740234375,
+      "peak_normal_N": [
+        4420.400228123352,
+        9391.60538064749
+      ],
+      "max_active_regions": [
+        1.0,
+        1.0
+      ],
+      "phase_profile": {
+        "prepare_s": 29.976802336000002,
+        "search_s": 67.229359648,
+        "merge_and_hht_s": 27.123448608,
+        "online_trials": 1603263,
+        "trials_after_newton_update": 803415,
+        "directional_probe_visits": [
+          979349590,
+          753277604,
+          1140822172,
+          4315566723
+        ]
+      },
+      "guard_mm": 0.8,
+      "directional_rebuilds": [
+        190549,
+        98109,
+        112983,
+        62770
+      ],
+      "directional_probe_visits": [
+        979349590,
+        753277604,
+        1140822172,
+        4315566723
+      ]
+    },
+    "sized-repeat": {
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "method": "mesh",
+      "broad_phase": "blocks",
+      "include_vertices": false,
+      "stiffness_scope": "pair",
+      "physical_s": 5.0,
+      "requested_s": 5.0,
+      "step_s": 9.999999999999999e-05,
+      "terminated": "complete",
+      "coordinates": 3,
+      "pairs": 2,
+      "contact_samples": 16,
+      "minimum_step_s": 2.4414062499999998e-08,
+      "explicit_crossing_enabled": true,
+      "explicit_crossings": 0,
+      "directional_probes": [
+        [
+          10608,
+          3888
+        ],
+        [
+          12848,
+          21956
+        ]
+      ],
+      "steps": 50000,
+      "trials": 1603264,
+      "lanes": 4,
+      "solver_layout": "sized",
+      "kernel_attributes": {
+        "max_threads_per_block": 384,
+        "shared_size_bytes": 0,
+        "const_size_bytes": 0,
+        "local_size_bytes": 144,
+        "num_regs": 140,
+        "ptx_version": 86,
+        "binary_version": 86,
+        "cache_mode_ca": 0,
+        "max_dynamic_shared_size_bytes": 49152,
+        "preferred_shared_memory_carveout": -1
+      },
+      "contact_floor_nm": 0.0001,
+      "accepted_increments": 799815,
+      "setup_s": 47.19439409999177,
+      "online_s": 124.83303350000642,
+      "p99_us": 3602.442240000002,
+      "over_budget": 50000,
+      "device_pool_MiB": 210.3740234375,
+      "peak_normal_N": [
+        4420.400228123352,
+        9391.60538064749
+      ],
+      "max_active_regions": [
+        1.0,
+        1.0
+      ],
+      "phase_profile": {
+        "prepare_s": 30.037549600000002,
+        "search_s": 67.14887856,
+        "merge_and_hht_s": 27.116101536000002,
+        "online_trials": 1603263,
+        "trials_after_newton_update": 803415,
+        "directional_probe_visits": [
+          979349590,
+          753277604,
+          1140822172,
+          4315566723
+        ]
+      },
+      "guard_mm": 0.8,
+      "directional_rebuilds": [
+        190549,
+        98109,
+        112983,
+        62770
+      ],
+      "directional_probe_visits": [
+        979349590,
+        753277604,
+        1140822172,
+        4315566723
+      ]
+    },
+    "dynamic-repeat": {
+      "gpu": "NVIDIA GeForce RTX 3070",
+      "method": "mesh",
+      "broad_phase": "blocks",
+      "include_vertices": false,
+      "stiffness_scope": "pair",
+      "physical_s": 5.0,
+      "requested_s": 5.0,
+      "step_s": 9.999999999999999e-05,
+      "terminated": "complete",
+      "coordinates": 3,
+      "pairs": 2,
+      "contact_samples": 16,
+      "minimum_step_s": 2.4414062499999998e-08,
+      "explicit_crossing_enabled": true,
+      "explicit_crossings": 0,
+      "directional_probes": [
+        [
+          10608,
+          3888
+        ],
+        [
+          12848,
+          21956
+        ]
+      ],
+      "steps": 50000,
+      "trials": 1603242,
+      "lanes": 4,
+      "solver_layout": "dynamic",
+      "kernel_attributes": {
+        "max_threads_per_block": 384,
+        "shared_size_bytes": 0,
+        "const_size_bytes": 0,
+        "local_size_bytes": 696,
+        "num_regs": 142,
+        "ptx_version": 86,
+        "binary_version": 86,
+        "cache_mode_ca": 0,
+        "max_dynamic_shared_size_bytes": 49152,
+        "preferred_shared_memory_carveout": -1
+      },
+      "contact_floor_nm": 0.0001,
+      "accepted_increments": 799815,
+      "setup_s": 48.690166699991096,
+      "online_s": 128.53980369999772,
+      "p99_us": 3710.976,
+      "over_budget": 50000,
+      "device_pool_MiB": 210.3740234375,
+      "peak_normal_N": [
+        4420.400228123352,
+        9391.60538064749
+      ],
+      "max_active_regions": [
+        1.0,
+        1.0
+      ],
+      "phase_profile": {
+        "prepare_s": 30.595694944,
+        "search_s": 67.49772540800001,
+        "merge_and_hht_s": 29.883786464000003,
+        "online_trials": 1603241,
+        "trials_after_newton_update": 803393,
+        "directional_probe_visits": [
+          979336128,
+          753267251,
+          1140806433,
+          4315506693
+        ]
+      },
+      "guard_mm": 0.8,
+      "directional_rebuilds": [
+        190549,
+        98109,
+        112983,
+        62770
+      ],
+      "directional_probe_visits": [
+        979336128,
+        753267251,
+        1140806433,
+        4315506693
+      ]
+    }
+  },
+  "audits": {
+    "winners": {
+      "bitwise_equal": true,
+      "response_sha256": "ebd31ebad2c3400f0589b3e2afc484dce821f1df3bc005f149e67cbca24893c5",
+      "max_abs_difference_by_column": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_abs_normal_load_difference_N": 0.0,
+      "max_abs_contact_torque_difference_Nm": 0.0,
+      "load_switch_mismatches": [
+        0,
+        0
+      ],
+      "output_torque_peak_Nm": 580.0216121705524,
+      "output_torque_peak_step": 5,
+      "output_torque_max_jump_Nm": 349.4381862473079
+    },
+    "predictor": {
+      "bitwise_equal": true,
+      "response_sha256": "ebd31ebad2c3400f0589b3e2afc484dce821f1df3bc005f149e67cbca24893c5",
+      "max_abs_difference_by_column": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_abs_normal_load_difference_N": 0.0,
+      "max_abs_contact_torque_difference_Nm": 0.0,
+      "load_switch_mismatches": [
+        0,
+        0
+      ],
+      "output_torque_peak_Nm": 580.0216121705524,
+      "output_torque_peak_step": 5,
+      "output_torque_max_jump_Nm": 349.4381862473079
+    },
+    "sized-solver": {
+      "bitwise_equal": false,
+      "response_sha256": "0de87d3dbaf3fbd44fb5a7ebf0d7f0a741275385c441019e427c10baefff8056",
+      "max_abs_difference_by_column": [
+        2.662760853824886e-12,
+        1.3238455470743205e-12,
+        6.995111954954947e-13,
+        6.480924685803302e-09,
+        2.19453516470125e-09,
+        1.3200259219026123e-09,
+        2.053398475254653e-06,
+        5.815162040789801e-08,
+        1.1610660521910177e-07,
+        0.0,
+        1.6493268049089238e-06,
+        5.121630408666533e-08,
+        1.0163105912397441e-07,
+        0.0
+      ],
+      "max_abs_normal_load_difference_N": 2.053398475254653e-06,
+      "max_abs_contact_torque_difference_Nm": 1.1610660521910177e-07,
+      "load_switch_mismatches": [
+        0,
+        0
+      ],
+      "output_torque_peak_Nm": 580.0216121705524,
+      "output_torque_peak_step": 5,
+      "output_torque_max_jump_Nm": 349.4381862473079
+    },
+    "sized-repeat": {
+      "bitwise_equal": false,
+      "response_sha256": "0de87d3dbaf3fbd44fb5a7ebf0d7f0a741275385c441019e427c10baefff8056",
+      "max_abs_difference_by_column": [
+        2.662760853824886e-12,
+        1.3238455470743205e-12,
+        6.995111954954947e-13,
+        6.480924685803302e-09,
+        2.19453516470125e-09,
+        1.3200259219026123e-09,
+        2.053398475254653e-06,
+        5.815162040789801e-08,
+        1.1610660521910177e-07,
+        0.0,
+        1.6493268049089238e-06,
+        5.121630408666533e-08,
+        1.0163105912397441e-07,
+        0.0
+      ],
+      "max_abs_normal_load_difference_N": 2.053398475254653e-06,
+      "max_abs_contact_torque_difference_Nm": 1.1610660521910177e-07,
+      "load_switch_mismatches": [
+        0,
+        0
+      ],
+      "output_torque_peak_Nm": 580.0216121705524,
+      "output_torque_peak_step": 5,
+      "output_torque_max_jump_Nm": 349.4381862473079
+    },
+    "dynamic-repeat": {
+      "bitwise_equal": true,
+      "response_sha256": "ebd31ebad2c3400f0589b3e2afc484dce821f1df3bc005f149e67cbca24893c5",
+      "max_abs_difference_by_column": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_abs_normal_load_difference_N": 0.0,
+      "max_abs_contact_torque_difference_Nm": 0.0,
+      "load_switch_mismatches": [
+        0,
+        0
+      ],
+      "output_torque_peak_Nm": 580.0216121705524,
+      "output_torque_peak_step": 5,
+      "output_torque_max_jump_Nm": 349.4381862473079
+    }
+  },
+  "reference_sha256": "ebd31ebad2c3400f0589b3e2afc484dce821f1df3bc005f149e67cbca24893c5",
+  "comparison_run": "sized-repeat",
+  "speedup": 1.0300244109664507
+}

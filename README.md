@@ -42,6 +42,8 @@ The earlier hybrid prototype used `--device cuda-columns`. The host controlled t
 
 The GPU mesh query accepts one current rigid transform per body pair. It traverses local-space AABB trees, conservatively rejects separated triangles and tests the remaining finite triangles in double precision. It returns original triangle IDs and can construct intersection points, segments, polygons and winding normals. The same query handles independently moving bodies and exchanged body order. [Implementation](nurbscontact_gpu/bvh.py) · [Five-second geometry measurements and validation](results/aes/gpu-mesh-geometry/README.md)
 
+The batched detector now evaluates the FP64 separating axes with eight cooperating lanes per triangle pair (`fine_lanes=1` selects the scalar control). On the full five-second reducer pose replay, paired three-run medians decreased from 6.713 s to 6.160 s; all 100,000 body-pair intersection sets match the original FP64 implementation. These are geometry-only timings. The separate sampled-mesh closed loop took about 125 s after sizing its local HHT matrix to the input coordinate count; it does not yet implement the CPU contour-ray force definition or meet real-time throughput. [Optimization results and full response curves](results/aes/gpu-mesh-speed/README.md)
+
 The released fixed-parallel-hinge package uses a precomputed configuration map for contact loads. Its five-second closed-loop timing applies to that configuration-map method. [Archived GPU package](https://github.com/W-Moorer/NurbsCONTACT/releases/tag/gpu-backend-v0.1.1) · [Reproduction instructions](nurbscontact_gpu/README.md)
 
 ### Geometry core

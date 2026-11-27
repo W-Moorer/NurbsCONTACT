@@ -144,6 +144,7 @@ def solve(args):
         f"-DNC_DEPTH_FLOOR_MM={depth_floor:.17g}",
         "-DNC_TWO_SIDED",
         f"-DASSEMBLY_TICKS={args.ticks}",
+        f"-DNC_ASSEMBLY_COORDINATES={n if args.solver_layout == 'sized' else 0}",
     )
     if audit_args:
         options += ("-DNC_ASSEMBLY_AUDIT",)
@@ -389,6 +390,8 @@ def solve(args):
         steps=steps - 1,
         trials=trials,
         lanes=args.lanes,
+        solver_layout=args.solver_layout,
+        kernel_attributes=advance.attributes,
         contact_floor_nm=args.contact_floor_nm,
         accepted_increments=increments - 1,
         setup_s=tic - start,
@@ -532,6 +535,10 @@ if __name__ == "__main__":
         help="Change the integration step, preserving the deck's piecewise-linear loads",
     )
     p.add_argument("--pitch", type=float, default=0.8)
+    p.add_argument(
+        "--solver-layout", choices=("sized", "dynamic"), default="sized",
+        help="Size the local tangent to the input coordinate count, or use the original runtime layout",
+    )
     p.add_argument(
         "--broad-phase",
         choices=("projection", "blocks"),

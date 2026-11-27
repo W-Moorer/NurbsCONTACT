@@ -1,5 +1,7 @@
 # Historical fixed-hinge GPU package
 
+The independent `bvh.IntersectionBatch` API accepts a current three-dimensional rigid transform for each declared body pair. Its default `fine_lanes=8` cooperatively evaluates the same finite FP64 triangle predicate; `fine_lanes=1` is the scalar control. This API returns intersections, without deriving forces from a configuration map. The five-second geometry replay and the separate sampled-mesh dynamics timings are documented in [the current optimization report](../results/aes/gpu-mesh-speed/README.md). The historical closed-loop package described below retains its original scope.
+
 The GPU backend integrates rigid bodies on fixed parallel revolute axes using finite triangle intersection, a precomputed contact wrench or material point map and a generalized-alpha integrator. The wheel includes the CUDA kernels and the native library for synchronous load and wrench exchange. The validated model uses a shared linear normal penalty. See the [five-second reducer validation](https://github.com/W-Moorer/NurbsCONTACT/tree/main/results/aes/gpu-hinge-mesh).
 
 ## Install
