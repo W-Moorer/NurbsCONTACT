@@ -19,6 +19,8 @@ def main():
     parser.add_argument("--duration", type=float, default=5.0)
     parser.add_argument("--execution", choices=("cooperative", "cached", "batched"), default="cooperative")
     parser.add_argument("--reduction", choices=("ordered", "audit"), default="ordered")
+    parser.add_argument("--profile-links", action="store_true",
+                        help="Collect intrusive connection-stage work counters; not an acceptance timing")
     args = parser.parse_args()
     if not (math.isfinite(args.step) and math.isfinite(args.duration)
             and args.step > 0 and args.duration > 0):
@@ -34,6 +36,8 @@ def main():
         "--spectral-radius", "0", "--region-reduction", args.reduction,
         "--gpu-execution", args.execution,
     ]
+    if args.profile_links:
+        command.extend(("--gpu-profile", "on"))
     executable_hash = hashlib.sha256(args.executable.read_bytes()).hexdigest()
     started = perf_counter()
     with (args.out / "console.log").open("w") as log:
@@ -47,6 +51,7 @@ def main():
         requested_duration_s=args.duration, step_s=args.step, completed=False,
         executable_sha256=executable_hash,
         scene_sha256=hashlib.sha256(args.scene.read_bytes()).hexdigest(),
+        profiled_links=args.profile_links,
     )
     if hashlib.sha256(args.executable.read_bytes()).hexdigest() != executable_hash:
         raise RuntimeError("Executable changed during the measured run")

@@ -1,0 +1,898 @@
+{
+  "before": {
+    "command": [
+      "..\\cad-batch-runs\\pruned-runtime.exe",
+      "..\\github-cpu-recheck\\00d0f2a2\\inputs\\scene\\common-200.scene",
+      "0",
+      "0.0001",
+      "5.0",
+      "1",
+      "..\\cad-batch-runs\\pruned-fine\\response",
+      "--method",
+      "cad-compiled",
+      "--device",
+      "cuda-resident",
+      "--solver",
+      "penalty",
+      "--penalty-stiffness",
+      "shared",
+      "--geometry-update",
+      "predictor",
+      "--spectral-radius",
+      "0",
+      "--region-reduction",
+      "ordered",
+      "--gpu-execution",
+      "batched"
+    ],
+    "exit_code": 0,
+    "process_s": 288.8299662999925,
+    "requested_duration_s": 5.0,
+    "step_s": 0.0001,
+    "completed": true,
+    "executable_sha256": "d6636adb849f3ed5e53b899b05d0d256e120aba6e6663fb26ca59633addaf7e7",
+    "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+    "gpu": {
+      "online_s": "264.53484150000003",
+      "broad_s": "14.921453568",
+      "sort_s": "6.9021655040000001",
+      "search_s": "59.35998464",
+      "group_s": "91.319243776000008",
+      "integral_s": "64.23956684800001",
+      "p50_step_s": "0.0047708160000000006",
+      "p99_step_s": "0.011456512",
+      "max_step_s": "0.236131328",
+      "missed_deadlines": "50000",
+      "steps": "50000",
+      "reduction_s": "1.0477332480000001",
+      "reductions": "256013",
+      "checked_links": "0",
+      "execution": "batched",
+      "accepted_level_0": "49956",
+      "accepted_level_1": "88",
+      "accepted_level_2": "0",
+      "accepted_level_3": "0",
+      "accepted_level_4": "0",
+      "accepted_level_5": "0",
+      "accepted_level_6": "0",
+      "accepted_level_7": "0",
+      "accepted_level_8": "0",
+      "proposals": "43542236",
+      "face_groups": "1606471",
+      "confirmed_groups": "364850",
+      "seed_hits": "243257",
+      "maximum_proposals": "664",
+      "maximum_groups": "29",
+      "blocker_checks": "0",
+      "blocker_hits": "0",
+      "warp_segments": "239234",
+      "scalar_segments": "11218",
+      "separated_groups": "105589",
+      "path_checks": "0",
+      "path_hits": "0",
+      "batched_rays": "105672494",
+      "ray_batches": "164178"
+    },
+    "statistics": {
+      "wall_s": "264.53484150000003",
+      "setup_s": "8.8033838999999539",
+      "steps": "50000",
+      "accepted": "50044",
+      "subdivisions": "44",
+      "force_evaluations": "185760",
+      "max_residual": "9.1456180939530896e-07",
+      "pairs": "0",
+      "culled": "0",
+      "rays": "0",
+      "missing": "0",
+      "triangle_tests": "0",
+      "closest_queries": "0",
+      "unresolved_queries": "0",
+      "native_nodes": "0",
+      "ccd_checks": "0",
+      "ccd_rejected": "0",
+      "ccd_nodes": "0",
+      "ccd_unresolved": "0",
+      "saved_contact_reuses": "50001",
+      "mesh_boolean_queries": "0",
+      "mesh_boolean_input_faces": "0",
+      "mesh_local_solid_uses": "0",
+      "mesh_local_solid_builds": "0",
+      "mesh_detection_s": "0",
+      "mesh_placement_s": "0",
+      "mesh_boolean_s": "0",
+      "cad_boolean_queries": "0",
+      "cad_event_distances": "0",
+      "chen_patch_queries": "0",
+      "chen_confirmed_candidates": "0",
+      "event_tolerance_s": "0",
+      "solver": "penalty",
+      "impulse_solves": "0",
+      "impulse_regions": "0",
+      "impulse_iterations": "0",
+      "impulse_residual_m_s": "0",
+      "ccd_refinements": "0",
+      "ccd_refined_clear": "0",
+      "tdib_cells": "0",
+      "tdib_candidates": "0",
+      "tdib_unresolved": "0",
+      "cad_box_tests": "0",
+      "cad_extrema": "0",
+      "cad_classifications": "0",
+      "cad_region_cache_hits": "0",
+      "cad_distance_cache_hits": "0",
+      "cad_witness_tests": "0",
+      "cad_witness_improvements": "0",
+      "mesh_pair_bvh_builds": "0",
+      "mesh_pair_bvh_reuses": "0",
+      "mesh_patch_builds": "0",
+      "mesh_patch_reuses": "0",
+      "mesh_parallel_batches": "0",
+      "mesh_max_workers": "0",
+      "cad_region_index_s": "0",
+      "cad_region_select_s": "0",
+      "cad_region_common_s": "0",
+      "cad_region_extract_s": "0",
+      "cad_patch_queries": "101649",
+      "cad_patch_batches": "0",
+      "cad_patch_batch_s": "0",
+      "cad_patch_broad_s": "0",
+      "cad_patch_search_s": "0",
+      "cad_patch_group_s": "0",
+      "cad_patch_area_s": "0",
+      "cad_window_builds": "0",
+      "cad_window_reuses": "0",
+      "cad_path_reuses": "0",
+      "cad_skipped_area_nodes": "0",
+      "cad_pressure_clipped": "0",
+      "cad_pressure_full": "0",
+      "cad_full_blocks": "0",
+      "cad_partial_blocks": "0",
+      "cad_shared_columns": "0",
+      "cad_depth_tests": "0",
+      "cad_depth_excluded": "0",
+      "cad_depth_refinements": "0",
+      "cad_depth_accepted": "0",
+      "cad_depth_empty_blocks": "0",
+      "cad_depth_interior_blocks": "0",
+      "cad_quadrature_rules": "0",
+      "cad_quadrature_converged": "0",
+      "cuda_column_rays": "0",
+      "cuda_column_subdivisions": "0"
+    },
+    "frames": 50001,
+    "response_sha256": "0b3c1efeb81f86b7c60b380b74b63f3357a1d097b75a5dbe8a570d867ed420bb"
+  },
+  "after": {
+    "command": [
+      "..\\cad-fma-runs\\magnitude-runtime.exe",
+      "..\\github-cpu-recheck\\00d0f2a2\\inputs\\scene\\common-200.scene",
+      "0",
+      "0.0001",
+      "5.0",
+      "1",
+      "..\\cad-fma-runs\\magnitude-fine\\response",
+      "--method",
+      "cad-compiled",
+      "--device",
+      "cuda-resident",
+      "--solver",
+      "penalty",
+      "--penalty-stiffness",
+      "shared",
+      "--geometry-update",
+      "predictor",
+      "--spectral-radius",
+      "0",
+      "--region-reduction",
+      "ordered",
+      "--gpu-execution",
+      "batched"
+    ],
+    "exit_code": 0,
+    "process_s": 212.86292129999492,
+    "requested_duration_s": 5.0,
+    "step_s": 0.0001,
+    "completed": true,
+    "executable_sha256": "0df86a6126874a6e7074b16633592dcd572d2a34a465d2664517d609a76e285e",
+    "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+    "profiled_links": false,
+    "gpu": {
+      "online_s": "191.52948380000001",
+      "broad_s": "13.863037952000001",
+      "sort_s": "6.8787210240000007",
+      "search_s": "49.126933504",
+      "group_s": "42.191748096000005",
+      "integral_s": "53.743826944000006",
+      "p50_step_s": "0.0036321280000000001",
+      "p99_step_s": "0.0055521279999999999",
+      "max_step_s": "0.13337702400000001",
+      "missed_deadlines": "50000",
+      "steps": "50000",
+      "reduction_s": "0.9401804800000001",
+      "reductions": "256008",
+      "checked_links": "0",
+      "execution": "batched",
+      "accepted_level_0": "49956",
+      "accepted_level_1": "88",
+      "accepted_level_2": "0",
+      "accepted_level_3": "0",
+      "accepted_level_4": "0",
+      "accepted_level_5": "0",
+      "accepted_level_6": "0",
+      "accepted_level_7": "0",
+      "accepted_level_8": "0",
+      "proposals": "43541807",
+      "face_groups": "1606449",
+      "confirmed_groups": "364845",
+      "seed_hits": "243251",
+      "maximum_proposals": "664",
+      "maximum_groups": "29",
+      "blocker_checks": "0",
+      "blocker_hits": "0",
+      "warp_segments": "239232",
+      "scalar_segments": "11216",
+      "separated_groups": "105589",
+      "path_checks": "0",
+      "path_hits": "0",
+      "batched_rays": "105669028",
+      "ray_batches": "164173",
+      "fused_math": "1",
+      "profiled_links": "0",
+      "link_cache_work_s": "0",
+      "link_cache_calls": "0",
+      "link_endpoints_work_s": "0",
+      "link_endpoints_calls": "0",
+      "link_direct_work_s": "0",
+      "link_direct_calls": "0",
+      "link_recursive_work_s": "0",
+      "link_recursive_calls": "0"
+    },
+    "statistics": {
+      "wall_s": "191.52948380000001",
+      "setup_s": "6.3905029999999829",
+      "steps": "50000",
+      "accepted": "50044",
+      "subdivisions": "44",
+      "force_evaluations": "185780",
+      "max_residual": "9.1454107923321467e-07",
+      "pairs": "0",
+      "culled": "0",
+      "rays": "0",
+      "missing": "0",
+      "triangle_tests": "0",
+      "closest_queries": "0",
+      "unresolved_queries": "0",
+      "native_nodes": "0",
+      "ccd_checks": "0",
+      "ccd_rejected": "0",
+      "ccd_nodes": "0",
+      "ccd_unresolved": "0",
+      "saved_contact_reuses": "50001",
+      "mesh_boolean_queries": "0",
+      "mesh_boolean_input_faces": "0",
+      "mesh_local_solid_uses": "0",
+      "mesh_local_solid_builds": "0",
+      "mesh_detection_s": "0",
+      "mesh_placement_s": "0",
+      "mesh_boolean_s": "0",
+      "cad_boolean_queries": "0",
+      "cad_event_distances": "0",
+      "chen_patch_queries": "0",
+      "chen_confirmed_candidates": "0",
+      "event_tolerance_s": "0",
+      "solver": "penalty",
+      "impulse_solves": "0",
+      "impulse_regions": "0",
+      "impulse_iterations": "0",
+      "impulse_residual_m_s": "0",
+      "ccd_refinements": "0",
+      "ccd_refined_clear": "0",
+      "tdib_cells": "0",
+      "tdib_candidates": "0",
+      "tdib_unresolved": "0",
+      "cad_box_tests": "0",
+      "cad_extrema": "0",
+      "cad_classifications": "0",
+      "cad_region_cache_hits": "0",
+      "cad_distance_cache_hits": "0",
+      "cad_witness_tests": "0",
+      "cad_witness_improvements": "0",
+      "mesh_pair_bvh_builds": "0",
+      "mesh_pair_bvh_reuses": "0",
+      "mesh_patch_builds": "0",
+      "mesh_patch_reuses": "0",
+      "mesh_parallel_batches": "0",
+      "mesh_max_workers": "0",
+      "cad_region_index_s": "0",
+      "cad_region_select_s": "0",
+      "cad_region_common_s": "0",
+      "cad_region_extract_s": "0",
+      "cad_patch_queries": "101648",
+      "cad_patch_batches": "0",
+      "cad_patch_batch_s": "0",
+      "cad_patch_broad_s": "0",
+      "cad_patch_search_s": "0",
+      "cad_patch_group_s": "0",
+      "cad_patch_area_s": "0",
+      "cad_window_builds": "0",
+      "cad_window_reuses": "0",
+      "cad_path_reuses": "0",
+      "cad_skipped_area_nodes": "0",
+      "cad_pressure_clipped": "0",
+      "cad_pressure_full": "0",
+      "cad_full_blocks": "0",
+      "cad_partial_blocks": "0",
+      "cad_shared_columns": "0",
+      "cad_depth_tests": "0",
+      "cad_depth_excluded": "0",
+      "cad_depth_refinements": "0",
+      "cad_depth_accepted": "0",
+      "cad_depth_empty_blocks": "0",
+      "cad_depth_interior_blocks": "0",
+      "cad_quadrature_rules": "0",
+      "cad_quadrature_converged": "0",
+      "cuda_column_rays": "0",
+      "cuda_column_subdivisions": "0"
+    },
+    "frames": 50001,
+    "response_sha256": "8b4fdf24d2d3a4614e1ca2f11bf3982036e6d1d493d07c578ed1cc3ab144437c"
+  },
+  "cpu_statistics": {
+    "wall_s": "193.6289707",
+    "setup_s": "2.7190652000000002",
+    "steps": "50000",
+    "accepted": "50044",
+    "subdivisions": "44",
+    "force_evaluations": "185691",
+    "max_residual": "9.1431726900736976e-07",
+    "pairs": "371384",
+    "culled": "27",
+    "rays": "0",
+    "missing": "0",
+    "triangle_tests": "0",
+    "closest_queries": "0",
+    "unresolved_queries": "0",
+    "native_nodes": "0",
+    "ccd_checks": "0",
+    "ccd_rejected": "0",
+    "ccd_nodes": "0",
+    "ccd_unresolved": "0",
+    "saved_contact_reuses": "50001",
+    "mesh_boolean_queries": "0",
+    "mesh_boolean_input_faces": "0",
+    "mesh_local_solid_uses": "0",
+    "mesh_local_solid_builds": "0",
+    "mesh_detection_s": "0",
+    "mesh_placement_s": "0",
+    "mesh_boolean_s": "0",
+    "cad_boolean_queries": "0",
+    "cad_event_distances": "0",
+    "chen_patch_queries": "0",
+    "chen_confirmed_candidates": "0",
+    "event_tolerance_s": "0",
+    "solver": "penalty",
+    "impulse_solves": "0",
+    "impulse_regions": "0",
+    "impulse_iterations": "0",
+    "impulse_residual_m_s": "0",
+    "ccd_refinements": "0",
+    "ccd_refined_clear": "0",
+    "tdib_cells": "0",
+    "tdib_candidates": "0",
+    "tdib_unresolved": "0",
+    "cad_box_tests": "0",
+    "cad_extrema": "0",
+    "cad_classifications": "0",
+    "cad_region_cache_hits": "0",
+    "cad_distance_cache_hits": "0",
+    "cad_witness_tests": "0",
+    "cad_witness_improvements": "0",
+    "mesh_pair_bvh_builds": "0",
+    "mesh_pair_bvh_reuses": "0",
+    "mesh_patch_builds": "0",
+    "mesh_patch_reuses": "0",
+    "mesh_parallel_batches": "0",
+    "mesh_max_workers": "0",
+    "cad_region_index_s": "0",
+    "cad_region_select_s": "0",
+    "cad_region_common_s": "0",
+    "cad_region_extract_s": "0",
+    "cad_patch_queries": "101648",
+    "cad_patch_batches": "50089",
+    "cad_patch_batch_s": "174.78442059999912",
+    "cad_patch_broad_s": "80.687332800000462",
+    "cad_patch_search_s": "39.898576900000158",
+    "cad_patch_group_s": "15.439424700000785",
+    "cad_patch_area_s": "99.298627899998692",
+    "cad_window_builds": "0",
+    "cad_window_reuses": "0",
+    "cad_path_reuses": "0",
+    "cad_skipped_area_nodes": "0",
+    "cad_pressure_clipped": "0",
+    "cad_pressure_full": "0",
+    "cad_full_blocks": "0",
+    "cad_partial_blocks": "0",
+    "cad_shared_columns": "0",
+    "cad_depth_tests": "0",
+    "cad_depth_excluded": "0",
+    "cad_depth_refinements": "0",
+    "cad_depth_accepted": "0",
+    "cad_depth_empty_blocks": "0",
+    "cad_depth_interior_blocks": "0",
+    "cad_quadrature_rules": "0",
+    "cad_quadrature_converged": "0"
+  },
+  "cpu_source": "..\\cpu-scaling\\fused-cad-compiled-4-50000",
+  "cpu_rerun": false,
+  "cpu_sha256": "53e8c424b4b8cdd13bc3221ef73f0ebe1d87278f1a68290462ca1a91b22e50dd",
+  "differences_old": {
+    "time_s": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "q0": {
+      "same_missing_pattern": true,
+      "maximum": 3.979039320256561e-11,
+      "rms": 3.4802567779101984e-12
+    },
+    "v0": {
+      "same_missing_pattern": true,
+      "maximum": 5.6608371323818574e-08,
+      "rms": 3.2565240273527025e-09
+    },
+    "a0": {
+      "same_missing_pattern": true,
+      "maximum": 0.0003327235867800482,
+      "rms": 1.2288953011437556e-05
+    },
+    "q1": {
+      "same_missing_pattern": true,
+      "maximum": 2.006572685786523e-11,
+      "rms": 1.7583543482831414e-12
+    },
+    "v1": {
+      "same_missing_pattern": true,
+      "maximum": 2.3786626002220146e-08,
+      "rms": 1.5510649610728783e-09
+    },
+    "a1": {
+      "same_missing_pattern": true,
+      "maximum": 8.763168625591788e-05,
+      "rms": 3.651654291684993e-06
+    },
+    "q2": {
+      "same_missing_pattern": true,
+      "maximum": 1.0061285138363019e-11,
+      "rms": 8.913870558264113e-13
+    },
+    "v2": {
+      "same_missing_pattern": true,
+      "maximum": 1.3836348955464928e-08,
+      "rms": 8.498303443283042e-10
+    },
+    "a2": {
+      "same_missing_pattern": true,
+      "maximum": 4.6044866166994325e-05,
+      "rms": 2.4413253893846905e-06
+    },
+    "b0_x_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b0_y_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b0_z_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b0_angle_rad": {
+      "same_missing_pattern": true,
+      "maximum": 3.979039320256561e-11,
+      "rms": 3.4802567779102558e-12
+    },
+    "b1_x_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b1_y_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b1_z_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b1_angle_rad": {
+      "same_missing_pattern": true,
+      "maximum": 2.006572685786523e-11,
+      "rms": 1.7583543532645444e-12
+    },
+    "b2_x_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b2_y_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b2_z_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b2_angle_rad": {
+      "same_missing_pattern": true,
+      "maximum": 2.006572685786523e-11,
+      "rms": 1.7583543482831977e-12
+    },
+    "b3_x_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b3_y_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b3_z_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b3_angle_rad": {
+      "same_missing_pattern": true,
+      "maximum": 1.0061285138363019e-11,
+      "rms": 8.914644422935464e-13
+    },
+    "p0_gap_m": {
+      "same_missing_pattern": true,
+      "maximum": 5.774799922649877e-14,
+      "rms": 3.5978611962700915e-15
+    },
+    "p0_normal_N": {
+      "same_missing_pattern": true,
+      "maximum": 8.9486511569703e-06,
+      "rms": 5.632674549238253e-07
+    },
+    "p0_friction_N": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "p0_hit": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "p1_gap_m": {
+      "same_missing_pattern": true,
+      "maximum": 6.356011230572792e-14,
+      "rms": 3.8616203504169475e-15
+    },
+    "p1_normal_N": {
+      "same_missing_pattern": true,
+      "maximum": 1.3856858231520164e-05,
+      "rms": 6.091889600211625e-07
+    },
+    "p1_friction_N": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "p1_hit": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "generalized_force0": {
+      "same_missing_pattern": true,
+      "maximum": 2.7777012689966796e-07,
+      "rms": 1.5609269469222197e-08
+    },
+    "generalized_force1": {
+      "same_missing_pattern": true,
+      "maximum": 4.474839485624216e-07,
+      "rms": 3.3380225081770914e-08
+    },
+    "generalized_force2": {
+      "same_missing_pattern": true,
+      "maximum": 8.358059702118226e-07,
+      "rms": 3.7667201626408125e-08
+    }
+  },
+  "differences_cpu": {
+    "time_s": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "q0": {
+      "same_missing_pattern": true,
+      "maximum": 3.603872755775228e-11,
+      "rms": 3.52975973512448e-12
+    },
+    "v0": {
+      "same_missing_pattern": true,
+      "maximum": 5.0922068339787074e-08,
+      "rms": 3.301236899989259e-09
+    },
+    "a0": {
+      "same_missing_pattern": true,
+      "maximum": 0.00028680028754024534,
+      "rms": 1.2353727118647587e-05
+    },
+    "q1": {
+      "same_missing_pattern": true,
+      "maximum": 1.801936377887614e-11,
+      "rms": 1.7828654013494293e-12
+    },
+    "v1": {
+      "same_missing_pattern": true,
+      "maximum": 1.8815342173184035e-08,
+      "rms": 1.5761894544792144e-09
+    },
+    "a1": {
+      "same_missing_pattern": true,
+      "maximum": 7.9555124102626e-05,
+      "rms": 3.7045158793886585e-06
+    },
+    "q2": {
+      "same_missing_pattern": true,
+      "maximum": 9.038103598868474e-12,
+      "rms": 9.03827312277616e-13
+    },
+    "v2": {
+      "same_missing_pattern": true,
+      "maximum": 1.2566331974994682e-08,
+      "rms": 8.641238430966639e-10
+    },
+    "a2": {
+      "same_missing_pattern": true,
+      "maximum": 3.860663855448365e-05,
+      "rms": 2.465672077712233e-06
+    },
+    "b0_x_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b0_y_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b0_z_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b0_angle_rad": {
+      "same_missing_pattern": true,
+      "maximum": 3.603872755775228e-11,
+      "rms": 3.5297597351243687e-12
+    },
+    "b1_x_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b1_y_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b1_z_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b1_angle_rad": {
+      "same_missing_pattern": true,
+      "maximum": 1.801936377887614e-11,
+      "rms": 1.782865406927625e-12
+    },
+    "b2_x_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b2_y_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b2_z_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b2_angle_rad": {
+      "same_missing_pattern": true,
+      "maximum": 1.801936377887614e-11,
+      "rms": 1.7828654013494547e-12
+    },
+    "b3_x_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b3_y_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b3_z_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b3_angle_rad": {
+      "same_missing_pattern": true,
+      "maximum": 9.038103598868474e-12,
+      "rms": 9.03923508361797e-13
+    },
+    "p0_gap_m": {
+      "same_missing_pattern": true,
+      "maximum": 6.864505437600282e-14,
+      "rms": 3.5696380408104904e-15
+    },
+    "p0_normal_N": {
+      "same_missing_pattern": true,
+      "maximum": 8.798836120149645e-06,
+      "rms": 5.555398806217408e-07
+    },
+    "p0_friction_N": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "p0_hit": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "p1_gap_m": {
+      "same_missing_pattern": true,
+      "maximum": 6.179611875922579e-14,
+      "rms": 3.871861687428984e-15
+    },
+    "p1_normal_N": {
+      "same_missing_pattern": true,
+      "maximum": 1.3052547046754626e-05,
+      "rms": 6.06227011079659e-07
+    },
+    "p1_friction_N": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "p1_hit": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "generalized_force0": {
+      "same_missing_pattern": true,
+      "maximum": 2.5644887102771463e-07,
+      "rms": 1.5431296673162593e-08
+    },
+    "generalized_force1": {
+      "same_missing_pattern": true,
+      "maximum": 4.5004270621262776e-07,
+      "rms": 3.2977257574341355e-08
+    },
+    "generalized_force2": {
+      "same_missing_pattern": true,
+      "maximum": 7.8620572452337e-07,
+      "rms": 3.750997991483218e-08
+    }
+  },
+  "contact_events": {
+    "p0_hit": {
+      "different_frames_old": 0,
+      "different_frames_cpu": 0,
+      "transitions": 1,
+      "same_switch_frames_old": true,
+      "same_switch_frames_cpu": true
+    },
+    "p1_hit": {
+      "different_frames_old": 0,
+      "different_frames_cpu": 0,
+      "transitions": 5,
+      "same_switch_frames_old": true,
+      "same_switch_frames_cpu": true
+    }
+  },
+  "curves": {
+    "Input speed [rad/s]": {
+      "maximum_difference_old": 5.6608371323818574e-08,
+      "maximum_difference_cpu": 5.0922068339787074e-08,
+      "increment_difference_old": 5.035460048929963e-08,
+      "peak_time_old": 0.0002,
+      "peak_time_new": 0.0002,
+      "peak_time_cpu": 0.0002
+    },
+    "Middle speed [rad/s]": {
+      "maximum_difference_old": 2.3786626002220146e-08,
+      "maximum_difference_cpu": 1.8815342173184035e-08,
+      "increment_difference_old": 1.28869857007885e-08,
+      "peak_time_old": 0.0004,
+      "peak_time_new": 0.0004,
+      "peak_time_cpu": 0.0004
+    },
+    "Output speed [rad/s]": {
+      "maximum_difference_old": 1.3836348955464928e-08,
+      "maximum_difference_cpu": 1.2566331974994682e-08,
+      "increment_difference_old": 5.909413403060171e-09,
+      "peak_time_old": 0.0007000000000000001,
+      "peak_time_new": 0.0007000000000000001,
+      "peak_time_cpu": 0.0007000000000000001
+    },
+    "Input contact torque [N m]": {
+      "maximum_difference_old": 2.5099460287947295e-07,
+      "maximum_difference_cpu": 2.480669678561753e-07,
+      "increment_difference_old": 3.774448487092741e-07,
+      "peak_time_old": 0.0004,
+      "peak_time_new": 0.0004,
+      "peak_time_cpu": 0.0004
+    },
+    "Middle contact torque [N m]": {
+      "maximum_difference_old": 4.47629204813893e-07,
+      "maximum_difference_cpu": 4.5084922550842066e-07,
+      "increment_difference_old": 7.417265841525023e-07,
+      "peak_time_old": 0.0006000000000000001,
+      "peak_time_new": 0.0006000000000000001,
+      "peak_time_cpu": 0.0006000000000000001
+    },
+    "Output contact torque [N m]": {
+      "maximum_difference_old": 8.362520560467601e-07,
+      "maximum_difference_cpu": 7.866767077757686e-07,
+      "increment_difference_old": 1.4069027685081892e-06,
+      "peak_time_old": 0.0005,
+      "peak_time_new": 0.0005,
+      "peak_time_cpu": 0.0005
+    },
+    "Stage 1 normal load [N]": {
+      "maximum_difference_old": 8.9486511569703e-06,
+      "maximum_difference_cpu": 8.798836120149645e-06,
+      "increment_difference_old": 1.3491778418028844e-05,
+      "peak_time_old": 0.0004,
+      "peak_time_new": 0.0004,
+      "peak_time_cpu": 0.0004
+    },
+    "Stage 2 normal load [N]": {
+      "maximum_difference_old": 1.3856858231520164e-05,
+      "maximum_difference_cpu": 1.3052547046754626e-05,
+      "increment_difference_old": 2.3069425878929906e-05,
+      "peak_time_old": 0.0005,
+      "peak_time_new": 0.0005,
+      "peak_time_cpu": 0.0005
+    },
+    "Middle acceleration [rad/s^2]": {
+      "maximum_difference_old": 8.763168625591788e-05,
+      "maximum_difference_cpu": 7.9555124102626e-05,
+      "increment_difference_old": 8.247615733125713e-05,
+      "peak_time_old": 0.0006000000000000001,
+      "peak_time_new": 0.0006000000000000001,
+      "peak_time_cpu": 0.0006000000000000001
+    }
+  },
+  "exact_response_old": false,
+  "time_alignment": "integer main-step index; increments and cross-history time differences checked within four FP64 ulps; no interpolation",
+  "gpu_speedup": 1.3811703360315746,
+  "cpu_speedup": 1.0109616903797032,
+  "scope": "Absolute numerical agreement; independent physical accuracy not inferred"
+}

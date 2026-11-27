@@ -52,6 +52,7 @@ struct Span {
     V axis;
     double plane_width;
     V power[16];
+    V coefficient_magnitude;
     Range range;
     int cell;
     int count;
@@ -60,6 +61,7 @@ struct Cell {
     Bounds box;
     Range range;
     V su, sv, ru, rv, center;
+    double tangent_scale;
 };
 struct SpanFrame {
     V origin, axes[3];
@@ -97,6 +99,12 @@ struct WeightedSite {
 struct RayPrimitive {
     int face, span_node;
 };
+// A preorder of the face tree with each polynomial face's span tree embedded.
+// frame < 0 uses part coordinates; otherwise box is in that face's OBB frame.
+struct SegmentNode {
+    Bounds box;
+    int face, span, frame, next; // span: -2 analytic, -1 branch, >= 0 polynomial
+};
 struct RayGrid {
     V low, inverse_width;
     int size[3]{};
@@ -123,6 +131,7 @@ struct Tables {
     RayGrid ray_grid{};
     std::vector<int> ray_offsets, ray_ids;
     std::vector<RayPrimitive> ray_primitives;
+    std::vector<SegmentNode> segment_nodes;
     std::vector<Node> faces, spans;
     std::vector<FaceData> charts;
     std::vector<Span> patches;
@@ -208,8 +217,12 @@ struct ResidentResult {
     unsigned long long separated_groups{};
     unsigned long long path_checks{}, path_hits{};
     unsigned long long batched_rays{}, ray_batches{};
+    bool fused_math{}, profiled_links{};
+    double link_work_s[4]{};
+    unsigned long long link_calls[4]{};
 };
 ResidentResult advance_resident(const ResidentScene &, double step, int steps,
                                 RegionReduction = RegionReduction::ordered,
-                                ResidentExecution = ResidentExecution::cooperative);
+                                ResidentExecution = ResidentExecution::cooperative,
+                                bool profile_links = false);
 } // namespace nc::compiled::device

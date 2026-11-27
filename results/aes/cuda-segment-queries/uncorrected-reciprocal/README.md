@@ -1,0 +1,1 @@
+This candidate is rejected. It ran in 173.22 and 173.60 s but replacing division by a bare reciprocal multiply changed a Newton decision near 3.901 s. It took 45 subdivisions rather than 44 and produced a local normal-load difference of up to 17.48 N versus the archived CPU response. Do not use its timings as accuracy-preserving acceptance results.

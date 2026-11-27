@@ -111,6 +111,33 @@ void revolved_rays() {
                 "revolved chart ray differs from analytic exit");
     }
 }
+void transverse_rays() {
+    // Long extrusion of z=(u-1/2)^2. A ray parallel to the extrusion must
+    // resolve a miss without spending its budget slicing the long direction.
+    const Rect domain{{0, 1}, {0, 1}};
+    PartFile file;
+    file.geometry.trims.emplace_back();
+    file.faces.push_back({domain, {0, 0, -.09}, {1, 1000, .25}, 1e-7, 1, true});
+    BezierSurface surface{4, 4, {}, domain};
+    for (int i = 0; i < 4; ++i)
+        for (int j = 0; j < 4; ++j)
+            surface.poles.push_back(homogeneous(point(
+                {i / 3., 1000. * j / 3., .25 - i / 3. + i * (i - 1) / 6.})));
+    file.geometry.patches.push_back({surface, domain, 1, 0});
+    auto gpu = cuda_columns(Solid(std::move(file)), false, 1.);
+    const double dz = 1e-7;
+    std::vector<device::Ray> rays{
+        {{{.5, -1, -1e-6}}, {{0, 1, 0}}},
+        {{{.25, -1, .0625 + 1e-5}}, {{0, 1, 0}}},
+        {{{.25, -1, .0625 - 1e-5}}, {{0, std::sqrt(1 - dz * dz), dz}}}
+    };
+    std::vector<device::Hit> hits;
+    gpu->trace(rays, 1000., hits);
+    require(hits.size() == 3 && hits[0].face == -1 && hits[1].face == -1,
+            "long transverse extrusion miss was not resolved");
+    require(hits[2].face == 0 && std::abs(hits[2].t - 100.) < 1e-5,
+            "near-parallel extrusion crossing differs from analytic depth");
+}
 void resident_boxes() {
     const auto geometry=cuda_columns(Solid(box()),true,.4);
     device::ResidentScene scene;
@@ -381,7 +408,9 @@ int main(int argc,char **argv) {
         trims();
         curved_roots(cuda);
 #ifdef NC_WITH_CUDA_COLUMNS
-        if (cuda) {revolved_rays();resident_boxes();}
+        if (cuda) {
+            revolved_rays();transverse_rays();resident_boxes();
+        }
 #endif
     } catch (const std::exception &e) {
         std::cerr << e.what() << '\n';

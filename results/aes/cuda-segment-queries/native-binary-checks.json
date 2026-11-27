@@ -1,0 +1,21 @@
+{
+  "executable_sha256": "fb72a214d815c496a966cd4bc003ea891f17526f3519370e5e2bffd2b746514a",
+  "checks": [
+    {
+      "command": [
+        "..\\cad-device-verify\\Release\\nc_compiled_tests.exe"
+      ],
+      "exit_code": 0,
+      "seconds": 0.19241139997029677
+    },
+    {
+      "command": [
+        "..\\cad-device-verify\\Release\\nc_compiled_tests.exe",
+        "--cuda"
+      ],
+      "exit_code": 0,
+      "seconds": 2.9459971000324003
+    }
+  ],
+  "binary_scaling_cases": 1048576
+}

@@ -210,6 +210,31 @@ void build_ray_grid(device::Tables &t, const std::vector<device::Bounds> &spans,
         visit(boxes[id], [&](int i) { t.ray_ids[cursor[i]++] = static_cast<int>(id); });
     grid.reach = reach;
 }
+void build_segment_tree(device::Tables &t) {
+    // Retain the original face/span preorder and conservative bounds. Only the
+    // work assignment changes: independent span leaves can occupy separate lanes.
+    std::vector<int> offsets(t.faces.size() + 1);
+    for (size_t i = 0; i < t.faces.size(); ++i) {
+        const int face = t.faces[i].leaf;
+        offsets[i + 1] = offsets[i] + 1;
+        if (face >= 0 && t.charts[face].first >= 0)
+            offsets[i + 1] += t.charts[face].end - t.charts[face].first;
+    }
+    t.segment_nodes.reserve(offsets.back());
+    for (size_t i = 0; i < t.faces.size(); ++i) {
+        const auto &node = t.faces[i];
+        const int face = node.leaf;
+        const bool analytic = face >= 0 && t.charts[face].first < 0;
+        t.segment_nodes.push_back({node.box, face, analytic ? -2 : -1, -1, offsets.at(node.next)});
+        if (face < 0 || analytic) continue;
+        const auto &f = t.charts[face];
+        const int base = static_cast<int>(t.segment_nodes.size());
+        for (int j = f.first; j < f.end; ++j) {
+            const auto &s = t.spans[j];
+            t.segment_nodes.push_back({s.box, face, s.leaf, face, base + s.next - f.first});
+        }
+    }
+}
 } // namespace
 std::shared_ptr<device::Columns> cuda_columns(const Solid &solid, bool prepare_rules, double ray_reach_mm) {
     device::Tables t;
@@ -312,7 +337,8 @@ std::shared_ptr<device::Columns> cuda_columns(const Solid &solid, bool prepare_r
                     s.count = static_cast<int>(p.cells.size());
                     for (const auto &c : p.cells)
                         t.cells.push_back({pack(c.bounds), pack(c.rect), pack(c.slope[0]), pack(c.slope[1]),
-                                           pack(c.radius[0]), pack(c.radius[1]), pack(c.center)});
+                                           pack(c.radius[0]), pack(c.radius[1]), pack(c.center),
+                                           0}); // Device setup computes the original FP64 scale/order.
                     frame.origin = pack(p.anchor);
                     for (int k = 0; k < 3; ++k)
                         frame.axes[k] = pack(p.frame[k]);
@@ -325,6 +351,7 @@ std::shared_ptr<device::Columns> cuda_columns(const Solid &solid, bool prepare_r
         t.charts.push_back(face);
     }
     build_ray_grid(t, span_bounds, ray_reach_mm);
+    build_segment_tree(t);
     return std::make_shared<device::Columns>(t);
 }
 } // namespace nc::compiled

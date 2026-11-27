@@ -1,0 +1,137 @@
+--- a/src/cuda_columns.hpp
++++ b/src/cuda_columns.hpp
+@@ -52,6 +52,7 @@
+     V axis;
+     double plane_width;
+     V power[16];
++    V net[16]; // Original polynomial Bernstein control points, for transverse exclusion.
+     Range range;
+     int cell;
+     int count;
+--- a/src/compiled_cuda_pack.cpp
++++ b/src/compiled_cuda_pack.cpp
+@@ -331,8 +331,11 @@
+                     s.axis = pack(p.axis);
+                     s.plane_width = p.far_plane - p.near_plane;
+                     s.range = pack(p.full);
+-                    for (int i = 0; i < 16; ++i)
++                    for (int i = 0; i < 16; ++i) {
+                         s.power[i] = pack(p.power[i]);
++                        const auto &h = p.net[i];
++                        s.net[i] = {{h[0] / h[3], h[1] / h[3], h[2] / h[3]}};
++                    }
+                     s.cell = static_cast<int>(t.cells.size());
+                     s.count = static_cast<int>(p.cells.size());
+                     for (const auto &c : p.cells)
+--- a/src/cuda_cad_roots.cuh
++++ b/src/cuda_cad_roots.cuh
+@@ -455,6 +455,90 @@
+     }
+     return n ? -2 : 0;
+ }
++// Exclusion-only version of compiled_bezier.cpp's transverse Bernstein clipping.
++// A failed/inconclusive clip leaves the existing enclosure/root solver intact.
++__device__ bool clip_parameter_device(const double *lo, const double *hi, double pad,
++                                      double &left, double &right) {
++    double l = 1, h = 0;
++    for (int i = 0; i < 4; ++i) {
++        if (lo[i] <= pad && hi[i] >= -pad) { l = fmin(l, i / 3.); h = fmax(h, i / 3.); }
++        for (int j = i + 1; j < 4; ++j) {
++            if ((lo[i] > pad && lo[j] > pad) || (hi[i] < -pad && hi[j] < -pad)) continue;
++            double a = 0, b = 1;
++            if (lo[i] > pad) a = (lo[i] - pad) / (lo[i] - lo[j]);
++            if (hi[i] < -pad) a = (-pad - hi[i]) / (hi[j] - hi[i]);
++            if (lo[j] > pad) b = (pad - lo[i]) / (lo[j] - lo[i]);
++            if (hi[j] < -pad) b = (hi[i] + pad) / (hi[i] - hi[j]);
++            l = fmin(l, fmin((i + (j - i) * a) / 3., (i + (j - i) * b) / 3.));
++            h = fmax(h, fmax((i + (j - i) * a) / 3., (i + (j - i) * b) / 3.));
++        }
++    }
++    left = fmax(left, l - 1e-10); right = fmin(right, h + 1e-10);
++    return left <= right;
++}
++__device__ V mix_control(V a, V b, double t) { return sum3(a, scale(sub(b, a), t)); }
++__device__ void restrict_controls(V *points, bool along, double lo, double hi) {
++    for (int k = 0; k < 4; ++k) {
++        const int first = along ? k : 4 * k, stride = along ? 4 : 1;
++        V endpoint[2], tangent[2];
++        for (int side = 0; side < 2; ++side) {
++            const double t = side ? hi : lo;
++            V a = mix_control(points[first], points[first + stride], t),
++              b = mix_control(points[first + stride], points[first + 2 * stride], t),
++              c = mix_control(points[first + 2 * stride], points[first + 3 * stride], t);
++            const V x = mix_control(a, b, t), y = mix_control(b, c, t);
++            endpoint[side] = mix_control(x, y, t); tangent[side] = sub(y, x);
++        }
++        points[first] = endpoint[0];
++        points[first + stride] = sum3(endpoint[0], scale(tangent[0], hi - lo));
++        points[first + 2 * stride] = sub(endpoint[1], scale(tangent[1], hi - lo));
++        points[first + 3 * stride] = endpoint[1];
++    }
++}
++__device__ __noinline__ bool transverse_clear(const Span &s, Ray ray, double end, double tol) {
++    V x = cross(ray.d, fabs(ray.d.x[0]) < .7 ? V{{1, 0, 0}} : V{{0, 1, 0}});
++    x = scale(x, 1 / norm(x));
++    const V y = cross(ray.d, x);
++    V points[16];
++    double magnitude = 1 + norm(ray.p);
++    for (int i = 0; i < 16; ++i) {
++        const V p = sub(s.net[i], ray.p);
++        points[i] = {{dot(x, p), dot(y, p), dot(ray.d, p)}};
++        magnitude += norm(s.net[i]);
++    }
++    const double pad = 2 * tol + 4096. * 2.2204460492503131e-16 * magnitude;
++    for (int pass = 0; pass < 6; ++pass) {
++        V a = sub(points[12], points[0]), b = sub(points[3], points[0]);
++        const double aa = a.x[0] * a.x[0] + a.x[1] * a.x[1],
++                     bb = b.x[0] * b.x[0] + b.x[1] * b.x[1];
++        const V tangent = aa > bb ? a : b;
++        const double mag = sqrt(fmax(aa, bb));
++        double zl = 1e300, zh = -1e300;
++        for (const auto &p : points) { zl = fmin(zl, p.x[2]); zh = fmax(zh, p.x[2]); }
++        if (zl > end + tol + pad || zh < -tol - pad) return true;
++        double ul = 0, uh = 1, vl = 0, vh = 1;
++        for (int axis = 0; axis < 3; ++axis) {
++            if (!axis && mag < 1e-16) continue;
++            double low_u[4], high_u[4], low_v[4], high_v[4];
++            for (int k = 0; k < 4; ++k) {
++                low_u[k] = low_v[k] = 1e300; high_u[k] = high_v[k] = -1e300;
++            }
++            for (int i = 0; i < 4; ++i) for (int j = 0; j < 4; ++j) {
++                const auto p = points[4 * i + j];
++                const double v = axis ? p.x[axis - 1] :
++                    (p.x[0] * tangent.x[1] - p.x[1] * tangent.x[0]) / mag;
++                low_u[i] = fmin(low_u[i], v); high_u[i] = fmax(high_u[i], v);
++                low_v[j] = fmin(low_v[j], v); high_v[j] = fmax(high_v[j], v);
++            }
++            if (!clip_parameter_device(low_u, high_u, pad, ul, uh) ||
++                !clip_parameter_device(low_v, high_v, pad, vl, vh)) return true;
++        }
++        if (fmin(uh - ul, vh - vl) > .95) return false;
++        if (uh - ul <= .95) restrict_controls(points, true, ul, uh);
++        if (vh - vl <= .95) restrict_controls(points, false, vl, vh);
++    }
++    return false;
++}
+ __device__ __noinline__ int span_hits(const View &g, int face, int span, Ray ray, double &end, bool any,
+                                       RootSelection &selection) {
+     const auto &f = g.charts[face];
+@@ -464,6 +548,7 @@
+     const auto &frame = g.frames[span];
+     auto cellray = slab_ray({basis(frame.axes, sub(ray.p, frame.origin)), basis(frame.axes, ray.d)});
+     int k = 0;
++    bool clipped = false;
+     for (;;) {
+         const auto &c = g.cells[s.cell + k];
+         if (intersects_slabs(c.box, cellray, end, 2 * f.tol)) {
+@@ -476,6 +561,10 @@
+                     continue;
+                 }
+                 if (fabs(dot(s.axis, ray.d)) >= 1e-12 || s.plane_width >= 1e-10) {
++                    if (!clipped) {
++                        if (transverse_clear(s, ray, end, f.tol)) return 0;
++                        clipped = true;
++                    }
+                     int pass = subdivide(g, face, s, c.range, ray, end, selection, any);
+                     if (pass < 0)
+                         return -3;

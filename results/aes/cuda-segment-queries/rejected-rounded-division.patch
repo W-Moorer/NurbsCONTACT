@@ -1,0 +1,425 @@
+diff --git a/src/cuda_cad_roots.cuh b/src/cuda_cad_roots.cuh
+index c949657..ee6c843 100644
+--- a/src/cuda_cad_roots.cuh
++++ b/src/cuda_cad_roots.cuh
+@@ -325,11 +325,11 @@ __device__ __noinline__ int analytic_hits(const View &g, int id, Ray ray, double
+ // Re-expand a bicubic on a smaller UV rectangle. Bounding each term of the
+ // finite Taylor polynomial on [-1/2,1/2]^2 encloses its first derivatives.
+ __device__ __noinline__ bool restrict_cell(const Span &s, Range r, Ray ray, double end, double tol, Cell &c) {
+-    constexpr int choose[4][4] = {{1}, {1, 1}, {1, 2, 1}, {1, 3, 3, 1}};
+-    double du = (r.U - r.u) / (s.range.U - s.range.u), dv = (r.Vv - r.v) / (s.range.Vv - s.range.v);
+-    double x = ((r.u + r.U) * .5 - s.range.u) / (s.range.U - s.range.u),
+-           y = ((r.v + r.Vv) * .5 - s.range.v) / (s.range.Vv - s.range.v);
+-    double xp[4] = {1, x, x * x, x * x * x}, yp[4] = {1, y, y * y, y * y * y};
++    const double width_u = s.range.U - s.range.u, width_v = s.range.Vv - s.range.v;
++    double du = invariant_divide(r.U - r.u, width_u, s.inverse_u),
++           dv = invariant_divide(r.Vv - r.v, width_v, s.inverse_v);
++    double x = invariant_divide((r.u + r.U) * .5 - s.range.u, width_u, s.inverse_u),
++           y = invariant_divide((r.v + r.Vv) * .5 - s.range.v, width_v, s.inverse_v);
+     double up[4] = {1, du, du * du, du * du * du}, vp[4] = {1, dv, dv * dv, dv * dv * dv};
+     c = {};
+     c.range = r;
+@@ -342,13 +342,26 @@ __device__ __noinline__ bool restrict_cell(const Span &s, Range r, Ray ray, doub
+                 mag += fabs(s.power[i * 4 + j].x[k]);
+         double roundoff = 4096. * 2.2204460492503131e-16 * (1 + mag + fabs(ray.p.x[k]));
+         pad += roundoff;
++        // Translate the tensor polynomial by two cubic Horner shifts. This is
++        // the same finite Taylor expansion as the double binomial sum, without
++        // recomputing its powers and products for each output coefficient.
++        double shifted[16];
++        for (int j = 0; j < 4; ++j) {
++            const double a = s.power[j].x[k], b = s.power[4 + j].x[k],
++                         d = s.power[8 + j].x[k], e = s.power[12 + j].x[k];
++            shifted[j] = ((e * x + d) * x + b) * x + a;
++            shifted[4 + j] = ((3 * e * x + 2 * d) * x + b) * up[1];
++            shifted[8 + j] = (3 * e * x + d) * up[2];
++            shifted[12 + j] = e * up[3];
++        }
+         for (int a = 0; a < 4; ++a)
+             for (int b = 0; b < 4; ++b) {
+-                double term = 0;
+-                for (int i = a; i < 4; ++i)
+-                    for (int j = b; j < 4; ++j)
+-                        term += s.power[i * 4 + j].x[k] * choose[i][a] * choose[j][b] * xp[i - a] * yp[j - b];
+-                term *= up[a] * vp[b];
++                const double *p = shifted + 4 * a;
++                double term;
++                if (b == 0) term = ((p[3] * y + p[2]) * y + p[1]) * y + p[0];
++                else if (b == 1) term = ((3 * p[3] * y + 2 * p[2]) * y + p[1]) * vp[1];
++                else if (b == 2) term = (3 * p[3] * y + p[2]) * vp[2];
++                else term = p[3] * vp[3];
+                 coeff[4 * a + b].x[k] = term;
+                 if (!a && !b) {
+                     c.center.x[k] = term;
+@@ -389,6 +402,7 @@ __device__ __noinline__ bool restrict_cell(const Span &s, Range r, Ray ray, doub
+         if (fabs(dot(sub(c.center, ray.p), axes[k])) > radius)
+             return false;
+     }
++    c.tangent_scale = 1e-14 * norm(c.su) * norm(c.sv);
+     return true;
+ }
+ __device__ __noinline__ int subdivide(const View &g, int id, const Span &s, Range domain, Ray ray, double &end,
+@@ -427,7 +441,12 @@ __device__ __noinline__ int subdivide(const View &g, int id, const Span &s, Rang
+         if (level >= 35)
+             return -2;
+         Range l = r, h = r;
+-        if (norm(c.su) >= norm(c.sv)) {
++        // Subdividing mostly along the ray does not tighten the two transverse
++        // equations. Choose the larger transverse tangent instead; both child
++        // rectangles still cover the complete parent and use the same bounds.
++        const V transverse_u = sub(c.su, scale(ray.d, dot(c.su, ray.d))),
++                transverse_v = sub(c.sv, scale(ray.d, dot(c.sv, ray.d)));
++        if (norm(transverse_u) >= norm(transverse_v)) {
+             l.U = h.u = .5 * (r.u + r.U);
+         } else {
+             l.Vv = h.v = .5 * (r.v + r.Vv);
+@@ -604,6 +623,48 @@ __device__ __noinline__ Hit crossing_warp(const View &g, Ray ray, double end) {
+         return warp_hit(h,0);
+     }
+     const auto slabs = slab_ray(ray);
++    if (g.segment_nodes) {
++        for (int begin = 0; begin < g.segment_count;) {
++            const int index = begin + lane;
++            bool overlaps = false;
++            int skip = 0;
++            if (index < g.segment_count) {
++                const auto &node = g.segment_nodes[index];
++                if (node.frame < 0) overlaps = intersects_slabs(node.box, slabs, end, 1e-6);
++                else {
++                    const auto &f = g.charts[node.frame];
++                    const auto local = slab_ray({basis(f.frame, ray.p), basis(f.frame, ray.d)});
++                    overlaps = intersects_slabs(node.box, local, end, 2 * f.tol);
++                }
++                if (!overlaps) skip = node.next;
++            }
++            for (int distance = 1; distance < 32; distance *= 2) {
++                const int previous = __shfl_up_sync(full, skip, distance);
++                if (lane >= distance) skip = max(skip, previous);
++            }
++            const int preceding = __shfl_up_sync(full, skip, 1);
++            const bool visible = !lane || index >= preceding;
++            const int next = max(begin + 32, __shfl_sync(full, skip, 31));
++            Hit answer{0, -1};
++            if (index < g.segment_count && visible && overlaps) {
++                const auto &node = g.segment_nodes[index];
++                if (node.span != -1) {
++                    RootSelection selection;
++                    double limit = end;
++                    const int code = node.span == -2 ?
++                        analytic_hits(g, node.face, ray, limit, selection, true) :
++                        span_hits(g, node.face, node.span, ray, limit, true, selection);
++                    if (code < 0)
++                        answer = {0, -2, double(node.face), double(node.span == -2 ? 1 : -code)};
++                    else if (code > 0) answer = selection.hit;
++                }
++            }
++            const unsigned stopped = __ballot_sync(full, answer.face != -1);
++            if (stopped) return warp_hit(answer, __ffs(stopped) - 1);
++            begin = next;
++        }
++        return {0, -1};
++    }
+     for (int begin=0;begin<g.n;) {
+         const int index=begin+lane;
+         bool overlaps = false;
+diff --git a/src/cuda_columns.cu b/src/cuda_columns.cu
+index fe5329e..800f41d 100644
+--- a/src/cuda_columns.cu
++++ b/src/cuda_columns.cu
+@@ -69,6 +69,8 @@ struct View {
+     const WeightedSite *rules;
+     const Bounds *trim_intervals;
+     const RayGrid *ray_grid;
++    const SegmentNode *segment_nodes;
++    int segment_count;
+ };
+ __device__ V sub(V a, V b) { return {{a.x[0] - b.x[0], a.x[1] - b.x[1], a.x[2] - b.x[2]}}; }
+ __device__ V scale(V a, double b) { return {{a.x[0] * b, a.x[1] * b, a.x[2] * b}}; }
+@@ -114,9 +116,52 @@ __device__ bool intersects(Bounds b, Ray r, double end, double pad) {
+ struct Jet {
+     V p, u, v;
+ };
++// A precomputed reciprocal supplies a fast candidate. Directed-rounding FMA
++// encloses the exact residual, and adjacent-double midpoints certify RN rounding.
++// Ambiguous halfway/subnormal/extreme cases use the original correctly rounded
++// divide. This preserves division semantics rather than only its relative error.
++__device__ double invariant_divide(double x, double d, double inverse) {
++    if (x == 0 && d > 0) return x;
++    double q = __dmul_rn(x, inverse);
++    q = __fma_rn(__fma_rn(-q, d, x), inverse, q);
++    const auto bits = static_cast<unsigned long long>(__double_as_longlong(q));
++    const auto magnitude = bits & 0x7fffffffffffffffULL;
++    if (!(d > 0) || magnitude < 0x0020000000000000ULL || magnitude >= 0x7fefffffffffffffULL)
++        return __ddiv_rn(x, d);
++    const bool negative = bits >> 63;
++    const double previous = __longlong_as_double(static_cast<long long>(negative ? bits + 1 : bits - 1)),
++                 next = __longlong_as_double(static_cast<long long>(negative ? bits - 1 : bits + 1));
++    const double below = __dmul_rd((q - previous) * .5, d),
++                 above = __dmul_rd((next - q) * .5, d);
++    if (__fma_rd(-q, d, x) > -below && __fma_ru(-q, d, x) < above) return q;
++    return __ddiv_rn(x, d);
++}
++__global__ void division_regression(unsigned *mismatches) {
++    constexpr unsigned long long edge[] = {0, 1, 2, 0x000fffffffffffffULL,
++        0x0010000000000000ULL, 0x0010000000000001ULL, 0x3fe0000000000000ULL,
++        0x3ff0000000000000ULL, 0x3ff0000000000001ULL, 0x4000000000000000ULL,
++        0x4008000000000000ULL, 0x7fefffffffffffffULL, 0x7ff0000000000000ULL,
++        0x7ff8000000000000ULL, 0x8000000000000000ULL, 0xbff0000000000000ULL};
++    auto mix = [](unsigned long long z) {
++        z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9ULL;
++        z = (z ^ (z >> 27)) * 0x94d049bb133111ebULL;
++        return z ^ (z >> 31);
++    };
++    for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (1 << 20) + 256; i += gridDim.x * blockDim.x) {
++        auto a = i < 256 ? edge[i % 16] : mix(2ULL * i);
++        auto b = (i < 256 ? edge[i / 16] : mix(2ULL * i + 1)) & 0x7fffffffffffffffULL;
++        const double x = __longlong_as_double(static_cast<long long>(a)),
++                     d = __longlong_as_double(static_cast<long long>(b));
++        const double got = invariant_divide(x, d, __ddiv_rn(1., d)), expected = __ddiv_rn(x, d);
++        if (!(isnan(got) && isnan(expected)) && __double_as_longlong(got) != __double_as_longlong(expected))
++            atomicAdd(mismatches, 1u);
++    }
++}
+ __device__ Jet at(const Span &s, double u, double v) {
+     const auto r = s.range;
+-    const double du = r.U - r.u, dv = r.Vv - r.v, x = (u - r.u) / du, y = (v - r.v) / dv;
++    const double du = r.U - r.u, dv = r.Vv - r.v;
++    const double x = invariant_divide(u - r.u, du, s.inverse_u),
++                 y = invariant_divide(v - r.v, dv, s.inverse_v);
+     Jet q;
+     for (int c = 0; c < 3; ++c) {
+         double a[4], b[4];
+@@ -126,8 +171,8 @@ __device__ Jet at(const Span &s, double u, double v) {
+             b[i] = (3 * v0[3].x[c] * y + 2 * v0[2].x[c]) * y + v0[1].x[c];
+         }
+         q.p.x[c] = ((a[3] * x + a[2]) * x + a[1]) * x + a[0];
+-        q.u.x[c] = ((3 * a[3] * x + 2 * a[2]) * x + a[1]) / du;
+-        q.v.x[c] = (((b[3] * x + b[2]) * x + b[1]) * x + b[0]) / dv;
++        q.u.x[c] = invariant_divide((3 * a[3] * x + 2 * a[2]) * x + a[1], du, s.inverse_u);
++        q.v.x[c] = invariant_divide(((b[3] * x + b[2]) * x + b[1]) * x + b[0], dv, s.inverse_v);
+     }
+     return q;
+ }
+@@ -140,7 +185,7 @@ __device__ int isolate(const Span &s, const Cell &c, Ray ray, double tol, double
+                        double &u, double &v) {
+     V a = cross(c.sv, ray.d), b = cross(ray.d, c.su);
+     double det = dot(c.su, a);
+-    if (det == 0 || fabs(det) <= 1e-14 * norm(c.su) * norm(c.sv))
++    if (det == 0 || fabs(det) <= c.tangent_scale)
+         return -2;
+     a = scale(a, 1 / det);
+     b = scale(b, 1 / det);
+@@ -205,6 +250,18 @@ __device__ int isolate(const Span &s, const Cell &c, Ray ray, double tol, double
+     return -2;
+ }
+ #include "cuda_cad_roots.cuh"
++__global__ void prepare_span_invariants(Span *spans, int count) {
++    const int i = blockIdx.x * blockDim.x + threadIdx.x;
++    if (i < count) {
++        auto &s = spans[i];
++        s.inverse_u = __ddiv_rn(1., s.range.U - s.range.u);
++        s.inverse_v = __ddiv_rn(1., s.range.Vv - s.range.v);
++    }
++}
++__global__ void prepare_cell_invariants(Cell *cells, int count) {
++    const int i = blockIdx.x * blockDim.x + threadIdx.x;
++    if (i < count) cells[i].tangent_scale = 1e-14 * norm(cells[i].su) * norm(cells[i].sv);
++}
+ __global__ void columns(View view, const Ray *rays, double reach, Hit *hits, int n) {
+     const int i = threadIdx.x + blockIdx.x * blockDim.x;
+     if (i < n)
+@@ -342,6 +399,7 @@ struct Columns::Storage {
+     Buffer<RayGrid> grid_descriptor;
+     Buffer<int> short_offsets, short_ids;
+     Buffer<RayPrimitive> short_primitives;
++    Buffer<SegmentNode> segment_nodes;
+     bool resident_supported{};
+     Buffer<WeightedSite> rule_sites;
+     Buffer<Node> faces, spans;
+@@ -390,12 +448,19 @@ Columns::Columns(const Tables &t) {
+         std::all_of(t.charts.begin(), t.charts.end(),
+                     [](const auto &f) { return f.first >= 0 || (f.kind >= 1 && f.kind <= 3); });
+     s->faces.upload(t.faces);
++    s->segment_nodes.upload(t.segment_nodes);
+     s->rule_sites.upload(t.rule_sites);
+     s->spans.upload(t.spans);
+     s->charts.upload(t.charts);
+     s->patches.upload(t.patches);
+     s->frames.upload(t.frames);
+     s->cells.upload(t.cells);
++    if (!t.patches.empty()) prepare_span_invariants<<<(t.patches.size() + 127) / 128, 128, 0, s->stream.id>>>(
++        s->patches.ptr, static_cast<int>(t.patches.size()));
++    if (!t.cells.empty()) prepare_cell_invariants<<<(t.cells.size() + 127) / 128, 128, 0, s->stream.id>>>(
++        s->cells.ptr, static_cast<int>(t.cells.size()));
++    check(cudaGetLastError());
++    check(cudaStreamSynchronize(s->stream.id));
+     s->trim_tree.upload(t.trim_tree);
+     s->trims.upload(t.trims);
+     s->trim_poles.upload(t.trim_poles);
+@@ -430,7 +495,9 @@ Columns::Columns(const Tables &t) {
+                s->knots.ptr,
+                s->rule_sites.ptr,
+                s->trim_intervals.ptr,
+-               s->grid_descriptor.ptr};
++               s->grid_descriptor.ptr,
++               s->segment_nodes.ptr,
++               static_cast<int>(t.segment_nodes.size())};
+     if (s->resident_supported && !t.tiles.empty()) {
+         s->tile_jets.reserve(t.tiles.size());
+         prepare_tile_jets<<<(t.tiles.size() + 127) / 128, 128, 0, s->stream.id>>>(
+@@ -460,8 +527,18 @@ std::vector<ChartSample> Columns::sample_charts(const std::vector<ChartPoint> &q
+     check(cudaMemcpy(out.data(), values.ptr, out.size() * sizeof(out[0]), cudaMemcpyDeviceToHost));
+     return out;
+ }
++unsigned audit_invariant_division() {
++    Buffer<unsigned> count;
++    count.reserve(1);
++    check(cudaMemset(count.ptr, 0, sizeof(unsigned)));
++    division_regression<<<256, 128>>>(count.ptr);
++    check(cudaGetLastError());
++    unsigned result;
++    check(cudaMemcpy(&result, count.ptr, sizeof(result), cudaMemcpyDeviceToHost));
++    return result;
++}
+ ResidentResult advance_resident(const ResidentScene &scene, double step, int steps, RegionReduction reduction,
+-                                ResidentExecution execution) {
++                                ResidentExecution execution, bool profile_links) {
+     if (scene.coordinates.empty() || scene.coordinates.size() > coordinate_limit ||
+         scene.geometry.size() != scene.bodies.size() || steps < 1 || steps == INT_MAX || !(step > 0) ||
+         !std::isfinite(step))
+@@ -608,6 +685,7 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
+     control.reserve(1);
+     check(cudaMemset(control.ptr, 0, sizeof(StepControl)));
+     Workspace w{};
++    w.profile_links = profile_links;
+     w.capacity = capacity;
+     w.limit = limit;
+     w.proposals = proposals.ptr;
+@@ -743,6 +821,7 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
+             w.warp_segments += p.warp_segments; w.scalar_segments += p.scalar_segments;
+             w.separated_groups += p.separated_groups; w.path_checks += p.path_checks; w.path_hits += p.path_hits;
+             w.reduction_ns += p.reduction_ns; w.reductions += p.reductions; w.checked_links += p.checked_links;
++            for (int k = 0; k < 4; ++k) { w.link_ns[k] += p.link_ns[k]; w.link_calls[k] += p.link_calls[k]; }
+             if (p.unresolved_face != -1) {
+                 w.unresolved_face = p.unresolved_face; w.failed_ray = p.failed_ray; w.failed_end = p.failed_end;
+                 w.failed_side = p.failed_side; w.failed_any = p.failed_any; final.current_pair = static_cast<int>(i) - 1;
+@@ -764,6 +843,11 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
+             " geometry_queries=" + std::to_string(w.queries) + ray.str());
+     }
+     ResidentResult result;
++#ifdef NC_CUDA_FMA_ENABLED
++    result.fused_math = true;
++#endif
++    result.profiled_links = profile_links;
++    for (int k = 0; k < 4; ++k) { result.link_work_s[k] = w.link_ns[k] * 1e-9; result.link_calls[k] = w.link_calls[k]; }
+     if (batched) {
+         std::copy(std::begin(batch_result.accepted), std::end(batch_result.accepted), result.accepted_by_level);
+         result.batched_rays = batch_result.ray_queries;
+diff --git a/src/cuda_columns.hpp b/src/cuda_columns.hpp
+index f087529..68caea7 100644
+--- a/src/cuda_columns.hpp
++++ b/src/cuda_columns.hpp
+@@ -53,6 +53,7 @@ struct Span {
+     double plane_width;
+     V power[16];
+     Range range;
++    double inverse_u, inverse_v;
+     int cell;
+     int count;
+ };
+@@ -60,6 +61,7 @@ struct Cell {
+     Bounds box;
+     Range range;
+     V su, sv, ru, rv, center;
++    double tangent_scale;
+ };
+ struct SpanFrame {
+     V origin, axes[3];
+@@ -97,6 +99,12 @@ struct WeightedSite {
+ struct RayPrimitive {
+     int face, span_node;
+ };
++// A preorder of the face tree with each polynomial face's span tree embedded.
++// frame < 0 uses part coordinates; otherwise box is in that face's OBB frame.
++struct SegmentNode {
++    Bounds box;
++    int face, span, frame, next; // span: -2 analytic, -1 branch, >= 0 polynomial
++};
+ struct RayGrid {
+     V low, inverse_width;
+     int size[3]{};
+@@ -123,6 +131,7 @@ struct Tables {
+     RayGrid ray_grid{};
+     std::vector<int> ray_offsets, ray_ids;
+     std::vector<RayPrimitive> ray_primitives;
++    std::vector<SegmentNode> segment_nodes;
+     std::vector<Node> faces, spans;
+     std::vector<FaceData> charts;
+     std::vector<Span> patches;
+@@ -208,8 +217,14 @@ struct ResidentResult {
+     unsigned long long separated_groups{};
+     unsigned long long path_checks{}, path_hits{};
+     unsigned long long batched_rays{}, ray_batches{};
++    bool fused_math{}, profiled_links{};
++    double link_work_s[4]{};
++    unsigned long long link_calls[4]{};
+ };
+ ResidentResult advance_resident(const ResidentScene &, double step, int steps,
+                                 RegionReduction = RegionReduction::ordered,
+-                                ResidentExecution = ResidentExecution::cooperative);
++                                ResidentExecution = ResidentExecution::cooperative,
++                                bool profile_links = false);
++// Regression of cached-denominator arithmetic against CUDA round-to-nearest divide.
++unsigned audit_invariant_division();
+ } // namespace nc::compiled::device
+diff --git a/tests/compiled_cad.cpp b/tests/compiled_cad.cpp
+index c7afd2d..1353fdb 100644
+--- a/tests/compiled_cad.cpp
++++ b/tests/compiled_cad.cpp
+@@ -111,6 +111,33 @@ void revolved_rays() {
+                 "revolved chart ray differs from analytic exit");
+     }
+ }
++void transverse_rays() {
++    // Long extrusion of z=(u-1/2)^2. A ray parallel to the extrusion must
++    // resolve a miss without spending its budget slicing the long direction.
++    const Rect domain{{0, 1}, {0, 1}};
++    PartFile file;
++    file.geometry.trims.emplace_back();
++    file.faces.push_back({domain, {0, 0, -.09}, {1, 1000, .25}, 1e-7, 1, true});
++    BezierSurface surface{4, 4, {}, domain};
++    for (int i = 0; i < 4; ++i)
++        for (int j = 0; j < 4; ++j)
++            surface.poles.push_back(homogeneous(point(
++                {i / 3., 1000. * j / 3., .25 - i / 3. + i * (i - 1) / 6.})));
++    file.geometry.patches.push_back({surface, domain, 1, 0});
++    auto gpu = cuda_columns(Solid(std::move(file)), false, 1.);
++    const double dz = 1e-7;
++    std::vector<device::Ray> rays{
++        {{{.5, -1, -1e-6}}, {{0, 1, 0}}},
++        {{{.25, -1, .0625 + 1e-5}}, {{0, 1, 0}}},
++        {{{.25, -1, .0625 - 1e-5}}, {{0, std::sqrt(1 - dz * dz), dz}}}
++    };
++    std::vector<device::Hit> hits;
++    gpu->trace(rays, 1000., hits);
++    require(hits.size() == 3 && hits[0].face == -1 && hits[1].face == -1,
++            "long transverse extrusion miss was not resolved");
++    require(hits[2].face == 0 && std::abs(hits[2].t - 100.) < 1e-5,
++            "near-parallel extrusion crossing differs from analytic depth");
++}
+ void resident_boxes() {
+     const auto geometry=cuda_columns(Solid(box()),true,.4);
+     device::ResidentScene scene;
+@@ -381,7 +408,11 @@ int main(int argc,char **argv) {
+         trims();
+         curved_roots(cuda);
+ #ifdef NC_WITH_CUDA_COLUMNS
+-        if (cuda) {revolved_rays();resident_boxes();}
++        if (cuda) {
++            require(device::audit_invariant_division() == 0,
++                    "cached-denominator division differs from CUDA round-to-nearest");
++            revolved_rays();transverse_rays();resident_boxes();
++        }
+ #endif
+     } catch (const std::exception &e) {
+         std::cerr << e.what() << '\n';

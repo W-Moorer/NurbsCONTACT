@@ -69,6 +69,8 @@ struct View {
     const WeightedSite *rules;
     const Bounds *trim_intervals;
     const RayGrid *ray_grid;
+    const SegmentNode *segment_nodes;
+    int segment_count;
 };
 __device__ V sub(V a, V b) { return {{a.x[0] - b.x[0], a.x[1] - b.x[1], a.x[2] - b.x[2]}}; }
 __device__ V scale(V a, double b) { return {{a.x[0] * b, a.x[1] * b, a.x[2] * b}}; }
@@ -116,7 +118,8 @@ struct Jet {
 };
 __device__ Jet at(const Span &s, double u, double v) {
     const auto r = s.range;
-    const double du = r.U - r.u, dv = r.Vv - r.v, x = (u - r.u) / du, y = (v - r.v) / dv;
+    const double du = r.U - r.u, dv = r.Vv - r.v;
+    const double x = (u - r.u) / du, y = (v - r.v) / dv;
     Jet q;
     for (int c = 0; c < 3; ++c) {
         double a[4], b[4];
@@ -140,7 +143,7 @@ __device__ int isolate(const Span &s, const Cell &c, Ray ray, double tol, double
                        double &u, double &v) {
     V a = cross(c.sv, ray.d), b = cross(ray.d, c.su);
     double det = dot(c.su, a);
-    if (det == 0 || fabs(det) <= 1e-14 * norm(c.su) * norm(c.sv))
+    if (det == 0 || fabs(det) <= c.tangent_scale)
         return -2;
     a = scale(a, 1 / det);
     b = scale(b, 1 / det);
@@ -205,6 +208,22 @@ __device__ int isolate(const Span &s, const Cell &c, Ray ray, double tol, double
     return -2;
 }
 #include "cuda_cad_roots.cuh"
+__global__ void prepare_span_magnitudes(Span *spans, int count) {
+    for (int index = blockIdx.x * blockDim.x + threadIdx.x; index < count; index += gridDim.x * blockDim.x) {
+        auto &s = spans[index];
+        for (int k = 0; k < 3; ++k) {
+            double mag = 0;
+            for (int i = 0; i < 4; ++i)
+                for (int j = 0; j < 4; ++j)
+                    mag += fabs(s.power[i * 4 + j].x[k]);
+            s.coefficient_magnitude.x[k] = mag;
+        }
+    }
+}
+__global__ void prepare_cell_invariants(Cell *cells, int count) {
+    const int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < count) cells[i].tangent_scale = 1e-14 * norm(cells[i].su) * norm(cells[i].sv);
+}
 __global__ void columns(View view, const Ray *rays, double reach, Hit *hits, int n) {
     const int i = threadIdx.x + blockIdx.x * blockDim.x;
     if (i < n)
@@ -342,6 +361,7 @@ struct Columns::Storage {
     Buffer<RayGrid> grid_descriptor;
     Buffer<int> short_offsets, short_ids;
     Buffer<RayPrimitive> short_primitives;
+    Buffer<SegmentNode> segment_nodes;
     bool resident_supported{};
     Buffer<WeightedSite> rule_sites;
     Buffer<Node> faces, spans;
@@ -390,12 +410,19 @@ Columns::Columns(const Tables &t) {
         std::all_of(t.charts.begin(), t.charts.end(),
                     [](const auto &f) { return f.first >= 0 || (f.kind >= 1 && f.kind <= 3); });
     s->faces.upload(t.faces);
+    s->segment_nodes.upload(t.segment_nodes);
     s->rule_sites.upload(t.rule_sites);
     s->spans.upload(t.spans);
     s->charts.upload(t.charts);
     s->patches.upload(t.patches);
     s->frames.upload(t.frames);
     s->cells.upload(t.cells);
+    if (!t.patches.empty()) prepare_span_magnitudes<<<(t.patches.size() + 127) / 128, 128, 0, s->stream.id>>>(
+        s->patches.ptr, static_cast<int>(t.patches.size()));
+    if (!t.cells.empty()) prepare_cell_invariants<<<(t.cells.size() + 127) / 128, 128, 0, s->stream.id>>>(
+        s->cells.ptr, static_cast<int>(t.cells.size()));
+    check(cudaGetLastError());
+    check(cudaStreamSynchronize(s->stream.id));
     s->trim_tree.upload(t.trim_tree);
     s->trims.upload(t.trims);
     s->trim_poles.upload(t.trim_poles);
@@ -430,7 +457,9 @@ Columns::Columns(const Tables &t) {
                s->knots.ptr,
                s->rule_sites.ptr,
                s->trim_intervals.ptr,
-               s->grid_descriptor.ptr};
+               s->grid_descriptor.ptr,
+               s->segment_nodes.ptr,
+               static_cast<int>(t.segment_nodes.size())};
     if (s->resident_supported && !t.tiles.empty()) {
         s->tile_jets.reserve(t.tiles.size());
         prepare_tile_jets<<<(t.tiles.size() + 127) / 128, 128, 0, s->stream.id>>>(
@@ -461,7 +490,7 @@ std::vector<ChartSample> Columns::sample_charts(const std::vector<ChartPoint> &q
     return out;
 }
 ResidentResult advance_resident(const ResidentScene &scene, double step, int steps, RegionReduction reduction,
-                                ResidentExecution execution) {
+                                ResidentExecution execution, bool profile_links) {
     if (scene.coordinates.empty() || scene.coordinates.size() > coordinate_limit ||
         scene.geometry.size() != scene.bodies.size() || steps < 1 || steps == INT_MAX || !(step > 0) ||
         !std::isfinite(step))
@@ -608,6 +637,7 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     control.reserve(1);
     check(cudaMemset(control.ptr, 0, sizeof(StepControl)));
     Workspace w{};
+    w.profile_links = profile_links;
     w.capacity = capacity;
     w.limit = limit;
     w.proposals = proposals.ptr;
@@ -743,6 +773,7 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
             w.warp_segments += p.warp_segments; w.scalar_segments += p.scalar_segments;
             w.separated_groups += p.separated_groups; w.path_checks += p.path_checks; w.path_hits += p.path_hits;
             w.reduction_ns += p.reduction_ns; w.reductions += p.reductions; w.checked_links += p.checked_links;
+            for (int k = 0; k < 4; ++k) { w.link_ns[k] += p.link_ns[k]; w.link_calls[k] += p.link_calls[k]; }
             if (p.unresolved_face != -1) {
                 w.unresolved_face = p.unresolved_face; w.failed_ray = p.failed_ray; w.failed_end = p.failed_end;
                 w.failed_side = p.failed_side; w.failed_any = p.failed_any; final.current_pair = static_cast<int>(i) - 1;
@@ -764,6 +795,11 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
             " geometry_queries=" + std::to_string(w.queries) + ray.str());
     }
     ResidentResult result;
+#ifdef NC_CUDA_FMA_ENABLED
+    result.fused_math = true;
+#endif
+    result.profiled_links = profile_links;
+    for (int k = 0; k < 4; ++k) { result.link_work_s[k] = w.link_ns[k] * 1e-9; result.link_calls[k] = w.link_calls[k]; }
     if (batched) {
         std::copy(std::begin(batch_result.accepted), std::end(batch_result.accepted), result.accepted_by_level);
         result.batched_rays = batch_result.ray_queries;

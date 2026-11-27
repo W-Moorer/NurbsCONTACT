@@ -177,6 +177,8 @@ struct Workspace {
     unsigned int maximum_proposals, maximum_groups;
     bool reuse_blockers;
     bool transport_paths;
+    bool profile_links;
+    unsigned long long link_ns[4], link_calls[4];
     unsigned long long blocker_checks, blocker_hits;
     unsigned long long warp_segments, scalar_segments;
     unsigned long long separated_groups;
@@ -779,10 +781,20 @@ __device__ bool blocked_prefix(Query &q, bool blocked, const QueryFault &fault, 
 __device__ bool check_connection(Query &q, const PairScratch &cache, const Witness &a, const Witness &b,
                                  Connection &path, int lane) {
     constexpr unsigned mask = 0xffffffffu;
-    if (q.blockers ? previous_connection_warp(q,cache,a,b,path) :
-        __any_sync(mask, lane == 0 && previous_connection(q, cache, a, b, path)))
-        return true;
+    const bool profile = q.work->profile_links;
+    auto stamp = profile ? timer_ns() : 0;
+    auto record_time = [&](int stage) {
+        if (profile && !lane) {
+            atomicAdd(&q.work->link_ns[stage], timer_ns() - stamp);
+            atomicAdd(&q.work->link_calls[stage], 1ULL);
+        }
+    };
+    const bool reused = q.blockers ? previous_connection_warp(q,cache,a,b,path) :
+        __any_sync(mask, lane == 0 && previous_connection(q, cache, a, b, path));
+    record_time(0);
+    if (reused) return true;
     __syncwarp(); // Publish any fault recorded by lane zero before the parallel predicates.
+    stamp = profile ? timer_ns() : 0;
     Query local = q;
     QueryFault fault{};
     local.speculative = &fault;
@@ -795,17 +807,28 @@ __device__ bool check_connection(Query &q, const PairScratch &cache, const Witne
         V end = side ? point(q.rel[0], to.p) : to.p;
         blocked = local.crosses(side, start, end, from.exits[side]);
     }
-    if (!blocked_prefix(q, blocked, fault, lane)) {
+    const bool endpoint_blocked = blocked_prefix(q, blocked, fault, lane);
+    record_time(1);
+    if (!endpoint_blocked) {
+        stamp = profile ? timer_ns() : 0;
+        bool clear = false;
         if (q.blockers) {
-            if (q.straight_warp(a.p, b.p)) return true;
-            return lane == 0 && q.connected(a, b, 5, path, false);
+            clear = q.straight_warp(a.p, b.p);
+        } else {
+            fault = {};
+            blocked = lane < 2 && !local.clear_segment(lane, a.p, b.p);
+            clear = !blocked_prefix(q, blocked, fault, lane);
         }
-        fault = {};
-        blocked = lane < 2 && !local.clear_segment(lane, a.p, b.p);
-        if (!blocked_prefix(q, blocked, fault, lane))
-            return true;
+        record_time(2);
+        if (clear) return true;
     }
-    return lane == 0 && q.connected(a, b, 5, path, false);
+    bool joined = false;
+    if (!lane) {
+        stamp = profile ? timer_ns() : 0;
+        joined = q.connected(a, b, 5, path, false);
+        record_time(3);
+    }
+    return joined;
 }
 __device__ __noinline__ bool agrees_with_serial_link(Query q, const PairScratch &cache, const Witness &a,
                                                      const Witness &b, const ConnectionTrial &trial,
@@ -1174,7 +1197,9 @@ struct IntegralSum {
     V area{}, moment{}, centroid{};
     double volume{};
 };
-__device__ IntegralSum column_term(const Query &q, const SampleDepth &s) {
+// One shared device function keeps contribution formation identical in the
+// scalar and parallel paths, even when multiply-add contraction is enabled.
+__device__ __noinline__ IntegralSum column_term(const Query &q, const SampleDepth &s) {
     V n = s.side ? direction(q.rel[1], s.s.n) : s.s.n;
     V p = s.side ? point(q.rel[1], s.s.p) : s.s.p;
     V a = scale(n, (s.side ? -1 : 1) * s.s.area);
@@ -1190,10 +1215,12 @@ __device__ __noinline__ IntegralSum sum_columns(const Query &q, int count, int f
             const auto &s = w.columns[32 * word + __ffs(mask) - 1];
             mask &= mask - 1;
             const auto term = column_term(q, s);
-            sum.area = plus(sum.area, term.area);
-            sum.moment = plus(sum.moment, term.moment);
-            sum.centroid = plus(sum.centroid, term.centroid);
-            sum.volume += term.volume;
+            for (int k = 0; k < 3; ++k) {
+                sum.area.x[k] = __dadd_rn(sum.area.x[k], term.area.x[k]);
+                sum.moment.x[k] = __dadd_rn(sum.moment.x[k], term.moment.x[k]);
+                sum.centroid.x[k] = __dadd_rn(sum.centroid.x[k], term.centroid.x[k]);
+            }
+            sum.volume = __dadd_rn(sum.volume, term.volume);
         }
     }
     return sum;

@@ -325,30 +325,40 @@ __device__ __noinline__ int analytic_hits(const View &g, int id, Ray ray, double
 // Re-expand a bicubic on a smaller UV rectangle. Bounding each term of the
 // finite Taylor polynomial on [-1/2,1/2]^2 encloses its first derivatives.
 __device__ __noinline__ bool restrict_cell(const Span &s, Range r, Ray ray, double end, double tol, Cell &c) {
-    constexpr int choose[4][4] = {{1}, {1, 1}, {1, 2, 1}, {1, 3, 3, 1}};
-    double du = (r.U - r.u) / (s.range.U - s.range.u), dv = (r.Vv - r.v) / (s.range.Vv - s.range.v);
-    double x = ((r.u + r.U) * .5 - s.range.u) / (s.range.U - s.range.u),
-           y = ((r.v + r.Vv) * .5 - s.range.v) / (s.range.Vv - s.range.v);
-    double xp[4] = {1, x, x * x, x * x * x}, yp[4] = {1, y, y * y, y * y * y};
+    const double width_u = s.range.U - s.range.u, width_v = s.range.Vv - s.range.v;
+    double du = (r.U - r.u) / width_u,
+           dv = (r.Vv - r.v) / width_v;
+    double x = ((r.u + r.U) * .5 - s.range.u) / width_u,
+           y = ((r.v + r.Vv) * .5 - s.range.v) / width_v;
     double up[4] = {1, du, du * du, du * du * du}, vp[4] = {1, dv, dv * dv, dv * dv * dv};
     c = {};
     c.range = r;
     V extent{}, coeff[16]{};
     double pad = 0;
     for (int k = 0; k < 3; ++k) {
-        double mag = 0;
-        for (int i = 0; i < 4; ++i)
-            for (int j = 0; j < 4; ++j)
-                mag += fabs(s.power[i * 4 + j].x[k]);
+        const double mag = s.coefficient_magnitude.x[k];
         double roundoff = 4096. * 2.2204460492503131e-16 * (1 + mag + fabs(ray.p.x[k]));
         pad += roundoff;
+        // Translate the tensor polynomial by two cubic Horner shifts. This is
+        // the same finite Taylor expansion as the double binomial sum, without
+        // recomputing its powers and products for each output coefficient.
+        double shifted[16];
+        for (int j = 0; j < 4; ++j) {
+            const double a = s.power[j].x[k], b = s.power[4 + j].x[k],
+                         d = s.power[8 + j].x[k], e = s.power[12 + j].x[k];
+            shifted[j] = ((e * x + d) * x + b) * x + a;
+            shifted[4 + j] = ((3 * e * x + 2 * d) * x + b) * up[1];
+            shifted[8 + j] = (3 * e * x + d) * up[2];
+            shifted[12 + j] = e * up[3];
+        }
         for (int a = 0; a < 4; ++a)
             for (int b = 0; b < 4; ++b) {
-                double term = 0;
-                for (int i = a; i < 4; ++i)
-                    for (int j = b; j < 4; ++j)
-                        term += s.power[i * 4 + j].x[k] * choose[i][a] * choose[j][b] * xp[i - a] * yp[j - b];
-                term *= up[a] * vp[b];
+                const double *p = shifted + 4 * a;
+                double term;
+                if (b == 0) term = ((p[3] * y + p[2]) * y + p[1]) * y + p[0];
+                else if (b == 1) term = ((3 * p[3] * y + 2 * p[2]) * y + p[1]) * vp[1];
+                else if (b == 2) term = (3 * p[3] * y + p[2]) * vp[2];
+                else term = p[3] * vp[3];
                 coeff[4 * a + b].x[k] = term;
                 if (!a && !b) {
                     c.center.x[k] = term;
@@ -389,6 +399,7 @@ __device__ __noinline__ bool restrict_cell(const Span &s, Range r, Ray ray, doub
         if (fabs(dot(sub(c.center, ray.p), axes[k])) > radius)
             return false;
     }
+    c.tangent_scale = 1e-14 * norm(c.su) * norm(c.sv);
     return true;
 }
 __device__ __noinline__ int subdivide(const View &g, int id, const Span &s, Range domain, Ray ray, double &end,
@@ -427,7 +438,12 @@ __device__ __noinline__ int subdivide(const View &g, int id, const Span &s, Rang
         if (level >= 35)
             return -2;
         Range l = r, h = r;
-        if (norm(c.su) >= norm(c.sv)) {
+        // Subdividing mostly along the ray does not tighten the two transverse
+        // equations. Choose the larger transverse tangent instead; both child
+        // rectangles still cover the complete parent and use the same bounds.
+        const V transverse_u = sub(c.su, scale(ray.d, dot(c.su, ray.d))),
+                transverse_v = sub(c.sv, scale(ray.d, dot(c.sv, ray.d)));
+        if (norm(transverse_u) >= norm(transverse_v)) {
             l.U = h.u = .5 * (r.u + r.U);
         } else {
             l.Vv = h.v = .5 * (r.v + r.Vv);
@@ -604,6 +620,48 @@ __device__ __noinline__ Hit crossing_warp(const View &g, Ray ray, double end) {
         return warp_hit(h,0);
     }
     const auto slabs = slab_ray(ray);
+    if (g.segment_nodes) {
+        for (int begin = 0; begin < g.segment_count;) {
+            const int index = begin + lane;
+            bool overlaps = false;
+            int skip = 0;
+            if (index < g.segment_count) {
+                const auto &node = g.segment_nodes[index];
+                if (node.frame < 0) overlaps = intersects_slabs(node.box, slabs, end, 1e-6);
+                else {
+                    const auto &f = g.charts[node.frame];
+                    const auto local = slab_ray({basis(f.frame, ray.p), basis(f.frame, ray.d)});
+                    overlaps = intersects_slabs(node.box, local, end, 2 * f.tol);
+                }
+                if (!overlaps) skip = node.next;
+            }
+            for (int distance = 1; distance < 32; distance *= 2) {
+                const int previous = __shfl_up_sync(full, skip, distance);
+                if (lane >= distance) skip = max(skip, previous);
+            }
+            const int preceding = __shfl_up_sync(full, skip, 1);
+            const bool visible = !lane || index >= preceding;
+            const int next = max(begin + 32, __shfl_sync(full, skip, 31));
+            Hit answer{0, -1};
+            if (index < g.segment_count && visible && overlaps) {
+                const auto &node = g.segment_nodes[index];
+                if (node.span != -1) {
+                    RootSelection selection;
+                    double limit = end;
+                    const int code = node.span == -2 ?
+                        analytic_hits(g, node.face, ray, limit, selection, true) :
+                        span_hits(g, node.face, node.span, ray, limit, true, selection);
+                    if (code < 0)
+                        answer = {0, -2, double(node.face), double(node.span == -2 ? 1 : -code)};
+                    else if (code > 0) answer = selection.hit;
+                }
+            }
+            const unsigned stopped = __ballot_sync(full, answer.face != -1);
+            if (stopped) return warp_hit(answer, __ffs(stopped) - 1);
+            begin = next;
+        }
+        return {0, -1};
+    }
     for (int begin=0;begin<g.n;) {
         const int index=begin+lane;
         bool overlaps = false;

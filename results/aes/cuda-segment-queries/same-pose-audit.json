@@ -1,0 +1,22 @@
+{
+  "steps": 500,
+  "pair_frames": 1002,
+  "checked_links": 6789,
+  "maximum_errors": {
+    "Fx_error_N": 0.0,
+    "Fy_error_N": 0.0,
+    "Fz_error_N": 0.0,
+    "Ax_error_Nm": 0.0,
+    "Ay_error_Nm": 0.0,
+    "Az_error_Nm": 0.0,
+    "Bx_error_Nm": 0.0,
+    "By_error_Nm": 0.0,
+    "Bz_error_Nm": 0.0
+  },
+  "source": "..\\cad-fma-runs\\final-diagnostic",
+  "scope": "diagnostic, not a full-duration performance run",
+  "entered_face_pairs": 147,
+  "exited_face_pairs": 142,
+  "region_count_changes": 115,
+  "region_evaluations": 2406
+}

@@ -1,0 +1,26 @@
+{
+  "parent_commit": "20aea4bbcb89073a6d4902c937a1bd4a0fa76489",
+  "source_sha256": {
+    "CMakeLists.txt": "5d2c26bf4dbc4a94a9592609f942e02d0ffd70ad1aba2db3a606b4d41c623ff2",
+    "apps/contact.cpp": "c5d41bc5a014b6a22b847f34e25810c0b8a9f4556cabc539c6e9d8818c68d796",
+    "src/compiled_cuda_pack.cpp": "6ab87975857b6c1a32ff176191d1dcbc3ced5568af846ad3383269a141ab1507",
+    "src/cuda_columns.hpp": "54bccdc67979a33324ca06f7cc9cc6d890c38821c593f44a9d043552c4fc5bbb",
+    "src/cuda_columns.cu": "14e76e65351b9f2beb9b17f59fb78da17b613fd08f5305557d8b85651376951d",
+    "src/cuda_cad_roots.cuh": "875688cd9169cd061df12329ad82fc7a95345809cbe04065c325c96bd6387ca1",
+    "src/cuda_resident_geometry.cuh": "68cda761fc207ad029a1142d51f7f8effd082b678be4436c131e99491cf10f13",
+    "src/cuda_batched_contact.cuh": "7ea9aba31060823ca01b357dbe8120390c5417baa113052e2b15b9b7498a29ff",
+    "tests/compiled_cad.cpp": "f075c9969f6f29e1a4687bc8d021602ef89b9df94d720442b2de3c3ed74c2a4d"
+  },
+  "runtime_sha256": "0df86a6126874a6e7074b16633592dcd572d2a34a465d2664517d609a76e285e",
+  "test_sha256": "c008dc0fa2aa32d36aa9f8e366add601e0223c68830f001b7fba6e4f221a4289",
+  "build": {
+    "configuration": "Release",
+    "NC_WITH_CUDA_COLUMNS": true,
+    "NC_CUDA_FMA": true,
+    "CUDA": "12.6.20",
+    "gpu": "RTX 3070",
+    "driver": "610.88",
+    "cpu": "Ryzen 9 5900X"
+  },
+  "post_build_nonfunctional_change": "Removed an orphaned header comment for a rejected arithmetic test; executable code unchanged."
+}

@@ -1,0 +1,22 @@
+{
+  "scope": "Full-history numerical consistency and online timing versus archived CPU; not real-time or production acceptance",
+  "duration_s": 5,
+  "step_s": 0.0001,
+  "frames": 50001,
+  "cpu_rerun": false,
+  "cpu_online_s": 193.6289707,
+  "gpu_online_s": [
+    191.5294838,
+    191.6839736
+  ],
+  "same_complete_response": true,
+  "response_sha256": "8b4fdf24d2d3a4614e1ca2f11bf3982036e6d1d493d07c578ed1cc3ab144437c",
+  "accepted_substeps": 50044,
+  "subdivisions": 44,
+  "all_gpu_runs_below_archived_cpu": true,
+  "notable_limitations": [
+    "Only about one percent faster than the archived CPU measurement; no substantial speedup claim.",
+    "All 50000 steps miss their 0.1 ms deadline.",
+    "Whole-graph batched synccheck remains unresolved; opt-in experimental schedule."
+  ]
+}
