@@ -404,22 +404,19 @@ struct Query {
         }
         return false;
     }
+    __device__ bool clear_segment(int side, V a, V b0) const {
+        V x = side ? point(rel[0], a) : a, y = side ? point(rel[0], b0) : b0;
+        V d = sub(y, x);
+        double len = norm(d);
+        return len < 1e-8 || ray(side, x, scale(d, 1 / len), len, true).face < 0;
+    }
     __device__ bool straight(V a, V b0) const {
-        for (int side = 0; side < 2; ++side) {
-            V x = side ? point(rel[0], a) : a, y = side ? point(rel[0], b0) : b0;
-            V d = sub(y, x);
-            double len = norm(d);
-            if (len < 1e-8)
-                continue;
-            if (ray(side, x, scale(d, 1 / len), len, true).face >= 0)
-                return false;
-        }
-        return true;
+        return clear_segment(0, a, b0) && clear_segment(1, a, b0);
     }
     __device__ __noinline__ bool connected(const Witness &a, const Witness &b0, int depth,
-                                           Connection &path) const {
+                                           Connection &path, bool try_direct = true) const {
         auto c = point(rel[0], a.p), d = point(rel[0], b0.p);
-        if (!crosses(0, a.p, b0.p, a.exits[0]) && !crosses(0, b0.p, a.p, b0.exits[0]) &&
+        if (try_direct && !crosses(0, a.p, b0.p, a.exits[0]) && !crosses(0, b0.p, a.p, b0.exits[0]) &&
             !crosses(1, c, d, a.exits[1]) && !crosses(1, d, c, b0.exits[1]) && straight(a.p, b0.p))
             return true;
         if (!depth)
@@ -478,8 +475,8 @@ __device__ bool before(const Suggestion &a, const Suggestion &b) {
     return a.source < b.source;
 }
 
-__device__ bool check_connection(Query &q, const PairScratch &cache, const Witness &a, const Witness &b,
-                                 Connection &path) {
+__device__ bool previous_connection(Query &q, const PairScratch &cache, const Witness &a, const Witness &b,
+                                    Connection &path) {
     path.left = a.faces;
     path.right = b.faces;
     path.count = 0;
@@ -502,7 +499,44 @@ __device__ bool check_connection(Query &q, const PairScratch &cache, const Witne
         }
         break;
     }
-    return q.connected(a, b, 5, path);
+    return false;
+}
+// Speculative lanes may visit predicates beyond the first blocking one. Retain only
+// the first fault the original left-to-right, short-circuit evaluation would see.
+__device__ bool blocked_prefix(Query &q, bool blocked, const QueryFault &fault, int lane) {
+    constexpr unsigned mask = 0xffffffffu;
+    const unsigned stops = __ballot_sync(mask, blocked);
+    const int last = stops ? __ffs(stops) - 1 : 31;
+    const unsigned faults = __ballot_sync(mask, fault.code && lane <= last);
+    if (faults && lane == __ffs(faults) - 1)
+        q.record(fault);
+    __syncwarp();
+    return stops != 0;
+}
+__device__ bool check_connection(Query &q, const PairScratch &cache, const Witness &a, const Witness &b,
+                                 Connection &path, int lane) {
+    constexpr unsigned mask = 0xffffffffu;
+    if (__any_sync(mask, lane == 0 && previous_connection(q, cache, a, b, path)))
+        return true;
+    Query local = q;
+    QueryFault fault{};
+    local.speculative = &fault;
+    bool blocked = false;
+    if (lane < 4) {
+        const int side = lane / 2;
+        const auto &from = (lane & 1) ? b : a;
+        const auto &to = (lane & 1) ? a : b;
+        V start = side ? point(q.rel[0], from.p) : from.p;
+        V end = side ? point(q.rel[0], to.p) : to.p;
+        blocked = local.crosses(side, start, end, from.exits[side]);
+    }
+    if (!blocked_prefix(q, blocked, fault, lane)) {
+        fault = {};
+        blocked = lane < 2 && !local.clear_segment(lane, a.p, b.p);
+        if (!blocked_prefix(q, blocked, fault, lane))
+            return true;
+    }
+    return lane == 0 && q.connected(a, b, 5, path, false);
 }
 template <class Grid> __device__ void sort_proposals(Grid grid, Suggestion *items, int count) {
     if (count < 2)
@@ -676,8 +710,6 @@ template <class Grid> __device__ void detect(Grid grid, Query &q, PairScratch &c
         int count = min(connection_batch, pairs - first);
         // Use separate warps for independent, branch-heavy visibility proofs.
         for (int slot = lane / 32; slot < count; slot += threads / 32) {
-            if (lane % 32)
-                continue;
             int rank = first + slot, i = 0;
             while (rank >= w.found - 1 - i) {
                 rank -= w.found - 1 - i;
@@ -685,14 +717,20 @@ template <class Grid> __device__ void detect(Grid grid, Query &q, PairScratch &c
             }
             int j = i + rank + 1;
             auto &trial = w.bridges[slot];
-            trial.left = i;
-            trial.right = j;
-            trial.fault = {};
-            trial.joined = false;
+            int warp_lane = lane % 32;
+            if (!warp_lane) {
+                trial.left = i;
+                trial.right = j;
+                trial.fault = {};
+                trial.joined = false;
+            }
+            __syncwarp();
             if (w.labels[i] != w.labels[j]) {
                 Query local = q;
                 local.speculative = &trial.fault;
-                trial.joined = check_connection(local, cache, w.witnesses[i], w.witnesses[j], trial.path);
+                bool joined = check_connection(local, cache, w.witnesses[i], w.witnesses[j], trial.path, warp_lane);
+                if (!warp_lane)
+                    trial.joined = joined;
             }
         }
         grid.sync();
