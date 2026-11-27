@@ -85,6 +85,13 @@ struct QueryFault {
     Ray ray{};
     double end{};
 };
+struct SearchAttempt {
+    Seed seed{};
+    Witness witness{};
+    QueryFault fault{};
+    double depth;
+    bool hit{}, skip{}, disjoint{};
+};
 struct SavedSeed {
     Faces ids;
     Seed seed;
@@ -155,6 +162,7 @@ struct Workspace {
     unsigned int count;
     int groups, found, regions, selected, active_faces, capacity, limit;
     Suggestion *proposals;
+    SearchAttempt *seed_attempts, *attempts;
     Group *group;
     Witness *witnesses, *confirmed;
     int *valid, *labels, *sides, *faces;
@@ -439,15 +447,47 @@ struct Query {
         }
         return false;
     }
-    template<int Width = 32>
+    __device__ SearchAttempt prior_attempt(Group group, const PairScratch &cache) const {
+        SearchAttempt a{};
+        a.depth = -HUGE_VAL;
+        a.disjoint = work->reuse_blockers && separated(group.ids);
+        a.skip = a.disjoint && !work->serial_links;
+        if (a.skip || group.prior < 0) return a;
+        a.seed = cache.previous[group.prior].seed;
+        Query q = *this;
+        q.speculative = &a.fault;
+        Site site;
+        a.hit = q.node(a.seed.side, group.ids[a.seed.side], a.seed.u, a.seed.v, site) &&
+                q.sample(group.ids, a.seed, site, a.depth, a.witness);
+        return a;
+    }
+    __device__ SearchAttempt proposal_attempt(Group group, int k) const {
+        SearchAttempt a{};
+        a.depth = -HUGE_VAL;
+        const auto &c = work->proposals[k];
+        for (int j = group.begin; j < k; ++j) {
+            const auto &previous = work->proposals[j];
+            if (previous.side == c.side && previous.source == c.source) return a;
+        }
+        const auto &t = b[c.side].tiles[c.source];
+        a.seed = {c.side, c.tile, t.u, t.v};
+        Site site{t.point, t.normal, t.u, t.v, 0};
+        Query q = *this;
+        q.speculative = &a.fault;
+        a.hit = q.sample(group.ids, a.seed, site, a.depth, a.witness);
+        return a;
+    }
+    template<int Width = 32, bool Queued = false>
     __device__ __noinline__ bool find(Group group, const PairScratch &cache, Witness &out,
-                                     SearchBatch *batch = nullptr) const {
+                                     SearchBatch *batch = nullptr, int group_index = -1) const {
         static_assert(Width == 32 || Width == 128);
         const int lane = threadIdx.x % Width;
         // Positive separation along an axis with opposing normal cones makes
         // a positive-depth projection impossible from either chart. Audit mode
         // still runs the original search to check every rejected face pair.
-        const bool disjoint = work->reuse_blockers && separated(group.ids);
+        bool disjoint;
+        if constexpr (Queued) disjoint = work->seed_attempts[group_index].disjoint;
+        else disjoint = work->reuse_blockers && separated(group.ids);
         if (disjoint && !lane) atomicAdd(&work->separated_groups,1ULL);
         if (disjoint && !work->serial_links) return false;
         auto accepted = [&]() {
@@ -461,9 +501,15 @@ struct Query {
             seed = cache.previous[group.prior].seed;
             int hit = 0;
             if (!lane) {
-                Site s;
-                hit = node(seed.side, group.ids[seed.side], seed.u, seed.v, s) &&
-                      sample(group.ids, seed, s, best, out);
+                if constexpr (Queued) {
+                    const auto &a = work->seed_attempts[group_index];
+                    hit = a.hit; best = a.depth; out = a.witness;
+                    if (a.fault.code) record(a.fault);
+                } else {
+                    Site s;
+                    hit = node(seed.side, group.ids[seed.side], seed.u, seed.v, s) &&
+                          sample(group.ids, seed, s, best, out);
+                }
             }
             if constexpr (Width == 32) {
                 if (__shfl_sync(0xffffffffu, hit, 0)) {
@@ -481,6 +527,7 @@ struct Query {
                 best = batch->best;
                 __syncthreads();
             }
+            if constexpr (Queued) if (work->seed_attempts[group_index].fault.code) return false;
         }
         Query q = *this;
         QueryFault fault;
@@ -492,6 +539,11 @@ struct Query {
             bool hit = false;
             fault = {};
             if (k < group.end) {
+                if constexpr (Queued) {
+                    const auto &a = work->attempts[k];
+                    trial = a.seed; depth = a.depth; hit = a.hit;
+                    candidate = a.witness; fault = a.fault;
+                } else {
                 const auto &c = work->proposals[k];
                 bool repeat = false;
                 for (int j = group.begin; j < k; ++j) {
@@ -506,6 +558,7 @@ struct Query {
                     trial = {c.side, c.tile, t.u, t.v};
                     Site s{t.point, t.normal, t.u, t.v, 0};
                     hit = q.sample(group.ids, trial, s, depth, candidate);
+                }
                 }
             }
             if (collect_attempt<Width>(batch, lane, trial, depth, hit, candidate, fault, seed, best, out))

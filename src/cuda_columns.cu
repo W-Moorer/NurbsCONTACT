@@ -71,6 +71,8 @@ struct View {
     const RayGrid *ray_grid;
     const SegmentNode *segment_nodes;
     int segment_count;
+    const Node *curvature_nodes;
+    bool curvature_filter{};
 };
 __device__ V sub(V a, V b) { return {{a.x[0] - b.x[0], a.x[1] - b.x[1], a.x[2] - b.x[2]}}; }
 __device__ V scale(V a, double b) { return {{a.x[0] * b, a.x[1] * b, a.x[2] * b}}; }
@@ -229,6 +231,12 @@ __global__ void columns(View view, const Ray *rays, double reach, Hit *hits, int
     if (i < n)
         hits[i] = first(view, rays[i], reach);
 }
+__global__ void precomputed_columns(View view, const Ray *rays, double reach, Hit *hits, int n) {
+    view.curvature_filter = true;
+    const int i = threadIdx.x + blockIdx.x * blockDim.x;
+    if (i < n) hits[i] = first<true>(view, rays[i], reach);
+}
+
 __global__ void chart_samples(View view, const ChartPoint *uv, ChartSample *result, int count) {
     int i = threadIdx.x + blockIdx.x * blockDim.x;
     if (i >= count)
@@ -364,7 +372,7 @@ struct Columns::Storage {
     Buffer<SegmentNode> segment_nodes;
     bool resident_supported{};
     Buffer<WeightedSite> rule_sites;
-    Buffer<Node> faces, spans;
+    Buffer<Node> faces, spans, curvature_nodes;
     Buffer<FaceData> charts;
     Buffer<Span> patches;
     Buffer<SpanFrame> frames;
@@ -413,6 +421,7 @@ Columns::Columns(const Tables &t) {
     s->segment_nodes.upload(t.segment_nodes);
     s->rule_sites.upload(t.rule_sites);
     s->spans.upload(t.spans);
+    s->curvature_nodes.upload(t.curvature_nodes);
     s->charts.upload(t.charts);
     s->patches.upload(t.patches);
     s->frames.upload(t.frames);
@@ -459,7 +468,7 @@ Columns::Columns(const Tables &t) {
                s->trim_intervals.ptr,
                s->grid_descriptor.ptr,
                s->segment_nodes.ptr,
-               static_cast<int>(t.segment_nodes.size())};
+               static_cast<int>(t.segment_nodes.size()),s->curvature_nodes.ptr};
     if (s->resident_supported && !t.tiles.empty()) {
         s->tile_jets.reserve(t.tiles.size());
         prepare_tile_jets<<<(t.tiles.size() + 127) / 128, 128, 0, s->stream.id>>>(
@@ -541,6 +550,7 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
                 "resident CAD requires supported analytic or polynomial bicubic charts");
         views.push_back({s.view, s.tiles.ptr, s.sites.ptr, s.ids.ptr, s.tile_jets.ptr, static_cast<int>(s.sites.capacity),
                          static_cast<int>(s.ids.capacity)});
+        views.back().g.curvature_filter = execution == ResidentExecution::wavefront;
         if (execution != ResidentExecution::cooperative) {
             if (s.charts.capacity > static_cast<size_t>(INT_MAX / refined_rule_sites))
                 throw std::length_error("refined CAD quadrature cache is too large");
@@ -568,11 +578,19 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     Buffer<LoadPoint> loads;
     loads.upload(scene.loads);
     const int n = static_cast<int>(scene.coordinates.size()), np = static_cast<int>(scene.pairs.size());
-    const bool batched = execution == ResidentExecution::batched && np > 0;
+    const bool wavefront = execution == ResidentExecution::wavefront;
+    const bool batched = (execution == ResidentExecution::batched || wavefront) && np > 0;
     const size_t workspace_count = batched ? static_cast<size_t>(np) + 1 : 1;
     constexpr int limit = 512, capacity = 65536, column_capacity = 96 * 96 * 32;
     Buffer<Suggestion> proposals;
     proposals.reserve(workspace_count * capacity);
+    Buffer<SearchAttempt> seed_attempts, attempts;
+    if (wavefront) {
+        seed_attempts.reserve(workspace_count * limit);
+        attempts.reserve(workspace_count * capacity);
+        check(cudaMemset(seed_attempts.ptr, 0, seed_attempts.capacity * sizeof(SearchAttempt)));
+        check(cudaMemset(attempts.ptr, 0, attempts.capacity * sizeof(SearchAttempt)));
+    }
     Buffer<Group> groups;
     groups.reserve(workspace_count * limit);
     Buffer<Witness> witnesses, confirmed;
@@ -641,6 +659,8 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     w.capacity = capacity;
     w.limit = limit;
     w.proposals = proposals.ptr;
+    w.seed_attempts = seed_attempts.ptr;
+    w.attempts = attempts.ptr;
     w.group = groups.ptr;
     w.witnesses = witnesses.ptr;
     w.confirmed = confirmed.ptr;
@@ -673,6 +693,8 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     for (size_t i = 1; i < workspace_count; ++i) {
         auto &p = workspaces[i];
         p.proposals += i * capacity;
+        if (p.seed_attempts) p.seed_attempts += i * limit;
+        if (p.attempts) p.attempts += i * capacity;
         p.group += i * limit;
         p.witnesses += i * limit;
         p.confirmed += i * limit;
@@ -719,6 +741,8 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     Buffer<BatchControl> batch_control;
     Buffer<BatchPair> batch_pairs;
     Buffer<BatchRay> batch_rays;
+    Buffer<int> deferred_rays;
+    Buffer<Hit> audited_hits;
     Buffer<int> batch_offsets;
     if (batched) {
         batch_control.reserve(1);
@@ -732,7 +756,12 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
         g.scene = s; g.pairs = batch_pairs.ptr; g.rays = batch_rays.ptr; g.offsets = batch_offsets.ptr;
         g.ray_capacity = static_cast<int>(batch_rays.capacity);
         g.end = steps; g.base_dt = step;
-        build_batch_graphs(schedule, batch_control.ptr, g, np, props.multiProcessorCount);
+        if (wavefront) {
+            deferred_rays.reserve(g.ray_capacity);
+            g.deferred = deferred_rays.ptr;
+            if (w.audit) { audited_hits.reserve(g.ray_capacity); g.audit_hits = audited_hits.ptr; }
+        }
+        build_batch_graphs(schedule, batch_control.ptr, g, np, props.multiProcessorCount, wavefront, w.audit != nullptr);
         batch_control.upload({g});
     } else {
         check(cudaStreamBeginCapture(stream.id, cudaStreamCaptureModeThreadLocal));
@@ -804,6 +833,10 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
         std::copy(std::begin(batch_result.accepted), std::end(batch_result.accepted), result.accepted_by_level);
         result.batched_rays = batch_result.ray_queries;
         result.ray_batches = batch_result.ray_batches;
+        result.precomputed_rays = batch_result.precomputed_rays;
+        result.deferred_rays = batch_result.deferred_rays;
+        result.audited_rays = batch_result.audited_rays;
+        result.audited_groups = batch_result.audited_groups;
     }
     result.queries = w.queries;
     result.proposals = w.proposal_total;
@@ -939,7 +972,7 @@ void Columns::candidates(const Columns &target, const Window &w, Pose pose, doub
         s.scores.reserve(n);
     }
 }
-void Columns::trace(const std::vector<Ray> &rays, double reach, std::vector<Hit> &hits) {
+void Columns::trace(const std::vector<Ray> &rays, double reach, std::vector<Hit> &hits, bool precomputed_only) {
     hits.resize(rays.size());
     if (rays.empty())
         return;
@@ -948,7 +981,11 @@ void Columns::trace(const std::vector<Ray> &rays, double reach, std::vector<Hit>
     s.hits.reserve(rays.size());
     check(cudaMemcpyAsync(s.rays.ptr, rays.data(), rays.size() * sizeof(Ray), cudaMemcpyHostToDevice,
                           s.stream.id));
-    columns<<<(rays.size() + 63) / 64, 64, 0, s.stream.id>>>(s.view, s.rays.ptr, reach, s.hits.ptr,
+    if (precomputed_only)
+        precomputed_columns<<<(rays.size() + 127) / 128, 128, 0, s.stream.id>>>(
+            s.view, s.rays.ptr, reach, s.hits.ptr, static_cast<int>(rays.size()));
+    else
+        columns<<<(rays.size() + 63) / 64, 64, 0, s.stream.id>>>(s.view, s.rays.ptr, reach, s.hits.ptr,
                                                              static_cast<int>(rays.size()));
     check(cudaGetLastError());
     check(cudaMemcpyAsync(hits.data(), s.hits.ptr, hits.size() * sizeof(Hit), cudaMemcpyDeviceToHost,

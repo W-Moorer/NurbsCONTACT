@@ -56,6 +56,7 @@ struct Span {
     Range range;
     int cell;
     int count;
+    int filter_first{-1}, filter_end{};
 };
 struct Cell {
     Bounds box;
@@ -133,6 +134,7 @@ struct Tables {
     std::vector<RayPrimitive> ray_primitives;
     std::vector<SegmentNode> segment_nodes;
     std::vector<Node> faces, spans;
+    std::vector<Node> curvature_nodes;
     std::vector<FaceData> charts;
     std::vector<Span> patches;
     std::vector<Cell> cells;
@@ -162,7 +164,8 @@ class Columns {
     ~Columns();
     Columns(const Columns &) = delete;
     Columns &operator=(const Columns &) = delete;
-    void trace(const std::vector<Ray> &, double reach, std::vector<Hit> &);
+    // Precomputed-only queries return face == -3 when complete GPU solving is required.
+    void trace(const std::vector<Ray> &, double reach, std::vector<Hit> &, bool precomputed_only = false);
     // Profile fixed-size resident batches using the same material-exit kernel as trace().
     double time_ray_batches(const std::vector<Ray> &, double reach, int batch, int repeats, std::vector<Hit> &);
     std::vector<ChartSample> sample_charts(const std::vector<ChartPoint> &) const;
@@ -196,7 +199,7 @@ struct ResidentScene {
     std::vector<std::shared_ptr<Columns>> geometry;
 };
 enum class RegionReduction { serial, ordered, warp, audit, audit_warp };
-enum class ResidentExecution { cooperative, cached, batched };
+enum class ResidentExecution { cooperative, cached, batched, wavefront };
 struct RegionAudit {
     unsigned queries{}, regions{}, entered_faces{}, exited_faces{}, count_changes{};
     double force_error[3]{}, torque_a_error[3]{}, torque_b_error[3]{};
@@ -216,7 +219,7 @@ struct ResidentResult {
     unsigned long long warp_segments{}, scalar_segments{};
     unsigned long long separated_groups{};
     unsigned long long path_checks{}, path_hits{};
-    unsigned long long batched_rays{}, ray_batches{};
+    unsigned long long batched_rays{}, ray_batches{}, precomputed_rays{}, deferred_rays{}, audited_rays{}, audited_groups{};
     bool fused_math{}, profiled_links{};
     double link_work_s[4]{};
     unsigned long long link_calls[4]{};

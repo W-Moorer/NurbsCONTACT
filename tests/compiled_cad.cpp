@@ -41,6 +41,32 @@ PartFile box() {
     return file;
 }
 #ifdef NC_WITH_CUDA_COLUMNS
+void describe_part(const std::filesystem::path &path) {
+    const auto solid=load_solid(path);
+    size_t histogram[4][4]{},spans=0,cells=0,analytic=0,rectangular=0;
+    double tail_u=0,tail_v=0,scale=0;
+    for (const auto &f:solid->faces) {
+        analytic+=f.analytic!=nullptr; rectangular+=f.info.rectangle;
+        for (const auto &p:f.patches) if(p.cubic) {
+            ++spans; cells+=p.cells.size(); int u=0,v=0;
+            for(int i=0;i<4;++i)for(int j=0;j<4;++j)for(int c=0;c<3;++c){
+                const double value=p.power[4*i+j][c],mag=std::abs(value);
+                if(value!=0){u=std::max(u,i);v=std::max(v,j);}
+                scale=std::max(scale,mag);
+                if(i>1)tail_u=std::max(tail_u,mag);
+                if(j>1)tail_v=std::max(tail_v,mag);
+            }
+            ++histogram[u][v];
+        }
+    }
+    std::cout<<std::setprecision(17)<<"{\"part\":"<<std::quoted(path.filename().string())
+             <<",\"faces\":"<<solid->faces.size()<<",\"analytic_faces\":"<<analytic
+             <<",\"rectangular_faces\":"<<rectangular<<",\"spans\":"<<spans<<",\"cells\":"<<cells
+             <<",\"tail_u\":"<<tail_u<<",\"tail_v\":"<<tail_v<<",\"scale\":"<<scale
+             <<",\"degree_histogram\":[";
+    for(int i=0;i<4;++i)for(int j=0;j<4;++j)std::cout<<(i+j?",":"")<<histogram[i][j];
+    std::cout<<"]}\n"<<std::flush;
+}
 bool audit_part(const std::filesystem::path &path) {
     const auto solid=load_solid(path);
     auto gpu=cuda_columns(*solid);
@@ -137,6 +163,13 @@ void transverse_rays() {
             "long transverse extrusion miss was not resolved");
     require(hits[2].face == 0 && std::abs(hits[2].t - 100.) < 1e-5,
             "near-parallel extrusion crossing differs from analytic depth");
+    std::vector<device::Hit> fast;
+    gpu->trace(rays, 1000., fast, true);
+    for (std::size_t i=0;i<fast.size();++i) {
+        if (fast[i].face==-3) continue;
+        require(fast[i].face==hits[i].face,"curvature enclosure changed a grazing-ray classification");
+        if (fast[i].face>=0) require(fast[i].t==hits[i].t,"curvature enclosure changed a grazing root");
+    }
 }
 void resident_boxes() {
     const auto geometry=cuda_columns(Solid(box()),true,.4);
@@ -174,6 +207,15 @@ void resident_boxes() {
                        [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
             "batched execution changed analytic box response");
     require(batch.batched_rays>0 && batch.ray_batches>0,"batched ray queue was not exercised");
+    const auto wave=device::advance_resident(scene,dt,steps,device::RegionReduction::audit,
+                                             device::ResidentExecution::wavefront);
+    require(std::equal(wave.frames.begin(),wave.frames.end(),result.frames.begin(),result.frames.end(),
+                       [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
+            "deferred query execution changed analytic box response");
+    require(wave.deferred_rays>0 && wave.precomputed_rays+wave.deferred_rays==wave.batched_rays,
+            "deferred ray coverage was not exercised");
+    require(wave.audited_groups>0,"queued search was not checked against the original search");
+
     // Independent contact pairs enter and leave at different times. The second
     // pair is initially open, so queue offsets must handle empty middle ranges.
     auto multiple=scene;
@@ -188,6 +230,11 @@ void resident_boxes() {
     require(std::equal(multiple_batch.frames.begin(),multiple_batch.frames.end(),multiple_ref.frames.begin(),multiple_ref.frames.end(),
                        [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
             "batched cross-pair execution changed independent contact dynamics");
+    const auto multiple_wave=device::advance_resident(multiple,dt,steps,device::RegionReduction::audit,
+                                                       device::ResidentExecution::wavefront);
+    require(std::equal(multiple_wave.frames.begin(),multiple_wave.frames.end(),multiple_ref.frames.begin(),multiple_ref.frames.end(),
+                       [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
+            "deferred queues changed independent contact pairs");
     const auto audit=device::advance_resident(scene,dt,steps,device::RegionReduction::audit);
     require(std::equal(audit.frames.begin(),audit.frames.end(),result.frames.begin(),result.frames.end(),
                        [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}) &&
@@ -221,6 +268,37 @@ void resident_boxes() {
     require(std::equal(batch_pads.frames.begin(),batch_pads.frames.end(),plain_pads.frames.begin(),plain_pads.frames.end(),
                        [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
             "batched links changed disconnected-pad dynamics");
+    const auto wave_pads=device::advance_resident(separated,dt,40,device::RegionReduction::audit,
+                                                   device::ResidentExecution::wavefront);
+    require(std::equal(wave_pads.frames.begin(),wave_pads.frames.end(),plain_pads.frames.begin(),plain_pads.frames.end(),
+                       [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
+            "ordered connectivity merged disconnected pads");
+    // Partition one physical plane into four charts; both schedules must
+    // reconstruct the same continuous contact region and force.
+    auto split=box();
+    const auto original_face=split.faces[1];
+    const auto original_patch=split.geometry.patches[1];
+    for (int k=0;k<4;++k) {
+        auto face=original_face; auto patch=original_patch;
+        face.domain.u={-1+.5*k,-1+.5*(k+1)};
+        face.lo[1]=face.domain.u.lo; face.hi[1]=face.domain.u.hi;
+        patch.domain=face.domain;
+        if (!k) { split.faces[1]=face; split.geometry.patches[1]=patch; }
+        else {
+            split.faces.push_back(face); patch.face_id=split.faces.size();
+            split.geometry.patches.push_back(patch);
+        }
+    }
+    auto partitioned=scene;
+    partitioned.geometry={cuda_columns(Solid(std::move(split)),true,.4),geometry};
+    const auto partitioned_ref=device::advance_resident(partitioned,dt,40,device::RegionReduction::ordered,
+                                                        device::ResidentExecution::batched);
+    const auto partitioned_wave=device::advance_resident(partitioned,dt,40,device::RegionReduction::audit,
+                                                        device::ResidentExecution::wavefront);
+    require(partitioned_wave.audited_groups>0,"partitioned charts were not audited");
+    require(std::equal(partitioned_wave.frames.begin(),partitioned_wave.frames.end(),partitioned_ref.frames.begin(),partitioned_ref.frames.end(),
+                       [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
+            "ordered links changed a partitioned physical contact region");
     require(std::equal(cached_pads.frames.begin(),cached_pads.frames.end(),plain_pads.frames.begin(),plain_pads.frames.end(),
                        [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
             "blocking-face reuse changed disconnected-pad dynamics");
@@ -363,6 +441,14 @@ void curved_roots(bool cuda=false) {
             };
             std::vector<device::Hit> hits;
             gpu->trace(rays,1,hits);
+            std::vector<device::Hit> fast;
+            gpu->trace(rays,1,fast,true);
+            if (!rational) require(fast[0].face>=0,"precomputed cubic crossing was not exercised");
+            for(size_t i=0;i<fast.size();++i) if(fast[i].face!=-3) {
+                require(fast[i].face==hits[i].face,"precomputed classification differs from complete query");
+                if(fast[i].face>=0) require(fast[i].t==hits[i].t && fast[i].u==hits[i].u && fast[i].v==hits[i].v,
+                                            "precomputed root differs from complete query");
+            }
             for(size_t i=0;i<hits.size();++i) {
                 const auto &ray=rays[i];
                 const auto ref=solid.first({ray.p.x[0],ray.p.x[1],ray.p.x[2]},
@@ -395,6 +481,10 @@ void curved_roots(bool cuda=false) {
 int main(int argc,char **argv) {
     try {
 #ifdef NC_WITH_CUDA_COLUMNS
+        if(argc>2 && std::string_view(argv[1])=="--describe-parts") {
+            for(int i=2;i<argc;++i)describe_part(argv[i]);
+            return 0;
+        }
         if(argc>2 && std::string_view(argv[1])=="--audit-parts"){
             bool passed=true;
             for(int i=2;i<argc;++i)passed=audit_part(argv[i]) && passed;

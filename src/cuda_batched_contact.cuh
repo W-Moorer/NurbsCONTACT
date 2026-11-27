@@ -15,13 +15,16 @@ struct BatchControl {
     DeviceScene scene;
     BatchPair *pairs;
     BatchRay *rays;
+    int *deferred;
+    Hit *audit_hits;
+    int deferred_count;
     int *offsets;
     int ray_capacity, ray_count, total_columns;
     int step, end, level, cell, iter, evaluated, initial;
     double base_dt, dt, fraction;
     cudaGraphConditionalHandle force_graph, link_graph, integral_graph;
     unsigned long long stamp, accepted[9];
-    unsigned long long ray_queries, ray_batches;
+    unsigned long long ray_queries, ray_batches, precomputed_rays, deferred_rays, audited_rays, audited_groups;
 };
 __device__ Trial &batch_trial(BatchControl &g) {
     return g.evaluated ? g.scene.control->next : g.scene.control->working;
@@ -219,6 +222,82 @@ __global__ void batch_search(BatchControl *control) {
         __syncthreads();
     }
 }
+// Expand independent projections across the device, then consume their results
+// in the original group/proposal order. Speculative faults only become visible
+// when that candidate is selected by the same ordered search as the control.
+__global__ void batch_search_seeds(BatchControl *control) {
+    auto &g = *control;
+    if (g.scene.control->status) return;
+    for (int job = blockIdx.x; job < g.offsets[g.scene.np]; job += gridDim.x) {
+        const int pair = batch_owner(g.offsets, g.scene.np, job), id = job - g.offsets[pair];
+        const auto &q = g.pairs[pair].query;
+        auto &w = *q.work;
+        w.seed_attempts[id] = q.prior_attempt(w.group[id], g.scene.cache[pair]);
+    }
+}
+__global__ void batch_search_proposals(BatchControl *control) {
+    auto &g = *control;
+    const int pair = blockIdx.y;
+    if (g.scene.control->status || !g.pairs[pair].fresh) return;
+    const auto &q = g.pairs[pair].query;
+    auto &w = *q.work;
+    const int width = w.count < gridDim.x * 32 ? 8 : 32;
+    if (threadIdx.x >= width) return;
+    for (int k = blockIdx.x * width + threadIdx.x; k < w.count; k += gridDim.x * width) {
+        int lo = 0, hi = w.groups;
+        while (lo + 1 < hi) {
+            const int mid = (lo + hi) / 2;
+            if (w.group[mid].begin <= k) lo = mid; else hi = mid;
+        }
+        const auto &seed = w.seed_attempts[lo];
+        if (!seed.skip && !seed.hit && !seed.fault.code)
+            w.attempts[k] = q.proposal_attempt(w.group[lo], k);
+    }
+}
+__global__ void batch_search_ready(BatchControl *control) {
+    auto &g = *control;
+    if (!batch_enabled(g)) return;
+    for (int job = blockIdx.x; job < g.offsets[g.scene.np]; job += gridDim.x) {
+        const int pair = batch_owner(g.offsets, g.scene.np, job), id = job - g.offsets[pair];
+        const auto &q = g.pairs[pair].query;
+        auto &w = *q.work;
+        const bool hit = q.find<32, true>(w.group[id], g.scene.cache[pair], w.confirmed[id], nullptr, id);
+        if (!threadIdx.x) w.valid[id] = hit;
+        __syncwarp();
+    }
+}
+__device__ bool same_hit(const Hit &a, const Hit &b) {
+    bool same = a.face == b.face && a.t == b.t && a.u == b.u && a.v == b.v;
+    for (int k = 0; k < 3; ++k) same &= a.normal.x[k] == b.normal.x[k];
+    return same;
+}
+__global__ void batch_search_audit(BatchControl *control) {
+    auto &g = *control;
+    if (!batch_enabled(g)) return;
+    __shared__ SearchBatch scratch;
+    __shared__ Witness expected;
+    for (int job = blockIdx.x; job < g.offsets[g.scene.np]; job += gridDim.x) {
+        const int pair = batch_owner(g.offsets, g.scene.np, job), id = job - g.offsets[pair];
+        const auto &q = g.pairs[pair].query;
+        auto &w = *q.work;
+        const bool hit = q.find<128>(w.group[id], g.scene.cache[pair], expected, &scratch);
+        if (!threadIdx.x) {
+            const auto &a = w.confirmed[id];
+            bool same = hit == bool(w.valid[id]);
+            if (same && hit) {
+                same = equal(a.faces, expected.faces) && a.depth == expected.depth &&
+                    a.seed.side == expected.seed.side && a.seed.tile == expected.seed.tile &&
+                    a.seed.u == expected.seed.u && a.seed.v == expected.seed.v &&
+                    same_hit(a.exits[0], expected.exits[0]) && same_hit(a.exits[1], expected.exits[1]);
+                for (int k = 0; k < 3; ++k)
+                    same &= a.p.x[k] == expected.p.x[k] && a.n.x[k] == expected.n.x[k];
+            }
+            if (!same) q.fail(14);
+            atomicAdd(&g.audited_groups, 1ULL);
+        }
+        __syncthreads();
+    }
+}
 __device__ void batch_integral_start(BatchControl &g) {
     const auto now = timer_ns();
     g.scene.workspace->group_ns += now - g.stamp;
@@ -346,7 +425,7 @@ __global__ void batch_links_finish(BatchControl *control) {
 __global__ void batch_integral_prepare(BatchControl *control) {
     auto &g = *control;
     if (g.scene.control->status) return;
-    g.ray_count = g.total_columns = 0;
+    g.ray_count = g.total_columns = g.deferred_count = 0;
     for (int pair = 0; pair < g.scene.np; ++pair) {
         auto &p = g.pairs[pair];
         auto &w = *p.query.work;
@@ -461,6 +540,62 @@ __global__ void batch_trace_columns(BatchControl *control) {
         }
     }
 }
+// The common query does not reference recursive subdivision or trim isolation.
+// An undecided query is compacted for the original complete GPU solver. Starting
+// the deferred query from scratch retains all root/ambiguity/error ordering.
+__device__ void batch_accept_hit(BatchControl &g, const BatchRay &task, const Hit &hit) {
+    auto &p = g.pairs[task.pair];
+    auto &w = *p.query.work;
+    const int order = p.pass == 4 ? 24 : 12 << p.pass;
+    const int face = w.faces[task.column / (order * order)];
+    if (hit.face >= 0 && accepts(w, p.label, task.side, face, hit.face)) {
+        w.columns[task.column].depth = hit.t;
+        atomicOr(&w.active_columns[task.column / 32], 1u << (task.column % 32));
+    }
+}
+__global__ void batch_trace_precomputed(BatchControl *control) {
+    auto &g = *control;
+    if (g.scene.control->status) return;
+    // Small ray batches spread over more SMs, with independent warps hiding
+    // the latency of dependent CAD loads. Large batches retain full warps.
+    const int width = g.ray_count < gridDim.x * 32 ? 4 : 32;
+    if (threadIdx.x >= width) return;
+    for (int i = blockIdx.x * width + threadIdx.x; i < g.ray_count; i += gridDim.x * width) {
+        const auto task = g.rays[i];
+        const auto &q = g.pairs[task.pair].query;
+        const Hit hit = first<true>(q.b[1 - task.side].g, task.ray, q.reach);
+        if (g.audit_hits) g.audit_hits[i] = hit;
+        if (hit.face == -3) g.deferred[atomicAdd(&g.deferred_count, 1)] = i;
+        else batch_accept_hit(g, task, hit);
+    }
+}
+__global__ void batch_trace_deferred(BatchControl *control) {
+    auto &g = *control;
+    if (g.scene.control->status) return;
+    for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < g.deferred_count; i += gridDim.x * blockDim.x) {
+        const auto task = g.rays[g.deferred[i]];
+        const auto &q = g.pairs[task.pair].query;
+        batch_accept_hit(g, task, q.ray(1 - task.side, task.ray.p, task.ray.d, q.reach));
+    }
+}
+__global__ void batch_audit_precomputed(BatchControl *control) {
+    auto &g = *control;
+    if (g.scene.control->status) return;
+    for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < g.ray_count; i += gridDim.x * blockDim.x) {
+        const Hit actual = g.audit_hits[i];
+        if (actual.face == -3) continue;
+        const auto task = g.rays[i];
+        const auto &q = g.pairs[task.pair].query;
+        const Hit expected = q.ray(1 - task.side, task.ray.p, task.ray.d, q.reach);
+        bool same = actual.face == expected.face;
+        if (same && actual.face >= 0) {
+            same = actual.t == expected.t && actual.u == expected.u && actual.v == expected.v;
+            for (int k = 0; k < 3; ++k) same &= actual.normal.x[k] == expected.normal.x[k];
+        }
+        if (!same) q.fail(13);
+        atomicAdd(&g.audited_rays, 1ULL);
+    }
+}
 __global__ void batch_integral_reduce(BatchControl *control) {
     auto &g = *control;
     auto &p = g.pairs[blockIdx.x];
@@ -558,6 +693,7 @@ __global__ void batch_integral_finish(BatchControl *control) {
     cudaGraphSetConditional(g.integral_graph, 0);
     if (g.scene.control->status) return;
     g.ray_queries += g.ray_count;
+    if (g.deferred) { g.precomputed_rays += g.ray_count - g.deferred_count; g.deferred_rays += g.deferred_count; }
     g.ray_batches += g.ray_count > 0;
     bool pending = false;
     for (int pair = 0; pair < g.scene.np; ++pair) {
@@ -598,7 +734,7 @@ struct BatchGraphBuilder {
         return {p.conditional.phGraph_out[0], root};
     }
 };
-void build_batch_graphs(StepGraph &schedule, BatchControl *g, BatchControl &host, int pairs, int sms) {
+void build_batch_graphs(StepGraph &schedule, BatchControl *g, BatchControl &host, int pairs, int sms, bool wavefront, bool audit) {
     check(cudaGraphCreate(&schedule.graph, 0));
     BatchGraphBuilder root{schedule.graph, schedule.graph};
     root.kernel(batch_start, 1, 1, g);
@@ -610,7 +746,12 @@ void build_batch_graphs(StepGraph &schedule, BatchControl *g, BatchControl &host
     f.kernel(batch_stamp<0>, 1, 1, g);
     f.kernel(batch_sort, pairs, 128, g);
     f.kernel(batch_stamp<1>, 1, 1, g);
-    f.kernel(batch_search, sms * 2, 128, g);
+    if (wavefront) {
+        f.kernel(batch_search_seeds, sms * 2, 1, g);
+        f.kernel(batch_search_proposals, dim3(sms * 4, pairs), 32, g);
+        f.kernel(batch_search_ready, sms * 2, 32, g);
+        if (audit) f.kernel(batch_search_audit, sms * 2, 128, g);
+    } else f.kernel(batch_search, sms * 2, 128, g);
     f.kernel(batch_found, 1, 1, g);
     auto l = f.loop(host.link_graph);
     l.kernel(batch_links, pairs * connection_batch, 32, g);
@@ -619,7 +760,11 @@ void build_batch_graphs(StepGraph &schedule, BatchControl *g, BatchControl &host
     i.kernel(batch_integral_prepare, 1, 1, g);
     i.kernel(batch_footprints, dim3(1, pairs), 32, g);
     i.kernel(batch_column_tasks, sms * 4, 128, g);
-    i.kernel(batch_trace_columns, sms * 4, 32, g);
+    if (wavefront) {
+        i.kernel(batch_trace_precomputed, sms * 4, 32, g);
+        i.kernel(batch_trace_deferred, sms * 4, 32, g);
+        if (audit) i.kernel(batch_audit_precomputed, sms * 4, 32, g);
+    } else i.kernel(batch_trace_columns, sms * 4, 32, g);
     i.kernel(batch_integral_reduce, pairs, 32, g);
     i.kernel(batch_integral_finish, 1, 1, g);
     check(cudaGraphInstantiate(&schedule.executable, schedule.graph, 0));

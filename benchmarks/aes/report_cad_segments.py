@@ -43,6 +43,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("before", "after", "cpu", "scene", "out"):
         parser.add_argument(name, type=Path)
+    parser.add_argument("--require-identical", action="store_true",
+                        help="Reject scheduling changes that alter any archived GPU response value")
     args = parser.parse_args()
     old, a = load(args.before)
     new, b = load(args.after)
@@ -96,6 +98,7 @@ def main():
                   cpu_sha256=hashlib.sha256((args.cpu / "response.csv").read_bytes()).hexdigest(),
                   differences_old=delta, differences_cpu=cpu_delta, contact_events=events, curves=peaks,
                   exact_response_old=all(v["same_missing_pattern"] and v["maximum"] == 0 for v in delta.values()),
+                  response_sha256_identical_old=old["response_sha256"] == new["response_sha256"],
                   time_alignment="integer main-step index; increments and cross-history time differences checked within four FP64 ulps; no interpolation",
                   gpu_speedup=float(old["gpu"]["online_s"]) / float(new["gpu"]["online_s"]),
                   cpu_speedup=float(cpu["wall_s"]) / float(new["gpu"]["online_s"]),
@@ -143,6 +146,8 @@ def main():
     fig.savefig(args.out / "timing.png", dpi=180)
     plt.close(fig)
     print(json.dumps({k: report[k] for k in ("gpu_speedup", "cpu_speedup", "contact_events")}, indent=2))
+    if args.require_identical and not report["response_sha256_identical_old"]:
+        raise SystemExit("GPU response changed; scheduling-only acceptance requires identical values")
     if any(not e["same_switch_frames_old"] or not e["same_switch_frames_cpu"] or
            e["different_frames_old"] or e["different_frames_cpu"] for e in events.values()):
         raise SystemExit("Contact switching changed; investigate before accepting")

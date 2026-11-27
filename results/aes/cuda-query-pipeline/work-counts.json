@@ -1,0 +1,62 @@
+{
+  "proposals": {
+    "archived": "43541807",
+    "control": "43541807",
+    "ours": "43541807"
+  },
+  "face_groups": {
+    "archived": "1606449",
+    "control": "1606449",
+    "ours": "1606449"
+  },
+  "confirmed_groups": {
+    "archived": "364845",
+    "control": "364845",
+    "ours": "364845"
+  },
+  "seed_hits": {
+    "archived": "243251",
+    "control": "243251",
+    "ours": "243251"
+  },
+  "batched_rays": {
+    "archived": "105669028",
+    "control": "105669028",
+    "ours": "105669028"
+  },
+  "ray_batches": {
+    "archived": "164173",
+    "control": "164173",
+    "ours": "164173"
+  },
+  "accepted_level_0": {
+    "archived": "49956",
+    "control": "49956",
+    "ours": "49956"
+  },
+  "accepted_level_1": {
+    "archived": "88",
+    "control": "88",
+    "ours": "88"
+  },
+  "accepted": {
+    "archived": "50044",
+    "control": "50044",
+    "ours": "50044"
+  },
+  "subdivisions": {
+    "archived": "44",
+    "control": "44",
+    "ours": "44"
+  },
+  "force_evaluations": {
+    "archived": "185780",
+    "control": "185780",
+    "ours": "185780"
+  },
+  "max_residual": {
+    "archived": "9.1454107923321467e-07",
+    "control": "9.1454107923321467e-07",
+    "ours": "9.1454107923321467e-07"
+  }
+}

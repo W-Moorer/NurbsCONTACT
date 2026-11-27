@@ -455,6 +455,7 @@ __device__ __noinline__ int subdivide(const View &g, int id, const Span &s, Rang
     }
     return n ? -2 : 0;
 }
+template<bool Precomputed = false>
 __device__ __noinline__ int span_hits(const View &g, int face, int span, Ray ray, double &end, bool any,
                                       RootSelection &selection) {
     const auto &f = g.charts[face];
@@ -463,6 +464,16 @@ __device__ __noinline__ int span_hits(const View &g, int face, int span, Ray ray
         return -2;
     const auto &frame = g.frames[span];
     auto cellray = slab_ray({basis(frame.axes, sub(ray.p, frame.origin)), basis(frame.axes, ray.d)});
+    if (g.curvature_filter && s.filter_first >= 0 && fabs(dot(s.axis,ray.d)) < .15) {
+        bool possible = false;
+        for (int i=s.filter_first;i<s.filter_end;) {
+            const auto &node=g.curvature_nodes[i];
+            if (!intersects_slabs(node.box,cellray,end,0)) {i=node.next;continue;}
+            if (node.leaf>=0) {possible=true;break;}
+            ++i;
+        }
+        if (!possible) return 0;
+    }
     int k = 0;
     for (;;) {
         const auto &c = g.cells[s.cell + k];
@@ -476,14 +487,22 @@ __device__ __noinline__ int span_hits(const View &g, int face, int span, Ray ray
                     continue;
                 }
                 if (fabs(dot(s.axis, ray.d)) >= 1e-12 || s.plane_width >= 1e-10) {
-                    int pass = subdivide(g, face, s, c.range, ray, end, selection, any);
-                    if (pass < 0)
-                        return -3;
-                    if (pass > 0)
-                        return 1;
+                    if constexpr (Precomputed) return -5;
+                    else {
+                        int pass = subdivide(g, face, s, c.range, ray, end, selection, any);
+                        if (pass < 0) return -3;
+                        if (pass > 0) return 1;
+                    }
                 }
             } else if (code == 0 && t <= end && (!any || t >= 0)) {
-                int inside = face_contains(g, f, u, v);
+                int inside;
+                if constexpr (Precomputed) {
+                    const auto r = f.domain;
+                    if (u < r.u - 1e-10 || u > r.U + 1e-10 || v < r.v - 1e-10 || v > r.Vv + 1e-10)
+                        inside = 0;
+                    else if (f.rectangle || f.trim_first == f.trim_end) inside = 1;
+                    else return -5;
+                } else inside = face_contains(g, f, u, v);
                 if (inside < 0)
                     return -4;
                 if (inside) {
@@ -507,6 +526,7 @@ __device__ Hit final_hit(const RootSelection &selection, Ray ray, bool any) {
         return {0, -1};
     return selection.hit;
 }
+template<bool Precomputed = false>
 __device__ __noinline__ Hit first(const View &g, Ray ray, double end, bool any = false) {
     RootSelection selection;
     const auto slabs = slab_ray(ray);
@@ -542,15 +562,16 @@ __device__ __noinline__ Hit first(const View &g, Ray ray, double end, bool any =
                         continue;
                     int code = 0;
                     if (primitive.span_node < 0) {
-                        code = analytic_hits(g, face, ray, end, selection, any);
+                        if constexpr (Precomputed) return {0, -3};
+                        else code = analytic_hits(g, face, ray, end, selection, any);
                         if (code < 0)
                             return {0, -2, double(face), 1};
                     } else {
                         const auto &node = g.spans[primitive.span_node];
                         if (intersects_slabs(node.box, local, end, 2 * f.tol))
-                            code = span_hits(g, face, node.leaf, ray, end, any, selection);
+                            code = span_hits<Precomputed>(g, face, node.leaf, ray, end, any, selection);
                         if (code < 0)
-                            return {0, -2, double(face), double(-code)};
+                            return {0, Precomputed ? -3 : -2, double(face), double(-code)};
                     }
                     if (code > 0)
                         return selection.hit;
@@ -570,7 +591,9 @@ __device__ __noinline__ Hit first(const View &g, Ray ray, double end, bool any =
             continue;
         const auto &f = g.charts[n.leaf];
         if (f.first < 0) {
-            int code = analytic_hits(g, n.leaf, ray, end, selection, any);
+            int code;
+            if constexpr (Precomputed) return {0, -3};
+            else code = analytic_hits(g, n.leaf, ray, end, selection, any);
             if (code < 0)
                 return {0, -2, double(n.leaf), 1};
             if (code > 0)
@@ -587,9 +610,9 @@ __device__ __noinline__ Hit first(const View &g, Ray ray, double end, bool any =
             ++j;
             if (node.leaf < 0)
                 continue;
-            int code = span_hits(g, n.leaf, node.leaf, ray, end, any, selection);
+            int code = span_hits<Precomputed>(g, n.leaf, node.leaf, ray, end, any, selection);
             if (code < 0)
-                return {0, -2, double(n.leaf), double(-code)};
+                return {0, Precomputed ? -3 : -2, double(n.leaf), double(-code)};
             if (code > 0)
                 return selection.hit;
         }

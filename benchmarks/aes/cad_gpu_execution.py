@@ -17,7 +17,7 @@ def main():
     parser.add_argument("out", type=Path)
     parser.add_argument("--step", type=float, default=0.001)
     parser.add_argument("--duration", type=float, default=5.0)
-    parser.add_argument("--execution", choices=("cooperative", "cached", "batched"), default="cooperative")
+    parser.add_argument("--execution", choices=("cooperative", "cached", "batched", "wavefront"), default="cooperative")
     parser.add_argument("--reduction", choices=("ordered", "audit"), default="ordered")
     parser.add_argument("--profile-links", action="store_true",
                         help="Collect intrusive connection-stage work counters; not an acceptance timing")

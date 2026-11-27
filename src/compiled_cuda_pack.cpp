@@ -7,6 +7,65 @@ device::V pack(Vec a) { return {{a[0], a[1], a[2]}}; }
 device::V pack_midpoint(const IVec &a) { return {{a[0].center(), a[1].center(), a[2].center()}}; }
 device::Bounds pack(Box a) { return {pack(a.lo), pack(a.hi)}; }
 device::Range pack(Rect a) { return {a.u.lo, a.u.hi, a.v.lo, a.v.hi}; }
+// A second enclosure hierarchy for grazing segments. Split by second
+// differences instead of physical length: a long nearly linear direction
+// should not consume every preprocessing level. This tree only rejects rays;
+// roots, trims and normals still come from the unchanged complete solver.
+void prepare_curvature_filter(const Patch &p, double tolerance, device::Tables &t, device::Span &span) {
+    if (p.net.size()!=16) return;
+    constexpr int levels=7, maximum_nodes=(1<<(levels+1))-1;
+    if (t.curvature_nodes.size()>static_cast<size_t>(std::numeric_limits<int>::max()-maximum_nodes))
+        throw std::length_error("CAD curvature enclosure index is too large");
+    using Net = std::array<Vec,16>;
+    Net initial;
+    double magnitude=1+length(p.anchor);
+    for (int i=0;i<16;++i) {
+        const auto &h=p.net[i];
+        if (!(h[3]>0)) return;
+        initial[i]={h[0]/h[3],h[1]/h[3],h[2]/h[3]};
+        for (double a:initial[i]) if (!std::isfinite(a)) return;
+        for (double a:p.power[i]) magnitude+=std::abs(a);
+    }
+    const double pad=4*tolerance+4096*std::numeric_limits<double>::epsilon()*magnitude;
+    if (!std::isfinite(pad)) return;
+    span.filter_first=static_cast<int>(t.curvature_nodes.size());
+    auto build=[&](auto &&self,const Net &net,int level)->void {
+        const int index=static_cast<int>(t.curvature_nodes.size());
+        t.curvature_nodes.push_back({});
+        Box box;
+        double curvature[2]{},mixed=0;
+        for (int u=0;u<4;++u) for (int v=0;v<4;++v) {
+            const auto delta=sub(net[4*u+v],p.anchor);
+            box.include(Vec{dot3(p.frame[0],delta),dot3(p.frame[1],delta),dot3(p.frame[2],delta)});
+            if (u<2) curvature[0]=std::max(curvature[0],length(add(sub(net[4*(u+2)+v],scale(net[4*(u+1)+v],2)),net[4*u+v])));
+            if (v<2) curvature[1]=std::max(curvature[1],length(add(sub(net[4*u+v+2],scale(net[4*u+v+1],2)),net[4*u+v])));
+            if (u<3 && v<3) mixed=std::max(mixed,length(sub(sub(net[4*(u+1)+v+1],net[4*(u+1)+v]),sub(net[4*u+v+1],net[4*u+v]))));
+        }
+        for (int k=0;k<3;++k) {box.lo[k]=down(box.lo[k]-pad);box.hi[k]=up(box.hi[k]+pad);}
+        const bool leaf=level==levels || std::max({curvature[0],curvature[1],mixed})<tolerance*.0625;
+        t.curvature_nodes[index].box=pack(box);
+        t.curvature_nodes[index].leaf=leaf?0:-1;
+        if (!leaf) {
+            bool along=curvature[0]>curvature[1];
+            if (std::max(curvature[0],curvature[1])<mixed*.25)
+                along=length(sub(net[12],net[0]))>length(sub(net[3],net[0]));
+            Net left,right;
+            for (int strip=0;strip<4;++strip) {
+                auto at=[&](int j){return along?4*j+strip:4*strip+j;};
+                std::array<Vec,4> line;
+                for (int j=0;j<4;++j) line[j]=net[at(j)];
+                for (int k=0;k<4;++k) {
+                    left[at(k)]=line[0];right[at(3-k)]=line[3-k];
+                    for (int j=0;j<3-k;++j) line[j]=scale(add(line[j],line[j+1]),.5);
+                }
+            }
+            self(self,left,level+1);self(self,right,level+1);
+        }
+        t.curvature_nodes[index].next=static_cast<int>(t.curvature_nodes.size());
+    };
+    build(build,initial,0);
+    span.filter_end=static_cast<int>(t.curvature_nodes.size());
+}
 void prepare_support(const Face &f, device::FaceData &out) {
     std::array<Vec,3> axes;
     std::vector<Vec> points;
@@ -342,6 +401,7 @@ std::shared_ptr<device::Columns> cuda_columns(const Solid &solid, bool prepare_r
                     frame.origin = pack(p.anchor);
                     for (int k = 0; k < 3; ++k)
                         frame.axes[k] = pack(p.frame[k]);
+                    prepare_curvature_filter(p,face.tol,t,s);
                 }
                 t.frames.push_back(frame);
                 t.patches.push_back(s);

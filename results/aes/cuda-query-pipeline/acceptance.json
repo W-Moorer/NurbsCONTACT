@@ -1,0 +1,27 @@
+{
+  "complete_full_runs": true,
+  "frames": 50001,
+  "main_step_s": 0.0001,
+  "duration_s": 5,
+  "identical_response_sha256": "8b4fdf24d2d3a4614e1ca2f11bf3982036e6d1d493d07c578ed1cc3ab144437c",
+  "online_s": [
+    163.3907654,
+    163.4940013
+  ],
+  "paired_control_s": 192.299318,
+  "archived_cpu_s": 193.6289707,
+  "cpu_rerun": false,
+  "reduction_against_paired_gpu_percent": [
+    15.033101989472474,
+    14.979416983683736
+  ],
+  "reduction_against_archived_cpu_percent": [
+    15.616570800683395,
+    15.563254450538677
+  ],
+  "real_time": false,
+  "all_steps_missed_deadline": true,
+  "whole_graph_synccheck": "unresolved; not claimed passed",
+  "scope": "Fixed reducer performance; independent analytic/multiple-pair regressions test generic correctness, not universal performance",
+  "preprocessing_excluded": true
+}
