@@ -435,7 +435,7 @@ std::vector<ChartSample> Columns::sample_charts(const std::vector<ChartPoint> &q
     check(cudaMemcpy(out.data(), values.ptr, out.size() * sizeof(out[0]), cudaMemcpyDeviceToHost));
     return out;
 }
-ResidentResult advance_resident(const ResidentScene &scene, double step, int steps) {
+ResidentResult advance_resident(const ResidentScene &scene, double step, int steps, RegionReduction reduction) {
     if (scene.coordinates.empty() || scene.coordinates.size() > coordinate_limit ||
         scene.geometry.size() != scene.bodies.size() || steps < 1 || steps == INT_MAX || !(step > 0) ||
         !std::isfinite(step))
@@ -504,6 +504,15 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     masks.reserve((column_capacity + 31) / 32);
     Buffer<Region> regions;
     regions.reserve(limit);
+    Buffer<Region> reference;
+    Buffer<Faces> previous_faces;
+    Buffer<RegionAudit> audit;
+    if ((reduction == RegionReduction::audit || reduction == RegionReduction::audit_warp) && np) {
+        reference.reserve(limit);
+        previous_faces.reserve(static_cast<size_t>(np) * limit);
+        audit.reserve((static_cast<size_t>(steps)+1)*np);
+        check(cudaMemset(audit.ptr,0,audit.capacity*sizeof(RegionAudit)));
+    }
     Buffer<Anchor> anchors;
     anchors.reserve(np * limit);
     Buffer<SavedSeed> previous;
@@ -519,6 +528,7 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     size_t offset = 0;
     for (int i = 0; i < np; ++i) {
         slots[i].previous = previous.ptr + i * limit;
+        if (previous_faces.ptr) slots[i].audit_previous = previous_faces.ptr + i * limit;
         slots[i].anchor = anchors.ptr + i * limit;
         slots[i].paths = paths.ptr + 2 * static_cast<size_t>(i) * limit;
         slots[i].next_paths = slots[i].paths + limit;
@@ -547,6 +557,9 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     w.column_capacity = column_capacity;
     w.active_columns = masks.ptr;
     w.result = regions.ptr;
+    w.reduction = reduction;
+    w.reference = reference.ptr;
+    w.audit = audit.ptr;
     w.status = &control.ptr->status;
     w.unresolved_face = -1;
     Buffer<Range> windows;
@@ -631,6 +644,12 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     std::vector<unsigned long long> clocks(steps + 1);
     check(cudaMemcpy(clocks.data(), finished.ptr, clocks.size() * sizeof(clocks[0]), cudaMemcpyDeviceToHost));
     result.online_s = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+    result.reduction_s = w.reduction_ns * 1e-9;
+    result.reductions = w.reductions;
+    if (audit.ptr) {
+        result.region_audit.resize(audit.capacity);
+        check(cudaMemcpy(result.region_audit.data(),audit.ptr,audit.capacity*sizeof(RegionAudit),cudaMemcpyDeviceToHost));
+    }
     const unsigned long long phases[]{w.broad_ns, w.sort_ns, w.search_ns, w.group_ns, w.integral_ns};
     for (int i = 0; i < 5; ++i)
         result.phase_s[i] = phases[i] * 1e-9;

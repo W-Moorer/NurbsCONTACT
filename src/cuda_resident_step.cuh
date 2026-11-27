@@ -78,6 +78,63 @@ __device__ Region transport(const Anchor &h, MatPose a, MatPose b, int &invalid)
     n = scale(n, 1 / len);
     return {scale(plus(x, y), .5), n, scale(plus(rotate(a, h.ca), rotate(b, h.cb)), .5), dot(sub(x, y), n)};
 }
+// Compare independently reconstructed regions at one state. Both wrenches are
+// expressed in world coordinates and moments are about each body's own origin.
+struct AuditLoad { V force, torque_a, torque_b; double normal; };
+__device__ AuditLoad region_load(const Region &r, const ContactLaw &law, const DeviceScene &s,
+                                 const ShaftState &state, MatPose a, MatPose b) {
+    V p = world(a,scale(r.p,.001)), n = rotate(a,r.n), arm = rotate(a,scale(r.arm,.001));
+    double depth = r.depth * .001, rate = 0;
+    for (int j=0;j<s.n;++j)
+        rate += dot(n,sub(speed_gradient(s.bodies[law.b],b,p,j),speed_gradient(s.bodies[law.a],a,p,j))) * state.v[j];
+    double f = law.k * pow(depth,law.exponent) - law.rate * pow(depth,.5*(law.exponent-1))*rate;
+    if (f<=0) return {};
+    V force = scale(n,f), couple = scale(arm,f);
+    return {force,scale(plus(cross(sub(p,a.origin),force),couple),-1),
+                  plus(cross(sub(p,b.origin),force),couple),f};
+}
+__device__ __noinline__ void audit_regions(const DeviceScene &s,const ShaftState &state,const ContactLaw &law,
+                                           MatPose a,MatPose b,int pair,bool initial) {
+    auto &w=*s.workspace;
+    auto &entry=w.audit[(initial ? 0 : s.control->last_step+1)*s.np+pair];
+    auto &cache=s.cache[pair];
+    ++entry.queries;
+    entry.regions+=w.regions;
+    entry.count_changes+=w.regions!=cache.audited_regions;
+    cache.audited_regions=w.regions;
+    // Both lists use the lexicographic order of the geometrically confirmed face pairs.
+    int i=0,j=0;
+    while (i<w.found && j<cache.audited_faces) {
+        Faces now=w.witnesses[i].faces, old=cache.audit_previous[j];
+        if (equal(now,old)) {++i; ++j;}
+        else if (now.a<old.a || (now.a==old.a && now.b<old.b)) {++i; ++entry.entered_faces;}
+        else {++j; ++entry.exited_faces;}
+    }
+    entry.entered_faces+=w.found-i;
+    entry.exited_faces+=cache.audited_faces-j;
+    cache.audited_faces=w.found;
+    for (i=0;i<w.found;++i) cache.audit_previous[i]=w.witnesses[i].faces;
+    int loaded=0,reference_loaded=0;
+    for (i=0;i<w.regions;++i) {
+        loaded+=region_load(w.result[i],law,s,state,a,b).normal>0;
+        reference_loaded+=region_load(w.reference[i],law,s,state,a,b).normal>0;
+    }
+    if (loaded!=reference_loaded) {atomicCAS(w.status,0,10); return;}
+    double weight=law.shared && loaded ? 1./loaded : 1.;
+    for (i=0;i<w.regions;++i) {
+        auto x=region_load(w.result[i],law,s,state,a,b), y=region_load(w.reference[i],law,s,state,a,b);
+        if ((x.normal>0)!=(y.normal>0)) {atomicCAS(w.status,0,10); return;}
+        for (int k=0;k<3;++k) {
+            double f=fabs(weight*(x.force.x[k]-y.force.x[k]));
+            double ma=fabs(weight*(x.torque_a.x[k]-y.torque_a.x[k]));
+            double mb=fabs(weight*(x.torque_b.x[k]-y.torque_b.x[k]));
+            if (!isfinite(f)||!isfinite(ma)||!isfinite(mb)) {atomicCAS(w.status,0,10);return;}
+            entry.force_error[k]=fmax(entry.force_error[k],f);
+            entry.torque_a_error[k]=fmax(entry.torque_a_error[k],ma);
+            entry.torque_b_error[k]=fmax(entry.torque_b_error[k],mb);
+        }
+    }
+}
 template <class Grid>
 __device__ __noinline__ void forces(Grid grid, const DeviceScene &s, Trial &out, double dt, bool initial) {
     int lane = grid.thread_rank();
@@ -134,6 +191,7 @@ __device__ __noinline__ void forces(Grid grid, const DeviceScene &s, Trial &out,
                 if (*w.status)
                     return;
                 if (!lane) {
+                    if (w.audit) audit_regions(s,state,law,a,b,pair,initial);
                     for (int k = 0; k < w.regions; ++k) {
                         auto &r = w.result[k];
                         r.p = world(a, scale(r.p, .001));

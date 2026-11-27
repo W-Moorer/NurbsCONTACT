@@ -4,6 +4,8 @@
 
 ## 开发分支的全 GPU 路径
 
+承载区积分在有效列上累加十个双精度分量，随后重建形心、法向、压入深度和分布力矩。保序实现按原列序压紧索引，并行生成各列贡献，再让十个线程分别累加各自的分量。`--region-reduction serial` 提供原顺序的单线程对照，`audit` 在同一试算姿态、同一区域上检查全部累加结果和世界坐标系下两刚体各自的三轴力矩。`warp` 与 `audit-warp` 保留改变加法顺序的树形归约，用于数值消融。[设备端累加](../src/cuda_resident_geometry.cuh) · [同姿态力矩核验](../src/cuda_resident_step.cuh) · [减速器实验](../results/aes/cuda-region-reduction/README.md)
+
 通用网格几何入口 `IntersectionBatch` 按物体对读取当前的三维刚体相对变换。每对独立使用局部 AABB 树，候选队列和相交结果留在设备上。几何级验证逐步回放完整五秒的减速器姿态。另外用非平行坐标系、交换物体顺序和接触后分离检验三维变换。输出为相交三角片的原始编号，可进一步构造交点、交线和共面多边形。运行完整网格动力学还需要将这些几何结果转换成连续的承载区、接触深度和力矩，再反馈给积分器。[GPU 网格接口](../nurbscontact_gpu/bvh.py) · [原始测量和验收范围](../results/aes/gpu-mesh-geometry/README.md) · [三维回归](../tests/test_gpu_triangle_intersection.py)
 
 `cad-compiled --device cuda-resident` 从 `.ncpart` 加载参数曲面与裁剪边界。准备阶段生成固定方位下的局部包围盒、常用积分阶数的材料点和时间推进所需的 CUDA Graph。在线提交一次图，GPU 按当前刚体姿态查询可能接触的面，在参数域确认承载点，按连通区积分，并将合力和力矩交给隐式积分器。坐标、牛顿试算、线搜索与重试都保存在显存中。终止后集中回传轨迹和诊断。

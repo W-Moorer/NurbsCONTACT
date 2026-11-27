@@ -138,6 +138,7 @@ struct SurfaceOptions {
     std::string method;
     bool cuda_columns{};
     bool resident{};
+    std::string region_reduction;
     std::optional<ImpulseLaw> impulse_law;
     Path mesh_directory,compiled_directory;
     Path progress_file;
@@ -1283,7 +1284,12 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
             model.pairs.push_back({static_cast<int>(p.a),static_cast<int>(p.b),m.stiffness,m.exponent,m.rate,
                                    m.maximum_depth,p.share_penalty_stiffness});
         }
-        auto result=dev::advance_resident(model,dt,static_cast<int>(steps));
+        auto reduction=dev::RegionReduction::ordered;
+        if (surface.region_reduction=="serial") reduction=dev::RegionReduction::serial;
+        if (surface.region_reduction=="warp") reduction=dev::RegionReduction::warp;
+        if (surface.region_reduction=="audit-warp") reduction=dev::RegionReduction::audit_warp;
+        if (surface.region_reduction=="audit") reduction=dev::RegionReduction::audit;
+        auto result=dev::advance_resident(model,dt,static_cast<int>(steps),reduction);
         device_wall=result.online_s;
         setup_s+=std::chrono::duration<double>(Clock::now()-start).count()-*device_wall;
         stats.evaluations=result.forces;
@@ -1292,10 +1298,24 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         stats.accepted_steps=steps+result.splits;
         work.cad_patch_queries=result.queries;
         auto gpu_stats=open_output(output.string()+".gpu.csv");
-        gpu_stats<<"online_s,broad_s,sort_s,search_s,group_s,integral_s,p50_step_s,p99_step_s,max_step_s,missed_deadlines,steps\n";
+        gpu_stats<<"online_s,broad_s,sort_s,search_s,group_s,integral_s,p50_step_s,p99_step_s,max_step_s,missed_deadlines,steps,reduction_s,reductions\n";
         gpu_stats<<*device_wall;
         for(double t:result.phase_s)gpu_stats<<','<<t;
-        gpu_stats<<','<<result.p50_s<<','<<result.p99_s<<','<<result.maximum_step_s<<','<<result.missed_deadlines<<','<<steps<<'\n';
+        gpu_stats<<','<<result.p50_s<<','<<result.p99_s<<','<<result.maximum_step_s<<','<<result.missed_deadlines<<','<<steps
+                 <<','<<result.reduction_s<<','<<result.reductions<<'\n';
+        if (!result.region_audit.empty()) {
+            auto audit=open_output(output.string()+".regions.csv");
+            audit<<"step,pair,queries,regions,entered_face_pairs,exited_face_pairs,region_count_changes,"
+                    "Fx_error_N,Fy_error_N,Fz_error_N,Ax_error_Nm,Ay_error_Nm,Az_error_Nm,Bx_error_Nm,By_error_Nm,Bz_error_Nm\n";
+            for (size_t i=0;i<result.region_audit.size();++i) {
+                const auto &r=result.region_audit[i];
+                audit<<i/model.pairs.size()<<','<<i%model.pairs.size()<<','<<r.queries<<','<<r.regions
+                     <<','<<r.entered_faces<<','<<r.exited_faces<<','<<r.count_changes;
+                for (auto v:{r.force_error,r.torque_a_error,r.torque_b_error})
+                    for (int j=0;j<3;++j) audit<<','<<v[j];
+                audit<<'\n';
+            }
+        }
         const auto width=1+4*n+3*input.pairs.size();
         for (std::size_t i=0;i<=steps;++i) {
             if (i%stride && i!=steps) continue;
@@ -1608,6 +1628,7 @@ int main(int argc,char** argv) {
                         "  or append --method bvh-aabb|bvh-obb|mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
                         "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl|finite|contour-ray] [--penalty-stiffness per-region|shared] [--geometry-update newton|predictor] [--spectral-radius RHO]\n"
                         "  or append --method cad-compiled|cad-boundary [--device cpu|cuda-columns|cuda-resident] [--compiled-dir DIR] [--force-tol-n N --moment-tol-nm NM --cubature adaptive|fixed96]\n"
+                        "     cuda-resident supports --region-reduction ordered|serial|audit|warp|audit-warp\n"
                         "  or append --method cad-occt|cad-local|cad-patch|cad-bezier|cad-bezier-bounds|cad-bezier-relocate|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
                         "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp [--progress FILE]\n";
             return 2;
@@ -1657,12 +1678,19 @@ int main(int argc,char** argv) {
                     event_specified=true;
                 }
                 else if (key=="--ccd-tol-m") surface.distance_tolerance=std::stod(argv[i+1]);
+                else if (key=="--region-reduction") {
+                    if(value!="ordered" && value!="serial" && value!="warp" && value!="audit" && value!="audit-warp")
+                        throw std::invalid_argument("unknown region reduction mode");
+                    surface.region_reduction=value;
+                }
                 else if (key=="--solver") {
                     if (value=="penalty") surface.impulse_law.reset();
                     else surface.impulse_law=parse_impulse_law(value);
                 }
                 else throw std::invalid_argument("unsupported surface option or solver");
             }
+            if (!surface.region_reduction.empty() && !surface.resident)
+                throw std::invalid_argument("region reduction requires cuda-resident");
             if (surface.method=="bvh-aabb" || surface.method=="bvh-obb") {
                 surface.method=surface.method=="bvh-aabb" ? "mesh-aabb" : "mesh-obb";
                 if (!region_specified) surface.mesh_regions="finite";

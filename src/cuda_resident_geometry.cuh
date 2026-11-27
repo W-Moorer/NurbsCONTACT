@@ -72,6 +72,8 @@ struct ConnectionTrial {
 constexpr int connection_batch = 32;
 struct PairScratch {
     int previous_count, anchors, ready;
+    int audited_faces, audited_regions;
+    Faces *audit_previous;
     SavedSeed *previous;
     Anchor *anchor;
     TileWindow windows[2];
@@ -105,6 +107,10 @@ struct Workspace {
     ConnectionTrial *bridges;
     int column_capacity;
     Region *result;
+    Region *reference;
+    RegionReduction reduction;
+    RegionAudit *audit;
+    unsigned long long reduction_ns, reductions;
     int *status;
     unsigned long long queries, subdivisions, evaluations;
     unsigned long long broad_ns, sort_ns, search_ns, group_ns, integral_ns, window_builds, window_reuses;
@@ -740,6 +746,108 @@ __device__ Range footprint(Query &q, int label, int side, int face) {
     }
     return out;
 }
+struct IntegralSum {
+    V area{}, moment{}, centroid{};
+    double volume{};
+};
+__device__ IntegralSum column_term(const Query &q, const SampleDepth &s) {
+    V n = s.side ? direction(q.rel[1], s.s.n) : s.s.n;
+    V p = s.side ? point(q.rel[1], s.s.p) : s.s.p;
+    V a = scale(n, (s.side ? -1 : 1) * s.s.area);
+    double vol = s.depth * s.s.area;
+    return {a, cross(p, a), scale(sub(p, scale(n, .5 * s.depth)), vol), vol};
+}
+__device__ __noinline__ IntegralSum sum_columns(const Query &q, int count, int first_word, int stride) {
+    IntegralSum sum{};
+    const auto &w = *q.work;
+    for (int word = first_word; word < (count + 31) / 32; word += stride) {
+        unsigned mask = w.active_columns[word];
+        while (mask) {
+            const auto &s = w.columns[32 * word + __ffs(mask) - 1];
+            mask &= mask - 1;
+            const auto term = column_term(q, s);
+            sum.area = plus(sum.area, term.area);
+            sum.moment = plus(sum.moment, term.moment);
+            sum.centroid = plus(sum.centroid, term.centroid);
+            sum.volume += term.volume;
+        }
+    }
+    return sum;
+}
+__device__ __noinline__ IntegralSum reduce_columns(const Query &q, int count, int lane) {
+    IntegralSum v = sum_columns(q, count, lane, 32);
+    for (int distance = 16; distance; distance /= 2) {
+        for (int k = 0; k < 3; ++k) {
+            v.area.x[k] += __shfl_down_sync(0xffffffffu, v.area.x[k], distance);
+            v.moment.x[k] += __shfl_down_sync(0xffffffffu, v.moment.x[k], distance);
+            v.centroid.x[k] += __shfl_down_sync(0xffffffffu, v.centroid.x[k], distance);
+        }
+        v.volume += __shfl_down_sync(0xffffffffu, v.volume, distance);
+    }
+    return v;
+}
+__device__ bool make_region(Query &q, const IntegralSum &sum, Region &region) {
+    const double a = norm(sum.area);
+    if (!(sum.volume > 0 && a > 1e-18)) return false;
+    V p = scale(sum.centroid, 1 / sum.volume), n = scale(sum.area, 1 / a);
+    Witness hit;
+    if (!q.chord(p, n, hit)) return false;
+    region = {p, n, sub(scale(sum.moment, 1 / a), cross(p, n)), hit.depth};
+    return true;
+}
+// Compact active column IDs in increasing order, form up to 32 independent
+// contributions together, and assign one original FP64 sum to each component.
+// Keeping each scalar addition in order preserves threshold decisions in HHT.
+__device__ __noinline__ IntegralSum ordered_columns(const Query &q, int count, int lane) {
+    __shared__ int ids[32 * 32];
+    __shared__ double terms[32][10];
+    constexpr unsigned full = 0xffffffffu;
+    const auto &w = *q.work;
+    const int words = (count + 31) / 32;
+    double total = 0.;
+    for (int base = 0; base < words; base += 32) {
+        int word = base + lane;
+        unsigned mask = word < words ? w.active_columns[word] : 0;
+        if (!__any_sync(full, mask != 0)) continue;
+        const int active = __popc(mask);
+        int end = active;
+        for (int shift = 1; shift < 32; shift *= 2) {
+            int preceding = __shfl_up_sync(full, end, shift);
+            if (lane >= shift) end += preceding;
+        }
+        const int size = __shfl_sync(full, end, 31);
+        int out = end - active;
+        while (mask) {
+            ids[out++] = 32 * word + __ffs(mask) - 1;
+            mask &= mask - 1;
+        }
+        __syncwarp();
+        for (int start = 0; start < size; start += 32) {
+            const int n = min(32, size - start);
+            if (lane < n) {
+                const auto term = column_term(q, w.columns[ids[start + lane]]);
+                for (int k = 0; k < 3; ++k) {
+                    terms[lane][k] = term.area.x[k];
+                    terms[lane][3+k] = term.moment.x[k];
+                    terms[lane][6+k] = term.centroid.x[k];
+                }
+                terms[lane][9] = term.volume;
+            }
+            __syncwarp();
+            if (lane < 10)
+                for (int k = 0; k < n; ++k) total += terms[k][lane];
+            __syncwarp();
+        }
+    }
+    IntegralSum sum{};
+    for (int k = 0; k < 3; ++k) {
+        sum.area.x[k] = __shfl_sync(full, total, k);
+        sum.moment.x[k] = __shfl_sync(full, total, k+3);
+        sum.centroid.x[k] = __shfl_sync(full, total, k+6);
+    }
+    sum.volume = __shfl_sync(full, total, 9);
+    return sum;
+}
 template <class Grid> __device__ void integrate_regions(Grid grid, Query &q) {
     auto &w = *q.work;
     int lane = grid.thread_rank(), threads = grid.size();
@@ -830,31 +938,35 @@ template <class Grid> __device__ void integrate_regions(Grid grid, Query &q) {
                     w.columns[i] = s;
             }
             grid.sync();
-            if (!lane) {
-                V area{}, moment{}, centroid{};
-                double volume = 0;
-                for (int begin = 0; begin < count; begin += 32) {
-                    unsigned mask = w.active_columns[begin / 32];
-                    while (mask) {
-                        int offset = __ffs(mask) - 1;
-                        mask &= mask - 1;
-                        const auto &s = w.columns[begin + offset];
-                        V n = s.side ? direction(q.rel[1], s.s.n) : s.s.n,
-                          p = s.side ? point(q.rel[1], s.s.p) : s.s.p;
-                        V a = scale(n, (s.side ? -1 : 1) * s.s.area);
-                        area = plus(area, a);
-                        moment = plus(moment, cross(p, a));
-                        double vol = s.depth * s.s.area;
-                        volume += vol;
-                        centroid = plus(centroid, scale(sub(p, scale(n, .5 * s.depth)), vol));
+            if (lane < 32) {
+                auto start = timer_ns();
+                IntegralSum sum{};
+                if (w.reduction == RegionReduction::ordered || w.reduction == RegionReduction::audit)
+                    sum = ordered_columns(q, count, lane);
+                else if (w.reduction != RegionReduction::serial)
+                    sum = reduce_columns(q, count, lane);
+                else if (!lane)
+                    sum = sum_columns(q, count, 0, 1);
+                if (!lane) {
+                    w.reduction_ns += timer_ns() - start;
+                    ++w.reductions;
+                    Region actual{};
+                    const bool valid = make_region(q, sum, actual);
+                    if (w.reference) {
+                        Region ref{};
+                        const auto original = sum_columns(q, count, 0, 1);
+                        if (w.reduction == RegionReduction::audit) {
+                            for (int k = 0; k < 3; ++k)
+                                if (sum.area.x[k] != original.area.x[k] || sum.moment.x[k] != original.moment.x[k]
+                                    || sum.centroid.x[k] != original.centroid.x[k]) q.fail(10);
+                            if (sum.volume != original.volume) q.fail(10);
+                        }
+                        bool expected = make_region(q, original, ref);
+                        if (valid != expected) q.fail(10);
+                        if (expected) w.reference[w.regions] = ref;
                     }
-                }
-                double a = norm(area);
-                if (volume > 0 && a > 1e-18) {
-                    V p = scale(centroid, 1 / volume), n = scale(area, 1 / a);
-                    Witness hit;
-                    if (q.chord(p, n, hit)) {
-                        w.result[w.regions++] = {p, n, sub(scale(moment, 1 / a), cross(p, n)), hit.depth};
+                    if (valid) {
+                        w.result[w.regions++] = actual;
                         w.selected = 1;
                     }
                 }

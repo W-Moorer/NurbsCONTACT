@@ -182,11 +182,19 @@ struct ResidentScene {
     std::vector<ContactLaw> pairs;
     std::vector<std::shared_ptr<Columns>> geometry;
 };
+enum class RegionReduction { serial, ordered, warp, audit, audit_warp };
+struct RegionAudit {
+    unsigned queries{}, regions{}, entered_faces{}, exited_faces{}, count_changes{};
+    double force_error[3]{}, torque_a_error[3]{}, torque_b_error[3]{};
+};
 struct ResidentResult {
     std::vector<double> frames;
+    std::vector<RegionAudit> region_audit;
+    double reduction_s{};
+    unsigned long long reductions{};
     double online_s{}, maximum_residual{};
     unsigned long long queries{}, forces{}, splits{}, missed_deadlines{};
     double phase_s[5]{}, p50_s{}, p99_s{}, maximum_step_s{};
 };
-ResidentResult advance_resident(const ResidentScene &, double step, int steps);
+ResidentResult advance_resident(const ResidentScene &, double step, int steps, RegionReduction = RegionReduction::ordered);
 } // namespace nc::compiled::device

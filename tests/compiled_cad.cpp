@@ -130,6 +130,21 @@ void resident_boxes() {
         if(i && !r[7] && !switch_step)switch_step=i;
     }
     require(switch_step==158,"resident box release step");
+    const auto audit=device::advance_resident(scene,dt,steps,device::RegionReduction::audit);
+    require(std::equal(audit.frames.begin(),audit.frames.end(),result.frames.begin(),result.frames.end(),
+                       [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}) &&
+            audit.region_audit.size()==steps+1,
+            "region audit changed resident dynamics");
+    unsigned checked=0,entered=0,exited=0;
+    for(const auto &row:audit.region_audit) {
+        checked+=row.regions;
+        entered+=row.entered_faces;
+        exited+=row.exited_faces;
+        for(int d=0;d<3;++d)
+            require(row.force_error[d]<1e-10 && row.torque_a_error[d]<1e-12 && row.torque_b_error[d]<1e-12,
+                    "single-region box wrench differs from serial");
+    }
+    require(checked && entered && exited,"missing contact or release in region audit");
 }
 #endif
 void overlap(bool cuda=false) {
