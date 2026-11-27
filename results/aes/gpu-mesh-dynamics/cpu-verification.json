@@ -1,0 +1,28 @@
+{
+  "command": [
+    "../mesh-bvh-cpu-reference/Release/nc_contact.exe",
+    "../github-cpu-recheck/00d0f2a2/inputs/scene/common-200.scene",
+    "0",
+    "0.0001",
+    "5",
+    "1",
+    "..\\mesh-bvh-dynamics\\cpu-corrected\\response",
+    "--method",
+    "mesh-obb",
+    "--solver",
+    "penalty",
+    "--mesh-region-scope",
+    "contour-ray",
+    "--penalty-stiffness",
+    "shared",
+    "--geometry-update",
+    "predictor",
+    "--spectral-radius",
+    "0",
+    "--progress",
+    "..\\mesh-bvh-dynamics\\cpu-corrected\\progress.csv"
+  ],
+  "exit_code": 0,
+  "process_s": 322.37264549999963,
+  "purpose": "response verification after rigid-frame correction; archived CPU performance comparison unchanged"
+}

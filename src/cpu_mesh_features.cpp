@@ -169,6 +169,14 @@ RigidPlacement relative(const RigidPlacement& a,const RigidPlacement& b) {
     RigidPlacement r;
     r.origin=inverse_vector(a,sub(b.origin,a.origin));
     for (int k=0;k<3;++k) r.basis[k]=inverse_vector(a,b.basis[k]);
+    // A rigid placement must not acquire an axial scale from rounded sine and
+    // cosine products. Such a scale can open a common end plane by one ulp,
+    // removing its contour and changing the contact centre by a finite amount.
+    r.basis[0]=scale(r.basis[0],1/length(r.basis[0]));
+    r.basis[1]=sub(r.basis[1],scale(r.basis[0],dot3(r.basis[0],r.basis[1])));
+    r.basis[1]=scale(r.basis[1],1/length(r.basis[1]));
+    r.basis[2]=cross3(r.basis[0],r.basis[1]);
+    r.basis[2]=scale(r.basis[2],1/length(r.basis[2]));
     return r;
 }
 double motion_bound(const RigidPlacement& a,const RigidPlacement& b,double radius) {

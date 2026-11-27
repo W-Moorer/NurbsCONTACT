@@ -1,0 +1,54 @@
+[
+  {
+    "name": "final-run",
+    "command": [
+      "python",
+      "benchmarks/aes/mesh_bvh_dynamics.py",
+      "../github-cpu-recheck/00d0f2a2/inputs/scene/common-200.scene",
+      "../mesh-bvh-dynamics/final-safety",
+      "--blocks",
+      "46",
+      "--execution",
+      "graph"
+    ],
+    "exit_code": 0,
+    "process_s": 196.94819019999704
+  },
+  {
+    "name": "gpu-regressions",
+    "command": [
+      "python",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_gpu_mesh_dynamics.py",
+      "-v"
+    ],
+    "exit_code": 0,
+    "process_s": 98.97293960000388
+  },
+  {
+    "name": "memcheck",
+    "command": [
+      "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.6/compute-sanitizer/compute-sanitizer.exe",
+      "--tool",
+      "memcheck",
+      "--error-exitcode",
+      "91",
+      "python",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_gpu_mesh_dynamics.py",
+      "-v"
+    ],
+    "exit_code": 0,
+    "process_s": 33.744107199978316
+  }
+]

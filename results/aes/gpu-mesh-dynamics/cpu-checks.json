@@ -1,0 +1,13 @@
+{
+  "nc_cpu_mesh_tests": {
+    "exit_code": 0,
+    "includes": "arbitrary common spatial-frame invariance"
+  },
+  "nc_hht_tests": {
+    "exit_code": 0
+  },
+  "nc_compiled_tests --cuda": {
+    "exit_code": 0
+  },
+  "AGENTS.md": "unchanged"
+}

@@ -1,0 +1,120 @@
+{
+  "cpu_sha256": "3de39321574089f3af0a2dee63d9307f34585a36755bfecb9b2dead0d380a6bb",
+  "gpu_sha256": "fb18a68d05430015acc80ca8eaeb8387cfe57fd730a334a3d9a8639ceae1d2ec",
+  "frames": 50001,
+  "duration_s": 5.000000000001681,
+  "errors": {
+    "q0": {
+      "max_abs": 1.4873680811433587e-05,
+      "rms": 9.399359017138523e-07,
+      "reference_rms": 544.1439470344557,
+      "finite_mask_mismatches": 0
+    },
+    "v0": {
+      "max_abs": 0.16327137037643524,
+      "rms": 0.003239905122545581,
+      "reference_rms": 188.4962957381454,
+      "finite_mask_mismatches": 0
+    },
+    "a0": {
+      "max_abs": 2035.5691094489666,
+      "rms": 22.985045551575986,
+      "reference_rms": 2108.4488052049414,
+      "finite_mask_mismatches": 0
+    },
+    "force0": {
+      "max_abs": 2.7561336889582577,
+      "rms": 0.02236436594355023,
+      "reference_rms": 2.352667940334758,
+      "finite_mask_mismatches": 0
+    },
+    "q1": {
+      "max_abs": 5.628213273212168e-06,
+      "rms": 4.573649510409326e-07,
+      "reference_rms": 272.07046357529254,
+      "finite_mask_mismatches": 0
+    },
+    "v1": {
+      "max_abs": 0.029248853210845027,
+      "rms": 0.0012183041164202967,
+      "reference_rms": 94.24786966841803,
+      "finite_mask_mismatches": 0
+    },
+    "a1": {
+      "max_abs": 419.65425749043516,
+      "rms": 7.808708571345317,
+      "reference_rms": 640.4056715812728,
+      "finite_mask_mismatches": 0
+    },
+    "force1": {
+      "max_abs": 5.60311147788336,
+      "rms": 0.06732993974862479,
+      "reference_rms": 5.92203635996972,
+      "finite_mask_mismatches": 0
+    },
+    "q2": {
+      "max_abs": 5.849786006706381e-06,
+      "rms": 3.038686843473912e-07,
+      "reference_rms": 136.03374900658073,
+      "finite_mask_mismatches": 0
+    },
+    "v2": {
+      "max_abs": 0.03737962171756948,
+      "rms": 0.001576801174131555,
+      "reference_rms": 47.123891116607794,
+      "finite_mask_mismatches": 0
+    },
+    "a2": {
+      "max_abs": 249.35171515379426,
+      "rms": 10.105092188529682,
+      "reference_rms": 710.7515111451066,
+      "finite_mask_mismatches": 0
+    },
+    "force2": {
+      "max_abs": 5.149110278942715,
+      "rms": 0.16322654944138693,
+      "reference_rms": 11.369685749482677,
+      "finite_mask_mismatches": 0
+    },
+    "gap0": {
+      "max_abs": 5.918092149505613e-07,
+      "rms": 4.922288772390756e-09,
+      "reference_rms": 7.972348843905979e-06,
+      "finite_mask_mismatches": 0
+    },
+    "normal_load0": {
+      "max_abs": 94.63929750733155,
+      "rms": 0.7867159093879349,
+      "reference_rms": 1228.1933481723838,
+      "finite_mask_mismatches": 0
+    },
+    "contact0": {
+      "max_abs": 0.0,
+      "rms": 0.0,
+      "reference_rms": 0.9999700001499925,
+      "finite_mask_mismatches": 0
+    },
+    "gap1": {
+      "max_abs": 7.148036704802053e-07,
+      "rms": 1.8898270381010284e-08,
+      "reference_rms": 1.8953094629205008e-05,
+      "finite_mask_mismatches": 0
+    },
+    "normal_load1": {
+      "max_abs": 79.18661442918392,
+      "rms": 2.5895579508006774,
+      "reference_rms": 2235.773771957874,
+      "finite_mask_mismatches": 0
+    },
+    "contact1": {
+      "max_abs": 0.0,
+      "rms": 0.0,
+      "reference_rms": 0.9999099977497614,
+      "finite_mask_mismatches": 0
+    }
+  },
+  "same_response_as_execution_reference": true,
+  "execution_reference_sha256": "fb18a68d05430015acc80ca8eaeb8387cfe57fd730a334a3d9a8639ceae1d2ec",
+  "cpu_equivalence_accepted": false,
+  "reason": "Near-coplanar triangle classifications and resulting load peaks remain under investigation."
+}

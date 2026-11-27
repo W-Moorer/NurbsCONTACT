@@ -1,0 +1,35 @@
+{
+  "pose": "CPU corrected trace, accepted step 47 advanced to the next HHT predictor",
+  "pair": 1,
+  "cpu_triangle_pairs": 234,
+  "gpu_triangle_pairs": 236,
+  "extra_gpu_pairs": [
+    [
+      23027,
+      746
+    ],
+    [
+      23027,
+      748
+    ]
+  ],
+  "original_end_cap_vertex_z_m": [
+    0.01600000000000002,
+    0.016,
+    0.016
+  ],
+  "cpu_point_m": [
+    0.12452575405853533,
+    0.0028174982785979068,
+    0.04075229006889239
+  ],
+  "gpu_point_m": [
+    0.1245350525410586,
+    0.0027891984742204057,
+    0.040831264176890744
+  ],
+  "cpu_depth_m": 1.972246672561986e-05,
+  "gpu_depth_m": 1.9121928749720775e-05,
+  "interpretation": "Different near-coplanar triangle classifications change a contour-weighted contact center by a finite amount. This is unresolved, not a passed CPU equivalence test.",
+  "ncu": "ERR_NVGPUCTRPERM: hardware performance counters unavailable; no permissions changed"
+}

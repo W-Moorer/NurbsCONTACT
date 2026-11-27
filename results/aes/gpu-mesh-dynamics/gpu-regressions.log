@@ -1,0 +1,12 @@
+test_crossed_edges_in_a_spatial_frame (test_gpu_mesh_dynamics.MeshDynamicsTest.test_crossed_edges_in_a_spatial_frame) ... ok
+test_disconnected_supports_and_enclosure (test_gpu_mesh_dynamics.MeshDynamicsTest.test_disconnected_supports_and_enclosure) ... ok
+test_filtered_plane_signs_against_decimal (test_gpu_mesh_dynamics.MeshDynamicsTest.test_filtered_plane_signs_against_decimal) ... ok
+test_implicit_unilateral_oscillator (test_gpu_mesh_dynamics.MeshDynamicsTest.test_implicit_unilateral_oscillator) ... ok
+test_overflow_does_not_return_incomplete_contacts (test_gpu_mesh_dynamics.MeshDynamicsTest.test_overflow_does_not_return_incomplete_contacts) ... ok
+test_scene_validation (test_gpu_mesh_dynamics.MeshDynamicsTest.test_scene_validation) ... ok
+test_tip_plane_separation_and_body_order (test_gpu_mesh_dynamics.MeshDynamicsTest.test_tip_plane_separation_and_body_order) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 94.476s
+
+OK

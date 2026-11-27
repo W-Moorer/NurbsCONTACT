@@ -1,0 +1,10 @@
+{
+  "wheel_built": true,
+  "included_headers": [
+    "nurbscontact_gpu/kernels/cuda_resident_step.cuh",
+    "nurbscontact_gpu/kernels/mesh_resident.cuh",
+    "nurbscontact_gpu/kernels/mesh_resident_bind.cuh",
+    "nurbscontact_gpu/kernels/mesh_graph.cuh"
+  ],
+  "scope": "Packaging contract only; subsequent kernel refinements use these same file paths."
+}

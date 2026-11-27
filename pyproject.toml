@@ -25,4 +25,4 @@ wheel.packages = ["nurbscontact_gpu"]
 wheel.py-api = "py3"
 wheel.exclude = ["nurbscontact_gpu/native/**"]
 sdist.exclude = ["**"]
-sdist.include = ["/pyproject.toml", "/LICENSE", "/nurbscontact_gpu/*.py", "/nurbscontact_gpu/README.md", "/nurbscontact_gpu/kernels/*.cu", "/nurbscontact_gpu/native/CMakeLists.txt", "/nurbscontact_gpu/native/hinge_exchange.cpp"]
+sdist.include = ["/pyproject.toml", "/LICENSE", "/nurbscontact_gpu/*.py", "/nurbscontact_gpu/README.md", "/nurbscontact_gpu/kernels/*.cu", "/nurbscontact_gpu/kernels/*.cuh", "/src/cuda_resident_step.cuh", "/nurbscontact_gpu/native/CMakeLists.txt", "/nurbscontact_gpu/native/hinge_exchange.cpp"]

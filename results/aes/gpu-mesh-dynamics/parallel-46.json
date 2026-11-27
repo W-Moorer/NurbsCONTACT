@@ -1,0 +1,40 @@
+{
+  "online_s": 103.28463020001072,
+  "setup_s": 165.8788109999732,
+  "status": [
+    0.0,
+    5.000000000001681,
+    100198.0,
+    151703.0,
+    26.0,
+    8.314545152,
+    3.6154806720000003,
+    17.350525984,
+    44.286809056,
+    1.1309266483294778e-06
+  ],
+  "p99_step_s": 0.003100672,
+  "kernel": {
+    "max_threads_per_block": 256,
+    "shared_size_bytes": 6304,
+    "const_size_bytes": 0,
+    "local_size_bytes": 2280,
+    "num_regs": 255,
+    "ptx_version": 86,
+    "binary_version": 86,
+    "cache_mode_ca": 0,
+    "max_dynamic_shared_size_bytes": 42848,
+    "preferred_shared_memory_carveout": -1
+  },
+  "duration_s": 5.0,
+  "step_s": 0.0001,
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "mesh_sha256": [
+    "393e43cb40fe1a5853c024962b661ff14c7606e70634f9278097b1cd16cd10cc",
+    "b0eae048e8e4a9657c54d6c00a1950c082a8b9b322de68f0d1ec74b083756c13",
+    "54ded15d150eae443e8d01ae0ef5a2c21676304059cac39b2f086379a4b5e7cf",
+    "cfb0d149e573a6f1660aa81a86dec8af1b841b2e9d208d1ddc1617aa4e99aac0"
+  ],
+  "method": "GPU BVH triangle intersection + finite/contour-ray support",
+  "steps": 50000
+}

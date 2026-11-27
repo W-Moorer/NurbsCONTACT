@@ -163,6 +163,16 @@ void check_crossed_edges() {
         require(contacts.size()==1 && std::abs(contacts[0].depth_m-.02)<1e-12 &&
                 length(sub(contacts[0].point,{0,0,-.01}))<1e-12 &&
                 length(sub(contacts[0].normal,{0,0,1}))<1e-12,"interior edge-edge contact witness");
+        for (double angle : {.13,.72,1.71,3.25,5.37}) {
+            ContactPose frame{{.7,-.4,.2},{.3/std::sqrt(.5),-.4/std::sqrt(.5),.5/std::sqrt(.5)},angle};
+            auto moved=frame;
+            moved.origin=frame.point({0,0,-.02});
+            const auto transformed=query->regions(frame,moved,work);
+            require(transformed.size()==1 && std::abs(transformed[0].depth_m-.02)<1e-10 &&
+                    length(sub(transformed[0].point,frame.point({0,0,-.01})))<1e-10 &&
+                    length(sub(transformed[0].normal,frame.rotate({0,0,1})))<1e-10,
+                    "rigid frame changed finite edge contact");
+        }
         pose.origin[2]=.02;
         require(query->regions(base,pose,work).empty(),"separated crossed edges produced a load");
     }
