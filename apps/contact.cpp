@@ -1298,11 +1298,11 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         stats.accepted_steps=steps+result.splits;
         work.cad_patch_queries=result.queries;
         auto gpu_stats=open_output(output.string()+".gpu.csv");
-        gpu_stats<<"online_s,broad_s,sort_s,search_s,group_s,integral_s,p50_step_s,p99_step_s,max_step_s,missed_deadlines,steps,reduction_s,reductions\n";
+        gpu_stats<<"online_s,broad_s,sort_s,search_s,group_s,integral_s,p50_step_s,p99_step_s,max_step_s,missed_deadlines,steps,reduction_s,reductions,checked_links\n";
         gpu_stats<<*device_wall;
         for(double t:result.phase_s)gpu_stats<<','<<t;
         gpu_stats<<','<<result.p50_s<<','<<result.p99_s<<','<<result.maximum_step_s<<','<<result.missed_deadlines<<','<<steps
-                 <<','<<result.reduction_s<<','<<result.reductions<<'\n';
+                 <<','<<result.reduction_s<<','<<result.reductions<<','<<result.checked_links<<'\n';
         if (!result.region_audit.empty()) {
             auto audit=open_output(output.string()+".regions.csv");
             audit<<"step,pair,queries,regions,entered_face_pairs,exited_face_pairs,region_count_changes,"

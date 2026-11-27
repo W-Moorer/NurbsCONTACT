@@ -124,6 +124,8 @@ struct Workspace {
     unsigned *active_columns;
     Range *windows;
     ConnectionTrial *bridges;
+    Connection *serial_links;
+    unsigned long long checked_links;
     int column_capacity;
     Region *result;
     Region *reference;
@@ -518,6 +520,7 @@ __device__ bool check_connection(Query &q, const PairScratch &cache, const Witne
     constexpr unsigned mask = 0xffffffffu;
     if (__any_sync(mask, lane == 0 && previous_connection(q, cache, a, b, path)))
         return true;
+    __syncwarp(); // Publish any fault recorded by lane zero before the parallel predicates.
     Query local = q;
     QueryFault fault{};
     local.speculative = &fault;
@@ -537,6 +540,25 @@ __device__ bool check_connection(Query &q, const PairScratch &cache, const Witne
             return true;
     }
     return lane == 0 && q.connected(a, b, 5, path, false);
+}
+__device__ __noinline__ bool agrees_with_serial_link(Query q, const PairScratch &cache, const Witness &a,
+                                                     const Witness &b, const ConnectionTrial &trial,
+                                                     Connection &reference) {
+    QueryFault fault{};
+    q.speculative = &fault;
+    bool joined = previous_connection(q, cache, a, b, reference) || q.connected(a, b, 5, reference);
+    if (joined != trial.joined || fault.code != trial.fault.code || fault.face != trial.fault.face ||
+        fault.side != trial.fault.side || fault.any != trial.fault.any)
+        return false;
+    if (!joined)
+        return true;
+    if (reference.count != trial.path.count)
+        return false;
+    for (int i = 0; i < reference.count; ++i)
+        for (int axis = 0; axis < 3; ++axis)
+            if (reference.points[i].x[axis] != trial.path.points[i].x[axis])
+                return false;
+    return true;
 }
 template <class Grid> __device__ void sort_proposals(Grid grid, Suggestion *items, int count) {
     if (count < 2)
@@ -729,8 +751,15 @@ template <class Grid> __device__ void detect(Grid grid, Query &q, PairScratch &c
                 Query local = q;
                 local.speculative = &trial.fault;
                 bool joined = check_connection(local, cache, w.witnesses[i], w.witnesses[j], trial.path, warp_lane);
-                if (!warp_lane)
+                if (!warp_lane) {
                     trial.joined = joined;
+                    if (w.serial_links) {
+                        if (!agrees_with_serial_link(local, cache, w.witnesses[i], w.witnesses[j],
+                                                     trial, w.serial_links[slot]))
+                            q.fail(11);
+                        atomicAdd(&w.checked_links, 1ULL);
+                    }
+                }
             }
         }
         grid.sync();

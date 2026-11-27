@@ -191,7 +191,7 @@ struct ResidentResult {
     std::vector<double> frames;
     std::vector<RegionAudit> region_audit;
     double reduction_s{};
-    unsigned long long reductions{};
+    unsigned long long reductions{}, checked_links{};
     double online_s{}, maximum_residual{};
     unsigned long long queries{}, forces{}, splits{}, missed_deadlines{};
     double phase_s[5]{}, p50_s{}, p99_s{}, maximum_step_s{};

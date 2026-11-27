@@ -487,8 +487,11 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
         throw std::runtime_error("resident CAD requires CUDA cooperative launch");
     size_t stack = 0;
     check(cudaDeviceGetLimit(&stack, cudaLimitStackSize));
-    if (stack < 16384)
-        check(cudaDeviceSetLimit(cudaLimitStackSize, 16384));
+    // The independent scalar link proof adds a caller above recursive CAD ray subdivision.
+    const size_t required_stack =
+        reduction == RegionReduction::audit || reduction == RegionReduction::audit_warp ? 32768 : 16384;
+    if (stack < required_stack)
+        check(cudaDeviceSetLimit(cudaLimitStackSize, required_stack));
     Buffer<BodyView> bodies;
     std::vector<BodyView> views;
     for (auto &part : scene.geometry) {
@@ -594,6 +597,9 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     Buffer<ConnectionTrial> bridges;
     bridges.reserve(connection_batch);
     w.bridges = bridges.ptr;
+    Buffer<Connection> serial_links;
+    if (w.audit) serial_links.reserve(connection_batch);
+    w.serial_links = serial_links.ptr;
     Buffer<Workspace> work;
     work.upload({w});
     Buffer<double> observed, frames;
@@ -672,6 +678,7 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     result.online_s = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
     result.reduction_s = w.reduction_ns * 1e-9;
     result.reductions = w.reductions;
+    result.checked_links = w.checked_links;
     if (audit.ptr) {
         result.region_audit.resize(audit.capacity);
         check(cudaMemcpy(result.region_audit.data(),audit.ptr,audit.capacity*sizeof(RegionAudit),cudaMemcpyDeviceToHost));
