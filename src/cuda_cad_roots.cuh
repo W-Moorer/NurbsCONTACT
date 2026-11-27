@@ -446,11 +446,11 @@ __device__ __noinline__ int span_hits(View g, int face, int span, Ray ray, doubl
     if (s.cell < 0)
         return -2;
     const auto &frame = g.frames[span];
-    Ray cellray{basis(frame.axes, sub(ray.p, frame.origin)), basis(frame.axes, ray.d)};
+    auto cellray = slab_ray({basis(frame.axes, sub(ray.p, frame.origin)), basis(frame.axes, ray.d)});
     int k = 0;
     for (;;) {
         const auto &c = g.cells[s.cell + k];
-        if (intersects(c.box, cellray, end, 2 * f.tol)) {
+        if (intersects_slabs(c.box, cellray, end, 2 * f.tol)) {
             double t, u, v;
             V normal;
             int code = isolate(s, c, ray, f.tol, end, t, normal, u, v);
@@ -493,6 +493,7 @@ __device__ Hit final_hit(const RootSelection &selection, Ray ray, bool any) {
 }
 __device__ __noinline__ Hit first(View g, Ray ray, double end, bool any = false) {
     RootSelection selection;
+    const auto slabs = slab_ray(ray);
     if (g.ray_grid && end <= g.ray_grid->reach && fabs(dot(ray.d, ray.d) - 1) < 1e-12) {
         const auto &cells = *g.ray_grid;
         int id = 0;
@@ -510,15 +511,15 @@ __device__ __noinline__ Hit first(View g, Ray ray, double end, bool any = false)
             if (to - from <= 96) {
                 int previous = -1;
                 bool active = false;
-                Ray local{};
+                SlabRay local{};
                 for (int k = from; k < to; ++k) {
                     const auto primitive = cells.primitives[cells.ids[k]];
                     const int face = primitive.face;
                     const auto &f = g.charts[face];
                     if (face != previous) {
-                        active = intersects(f.box, ray, end, 1e-6);
+                        active = intersects_slabs(f.box, slabs, end, 1e-6);
                         if (active && primitive.span_node >= 0)
-                            local = {basis(f.frame, ray.p), basis(f.frame, ray.d)};
+                            local = slab_ray({basis(f.frame, ray.p), basis(f.frame, ray.d)});
                         previous = face;
                     }
                     if (!active)
@@ -530,7 +531,7 @@ __device__ __noinline__ Hit first(View g, Ray ray, double end, bool any = false)
                             return {0, -2, double(face), 1};
                     } else {
                         const auto &node = g.spans[primitive.span_node];
-                        if (intersects(node.box, local, end, 2 * f.tol))
+                        if (intersects_slabs(node.box, local, end, 2 * f.tol))
                             code = span_hits(g, face, node.leaf, ray, end, any, selection);
                         if (code < 0)
                             return {0, -2, double(face), double(-code)};
@@ -544,7 +545,7 @@ __device__ __noinline__ Hit first(View g, Ray ray, double end, bool any = false)
     }
     for (int i = 0; i < g.n;) {
         const auto &n = g.faces[i];
-        if (!intersects(n.box, ray, end, 1e-6)) {
+        if (!intersects_slabs(n.box, slabs, end, 1e-6)) {
             i = n.next;
             continue;
         }
@@ -560,10 +561,10 @@ __device__ __noinline__ Hit first(View g, Ray ray, double end, bool any = false)
                 return selection.hit;
             continue;
         }
-        Ray local{basis(f.frame, ray.p), basis(f.frame, ray.d)};
+        auto local = slab_ray({basis(f.frame, ray.p), basis(f.frame, ray.d)});
         for (int j = f.first; j < f.end;) {
             const auto &node = g.spans[j];
-            if (!intersects(node.box, local, end, 2 * f.tol)) {
+            if (!intersects_slabs(node.box, local, end, 2 * f.tol)) {
                 j = node.next;
                 continue;
             }

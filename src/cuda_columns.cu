@@ -78,15 +78,27 @@ __device__ V cross(V a, V b) {
              a.x[0] * b.x[1] - a.x[1] * b.x[0]}};
 }
 __device__ V basis(const V *f, V a) { return {{dot(f[0], a), dot(f[1], a), dot(f[2], a)}}; }
-__device__ bool intersects(Bounds b, Ray r, double end, double pad) {
+struct SlabRay {
+    V origin, inverse;
+};
+// The direction is fixed for every box tested in the same coordinate frame.
+// Zero marks the same near-parallel slab case as the scalar ray test.
+__device__ SlabRay slab_ray(Ray r) {
+    SlabRay s{r.p, {}};
+    for (int i = 0; i < 3; ++i)
+        if (fabs(r.d.x[i]) >= 1e-18)
+            s.inverse.x[i] = 1 / r.d.x[i];
+    return s;
+}
+__device__ bool intersects_slabs(Bounds b, SlabRay r, double end, double pad) {
     double lo = -pad, hi = end + pad;
     for (int i = 0; i < 3; ++i) {
-        double l = b.lo.x[i] - r.p.x[i] - pad, h = b.hi.x[i] - r.p.x[i] + pad;
-        if (fabs(r.d.x[i]) < 1e-18) {
+        double l = b.lo.x[i] - r.origin.x[i] - pad, h = b.hi.x[i] - r.origin.x[i] + pad;
+        if (r.inverse.x[i] == 0) {
             if (l > 0 || h < 0)
                 return false;
         } else {
-            double inv = 1 / r.d.x[i], a = l * inv, c = h * inv;
+            double a = l * r.inverse.x[i], c = h * r.inverse.x[i];
             lo = fmax(lo, fmin(a, c));
             hi = fmin(hi, fmax(a, c));
             if (lo > hi)
@@ -94,6 +106,9 @@ __device__ bool intersects(Bounds b, Ray r, double end, double pad) {
         }
     }
     return true;
+}
+__device__ bool intersects(Bounds b, Ray r, double end, double pad) {
+    return intersects_slabs(b, slab_ray(r), end, pad);
 }
 struct Jet {
     V p, u, v;
