@@ -1,0 +1,77 @@
+{
+  "executable_sha256": "d6636adb849f3ed5e53b899b05d0d256e120aba6e6663fb26ca59633addaf7e7",
+  "kernels": [
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d11batch_stampILi1EEEvPNS2_12BatchControlE:",
+      "resources": "REG:14 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d11batch_stampILi0EEEvPNS2_12BatchControlE:",
+      "resources": "REG:14 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d21batch_integral_finishEPNS2_12BatchControlE:",
+      "resources": "REG:174 STACK:8784 SHARED:0 LOCAL:0 CONSTANT[2]:240 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d21batch_integral_reduceEPNS2_12BatchControlE:",
+      "resources": "REG:255 STACK:4480 SHARED:4 LOCAL:0 CONSTANT[2]:632 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d19batch_trace_columnsEPNS2_12BatchControlE:",
+      "resources": "REG:255 STACK:4256 SHARED:0 LOCAL:0 CONSTANT[2]:616 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d18batch_column_tasksEPNS2_12BatchControlE:",
+      "resources": "REG:154 STACK:2112 SHARED:4 LOCAL:0 CONSTANT[2]:368 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d16batch_footprintsEPNS2_12BatchControlE:",
+      "resources": "REG:255 STACK:4448 SHARED:0 LOCAL:0 CONSTANT[2]:616 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d22batch_integral_prepareEPNS2_12BatchControlE:",
+      "resources": "REG:30 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d18batch_links_finishEPNS2_12BatchControlE:",
+      "resources": "REG:216 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d11batch_linksEPNS2_12BatchControlE:",
+      "resources": "REG:255 STACK:1520 SHARED:4 LOCAL:0 CONSTANT[2]:800 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d11batch_foundEPNS2_12BatchControlE:",
+      "resources": "REG:38 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d12batch_searchEPNS2_12BatchControlE:",
+      "resources": "REG:255 STACK:5344 SHARED:188 LOCAL:0 CONSTANT[2]:704 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d10batch_sortEPNS2_12BatchControlE:",
+      "resources": "REG:40 STACK:0 SHARED:4 LOCAL:0 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d16batch_candidatesEPNS2_12BatchControlE:",
+      "resources": "REG:70 STACK:0 SHARED:0 LOCAL:0 CONSTANT[2]:8 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d20batch_window_offsetsEPNS2_12BatchControlE:",
+      "resources": "REG:16 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d13batch_windowsEPNS2_12BatchControlE:",
+      "resources": "REG:64 STACK:0 SHARED:0 LOCAL:0 CONSTANT[2]:8 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d17batch_force_beginEPNS2_12BatchControlE:",
+      "resources": "REG:113 STACK:48 SHARED:0 LOCAL:0 CONSTANT[2]:48 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    },
+    {
+      "symbol": "Function _ZN2nc8compiled6device48_GLOBAL__N__b5f19cd5_15_cuda_columns_cu_38faa18d11batch_startEPNS2_12BatchControlE:",
+      "resources": "REG:24 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:360 TEXTURE:0 SURFACE:0 SAMPLER:0"
+    }
+  ]
+}

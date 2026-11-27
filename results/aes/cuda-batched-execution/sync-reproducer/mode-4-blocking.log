@@ -1,0 +1,17 @@
+========= COMPUTE-SANITIZER
+========= Barrier error detected. Divergent thread(s) in warp.
+=========     at work(int *)+0xb0
+=========     by thread (96,0,0) in block (0,0,0)
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========         Host Frame: cuGraphLaunch [0x7ffb596e6325] in nvcuda64.dll
+=========         Host Frame:  [0x3a9c] in batch_sync_probe.exe
+=========         Host Frame:  [0x2d84] in batch_sync_probe.exe
+=========         Host Frame:  [0x2058] in batch_sync_probe.exe
+=========         Host Frame:  [0x197f0] in batch_sync_probe.exe
+=========         Host Frame: BaseThreadInitThunk [0x7ffcbcc2259d] in KERNEL32.DLL
+=========         Host Frame: RtlUserThreadStart [0x7ffcbdbeaf78] in ntdll.dll
+=========
+unknown error
+========= Target application returned an error
+========= ERROR SUMMARY: 128 errors
+========= ERROR SUMMARY: 127 errors were not printed. Use --print-limit option to adjust the number of printed errors

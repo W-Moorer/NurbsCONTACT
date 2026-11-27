@@ -1,0 +1,6 @@
+{
+  "random_seed": 7043,
+  "cases": 10000,
+  "matched": true,
+  "scope": "Host property check of subtree-interval masking, not a CUDA execution test"
+}

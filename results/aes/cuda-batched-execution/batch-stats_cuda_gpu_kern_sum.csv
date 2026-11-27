@@ -1,0 +1,21 @@
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+25.6,89203581,88,1013677.1,885621.0,752457,2122112,285080.6,nc::compiled::device::<unnamed>::batch_search(nc::compiled::device::<unnamed>::BatchControl *)
+20.8,72670675,265,274229.0,289495.0,2367,722858,134877.6,nc::compiled::device::<unnamed>::batch_trace_columns(nc::compiled::device::<unnamed>::BatchControl *)
+15.6,54595955,74,737783.2,335654.0,24767,3218143,915653.5,nc::compiled::device::<unnamed>::batch_links(nc::compiled::device::<unnamed>::BatchControl *)
+10.5,36691276,265,138457.6,106813.0,2016,666476,106985.7,nc::compiled::device::<unnamed>::batch_integral_reduce(nc::compiled::device::<unnamed>::BatchControl *)
+8.7,30197938,4,7549484.5,7858035.0,5122982,9358886,1999837.6,"nc::compiled::device::<unnamed>::prepare_refined_rules(nc::compiled::device::<unnamed>::View, nc::compiled::device::WeightedSite *, int, int *)"
+7.6,26653091,265,100577.7,3840.0,3136,1134334,198418.1,nc::compiled::device::<unnamed>::batch_integral_finish(nc::compiled::device::<unnamed>::BatchControl *)
+3.6,12615971,88,143363.3,138827.5,117436,358933,27736.0,nc::compiled::device::<unnamed>::batch_candidates(nc::compiled::device::<unnamed>::BatchControl *)
+2.4,8291464,88,94221.2,86653.5,71774,154427,23286.9,nc::compiled::device::<unnamed>::batch_sort(nc::compiled::device::<unnamed>::BatchControl *)
+1.6,5486651,88,62348.3,57054.5,53918,86206,9036.6,nc::compiled::device::<unnamed>::batch_force_begin(nc::compiled::device::<unnamed>::BatchControl *)
+1.1,3996204,265,15080.0,15712.0,2432,19264,3182.9,nc::compiled::device::<unnamed>::batch_column_tasks(nc::compiled::device::<unnamed>::BatchControl *)
+1.1,3874849,88,44032.4,66445.5,1664,85597,35675.3,nc::compiled::device::<unnamed>::batch_windows(nc::compiled::device::<unnamed>::BatchControl *)
+0.4,1285755,88,14610.9,14831.5,5024,26848,6121.5,nc::compiled::device::<unnamed>::batch_found(nc::compiled::device::<unnamed>::BatchControl *)
+0.3,1113468,265,4201.8,4096.0,2176,6976,1172.9,nc::compiled::device::<unnamed>::batch_integral_prepare(nc::compiled::device::<unnamed>::BatchControl *)
+0.3,908366,74,12275.2,14047.5,4736,27391,6347.0,nc::compiled::device::<unnamed>::batch_links_finish(nc::compiled::device::<unnamed>::BatchControl *)
+0.2,577641,265,2179.8,2144.0,2111,2464,64.2,nc::compiled::device::<unnamed>::batch_footprints(nc::compiled::device::<unnamed>::BatchControl *)
+0.1,237360,88,2697.3,2784.0,2175,3328,426.1,nc::compiled::device::<unnamed>::batch_window_offsets(nc::compiled::device::<unnamed>::BatchControl *)
+0.1,212539,88,2415.2,2400.0,2175,2784,185.5,void nc::compiled::device::<unnamed>::batch_stamp<(int)1>(nc::compiled::device::<unnamed>::BatchControl *)
+0.0,125308,88,1424.0,1440.0,1311,1632,96.8,void nc::compiled::device::<unnamed>::batch_stamp<(int)0>(nc::compiled::device::<unnamed>::BatchControl *)
+0.0,114622,4,28655.5,28527.5,20640,36927,8747.7,"nc::compiled::device::<unnamed>::prepare_tile_jets(nc::compiled::device::<unnamed>::View, const nc::compiled::device::Tile *, int, nc::compiled::device::<unnamed>::TileJet *)"
+0.0,4416,1,4416.0,4416.0,4416,4416,0.0,nc::compiled::device::<unnamed>::batch_start(nc::compiled::device::<unnamed>::BatchControl *)

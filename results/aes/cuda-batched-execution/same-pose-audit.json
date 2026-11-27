@@ -1,0 +1,20 @@
+{
+  "errors": {
+    "Fx_error_N": 0.0,
+    "Fy_error_N": 0.0,
+    "Fz_error_N": 0.0,
+    "Ax_error_Nm": 0.0,
+    "Ay_error_Nm": 0.0,
+    "Az_error_Nm": 0.0,
+    "Bx_error_Nm": 0.0,
+    "By_error_Nm": 0.0,
+    "Bz_error_Nm": 0.0
+  },
+  "entered_face_pairs": 43,
+  "exited_face_pairs": 35,
+  "connection_checks": 680,
+  "region_reductions": 327,
+  "pair_frame_records": 102,
+  "main_steps": 50,
+  "saved_times": 51
+}

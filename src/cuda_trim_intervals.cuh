@@ -100,7 +100,7 @@ constexpr int trim_order_limit = 32;
 struct UVBox {
     Bound x, y;
 };
-__device__ __noinline__ UVBox trim_box(View g, const TrimPiece &e, double lo, double hi) {
+__device__ __noinline__ UVBox trim_box(const View &g, const TrimPiece &e, double lo, double hi) {
     const auto *p = g.trim_intervals + e.start;
     if (!e.count) {
         Bound start = exact_value(e.angle);
@@ -157,7 +157,7 @@ __device__ __noinline__ UVBox trim_box(View g, const TrimPiece &e, double lo, do
 }
 __device__ int ray_side(Bound y, double level) { return y.hi <= level ? 0 : (y.lo > level ? 1 : -1); }
 // Return 1 for the CPU's closed boundary, 0 for a winding count, -1 for unsupported input.
-__device__ __noinline__ int interval_winding(View g, const TrimPiece &edge, double u, double v,
+__device__ __noinline__ int interval_winding(const View &g, const TrimPiece &edge, double u, double v,
                                              int &winding) {
     if (edge.count > trim_order_limit)
         return -1;

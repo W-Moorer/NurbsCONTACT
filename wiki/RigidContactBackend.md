@@ -4,6 +4,10 @@
 
 ## 开发分支的全 GPU 路径
 
+`--gpu-execution cached` 为每个候选面对分配一个 128 线程块，将独立连线分散到不同块，并把低阶积分的线程束分散到更多计算单元。它还移植了 CPU 的阻挡面复核缓存，并在初始化时缓存高阶固定积分点。`cooperative` 保留为默认对照。两者都用当前姿态查询原曲面，整段仿真期间没有逐步 CPU 力交换。此前条件图实验未通过 CUDA 同步检查，已移出运行时接口；完整曲线一致不等于同步安全通过。GPU 超过 CPU 的性能验收仍需看同一减速器完整五秒结果。[实现](../src/cuda_resident_geometry.cuh) · [完整实验与失败对照](../results/aes/cuda-graph-execution/README.md)
+
+`--gpu-execution batched` 是另一个实验选项：物体对分别拥有工作区，候选与积分射线跨物体对批量执行；积分结果按原列号写回，保留 FP64 累加顺序。此版本使用普通 kernel 的条件图，与早期被移除的嵌套协作式 kernel 方案不同。完整仿真、逐核跟踪和同步检查尚未解决的项目均见 [批处理实验记录](../results/aes/cuda-batched-execution/README.md)。默认调度未改动。
+
 确认候选面时，GPU 在加载零件时为每块曲面保存参数中心的位置和两个一阶导数，供每次牛顿投影的第一轮读取。后续迭代按新参数求值。合并承载区时，同一线程束并行检查连线的四个端点条件，再检查该线段是否穿过两侧实体的边界。曲线路径仍按原次序搜索。短射线空间索引和包围盒树都复用同一坐标系内的射线方向倒数。这些操作只依赖曲面、射线和当前姿态。[曲面与连通判定](../src/cuda_resident_geometry.cuh) · [射线与包围盒](../src/cuda_cad_roots.cuh) · [完整减速器对照](../results/aes/cuda-face-search/README.md)
 
 承载区积分在有效列上累加十个双精度分量，随后重建形心、法向、压入深度和分布力矩。保序实现按原列序压紧索引，并行生成各列贡献，再让十个线程分别累加各自的分量。`--region-reduction serial` 提供原顺序的单线程对照，`audit` 在同一试算姿态、同一区域上检查全部累加结果和世界坐标系下两刚体各自的三轴力矩。`warp` 与 `audit-warp` 保留改变加法顺序的树形归约，用于数值消融。[设备端累加](../src/cuda_resident_geometry.cuh) · [同姿态力矩核验](../src/cuda_resident_step.cuh) · [减速器实验](../results/aes/cuda-region-reduction/README.md)

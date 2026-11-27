@@ -17,6 +17,7 @@ struct BodyView {
     const int *target_ids;
     const TileJet *tile_jets;
     int ns, nt;
+    const WeightedSite *refined_rules;
 };
 struct MatPose {
     V origin, axis;
@@ -26,6 +27,31 @@ struct Site {
     V p, n;
     double u, v, area;
 };
+// Fixed material quadrature on immutable rigid-body charts. Match the online
+// expressions exactly; this is an evaluation cache, not a fitted surface.
+constexpr int refined_rule_sites = 48 * 48 + 96 * 96;
+__global__ void prepare_refined_rules(View g, WeightedSite *out, int count, int *status) {
+    const int index = blockIdx.x * blockDim.x + threadIdx.x;
+    if (index >= count) return;
+    const int face = index / refined_rule_sites, slot = index % refined_rule_sites;
+    const int order = slot < 48 * 48 ? 48 : 96, ij = slot < 48 * 48 ? slot : slot - 48 * 48;
+    const auto r = g.charts[face].domain;
+    const double du = (r.U - r.u) / order, dv = (r.Vv - r.v) / order;
+    const double u = r.u + (ij / order + .5) * du, v = r.v + (ij % order + .5) * dv;
+    WeightedSite value{};
+    const int material = face_contains(g, g.charts[face], u, v);
+    if (material < 0) atomicCAS(status, 0, 4);
+    else if (material) {
+        Jet j;
+        if (!face_jet(g, face, u, v, j)) atomicCAS(status, 0, 5);
+        else {
+            const V n = cross(j.u, j.v);
+            const double area = norm(n);
+            if (area > 0) value = {j.p, scale(n, g.charts[face].orientation / area), area * du * dv};
+        }
+    }
+    out[index] = value;
+}
 struct Seed {
     int side, tile;
     double u, v;
@@ -75,11 +101,21 @@ struct Connection {
     int count;
     V points[31];
 };
+struct Blocker {
+    int side;
+    Hit root;
+};
+struct BlockerCache {
+    Faces left, right;
+    int count;
+    Blocker items[4];
+};
 struct ConnectionTrial {
     Connection path;
     QueryFault fault;
     int left, right;
     bool joined;
+    BlockerCache blockers;
 };
 constexpr int connection_batch = 32;
 struct PairScratch {
@@ -91,6 +127,9 @@ struct PairScratch {
     TileWindow windows[2];
     Connection *paths, *next_paths;
     int path_count;
+    Pose paths_pose;
+    BlockerCache *blockers, *next_blockers;
+    int blocker_count;
 };
 struct Group {
     Faces ids;
@@ -134,6 +173,14 @@ struct Workspace {
     unsigned long long reduction_ns, reductions;
     int *status;
     unsigned long long queries, subdivisions, evaluations;
+    unsigned long long proposal_total, group_total, confirmed_total, seed_hits;
+    unsigned int maximum_proposals, maximum_groups;
+    bool reuse_blockers;
+    bool transport_paths;
+    unsigned long long blocker_checks, blocker_hits;
+    unsigned long long warp_segments, scalar_segments;
+    unsigned long long separated_groups;
+    unsigned long long path_checks, path_hits;
     unsigned long long broad_ns, sort_ns, search_ns, group_ns, integral_ns, window_builds, window_reuses;
     double maximum_residual;
     int unresolved_face;
@@ -160,12 +207,62 @@ __device__ Pose between(MatPose a, MatPose b) {
     }
     return m;
 }
+// Per-block reduction state for ordered parallel face proposals.
+// The original 32-lane search uses no extra shared state.
+struct SearchBatch {
+    int stops[4], first;
+    double depths[4], best;
+    Seed seeds[4], seed;
+};
+struct BodyPair {
+    const BodyView *parts[2];
+    __device__ const BodyView &operator[](int side) const { return *parts[side]; }
+};
 struct Query {
-    BodyView b[2];
+    // Immutable uploaded geometry is shared, rather than copied into every
+    // speculative per-lane query and recursive connection test.
+    BodyPair b;
     Pose rel[2];
     double reach;
     Workspace *work;
-    QueryFault *speculative{};
+    QueryFault *speculative;
+    BlockerCache *blockers;
+    __device__ static Bound projection(Bounds box,V axis) {
+        Bound value{0,0};
+        for (int k=0;k<3;++k) {
+            value.lo += axis.x[k]*(axis.x[k]>=0?box.lo.x[k]:box.hi.x[k]);
+            value.hi += axis.x[k]*(axis.x[k]>=0?box.hi.x[k]:box.lo.x[k]);
+        }
+        return value;
+    }
+    __device__ bool separated_on(Faces ids,V axis) const {
+        const auto &a=b[0].g.charts[ids.a],&other=b[1].g.charts[ids.b];
+        const V target_axis=direction(rel[0],axis);
+        const auto na=projection(a.normal_box,axis),nb=projection(other.normal_box,target_axis);
+        const double roundoff=1e-10*(1+fabs(na.lo)+fabs(na.hi)+fabs(nb.lo)+fabs(nb.hi));
+        if (!(na.lo>roundoff && nb.hi<-roundoff)) return false;
+        V aa{},bb{};
+        for (int k=0;k<3;++k) {
+            aa.x[k]=dot(a.support_axes[k],axis);
+            bb.x[k]=dot(other.support_axes[k],target_axis);
+        }
+        const double high=projection(a.support_box,aa).hi;
+        const double low=projection(other.support_box,bb).lo+dot(rel[1].offset,axis);
+        return low-high>1e-6+1e-10*(1+fabs(low)+fabs(high));
+    }
+    __device__ bool separated(Faces ids) const {
+        const auto &a=b[0].g.charts[ids.a],&other=b[1].g.charts[ids.b];
+        if (!a.support_ready || !other.support_ready) return false;
+        return separated_on(ids,scale(a.support_axes[2],a.orientation)) ||
+            separated_on(ids,direction(rel[1],scale(other.support_axes[2],-other.orientation)));
+    }
+    __device__ V path_point(const PairScratch &cache,V old) const {
+        if (!work->transport_paths) return old;
+        // Advect the old interior point with the mean of both rigid motions.
+        // This is only a proposed path: every segment is rechecked on CAD.
+        const V in_target=point(cache.paths_pose,old);
+        return scale(plus(old,point(rel[1],in_target)),.5);
+    }
     __device__ void record(QueryFault e) const {
         if (speculative) {
             if (!speculative->code)
@@ -269,10 +366,52 @@ struct Query {
     }
     // All lanes work on consecutive proposals. Only the earliest accepted proposal or
     // error in the original deterministic order affects the group.
-    __device__ bool collect_attempt(int lane, Seed trial, double depth, bool hit, const Witness &candidate,
+    template<int Width>
+    __device__ bool collect_attempt(SearchBatch *batch, int lane, Seed trial, double depth, bool hit, const Witness &candidate,
                                     QueryFault fault, Seed &seed, double &best, Witness &out) const {
         constexpr unsigned mask = 0xffffffffu;
         unsigned stop = __ballot_sync(mask, hit || fault.code);
+        if constexpr (Width > 32) {
+            const int warp = lane / 32, local = lane % 32;
+            double maximum = depth;
+            for (int distance = 16; distance; distance /= 2)
+                maximum = fmax(maximum, __shfl_down_sync(mask, maximum, distance));
+            maximum = __shfl_sync(mask, maximum, 0);
+            const unsigned winners = __ballot_sync(mask, depth == maximum);
+            const int winner = __ffs(winners) - 1;
+            const Seed selected{__shfl_sync(mask, trial.side, winner), __shfl_sync(mask, trial.tile, winner),
+                                __shfl_sync(mask, trial.u, winner), __shfl_sync(mask, trial.v, winner)};
+            if (!local) {
+                batch->stops[warp] = stop ? 32 * warp + __ffs(stop) - 1 : Width;
+                batch->depths[warp] = maximum;
+                batch->seeds[warp] = selected;
+            }
+            __syncthreads();
+            if (!lane) {
+                batch->first = Width;
+                batch->best = best;
+                batch->seed = seed;
+                for (int w = 0; w < Width / 32; ++w) {
+                    batch->first = min(batch->first, batch->stops[w]);
+                    if (batch->depths[w] > batch->best) {
+                        batch->best = batch->depths[w];
+                        batch->seed = batch->seeds[w];
+                    }
+                }
+            }
+            __syncthreads();
+            const bool stopped = batch->first < Width;
+            if (lane == batch->first) {
+                if (fault.code) record(fault);
+                else out = candidate;
+            }
+            if (!stopped) {
+                best = batch->best;
+                seed = batch->seed;
+            }
+            __syncthreads();
+            return stopped;
+        }
         if (stop) {
             if (lane == __ffs(stop) - 1) {
                 if (fault.code)
@@ -298,9 +437,21 @@ struct Query {
         }
         return false;
     }
-    __device__ __noinline__ bool find(Group group, const PairScratch &cache, Witness &out) const {
-        constexpr unsigned mask = 0xffffffffu;
-        const int lane = threadIdx.x % 32;
+    template<int Width = 32>
+    __device__ __noinline__ bool find(Group group, const PairScratch &cache, Witness &out,
+                                     SearchBatch *batch = nullptr) const {
+        static_assert(Width == 32 || Width == 128);
+        const int lane = threadIdx.x % Width;
+        // Positive separation along an axis with opposing normal cones makes
+        // a positive-depth projection impossible from either chart. Audit mode
+        // still runs the original search to check every rejected face pair.
+        const bool disjoint = work->reuse_blockers && separated(group.ids);
+        if (disjoint && !lane) atomicAdd(&work->separated_groups,1ULL);
+        if (disjoint && !work->serial_links) return false;
+        auto accepted = [&]() {
+            if (disjoint && !lane) fail(12);
+            return true;
+        };
         double best = -HUGE_VAL;
         Seed seed{};
         Witness candidate{};
@@ -312,14 +463,27 @@ struct Query {
                 hit = node(seed.side, group.ids[seed.side], seed.u, seed.v, s) &&
                       sample(group.ids, seed, s, best, out);
             }
-            if (__shfl_sync(mask, hit, 0))
-                return true;
-            best = __shfl_sync(mask, best, 0);
+            if constexpr (Width == 32) {
+                if (__shfl_sync(0xffffffffu, hit, 0)) {
+                    if (!lane) atomicAdd(&work->seed_hits, 1ULL);
+                    return accepted();
+                }
+                best = __shfl_sync(0xffffffffu, best, 0);
+            } else {
+                if (!lane) { batch->first = hit; batch->best = best; }
+                __syncthreads();
+                if (batch->first) {
+                    if (!lane) atomicAdd(&work->seed_hits, 1ULL);
+                    return accepted();
+                }
+                best = batch->best;
+                __syncthreads();
+            }
         }
         Query q = *this;
         QueryFault fault;
         q.speculative = &fault;
-        for (int start = group.begin; start < group.end; start += 32) {
+        for (int start = group.begin; start < group.end; start += Width) {
             int k = start + lane;
             Seed trial{};
             double depth = -HUGE_VAL;
@@ -342,8 +506,8 @@ struct Query {
                     hit = q.sample(group.ids, trial, s, depth, candidate);
                 }
             }
-            if (collect_attempt(lane, trial, depth, hit, candidate, fault, seed, best, out))
-                return true;
+            if (collect_attempt<Width>(batch, lane, trial, depth, hit, candidate, fault, seed, best, out))
+                return accepted();
         }
         if (!isfinite(best))
             return false;
@@ -368,8 +532,8 @@ struct Query {
                           q.sample(group.ids, trial, s, depth, candidate);
                 }
             }
-            if (collect_attempt(lane, trial, depth, hit, candidate, fault, seed, best, out))
-                return true;
+            if (collect_attempt<Width>(batch, lane, trial, depth, hit, candidate, fault, seed, best, out))
+                return accepted();
             du *= .5;
             dv *= .5;
         }
@@ -413,7 +577,74 @@ struct Query {
         return len < 1e-8 || ray(side, x, scale(d, 1 / len), len, true).face < 0;
     }
     __device__ bool straight(V a, V b0) const {
-        return clear_segment(0, a, b0) && clear_segment(1, a, b0);
+        if (!blockers) return clear_segment(0, a, b0) && clear_segment(1, a, b0);
+        const V x[2]{a, point(rel[0], a)}, y[2]{b0, point(rel[0], b0)};
+        for (int k = 0; k < blockers->count; ++k) {
+            const auto &h = blockers->items[k];
+            atomicAdd(&work->blocker_checks, 1ULL);
+            if (crosses(h.side, x[h.side], y[h.side], h.root)) {
+                atomicAdd(&work->blocker_hits, 1ULL);
+                return false;
+            }
+        }
+        for (int side = 0; side < 2; ++side) {
+            const V d = sub(y[side], x[side]);
+            const double length = norm(d);
+            if (length < 1e-8) continue;
+            const Hit h = ray(side, x[side], scale(d, 1 / length), length, true);
+            if (h.face < 0) continue;
+            int at = 0;
+            while (at < blockers->count &&
+                   !(blockers->items[at].side == side && blockers->items[at].root.face == h.face)) ++at;
+            if (at == blockers->count && blockers->count < 4) ++blockers->count;
+            at = min(at, 3);
+            for (; at > 0; --at) blockers->items[at] = blockers->items[at - 1];
+            blockers->items[0] = {side, h};
+            return false;
+        }
+        return true;
+    }
+    __device__ bool straight_warp(V a, V b0) const {
+        const int lane=threadIdx.x%32;
+        const V x[2]{a,point(rel[0],a)},y[2]{b0,point(rel[0],b0)};
+        bool blocked=false;
+        if (!lane && blockers)
+            for (int k=0;k<blockers->count;++k) {
+                const auto &h=blockers->items[k];
+                atomicAdd(&work->blocker_checks,1ULL);
+                if (crosses(h.side,x[h.side],y[h.side],h.root)) {
+                    atomicAdd(&work->blocker_hits,1ULL);
+                    blocked=true;break;
+                }
+            }
+        if (__any_sync(0xffffffffu,blocked)) return false;
+        for (int side=0;side<2;++side) {
+            const V d=sub(y[side],x[side]);
+            const double length=norm(d);
+            if (length<1e-8) continue;
+            if (!lane) {
+                if (b[side].g.ray_grid && length<=b[side].g.ray_grid->reach)
+                    atomicAdd(&work->scalar_segments,1ULL);
+                else atomicAdd(&work->warp_segments,1ULL);
+            }
+            const Hit h=crossing_warp(b[side].g,{x[side],scale(d,1/length)},length);
+            if (h.face==-2 && !lane)
+                record({30+static_cast<int>(h.v),static_cast<int>(h.u),side,1,
+                        {x[side],scale(d,1/length)},length});
+            if (h.face<0) continue;
+            if (!lane && blockers) {
+                int at=0;
+                while (at<blockers->count && !(blockers->items[at].side==side &&
+                       blockers->items[at].root.face==h.face)) ++at;
+                if (at==blockers->count && blockers->count<4) ++blockers->count;
+                at=min(at,3);
+                for (;at>0;--at) blockers->items[at]=blockers->items[at-1];
+                blockers->items[0]={side,h};
+            }
+            __syncwarp();
+            return false;
+        }
+        return true;
     }
     __device__ __noinline__ bool connected(const Witness &a, const Witness &b0, int depth,
                                            Connection &path, bool try_direct = true) const {
@@ -486,20 +717,50 @@ __device__ bool previous_connection(Query &q, const PairScratch &cache, const Wi
         const auto &old = cache.paths[k];
         if (!equal(old.left, a.faces) || !equal(old.right, b.faces))
             continue;
+        if (q.work->reuse_blockers) atomicAdd(&q.work->path_checks,1ULL);
         bool valid = true;
         V last = a.p;
         for (int t = 0; t < old.count; ++t) {
-            if (!q.straight(last, old.points[t])) {
+            const V next=q.path_point(cache,old.points[t]);
+            if (!q.straight(last, next)) {
                 valid = false;
                 break;
             }
-            last = old.points[t];
+            last = next;
         }
         if (valid && q.straight(last, b.p)) {
             path = old;
+            for (int t=0;t<old.count;++t) path.points[t]=q.path_point(cache,old.points[t]);
+            if (q.work->reuse_blockers) atomicAdd(&q.work->path_hits,1ULL);
             return true;
         }
         break;
+    }
+    return false;
+}
+__device__ bool previous_connection_warp(Query &q,const PairScratch &cache,const Witness &a,const Witness &b,
+                                         Connection &path) {
+    const int lane=threadIdx.x%32;
+    if (!lane) {path.left=a.faces;path.right=b.faces;path.count=0;}
+    __syncwarp();
+    for (int k=0;k<cache.path_count;++k) {
+        const auto &old=cache.paths[k];
+        if (!equal(old.left,a.faces) || !equal(old.right,b.faces)) continue;
+        if (!lane) atomicAdd(&q.work->path_checks,1ULL);
+        V last=a.p;
+        for (int t=0;t<old.count;++t) {
+            const V next=q.path_point(cache,old.points[t]);
+            if (!q.straight_warp(last,next)) return false;
+            last=next;
+        }
+        if (!q.straight_warp(last,b.p)) return false;
+        if (!lane) {
+            path=old;
+            for (int t=0;t<old.count;++t) path.points[t]=q.path_point(cache,old.points[t]);
+            atomicAdd(&q.work->path_hits,1ULL);
+        }
+        __syncwarp();
+        return true;
     }
     return false;
 }
@@ -518,7 +779,8 @@ __device__ bool blocked_prefix(Query &q, bool blocked, const QueryFault &fault, 
 __device__ bool check_connection(Query &q, const PairScratch &cache, const Witness &a, const Witness &b,
                                  Connection &path, int lane) {
     constexpr unsigned mask = 0xffffffffu;
-    if (__any_sync(mask, lane == 0 && previous_connection(q, cache, a, b, path)))
+    if (q.blockers ? previous_connection_warp(q,cache,a,b,path) :
+        __any_sync(mask, lane == 0 && previous_connection(q, cache, a, b, path)))
         return true;
     __syncwarp(); // Publish any fault recorded by lane zero before the parallel predicates.
     Query local = q;
@@ -534,6 +796,10 @@ __device__ bool check_connection(Query &q, const PairScratch &cache, const Witne
         blocked = local.crosses(side, start, end, from.exits[side]);
     }
     if (!blocked_prefix(q, blocked, fault, lane)) {
+        if (q.blockers) {
+            if (q.straight_warp(a.p, b.p)) return true;
+            return lane == 0 && q.connected(a, b, 5, path, false);
+        }
         fault = {};
         blocked = lane < 2 && !local.clear_segment(lane, a.p, b.p);
         if (!blocked_prefix(q, blocked, fault, lane))
@@ -546,6 +812,8 @@ __device__ __noinline__ bool agrees_with_serial_link(Query q, const PairScratch 
                                                      Connection &reference) {
     QueryFault fault{};
     q.speculative = &fault;
+    // Audit the cached decision against the independent uncached traversal.
+    q.blockers = nullptr;
     bool joined = previous_connection(q, cache, a, b, reference) || q.connected(a, b, 5, reference);
     if (joined != trial.joined || fault.code != trial.fault.code || fault.face != trial.fault.face ||
         fault.side != trial.fault.side || fault.any != trial.fault.any)
@@ -583,7 +851,7 @@ template <class Grid> __device__ void sort_proposals(Grid grid, Suggestion *item
             grid.sync();
         }
 }
-template <class Grid> __device__ void detect(Grid grid, Query &q, PairScratch &cache) {
+template <class Grid> __device__ void detect_broad(Grid grid, Query &q, PairScratch &cache) {
     auto &w = *q.work;
     int lane = grid.thread_rank(), threads = grid.size();
     unsigned long long stamp = lane ? 0 : timer_ns();
@@ -680,6 +948,11 @@ template <class Grid> __device__ void detect(Grid grid, Query &q, PairScratch &c
         w.broad_ns += now - stamp;
         stamp = now;
     }
+}
+template <class Grid> __device__ void detect_sort(Grid grid, Query &q, PairScratch &cache) {
+    auto &w = *q.work;
+    int lane = grid.thread_rank(), threads = grid.size();
+    unsigned long long stamp = lane ? 0 : timer_ns();
     sort_proposals(grid, w.proposals, w.count);
     if (!lane) {
         int k = 0, j = 0;
@@ -696,6 +969,10 @@ template <class Grid> __device__ void detect(Grid grid, Query &q, PairScratch &c
             }
             w.group[w.groups++] = {ids, begin, k, equal(h, ids) ? j++ : -1};
         }
+        w.proposal_total += w.count;
+        w.group_total += w.groups;
+        w.maximum_proposals = max(w.maximum_proposals, w.count);
+        w.maximum_groups = max(w.maximum_groups, static_cast<unsigned>(w.groups));
         auto now = timer_ns();
         w.sort_ns += now - stamp;
         stamp = now;
@@ -703,7 +980,19 @@ template <class Grid> __device__ void detect(Grid grid, Query &q, PairScratch &c
     grid.sync();
     if (*w.status)
         return;
-    for (int i = lane / 32; i < w.groups; i += threads / 32) {
+}
+template <class Grid> __device__ void detect_search(Grid grid, Query &q, PairScratch &cache) {
+    auto &w = *q.work;
+    int lane = grid.thread_rank(), threads = grid.size();
+    unsigned long long stamp = lane ? 0 : timer_ns();
+    if (w.reuse_blockers) {
+        __shared__ SearchBatch batch;
+        for (int i = blockIdx.x; i < w.groups; i += gridDim.x) {
+            bool found = q.find<128>(w.group[i], cache, w.confirmed[i], &batch);
+            if (!threadIdx.x) w.valid[i] = found;
+            __syncthreads();
+        }
+    } else for (int i = lane / 32; i < w.groups; i += threads / 32) {
         bool found = q.find(w.group[i], cache, w.confirmed[i]);
         if (!(lane % 32))
             w.valid[i] = found;
@@ -711,10 +1000,15 @@ template <class Grid> __device__ void detect(Grid grid, Query &q, PairScratch &c
     grid.sync();
     if (*w.status)
         return;
+    if (!lane)
+        w.search_ns += timer_ns() - stamp;
+    grid.sync();
+}
+template <class Grid> __device__ void detect_group(Grid grid, Query &q, PairScratch &cache) {
+    auto &w = *q.work;
+    int lane = grid.thread_rank(), threads = grid.size();
+    unsigned long long stamp = lane ? 0 : timer_ns();
     if (!lane) {
-        auto now = timer_ns();
-        w.search_ns += now - stamp;
-        stamp = now;
         for (int i = 0; i < w.groups; ++i)
             if (w.valid[i]) {
                 auto &v = w.confirmed[i];
@@ -724,14 +1018,21 @@ template <class Grid> __device__ void detect(Grid grid, Query &q, PairScratch &c
                 cache.previous[k] = {v.faces, v.seed};
             }
         cache.previous_count = w.found;
+        w.confirmed_total += w.found;
     }
     grid.sync();
     const int pairs = w.found * (w.found - 1) / 2;
     int saved = 0;
+    int saved_blockers = 0;
     for (int first = 0; first < pairs; first += connection_batch) {
         int count = min(connection_batch, pairs - first);
         // Use separate warps for independent, branch-heavy visibility proofs.
-        for (int slot = lane / 32; slot < count; slot += threads / 32) {
+        const int worker = w.reuse_blockers ? blockIdx.x : lane / 32;
+        const int workers = w.reuse_blockers ? gridDim.x : threads / 32;
+        for (int slot = worker; slot < count; slot += workers) {
+            // Few expensive links should occupy different SMs, rather than
+            // packing four branch-heavy warps into the first 128-thread block.
+            if (w.reuse_blockers && threadIdx.x >= 32) continue;
             int rank = first + slot, i = 0;
             while (rank >= w.found - 1 - i) {
                 rank -= w.found - 1 - i;
@@ -745,11 +1046,23 @@ template <class Grid> __device__ void detect(Grid grid, Query &q, PairScratch &c
                 trial.right = j;
                 trial.fault = {};
                 trial.joined = false;
+                trial.blockers = {};
+                if (w.reuse_blockers) {
+                    const auto left = w.witnesses[i].faces, right = w.witnesses[j].faces;
+                    trial.blockers.left = left;
+                    trial.blockers.right = right;
+                    for (int k = 0; k < cache.blocker_count; ++k)
+                        if (equal(cache.blockers[k].left, left) && equal(cache.blockers[k].right, right)) {
+                            trial.blockers = cache.blockers[k];
+                            break;
+                        }
+                }
             }
             __syncwarp();
             if (w.labels[i] != w.labels[j]) {
                 Query local = q;
                 local.speculative = &trial.fault;
+                if (w.reuse_blockers) local.blockers = &trial.blockers;
                 bool joined = check_connection(local, cache, w.witnesses[i], w.witnesses[j], trial.path, warp_lane);
                 if (!warp_lane) {
                     trial.joined = joined;
@@ -773,6 +1086,8 @@ template <class Grid> __device__ void detect(Grid grid, Query &q, PairScratch &c
                     q.record(t.fault);
                     break;
                 }
+                if (w.reuse_blockers && t.blockers.count && saved_blockers < w.limit)
+                    cache.next_blockers[saved_blockers++] = t.blockers;
                 if (!t.joined)
                     continue;
                 for (int j = 0; j < w.found; ++j)
@@ -791,9 +1106,24 @@ template <class Grid> __device__ void detect(Grid grid, Query &q, PairScratch &c
         cache.paths = cache.next_paths;
         cache.next_paths = scratch;
         cache.path_count = saved;
+        cache.paths_pose = q.rel[0];
+        auto *old_blockers = cache.blockers;
+        cache.blockers = cache.next_blockers;
+        cache.next_blockers = old_blockers;
+        cache.blocker_count = saved_blockers;
         w.group_ns += timer_ns() - stamp;
     }
     grid.sync();
+}
+template <class Grid> __device__ void detect(Grid grid, Query &q, PairScratch &cache) {
+    detect_broad(grid, q, cache);
+    if (*q.work->status) return;
+    detect_sort(grid, q, cache);
+    if (*q.work->status) return;
+    detect_search(grid, q, cache);
+    if (*q.work->status) return;
+    detect_group(grid, q, cache);
+    if (*q.work->status) return;
 }
 __device__ bool accepts(const Workspace &w, int label, int side, int id, int target) {
     for (int i = 0; i < w.found; ++i)
@@ -945,6 +1275,10 @@ __device__ __noinline__ IntegralSum ordered_columns(const Query &q, int count, i
 template <class Grid> __device__ void integrate_regions(Grid grid, Query &q) {
     auto &w = *q.work;
     int lane = grid.thread_rank(), threads = grid.size();
+    // Keep each warp's column IDs consecutive for ballot masks, but distribute
+    // the first warps across blocks. Low-order rules then use more SMs.
+    const int column_lane = w.reuse_blockers ?
+        (threadIdx.x / 32 * gridDim.x + blockIdx.x) * 32 + threadIdx.x % 32 : lane;
     for (int label = 0; label < w.found; ++label) {
         if (w.labels[label] != label)
             continue;
@@ -985,7 +1319,7 @@ template <class Grid> __device__ void integrate_regions(Grid grid, Query &q) {
                 grid.sync();
                 return;
             }
-            for (int i = lane; i < ((count + 31) / 32) * 32; i += threads) {
+            for (int i = column_lane; i < ((count + 31) / 32) * 32; i += threads) {
                 SampleDepth s{};
                 s.depth = -1;
                 if (i < count) {
@@ -1001,6 +1335,11 @@ template <class Grid> __device__ void integrate_regions(Grid grid, Query &q) {
                     bool valid = false;
                     if (!local_rule && order <= 24 && base >= 0) {
                         auto cached = g.rules[base + (order == 12 ? 0 : 144) + ij];
+                        s.s = {cached.point, cached.normal, u, v, cached.area};
+                        valid = cached.area > 0;
+                    } else if (!local_rule && order >= 48 && q.b[side].refined_rules) {
+                        auto cached = q.b[side].refined_rules[id * refined_rule_sites +
+                                                           (order == 48 ? 0 : 48 * 48) + ij];
                         s.s = {cached.point, cached.normal, u, v, cached.area};
                         valid = cached.area > 0;
                     } else if (q.inside(side, id, u, v) && q.node(side, id, u, v, s.s)) {

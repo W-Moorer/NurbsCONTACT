@@ -16,6 +16,27 @@ struct Trial {
     double jac[coordinate_limit * coordinate_limit], residual[coordinate_limit], error;
     double damping[coordinate_limit * coordinate_limit];
 };
+// Scene size is fixed during a run. Unused capacity is never read by the
+// solver, so copying/clearing it in every Newton trial only adds local-memory
+// traffic (notably when the native build reserves sixteen coordinates).
+__device__ void copy_state(ShaftState &to, const ShaftState &from, int n) {
+    to.time = from.time;
+    for (int i = 0; i < n; ++i) {
+        to.q[i] = from.q[i];
+        to.v[i] = from.v[i];
+        to.a[i] = from.a[i];
+        to.force[i] = from.force[i];
+    }
+}
+__device__ void copy_trial(Trial &to, const Trial &from, int n) {
+    copy_state(to.state, from.state, n);
+    to.error = from.error;
+    for (int i = 0; i < n; ++i) to.residual[i] = from.residual[i];
+    for (int i = 0; i < n * n; ++i) {
+        to.jac[i] = from.jac[i];
+        to.damping[i] = from.damping[i];
+    }
+}
 struct StepControl {
     ShaftState state;
     Trial working, next;
@@ -111,8 +132,8 @@ __device__ AuditLoad region_load(const Region &r, const ContactLaw &law, const D
 }
 __device__ __noinline__ void audit_regions(const DeviceScene &s, const ShaftState &state,
                                            const ContactLaw &law, MatPose a, MatPose b, int pair,
-                                           bool initial) {
-    auto &w = *s.workspace;
+                                           bool initial, Workspace *workspace = nullptr) {
+    auto &w = workspace ? *workspace : *s.workspace;
     auto &entry = w.audit[(initial ? 0 : s.control->last_step + 1) * s.np + pair];
     auto &cache = s.cache[pair];
     ++entry.queries;
@@ -187,15 +208,17 @@ __device__ void initialize_forces(const DeviceScene &s, Trial &out) {
         }
     }
 }
-__device__ void accumulate_pair(const DeviceScene &s, Trial &out, int pair) {
+__device__ void accumulate_pair(const DeviceScene &s, Trial &out, int pair, Workspace *workspace = nullptr) {
     auto &control = *s.control;
-    auto &w = *s.workspace;
+    auto &w = workspace ? *workspace : *s.workspace;
     auto &state = out.state;
     const auto law = s.pairs[pair];
     const auto &ba = s.bodies[law.a], &bb = s.bodies[law.b];
     auto a = body_pose(ba, state.q), b = body_pose(bb, state.q);
-    double maxdepth = 0, sum = 0, force[coordinate_limit]{}, jac[coordinate_limit * coordinate_limit]{},
-           damping[coordinate_limit * coordinate_limit]{};
+    double maxdepth = 0, sum = 0, force[coordinate_limit], jac[coordinate_limit * coordinate_limit],
+           damping[coordinate_limit * coordinate_limit];
+    for (int i = 0; i < s.n; ++i) force[i] = 0;
+    for (int i = 0; i < s.n * s.n; ++i) jac[i] = damping[i] = 0;
     int loaded = 0;
     for (int k = 0; k < w.regions; ++k) {
         auto r = w.result[k];
@@ -270,7 +293,12 @@ __device__ __noinline__ void forces(Grid grid, const DeviceScene &s, Trial &out,
         const auto law = s.pairs[pair];
         const auto &ba = s.bodies[law.a], &bb = s.bodies[law.b];
         auto a = body_pose(ba, state.q), b = body_pose(bb, state.q);
-        Query q{{s.views[law.a], s.views[law.b]},
+        Query q{
+#ifdef NC_MESH_RESIDENT
+                {s.views[law.a], s.views[law.b]},
+#else
+                {{&s.views[law.a], &s.views[law.b]}},
+#endif
                 {between(a, b), between(b, a)},
                 NC_DEVICE_QUERY_REACH * law.max_depth,
                 &w};
@@ -394,7 +422,7 @@ __device__ NewtonDispatch correct_step(const DeviceScene &s, double dt, int &ite
     for (;;) {
         if (evaluated) {
             if (c.next.error < trial.error) {
-                trial = c.next;
+                copy_trial(trial, c.next, s.n);
                 ++iter;
                 fraction = 0;
             } else {
@@ -408,7 +436,7 @@ __device__ NewtonDispatch correct_step(const DeviceScene &s, double dt, int &ite
             for (int j = 0; j < s.n; ++j)
                 f = fmax(f, fmax(fabs(c.state.force[j]), fabs(trial.state.force[j])));
             if (isfinite(trial.error) && trial.error <= 1e-9 + 1e-8 * f) {
-                c.state = trial.state;
+                copy_state(c.state, trial.state, s.n);
                 s.workspace->maximum_residual = fmax(s.workspace->maximum_residual, trial.error);
                 return accept_step;
             }
@@ -503,7 +531,7 @@ template <class Grid> __device__ void advance_steps(Grid grid, DeviceScene s, in
         if (c.status)
             return;
         if (!lane) {
-            c.state = c.working.state;
+            copy_state(c.state, c.working.state, s.n);
             for (int i = 0; i < s.n; ++i)
                 c.state.a[i] = c.state.force[i] / s.coordinates[i].mass;
             save_frame(s, 0);

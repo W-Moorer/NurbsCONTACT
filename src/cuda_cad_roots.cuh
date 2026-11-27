@@ -1,6 +1,6 @@
 // Included inside the CUDA geometry namespace. All lengths are in millimetres.
 __device__ V sum3(V a, V b) { return {{a.x[0] + b.x[0], a.x[1] + b.x[1], a.x[2] + b.x[2]}}; }
-__device__ V trim_position(View g, const TrimPiece &c, double t) {
+__device__ V trim_position(const View &g, const TrimPiece &c, double t) {
     const auto *p = g.trim_poles + c.start;
     if (!c.count) {
         double a = c.angle + c.turn * t;
@@ -29,7 +29,7 @@ struct Bound {
 };
 #include "cuda_trim_intervals.cuh"
 // Preserve the closed-face boundary convention used by Face::inside for linear trims.
-__device__ __noinline__ int face_contains(View g, const FaceData &f, double u, double v) {
+__device__ __noinline__ int face_contains(const View &g, const FaceData &f, double u, double v) {
     const auto r = f.domain;
     if (u < r.u - 1e-10 || u > r.U + 1e-10 || v < r.v - 1e-10 || v > r.Vv + 1e-10)
         return 0;
@@ -125,7 +125,7 @@ __device__ int knot_slot(const double *knots, int count, double x) {
     }
     return lo - 1;
 }
-__device__ bool face_jet(View g, int id, double u, double v, Jet &j) {
+__device__ bool face_jet(const View &g, int id, double u, double v, Jet &j) {
     const auto &f = g.charts[id];
     if (f.kind == 1) {
         j = {sum3(f.origin, sum3(scale(f.frame[0], u), scale(f.frame[1], v))), f.frame[0], f.frame[1]};
@@ -232,7 +232,7 @@ __device__ int polynomial_roots(const double *coeff, double lo, double hi, doubl
         return count;
     }
 }
-__device__ int analytic_hits(View g, int id, Ray ray, double &end, RootSelection &selection, bool any) {
+__device__ __noinline__ int analytic_hits(const View &g, int id, Ray ray, double &end, RootSelection &selection, bool any) {
     const auto &f = g.charts[id];
     double roots[32];
     int count = 0;
@@ -391,7 +391,7 @@ __device__ __noinline__ bool restrict_cell(const Span &s, Range r, Ray ray, doub
     }
     return true;
 }
-__device__ __noinline__ int subdivide(View g, int id, const Span &s, Range domain, Ray ray, double &end,
+__device__ __noinline__ int subdivide(const View &g, int id, const Span &s, Range domain, Ray ray, double &end,
                                       RootSelection &selection, bool any) {
     const auto &f = g.charts[id];
     Range pending[37];
@@ -439,7 +439,7 @@ __device__ __noinline__ int subdivide(View g, int id, const Span &s, Range domai
     }
     return n ? -2 : 0;
 }
-__device__ __noinline__ int span_hits(View g, int face, int span, Ray ray, double &end, bool any,
+__device__ __noinline__ int span_hits(const View &g, int face, int span, Ray ray, double &end, bool any,
                                       RootSelection &selection) {
     const auto &f = g.charts[face];
     const auto &s = g.patches[span];
@@ -491,7 +491,7 @@ __device__ Hit final_hit(const RootSelection &selection, Ray ray, bool any) {
         return {0, -1};
     return selection.hit;
 }
-__device__ __noinline__ Hit first(View g, Ray ray, double end, bool any = false) {
+__device__ __noinline__ Hit first(const View &g, Ray ray, double end, bool any = false) {
     RootSelection selection;
     const auto slabs = slab_ray(ray);
     if (g.ray_grid && end <= g.ray_grid->reach && fabs(dot(ray.d, ray.d) - 1) < 1e-12) {
@@ -579,4 +579,79 @@ __device__ __noinline__ Hit first(View g, Ray ray, double end, bool any = false)
         }
     }
     return final_hit(selection, ray, any);
+}
+
+__device__ Hit warp_hit(Hit h, int source) {
+    constexpr unsigned full = 0xffffffffu;
+    h.t = __shfl_sync(full, h.t, source);
+    h.face = __shfl_sync(full, h.face, source);
+    h.u = __shfl_sync(full, h.u, source);
+    h.v = __shfl_sync(full, h.v, source);
+    for (int k=0;k<3;++k) h.normal.x[k] = __shfl_sync(full, h.normal.x[k], source);
+    return h;
+}
+// A connection segment is one common query for the whole warp. Long segments
+// visit a preorder window in parallel. A prefix maximum of rejected subtree
+// end indices masks descendants inside this window and skips them beyond it.
+// Preserve the first hit/fault in preorder. The
+// short-ray grid retains its existing scalar path and ordering.
+__device__ __noinline__ Hit crossing_warp(const View &g, Ray ray, double end) {
+    constexpr unsigned full = 0xffffffffu;
+    const int lane = threadIdx.x % 32;
+    if (g.ray_grid && end <= g.ray_grid->reach) {
+        Hit h{0,-1};
+        if (!lane) h = first(g,ray,end,true);
+        return warp_hit(h,0);
+    }
+    const auto slabs = slab_ray(ray);
+    for (int begin=0;begin<g.n;) {
+        const int index=begin+lane;
+        bool overlaps = false;
+        int skip = 0;
+        if (index < g.n) {
+            const auto &node = g.faces[index];
+            overlaps = intersects_slabs(node.box, slabs, end, 1e-6);
+            if (!overlaps) skip = node.next;
+        }
+        // Rejected intervals in a preorder tree are nested or disjoint. Even
+        // an already masked descendant has next <= its rejected ancestor's
+        // next, so including its interval cannot exclude a live sibling.
+        for (int distance = 1; distance < 32; distance *= 2) {
+            const int previous = __shfl_up_sync(full, skip, distance);
+            if (lane >= distance) skip = max(skip, previous);
+        }
+        const int preceding = __shfl_up_sync(full, skip, 1);
+        const bool visible = !lane || index >= preceding;
+        const int next = max(begin + 32, __shfl_sync(full, skip, 31));
+        Hit answer{0,-1};
+        if (index<g.n && visible && overlaps) {
+            const auto &node=g.faces[index];
+            if (node.leaf>=0) {
+                const int face=node.leaf;
+                const auto &f=g.charts[face];
+                RootSelection selection;
+                double limit=end;
+                if (f.first<0) {
+                    const int code=analytic_hits(g,face,ray,limit,selection,true);
+                    if (code<0) answer={0,-2,double(face),1};
+                    else if (code>0) answer=selection.hit;
+                } else {
+                    const auto local=slab_ray({basis(f.frame,ray.p),basis(f.frame,ray.d)});
+                    for (int j=f.first;j<f.end;) {
+                        const auto &span=g.spans[j];
+                        if (!intersects_slabs(span.box,local,limit,2*f.tol)) {j=span.next;continue;}
+                        ++j;
+                        if (span.leaf<0) continue;
+                        const int code=span_hits(g,face,span.leaf,ray,limit,true,selection);
+                        if (code<0) {answer={0,-2,double(face),double(-code)};break;}
+                        if (code>0) {answer=selection.hit;break;}
+                    }
+                }
+            }
+        }
+        const unsigned stopped=__ballot_sync(full,answer.face!=-1);
+        if (stopped) return warp_hit(answer,__ffs(stopped)-1);
+        begin = next;
+    }
+    return {0,-1};
 }

@@ -7,6 +7,71 @@ device::V pack(Vec a) { return {{a[0], a[1], a[2]}}; }
 device::V pack_midpoint(const IVec &a) { return {{a[0].center(), a[1].center(), a[2].center()}}; }
 device::Bounds pack(Box a) { return {pack(a.lo), pack(a.hi)}; }
 device::Range pack(Rect a) { return {a.u.lo, a.u.hi, a.v.lo, a.v.hi}; }
+void prepare_support(const Face &f, device::FaceData &out) {
+    std::array<Vec,3> axes;
+    std::vector<Vec> points;
+    Box normals;
+    double evaluation_pad=0;
+    auto add_normal = [&](IVec u, IVec v) {
+        auto n=cross(u,v);
+        for (int k=0;k<3;++k) n[k]=n[k]*Interval{double(f.info.orientation)};
+        normals.include(Vec{n[0].lo,n[1].lo,n[2].lo});
+        normals.include(Vec{n[0].hi,n[1].hi,n[2].hi});
+    };
+    if (f.analytic) {
+        const auto *plane=std::get_if<Plane>(f.analytic);
+        if (!plane) return;
+        Vec u{},v{};
+        for (int k=0;k<3;++k) {u[k]=plane->x[k].center();v[k]=plane->y[k].center();}
+        const auto normal=cross3(u,v);
+        if (length(u)<1e-12 || length(normal)<1e-12) return;
+        axes[0]=scale(u,1/length(u));axes[2]=scale(normal,1/length(normal));
+        axes[1]=cross3(axes[2],axes[0]);
+        add_normal(plane->x,plane->y);
+        for (double a:{f.info.domain.u.lo,f.info.domain.u.hi})
+            for (double b:{f.info.domain.v.lo,f.info.domain.v.hi}) {
+                const auto p=plane->eval(UV{Interval{a},Interval{b}});
+                for (int bits=0;bits<8;++bits)
+                    points.push_back({bits&1?p[0].hi:p[0].lo,bits&2?p[1].hi:p[1].lo,bits&4?p[2].hi:p[2].lo});
+            }
+    } else {
+        if (f.patches.empty()) return;
+        axes=f.span_frame;
+        for (const auto &patch:f.patches) {
+            if (!patch.cubic || patch.cells.empty()) return;
+            double magnitude=0;
+            for (auto coefficient:patch.power) for (double x:coefficient) magnitude+=std::abs(x);
+            const double polynomial_pad=4096*std::numeric_limits<double>::epsilon()*(1+magnitude);
+            evaluation_pad=std::max(evaluation_pad,polynomial_pad);
+            for (const auto &h:patch.net) {
+                if (!(h[3]>0)) return;
+                points.push_back({h[0]/h[3],h[1]/h[3],h[2]/h[3]});
+            }
+            // Terminal derivative hulls cover the complete parameter rectangle.
+            for (size_t i=0;i<patch.cells.size();++i) {
+                if (2*i+1<patch.cells.size()) continue;
+                const auto &c=patch.cells[i];
+                IVec d[2];
+                for (int a=0;a<2;++a) for (int k=0;k<3;++k) {
+                    const double pad=polynomial_pad+1e-10*(1+std::abs(c.slope[a][k])+c.radius[a][k]);
+                    d[a][k]={down(c.slope[a][k]-c.radius[a][k]-pad),up(c.slope[a][k]+c.radius[a][k]+pad)};
+                }
+                add_normal(d[0],d[1]);
+            }
+        }
+    }
+    Box support;
+    for (auto p:points) support.include(Vec{dot3(axes[0],p),dot3(axes[1],p),dot3(axes[2],p)});
+    const double pad=std::max({1e-5,16*out.tol,16*evaluation_pad})+1e-10*(1+length(f.box.lo)+length(f.box.hi));
+    for (int k=0;k<3;++k) {
+        if (!std::isfinite(support.lo[k]) || !std::isfinite(support.hi[k]) ||
+            !std::isfinite(normals.lo[k]) || !std::isfinite(normals.hi[k])) return;
+        if (std::abs(length(axes[k])-1)>1e-10) return;
+        out.support_axes[k]=pack(axes[k]);
+        support.lo[k]=down(support.lo[k]-pad);support.hi[k]=up(support.hi[k]+pad);
+    }
+    out.support_box=pack(support);out.normal_box=pack(normals);out.support_ready=true;
+}
 device::TrimPiece trim_piece(const Face::TrimSpan &edge, device::Tables &t) {
     device::TrimPiece r{};
     r.box = pack(edge.box);
@@ -256,6 +321,7 @@ std::shared_ptr<device::Columns> cuda_columns(const Solid &solid, bool prepare_r
                 t.patches.push_back(s);
             }
         }
+        prepare_support(f,face);
         t.charts.push_back(face);
     }
     build_ray_grid(t, span_bounds, ray_reach_mm);

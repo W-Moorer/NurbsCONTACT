@@ -19,20 +19,25 @@ IVec point(Vec x) {
     return {Interval{x[0]}, Interval{x[1]}, Interval{x[2]}};
 }
 
-PartFile box() {
-    PartFile file;
-    file.geometry.trims.emplace_back();
-    Rect domain{{-1, 1}, {-1, 1}};
+void append_box(PartFile &file, Vec offset = {}, Vec half = {1,1,1}) {
+    if (file.geometry.trims.empty()) file.geometry.trims.emplace_back();
     for (int axis = 0; axis < 3; ++axis)
         for (int sign : {-1, 1}) {
-            Vec center{}, x{}, y{}, lo{-1, -1, -1}, hi{1, 1, 1};
-            center[axis] = lo[axis] = hi[axis] = sign;
-            x[(axis + 1) % 3] = 1;
-            y[(axis + 2) % 3] = sign;
+            const int u=(axis+1)%3,v=(axis+2)%3;
+            Rect domain{{-half[u],half[u]},{-half[v],half[v]}};
+            Vec center=offset, x{}, y{}, lo{}, hi{};
+            for (int k=0;k<3;++k) {lo[k]=offset[k]-half[k];hi[k]=offset[k]+half[k];}
+            center[axis] = lo[axis] = hi[axis] = offset[axis]+sign*half[axis];
+            x[u] = 1;
+            y[v] = sign;
             file.faces.push_back({domain, lo, hi, 1e-7, 1, true});
             file.geometry.patches.push_back(
                 {Plane{point(center), point(x), point(y)}, domain, file.faces.size(), 0});
         }
+}
+PartFile box() {
+    PartFile file;
+    append_box(file);
     return file;
 }
 #ifdef NC_WITH_CUDA_COLUMNS
@@ -130,6 +135,32 @@ void resident_boxes() {
         if(i && !r[7] && !switch_step)switch_step=i;
     }
     require(switch_step==158,"resident box release step");
+    const auto cached=device::advance_resident(scene,dt,steps,device::RegionReduction::audit,
+                                               device::ResidentExecution::cached);
+    require(std::equal(cached.frames.begin(),cached.frames.end(),result.frames.begin(),result.frames.end(),
+                       [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
+            "cached cooperative execution changed analytic box response");
+    require(cached.separated_groups>0,"separated chart certificate was not exercised after release");
+    const auto batch=device::advance_resident(scene,dt,steps,device::RegionReduction::audit,
+                                              device::ResidentExecution::batched);
+    require(std::equal(batch.frames.begin(),batch.frames.end(),result.frames.begin(),result.frames.end(),
+                       [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
+            "batched execution changed analytic box response");
+    require(batch.batched_rays>0 && batch.ray_batches>0,"batched ray queue was not exercised");
+    // Independent contact pairs enter and leave at different times. The second
+    // pair is initially open, so queue offsets must handle empty middle ranges.
+    auto multiple=scene;
+    multiple.coordinates.push_back({2,0,-.01,0,0,0,0,0,0});
+    multiple.geometry.insert(multiple.geometry.end(),{geometry,geometry});
+    multiple.bodies.push_back({{{0,.01,0}},z,zero,0,-1,-1,zero});
+    multiple.bodies.push_back({{{.0021,.01,0}},z,zero,0,-1,1,x});
+    multiple.pairs.push_back({2,3,2e4,1,0,.0002,true});
+    const auto multiple_ref=device::advance_resident(multiple,dt,steps);
+    const auto multiple_batch=device::advance_resident(multiple,dt,steps,device::RegionReduction::audit,
+                                                       device::ResidentExecution::batched);
+    require(std::equal(multiple_batch.frames.begin(),multiple_batch.frames.end(),multiple_ref.frames.begin(),multiple_ref.frames.end(),
+                       [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
+            "batched cross-pair execution changed independent contact dynamics");
     const auto audit=device::advance_resident(scene,dt,steps,device::RegionReduction::audit);
     require(std::equal(audit.frames.begin(),audit.frames.end(),result.frames.begin(),result.frames.end(),
                        [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}) &&
@@ -145,6 +176,49 @@ void resident_boxes() {
                     "single-region box wrench differs from serial");
     }
     require(checked && entered && exited,"missing contact or release in region audit");
+    // Two disconnected pads belong to one rigid body. Their contact witnesses
+    // must remain in two regions: the segment between them crosses a pad wall.
+    PartFile pads, plate;
+    append_box(pads,{0,-3,0});
+    append_box(pads,{0,3,0});
+    append_box(plate,{}, {1,4,1});
+    auto separated=scene;
+    separated.geometry={cuda_columns(Solid(std::move(pads)),true,.4),
+                        cuda_columns(Solid(std::move(plate)),true,.4)};
+    const auto plain_pads=device::advance_resident(separated,dt,40);
+    const auto cached_pads=device::advance_resident(separated,dt,40,device::RegionReduction::audit,
+                                                    device::ResidentExecution::cached);
+    require(cached_pads.blocker_hits>0,"blocking-face reuse was not exercised");
+    const auto batch_pads=device::advance_resident(separated,dt,40,device::RegionReduction::audit,
+                                                   device::ResidentExecution::batched);
+    require(std::equal(batch_pads.frames.begin(),batch_pads.frames.end(),plain_pads.frames.begin(),plain_pads.frames.end(),
+                       [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
+            "batched links changed disconnected-pad dynamics");
+    require(std::equal(cached_pads.frames.begin(),cached_pads.frames.end(),plain_pads.frames.begin(),plain_pads.frames.end(),
+                       [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
+            "blocking-face reuse changed disconnected-pad dynamics");
+    // The same contact plus independent, analytically accelerated coordinates
+    // checks active-prefix handling both below and at the native capacity.
+    for (int n : {3,16}) {
+        auto expanded=scene;
+        for (int j=1;j<n;++j)
+            expanded.coordinates.push_back({double(j+1),0,0,0,0,0,.001,0,0});
+        const auto many=device::advance_resident(expanded,dt,steps,device::RegionReduction::ordered,
+                                                 device::ResidentExecution::batched);
+        const int stride=1+4*n+3;
+        for (int i=0;i<=steps;++i) {
+            const double *row=many.frames.data()+stride*i;
+            for (int j=1;j<n;++j) {
+                const double acceleration=.001/(j+1),t=i*dt;
+                require(std::abs(row[1+4*j]-.5*acceleration*t*t)<1e-12 &&
+                        std::abs(row[2+4*j]-acceleration*t)<1e-12 &&
+                        std::abs(row[3+4*j]-acceleration)<1e-12,
+                        "active-coordinate copy changed constant-acceleration response");
+            }
+            require(std::abs(row[1]-result.frames[width*i+1])<1e-8,
+                    "independent coordinates changed box displacement");
+        }
+    }
 }
 #endif
 void overlap(bool cuda=false) {

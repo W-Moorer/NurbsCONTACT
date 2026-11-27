@@ -1,6 +1,6 @@
 # CPU contact mesh preparation
 
-The [rigid contact backend roadmap](RigidContactBackend.md) pins the CPU reducer baselines, defines the next CAD method and records the interface for a future GPU implementation.
+The [rigid contact backend roadmap](RigidContactBackend.md) pins the CPU reducer baselines and records the current experimental GPU implementations and remaining CAD work.
 
 `apps/prepare_contact_mesh.py` imports a closed STEP solid through Gmsh's OpenCASCADE kernel, meshes its boundary with first-order triangles and writes an ASCII Gmsh 2.2 file in metres. The elementary entity tags identify the originating Gmsh faces and edges. The input model can declare its STEP length unit. Both the command line and the output use SI lengths.
 
@@ -309,6 +309,21 @@ finite seed grid and its limitations for finding small disconnected regions. Ste
 collision detection remains a separate option.
 [CPU replay and dynamics measurements](../results/aes/cpu-bezier/README.md)
 
+The separate `cad-compiled --device cuda-resident` runtime loads precompiled
+charts and trims without an online OCCT fallback. Its optional
+`--gpu-execution cached` schedule gives each candidate face pair a 128-thread
+block. Four warp reductions select the first accepted proposal or fault in the
+original order; an unsuccessful batch retains the greatest projection depth
+with the original tie order. Independent connection tests occupy separate blocks.
+Quadrature warps are spread across blocks while retaining the original column
+indices and ordered FP64 sums. The blocking-face cache is revalidated at each
+new pose; unsuccessful hints use the full compiled geometry query. Fixed 48/96
+quadrature tables are prepared on the GPU before online timing. The variable
+local rule remains online. The conditional-graph experiment is archived and is
+not a runtime option because synchronization safety checks failed.
+[Implementation](../src/cuda_resident_geometry.cuh) ·
+[Validation, timings and complete responses](../results/aes/cuda-graph-execution/README.md)
+
 #### Known limitations
 
 At a degenerate chart pole, two rings around the centroid ray must agree
@@ -338,3 +353,10 @@ Specify a positive mass and local center of mass in the existing body record. Th
 The [free-body driver](../benchmarks/aes/cpu_free_body.py) uses the archived offset-sphere contact mesh. For a freely rotating symmetric top with a nondiagonal local inertia and displaced center of mass, maximum orientation error over 2.4 s was 174.37, 43.50 and 11.32 µrad at 4, 2 and 1 ms. The [1 ms result](../results/aes/cpu-mesh/free/top-mesh-obb-0.001-0.json) also checks the world angular velocity, center trajectory and local accelerometer. In the [free central impact](../results/aes/cpu-mesh/free/head-on-mesh-obb-0.00025-0.json), the peak normal force was 22.4960 N and impulse was 0.449974 N·s against 22.5 N and 0.45 N·s for smooth spheres.
 
 The [eccentric frictional impact](../results/aes/cpu-mesh/free/eccentric-mesh-obb-0.00025-0.json) exercises off-center force application, rotation of both bodies and contact release. For the same scene, the three broad phases produced byte-identical 641-frame traces. The maximum total angular momentum drift was 1.50×10⁻⁸ kg·m²/s at 250 µs and [3.74×10⁻⁹ kg·m²/s at 125 µs](../results/aes/cpu-mesh/free/eccentric-mesh-obb-0.000125-0.json). Using the [50 µs surface-event check](../results/aes/cpu-mesh/free/eccentric-mesh-obb-0.00025-0.00005.json) on the 250 µs grid produced six subdivisions. The eccentric test checks system momentum and dissipation. Its force has no independent closed-form reference.
+
+
+### Pair-owned GPU work queues (2026-11-28)
+
+`cuda_batched_contact.cuh` owns one mutable workspace per contact pair. Its device-controlled phase graphs batch face queries and compact valid quadrature rays across pairs. Results retain the original column IDs and reduction order. The warp connection traversal now carries rejected subtree end indices across preorder windows, preserving the earliest hit/fault while skipping descendants. Ray queries use 32-thread blocks; the CAD equations, force law and quadrature points are unchanged. The optional schedule remains experimental: whole-graph synccheck reports a barrier error also reproduced by an independent graph-only program. Native and memory checks are separate evidence, not a substitute for that unresolved check.
+
+Last verified against: `src/cuda_batched_contact.cuh`, `src/cuda_cad_roots.cuh`, `tests/compiled_cad.cpp`; native CPU/CUDA regressions, memcheck and initcheck passed on 2026-11-28. The pruned warp traversal also passed synccheck under the cached cooperative schedule. Full-run records and exact commands are in the [batching report](../results/aes/cuda-batched-execution/README.md).

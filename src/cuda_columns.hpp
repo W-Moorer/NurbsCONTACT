@@ -43,6 +43,10 @@ struct FaceData {
     int trim_first{}, trim_end{}, grid{}, knots_u{}, knots_v{}, nu{}, nv{};
     bool rectangle{};
     int rule_start{-1};
+    // Conservative optional support data for rejecting separated, opposing charts.
+    V support_axes[3]{};
+    Bounds support_box{}, normal_box{};
+    bool support_ready{};
 };
 struct Span {
     V axis;
@@ -183,6 +187,7 @@ struct ResidentScene {
     std::vector<std::shared_ptr<Columns>> geometry;
 };
 enum class RegionReduction { serial, ordered, warp, audit, audit_warp };
+enum class ResidentExecution { cooperative, cached, batched };
 struct RegionAudit {
     unsigned queries{}, regions{}, entered_faces{}, exited_faces{}, count_changes{};
     double force_error[3]{}, torque_a_error[3]{}, torque_b_error[3]{};
@@ -195,6 +200,16 @@ struct ResidentResult {
     double online_s{}, maximum_residual{};
     unsigned long long queries{}, forces{}, splits{}, missed_deadlines{};
     double phase_s[5]{}, p50_s{}, p99_s{}, maximum_step_s{};
+    unsigned long long accepted_by_level[9]{};
+    unsigned long long proposals{}, face_groups{}, confirmed_groups{}, seed_hits{};
+    unsigned maximum_proposals{}, maximum_groups{};
+    unsigned long long blocker_checks{}, blocker_hits{};
+    unsigned long long warp_segments{}, scalar_segments{};
+    unsigned long long separated_groups{};
+    unsigned long long path_checks{}, path_hits{};
+    unsigned long long batched_rays{}, ray_batches{};
 };
-ResidentResult advance_resident(const ResidentScene &, double step, int steps, RegionReduction = RegionReduction::ordered);
+ResidentResult advance_resident(const ResidentScene &, double step, int steps,
+                                RegionReduction = RegionReduction::ordered,
+                                ResidentExecution = ResidentExecution::cooperative);
 } // namespace nc::compiled::device

@@ -1,0 +1,49 @@
+========= COMPUTE-SANITIZER
+========= Barrier error detected. Divergent thread(s) in warp.
+=========     at nc::compiled::device::<unnamed>::batch_sort(nc::compiled::device::<unnamed>::BatchControl *)+0x190
+=========     by thread (64,0,0) in block (0,0,0)
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========         Host Frame: cuGraphLaunch [0x7ffb596e6325] in nvcuda64.dll
+=========         Host Frame:  [0x7917c] in pruned-runtime.exe
+=========         Host Frame:  [0x771f4] in pruned-runtime.exe
+=========         Host Frame:  [0x70592] in pruned-runtime.exe
+=========         Host Frame:  [0x19915] in pruned-runtime.exe
+=========         Host Frame:  [0x21a56] in pruned-runtime.exe
+=========         Host Frame:  [0x9046c] in pruned-runtime.exe
+=========         Host Frame: BaseThreadInitThunk [0x7ffcbcc2259d] in KERNEL32.DLL
+=========         Host Frame: RtlUserThreadStart [0x7ffcbdbeaf78] in ntdll.dll
+=========
+========= Barrier error detected. Divergent thread(s) in warp.
+=========     at nc::compiled::device::<unnamed>::batch_sort(nc::compiled::device::<unnamed>::BatchControl *)+0x190
+=========     by thread (65,0,0) in block (0,0,0)
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========         Host Frame: cuGraphLaunch [0x7ffb596e6325] in nvcuda64.dll
+=========         Host Frame:  [0x7917c] in pruned-runtime.exe
+=========         Host Frame:  [0x771f4] in pruned-runtime.exe
+=========         Host Frame:  [0x70592] in pruned-runtime.exe
+=========         Host Frame:  [0x19915] in pruned-runtime.exe
+=========         Host Frame:  [0x21a56] in pruned-runtime.exe
+=========         Host Frame:  [0x9046c] in pruned-runtime.exe
+=========         Host Frame: BaseThreadInitThunk [0x7ffcbcc2259d] in KERNEL32.DLL
+=========         Host Frame: RtlUserThreadStart [0x7ffcbdbeaf78] in ntdll.dll
+=========
+========= Barrier error detected. Divergent thread(s) in warp.
+=========     at nc::compiled::device::<unnamed>::batch_sort(nc::compiled::device::<unnamed>::BatchControl *)+0x190
+=========     by thread (66,0,0) in block (0,0,0)
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========         Host Frame: cuGraphLaunch [0x7ffb596e6325] in nvcuda64.dll
+=========         Host Frame:  [0x7917c] in pruned-runtime.exe
+=========         Host Frame:  [0x771f4] in pruned-runtime.exe
+=========         Host Frame:  [0x70592] in pruned-runtime.exe
+=========         Host Frame:  [0x19915] in pruned-runtime.exe
+=========         Host Frame:  [0x21a56] in pruned-runtime.exe
+=========         Host Frame:  [0x9046c] in pruned-runtime.exe
+=========         Host Frame: BaseThreadInitThunk [0x7ffcbcc2259d] in KERNEL32.DLL
+=========         Host Frame: RtlUserThreadStart [0x7ffcbdbeaf78] in ntdll.dll
+=========
+CUDA CAD: unknown error
+========= Internal Sanitizer Error: The Sanitizer failed to handle a hardware exception.
+=========
+========= Target application returned an error
+========= ERROR SUMMARY: 321 errors
+========= ERROR SUMMARY: 317 errors were not printed. Use --print-limit option to adjust the number of printed errors

@@ -139,6 +139,7 @@ struct SurfaceOptions {
     bool cuda_columns{};
     bool resident{};
     std::string region_reduction;
+    std::string gpu_execution;
     std::optional<ImpulseLaw> impulse_law;
     Path mesh_directory,compiled_directory;
     Path progress_file;
@@ -1289,7 +1290,9 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         if (surface.region_reduction=="warp") reduction=dev::RegionReduction::warp;
         if (surface.region_reduction=="audit-warp") reduction=dev::RegionReduction::audit_warp;
         if (surface.region_reduction=="audit") reduction=dev::RegionReduction::audit;
-        auto result=dev::advance_resident(model,dt,static_cast<int>(steps),reduction);
+        const auto execution=surface.gpu_execution=="batched" ? dev::ResidentExecution::batched :
+            surface.gpu_execution=="cached" ? dev::ResidentExecution::cached : dev::ResidentExecution::cooperative;
+        auto result=dev::advance_resident(model,dt,static_cast<int>(steps),reduction,execution);
         device_wall=result.online_s;
         setup_s+=std::chrono::duration<double>(Clock::now()-start).count()-*device_wall;
         stats.evaluations=result.forces;
@@ -1298,11 +1301,26 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         stats.accepted_steps=steps+result.splits;
         work.cad_patch_queries=result.queries;
         auto gpu_stats=open_output(output.string()+".gpu.csv");
-        gpu_stats<<"online_s,broad_s,sort_s,search_s,group_s,integral_s,p50_step_s,p99_step_s,max_step_s,missed_deadlines,steps,reduction_s,reductions,checked_links\n";
+        gpu_stats<<"online_s,broad_s,sort_s,search_s,group_s,integral_s,p50_step_s,p99_step_s,max_step_s,missed_deadlines,steps,reduction_s,reductions,checked_links,execution";
+        for (int i=0;i<9;++i) gpu_stats<<",accepted_level_"<<i;
+        gpu_stats<<",proposals,face_groups,confirmed_groups,seed_hits,maximum_proposals,maximum_groups,blocker_checks,blocker_hits,warp_segments,scalar_segments,separated_groups,path_checks,path_hits,batched_rays,ray_batches";
+        gpu_stats<<'\n';
         gpu_stats<<*device_wall;
         for(double t:result.phase_s)gpu_stats<<','<<t;
         gpu_stats<<','<<result.p50_s<<','<<result.p99_s<<','<<result.maximum_step_s<<','<<result.missed_deadlines<<','<<steps
-                 <<','<<result.reduction_s<<','<<result.reductions<<','<<result.checked_links<<'\n';
+                 <<','<<result.reduction_s<<','<<result.reductions<<','<<result.checked_links
+                 <<','<<(execution==dev::ResidentExecution::batched ? "batched" :
+                          execution==dev::ResidentExecution::cached ? "cached" : "cooperative");
+        for (auto count:result.accepted_by_level) {
+            gpu_stats<<',';
+            if (execution==dev::ResidentExecution::batched) gpu_stats<<count;
+        }
+        gpu_stats<<','<<result.proposals<<','<<result.face_groups<<','<<result.confirmed_groups
+                 <<','<<result.seed_hits<<','<<result.maximum_proposals<<','<<result.maximum_groups
+                 <<','<<result.blocker_checks<<','<<result.blocker_hits<<','<<result.warp_segments<<','<<result.scalar_segments
+                 <<','<<result.separated_groups<<','<<result.path_checks<<','<<result.path_hits
+                 <<','<<result.batched_rays<<','<<result.ray_batches;
+        gpu_stats<<'\n';
         if (!result.region_audit.empty()) {
             auto audit=open_output(output.string()+".regions.csv");
             audit<<"step,pair,queries,regions,entered_face_pairs,exited_face_pairs,region_count_changes,"
@@ -1628,7 +1646,7 @@ int main(int argc,char** argv) {
                         "  or append --method bvh-aabb|bvh-obb|mesh-aabb|mesh-obb|mesh-sap [--mesh-dir DIR] [--solver LAW] "
                         "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl|finite|contour-ray] [--penalty-stiffness per-region|shared] [--geometry-update newton|predictor] [--spectral-radius RHO]\n"
                         "  or append --method cad-compiled|cad-boundary [--device cpu|cuda-columns|cuda-resident] [--compiled-dir DIR] [--force-tol-n N --moment-tol-nm NM --cubature adaptive|fixed96]\n"
-                        "     cuda-resident supports --region-reduction ordered|serial|audit|warp|audit-warp\n"
+                        "     cuda-resident supports --region-reduction ordered|serial|audit|warp|audit-warp [--gpu-execution cooperative|cached|batched]\n"
                         "  or append --method cad-occt|cad-local|cad-patch|cad-bezier|cad-bezier-bounds|cad-bezier-relocate|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
                         "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp [--progress FILE]\n";
             return 2;
@@ -1683,6 +1701,10 @@ int main(int argc,char** argv) {
                         throw std::invalid_argument("unknown region reduction mode");
                     surface.region_reduction=value;
                 }
+                else if (key=="--gpu-execution") {
+                    if(value!="cooperative" && value!="cached" && value!="batched") throw std::invalid_argument("unknown GPU execution mode");
+                    surface.gpu_execution=value;
+                }
                 else if (key=="--solver") {
                     if (value=="penalty") surface.impulse_law.reset();
                     else surface.impulse_law=parse_impulse_law(value);
@@ -1691,6 +1713,8 @@ int main(int argc,char** argv) {
             }
             if (!surface.region_reduction.empty() && !surface.resident)
                 throw std::invalid_argument("region reduction requires cuda-resident");
+            if (!surface.gpu_execution.empty() && !surface.resident)
+                throw std::invalid_argument("GPU execution mode requires cuda-resident");
             if (surface.method=="bvh-aabb" || surface.method=="bvh-obb") {
                 surface.method=surface.method=="bvh-aabb" ? "mesh-aabb" : "mesh-obb";
                 if (!region_specified) surface.mesh_regions="finite";
