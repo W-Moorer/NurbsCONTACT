@@ -1,0 +1,131 @@
+{
+ "method": "step-refined",
+ "reverse_sequence": false,
+ "cold_start_per_pose": false,
+ "executable_sha256": "3c8ae755a2358826a77651084ff970fdc99fb62e128d6b114878e83a0b8653ea",
+ "assets": {
+  "reducer-1a.step": "90a5180ba1d3cd2b6e603de00a80c94cded07bfdccdf13f26e8a693845920035",
+  "reducer-1b.step": "f0b5c19d140b2817f00ba29a3cadcd042141df5e2700e860dff7b9aedd37bf7b",
+  "reducer-2a.step": "9037e0d52ca2550e2251621d46a6781b9b698722842b4178b9758858ee8f14a9",
+  "reducer-2b.step": "93b72d60ebd26f3e94faedd22be00aa5d80dda5936605541ae3646ace82aee01"
+ },
+ "quadrature_tolerances": null,
+ "rows": [
+  {
+   "stage": 1,
+   "step": 6251,
+   "resolved": true,
+   "regions": 2,
+   "wrench": [
+    770.533484909266,
+    270.3197388890881,
+    721.3972856573454,
+    6.580058926122246e-14,
+    -6.576426222211124e-09,
+    2.8136844789803455e-09,
+    -43.201058400612595,
+    43.201058400612595
+   ],
+   "rules": null,
+   "converged": null
+  },
+  {
+   "stage": 1,
+   "step": 18751,
+   "resolved": true,
+   "regions": 2,
+   "wrench": [
+    734.8317627009335,
+    257.17891439511243,
+    688.2139230712952,
+    -8.376771685695895e-14,
+    -5.848108799499341e-09,
+    2.497329867572737e-09,
+    -41.22115400223685,
+    41.22115400223685
+   ],
+   "rules": null,
+   "converged": null
+  },
+  {
+   "stage": 1,
+   "step": 43751,
+   "resolved": true,
+   "regions": 2,
+   "wrench": [
+    563.6551569128444,
+    194.118693982938,
+    529.1343060571834,
+    -1.3098866743903627e-14,
+    -1.6641445541652399e-09,
+    7.060007375440701e-10,
+    -31.730190937209805,
+    31.730190937209805
+   ],
+   "rules": null,
+   "converged": null
+  },
+  {
+   "stage": 2,
+   "step": 6251,
+   "resolved": true,
+   "regions": 3,
+   "wrench": [
+    2566.707893948033,
+    888.8601751381992,
+    -2232.7522018591544,
+    -901.4310050908668,
+    -4.8221307450630695,
+    -66.2661389706986,
+    159.16699983094324,
+    159.16699983094324
+   ],
+   "rules": null,
+   "converged": null
+  },
+  {
+   "stage": 2,
+   "step": 18751,
+   "resolved": true,
+   "regions": 3,
+   "wrench": [
+    2181.8244843504895,
+    752.7649035681821,
+    -1898.6523968188556,
+    -767.3159917064381,
+    3.2722312649382848,
+    -53.266929695577446,
+    135.07811250194334,
+    135.07811250194334
+   ],
+   "rules": null,
+   "converged": null
+  },
+  {
+   "stage": 2,
+   "step": 43751,
+   "resolved": true,
+   "regions": 3,
+   "wrench": [
+    1747.769574555049,
+    602.0037596471569,
+    -1521.2883763548011,
+    -614.7774006989258,
+    2.671017143713185,
+    -42.66850764130142,
+    108.24204338436606,
+    108.24204338436606
+   ],
+   "rules": null,
+   "converged": null
+  }
+ ],
+ "probe_sha256": "3c8ae755a2358826a77651084ff970fdc99fb62e128d6b114878e83a0b8653ea",
+ "assets_sha256": {
+  "reducer-1a.step": "90a5180ba1d3cd2b6e603de00a80c94cded07bfdccdf13f26e8a693845920035",
+  "reducer-1b.step": "f0b5c19d140b2817f00ba29a3cadcd042141df5e2700e860dff7b9aedd37bf7b",
+  "reducer-2a.step": "9037e0d52ca2550e2251621d46a6781b9b698722842b4178b9758858ee8f14a9",
+  "reducer-2b.step": "93b72d60ebd26f3e94faedd22be00aa5d80dda5936605541ae3646ace82aee01"
+ },
+ "pose_sha256": "fe6c4aa2e5a22db603e16d575f99cafe79921e32b5a816dc4c148b691575b0ec"
+}

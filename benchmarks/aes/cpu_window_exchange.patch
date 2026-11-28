@@ -1,0 +1,140 @@
+--- a/src/compiled_contact.cpp
++++ b/src/compiled_contact.cpp
+@@ -1,4 +1,9 @@
+ #include "compiled_geometry.hpp"
++#include <cstdlib>
++#include <fstream>
++#include <iomanip>
++#include <iostream>
++#include <string>
+ #include <chrono>
+ #include <deque>
+ #include <unordered_map>
+@@ -172,6 +177,8 @@
+     std::array<Rules *, 2> rules;
+     const double reach;
+     std::vector<Blocker> *blockers{};
++    mutable std::size_t strip_rays{};
++    mutable std::size_t witness_trials{};
+     const Face &face(int side, int id) const {
+         return bodies[side]->faces[id];
+     }
+@@ -193,6 +200,7 @@
+         return Witness{{a->face, b->face}, add(p, scale(n, .5 * (a->t - b->t))), n, a->t + b->t, {*a, *b}, {}};
+     }
+     std::optional<Witness> sample(Pair ids, const Seed &seed, const NodeSample &site, double &best) const {
++        ++witness_trials;
+         const int side = seed.side;
+         const auto &target = face(1 - side, ids[1 - side]);
+         auto uv = bodies[1 - side]->tiles[seed.tile].site.uv;
+@@ -507,6 +515,7 @@
+             if (!f.inside(uv))
+                 return false;
+             auto s = node(side, id, uv);
++            ++strip_rays;
+             auto hit = solid.first(rel[side].point(s.point), rel[side].direction(scale(s.normal, -1)), reach);
+             if (!hit || !targets.contains(hit->face))
+                 return false;
+@@ -585,7 +594,24 @@
+         return resultant(q, arm);
+     }
+ };
++// Only the isolated experiment binary accepts these controls.
++using GroupWindows = std::map<std::string, Detection::Windows>;
++GroupWindows read_donor(const char *path) {
++    GroupWindows donor;
++    std::ifstream input(path);
++    if (!input) throw std::runtime_error("Cannot read donor windows");
++    std::string key;
++    int side, face;
++    Rect r;
++    while (input >> key >> side >> face >> r.u.lo >> r.u.hi >> r.v.lo >> r.v.hi) {
++        if (!donor[key].at(side).emplace(face, r).second)
++            throw std::runtime_error("Duplicate donor face");
++    }
++    if (!input.eof() || donor.empty()) throw std::runtime_error("Invalid donor file");
++    return donor;
++}
+ class CompiledPair final : public RegionQuery {
++    mutable unsigned pose_index_{};
+     std::array<std::shared_ptr<const Solid>, 2> bodies_;
+     double reach_;
+     std::optional<LoadQuadrature> integration_;
+@@ -613,6 +639,12 @@
+     std::vector<ContactRegion> evaluate(ContactPose a, ContactPose b, ContactWork &work,
+                                         GroupFaces *groups) const {
+         ++work.cad_patch_queries;
++        ++pose_index_;
++        const bool target = pose_index_ == 2;
++        const bool fresh_seed = target && std::getenv("NC_DIAG_CURRENT_SEED");
++        const char *input = target ? std::getenv("NC_DIAG_DONOR") : nullptr;
++        const char *fixed = target ? std::getenv("NC_DIAG_ORDER") : nullptr;
++        GroupWindows donor = input ? read_donor(input) : GroupWindows{};
+         Detection query{{bodies_[0].get(), bodies_[1].get()},
+                         {Placement::between(a, b), Placement::between(b, a)},
+                         {&rules_[0], &rules_[1]},
+@@ -630,7 +662,7 @@
+         std::map<Pair, Seed> next;
+         for (auto &[ids, proposals] : pairs) {
+             auto it = previous_.find(ids);
+-            auto w = query.find(ids, proposals, it == previous_.end() ? nullptr : &it->second);
++            auto w = query.find(ids, proposals, fresh_seed || it == previous_.end() ? nullptr : &it->second);
+             if (w) {
+                 found.push_back(*w);
+                 next[ids] = w->seed;
+@@ -702,7 +734,22 @@
+                 const double count = law.shared_stiffness ? 1. : double(components.size());
+                 std::optional<std::array<Vec, 3>> last;
+                 Detection::Windows windows;
++                std::string key;
++                for (const auto &witness : witnesses)
++                    key += std::to_string(witness.faces[0]) + "/" + std::to_string(witness.faces[1]) + ",";
++                if (input) {
++                    windows = donor.at(key);
++                    donor.erase(key);
++                    for (int side = 0; side != 2; ++side) {
++                        if (windows[side].size() != faces[side].size())
++                            throw std::runtime_error("Donor face count mismatch");
++                        for (const auto &[id, targets] : faces[side]) (void)windows[side].at(id);
++                    }
++                }
++                int used_order = 0;
+                 for (int order : {3, 6, 12, 24, 48, 96}) {
++                    if (fixed && order != std::stoi(fixed)) continue;
++                    used_order = order;
+                     if (law.reference_order && order != law.reference_order)
+                         continue;
+                     w = law.reference_order ? query.integrate(faces, order, arm)
+@@ -712,7 +759,7 @@
+                         last.reset();
+                         continue;
+                     }
+-                    if (law.reference_order)
++                    if (law.reference_order || fixed)
+                         break;
+                     const double load = law.stiffness * std::pow(.001 * w->depth, law.exponent);
+                     const Vec force = scale(w->normal, load);
+@@ -738,6 +785,13 @@
+                     throw UnresolvedContact(law.reference_order
+                                                 ? "fixed CAD quadrature missed the contact region"
+                                                 : "compiled CAD force/moment quadrature did not converge");
++                if (target) {
++                    std::cerr << std::setprecision(17);
++                    for (int side = 0; side != 2; ++side)
++                        for (const auto &[id, r] : windows[side])
++                            std::cerr << "window " << key << ' ' << side << ' ' << id << ' ' << r.u.lo
++                                      << ' ' << r.u.hi << ' ' << r.v.lo << ' ' << r.v.hi << ' ' << used_order << '\n';
++                }
+             } else {
+                 for (int order : {12, 24, 48, 96})
+                     if ((w = query.integrate(faces, order, arm)))
+@@ -750,6 +804,9 @@
+             result.push_back({a.point(scale(w->point, .001)), a.rotate(w->normal), .001 * w->depth,
+                               a.rotate(scale(arm, .001))});
+         }
++        if (!donor.empty()) throw std::runtime_error("Unused donor groups");
++        if (target)
++            std::cerr << "work " << query.strip_rays << ' ' << query.witness_trials << '\n';
+         work.cad_patch_area_s += std::chrono::duration<double>(Clock::now() - grouped).count();
+         return result;
+     }
