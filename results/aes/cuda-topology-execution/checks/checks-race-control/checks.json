@@ -1,0 +1,58 @@
+{
+  "runtime_sha256": "411a82ab8a5d8bfbe663fdc8d6b88a89a90c9301d2572e1618fc9710199adb97",
+  "test_sha256": "e8e3e92fde79924ce0b8ab8f0b6c62b4d1d9f39e53a65a4275ade176d3d3e333",
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "sanitizer_versions": {
+    "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\compute-sanitizer\\compute-sanitizer.exe": "NVIDIA (R) Compute Sanitizer\nCopyright (c) 2020-2024 NVIDIA Corporation\nVersion 2024.3.0.0 (build 34551201) (public-release)"
+  },
+  "diagnostic_steps": 50,
+  "step_s": 0.0001,
+  "sanitizer_full_duration": false,
+  "optimization_mask": 9,
+  "native_tests_skipped": true,
+  "requested_checks": [
+    "racecheck"
+  ],
+  "checks": [
+    {
+      "name": "racecheck-coherent",
+      "command": [
+        "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\compute-sanitizer\\compute-sanitizer.exe",
+        "--tool",
+        "racecheck",
+        "--error-exitcode",
+        "97",
+        "--log-file",
+        "..\\cad-topology-runs\\checks-race-control\\racecheck-coherent.log",
+        "..\\cad-topology-runs\\final.exe",
+        "..\\github-cpu-recheck\\00d0f2a2\\inputs\\scene\\common-200.scene",
+        "0",
+        ".0001",
+        ".005",
+        "1",
+        "..\\cad-topology-runs\\checks-race-control\\racecheck-coherent\\response",
+        "--method",
+        "cad-compiled",
+        "--device",
+        "cuda-resident",
+        "--solver",
+        "penalty",
+        "--penalty-stiffness",
+        "shared",
+        "--geometry-update",
+        "predictor",
+        "--spectral-radius",
+        "0",
+        "--region-reduction",
+        "audit",
+        "--gpu-execution",
+        "coherent",
+        "--gpu-opt-mask",
+        "9"
+      ],
+      "exit_code": 0,
+      "process_s": 86.26673510001274,
+      "zero_errors": true
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "apps/contact.cpp": "efe70bdfafec84975d15c2b51c19dda13845149274456f85ed4b102021863dc5",
+  "src/cuda_columns.hpp": "030e9da6dd9d17543098c159136bb03e480ae417747f8464f349eb9e02fd30e5",
+  "src/cuda_columns.cu": "09163d2cf06c6a8b0d6e392afd4ebca04e0a5fe70aa36b6c8ac132bcd8427aa2",
+  "src/cuda_resident_geometry.cuh": "45714dd1d38e02a930635588ffce6b5af2a46767e29b05a61fe07fb6596d856f",
+  "src/cuda_batched_contact.cuh": "88ecc5a31845ccfdc3bbf606e77b9b1012fd7274eefdeaafa2bd152dd4cec1e9",
+  "src/cuda_progressive_search.cuh": "7decc688b9297b5cae6c3a56210a43e860d653c7876f1f6e5b2031bb47e769a6",
+  "src/compiled_cuda_pack.cpp": "cea70cd2294a73c03636d9530d0939c369806b126ca3ce9c7c4eca9189470a4c",
+  "tests/compiled_cad.cpp": "f838c62cb023ad79e7921b2d65fcf93668b0f8d51c496814ddc938390ad70877",
+  "nurbscontact_gpu/mesh_graph.py": "82e29865b0f73322b798b316845087f680a9e023a20677952c3ea64ec285ffda"
+}

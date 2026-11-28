@@ -429,3 +429,58 @@ cover 50 steps; ten separate full 5 s / 0.1 ms CAD runs retain every response
 byte of the frozen reference. [Commands, validation scope, complete curves and
 rejected trials](../results/aes/cuda-coherent-execution/README.md). Real-time
 performance and equal physical accuracy against GPU mesh are not established.
+
+### Ordered candidate batches and original CAD topology (2026-11-28)
+
+The follow-up keeps mask 9 as the measured choice for the reducer. New flags
+are optional experiments, not replacements for the accepted configuration:
+
+| Bit | Implementation | Status |
+| --- | --- | --- |
+| 16 | A warp advances one face group in batches of 32, stopping after the earliest valid result/error in the original order. Conservative face AABB/OBB tests precede Newton. | Full history unchanged; slower on the reducer. Requires bit 1. |
+| 32 | Original shared CAD edge IDs connect the two incident faces. Precompiled edge probes propose a bridge; current-pose chord and complete segment queries verify it in both solids. | Positive path hints, not a complete moving contact-boundary solver. No bridge used in the full reducer production run. |
+| 64 | Prior target UV initializes Newton; failure retries the original start. A fixed material-normal ray checks the accepted witness. | Diagnostic-only; requires bits 1 and 32 and `--region-reduction audit`. Cold/warm face membership still differs. |
+| 128 | Traverse the target face's span BVH before candidate projection. | Additional ablation; expensive bound traversal regressed performance. Requires bit 16. |
+
+Topology packing reads all original trim loops, including rectangular faces.
+Exactly two incident faces are required for an edge hint; missing or nonmanifold
+incidence uses the existing GPU query path. A static shared edge never merges
+contact regions by itself. The four reducer parts contain 2,492 shared edges.
+Probe points are optional positive proposals, not certificates of absence.
+All online geometry remains on GPU; there is no mechanism dispatch or host
+CAD fallback.
+
+`projection_attempts` counts unique candidate proposal calls to Newton, excluding
+prior-seed and local-refinement calls. `projection_culls` counts rejected proposal
+calls. `avoided_projections` measures future batches avoided relative to the
+preceding two-batch schedule, not all lane work after the first hit.
+`unused_projections` counts actually projected candidates after the winner in
+its executed batch. Do not interpret a lower proposal count as a speedup.
+
+The complete new mask-25 run takes 137.78 s versus 135.92 s for mask 9.
+Candidate Newton calls fall from 14,264,081 to 10,842,620, but confirmation time
+increases from 34.28 to 36.42 s. Adding bit 32 takes 137.96 s, with zero
+production topology bridge checks/hits. Full histories retain all contact
+switches and raw force/moment values. Fresh GPU Mesh takes 92.11 s. CPU times
+remain archived (CAD 193.63 s, Mesh 222.02 s); no CPU performance rerun.
+
+Warm-start diagnostics found a more substantial issue than different witness
+coordinates: at step 82, face pair (117, 33) is found with prior UV and missed
+with the cold start. A separate canonical-witness prototype also changed
+loads near 2.9646 s. Neither is accepted as an execution-only optimization.
+Matching the old solver is a regression check, not independent physical truth.
+Resolving initial-guess-dependent discovery and contact-region membership
+remains necessary before production warm reuse.
+
+Last verified against `src/cuda_progressive_search.cuh`,
+`src/compiled_cuda_pack.cpp`, `src/cuda_resident_geometry.cuh`,
+`src/cuda_batched_contact.cuh`, `src/cuda_columns.cu`,
+`tests/compiled_cad.cpp` and the linked commands/results on 2026-11-28:
+native CPU/CUDA regressions pass; the split-plane and disconnected-pad suite
+exercises 123 successful shared-edge proposals and rejects production warm
+mode. The 500-step mask-57 audit and separate complete 50,000-step runs retain
+the reference response. Mask-57 synccheck/memcheck/initcheck and native CUDA
+synccheck pass. Racecheck passes on retained mask 9, but terminates abnormally
+on masks 25/57 under instrumentation without a reported hazard location.
+The progressive path is not fully sanitizer-validated. Exact commands, tool
+versions, failures and scope are in the [experiment report](../results/aes/cuda-topology-execution/README.md).

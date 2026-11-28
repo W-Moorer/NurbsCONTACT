@@ -73,6 +73,9 @@ struct View {
     int segment_count;
     const Node *curvature_nodes;
     bool curvature_filter{};
+    const int *boundary_offsets{};
+    const BoundaryLink *boundary_links{};
+    const BoundaryProbe *boundary_probes{};
 };
 __device__ V sub(V a, V b) { return {{a.x[0] - b.x[0], a.x[1] - b.x[1], a.x[2] - b.x[2]}}; }
 __device__ V scale(V a, double b) { return {{a.x[0] * b, a.x[1] * b, a.x[2] * b}}; }
@@ -367,6 +370,9 @@ __global__ void pressure_columns(View a, View b, const RuleBlock *jobs, int coun
 #include "cuda_batched_contact.cuh"
 } // namespace
 struct Columns::Storage {
+    Buffer<int> boundary_offsets;
+    Buffer<BoundaryLink> boundary_links;
+    Buffer<BoundaryProbe> boundary_probes;
     Buffer<RayGrid> grid_descriptor;
     Buffer<int> short_offsets, short_ids;
     Buffer<RayPrimitive> short_primitives;
@@ -414,6 +420,9 @@ Sites::Sites(const std::vector<RuleSite> &sites) {
 Sites::~Sites() { cudaFree(ptr); }
 Columns::Columns(const Tables &t) {
     auto s = std::make_unique<Storage>();
+    s->boundary_offsets.upload(t.boundary_offsets);
+    s->boundary_links.upload(t.boundary_links);
+    s->boundary_probes.upload(t.boundary_probes);
     s->resident_supported =
         std::all_of(t.patches.begin(), t.patches.end(), [](const auto &p) { return p.cell >= 0; }) &&
         std::all_of(t.charts.begin(), t.charts.end(),
@@ -470,6 +479,9 @@ Columns::Columns(const Tables &t) {
                s->grid_descriptor.ptr,
                s->segment_nodes.ptr,
                static_cast<int>(t.segment_nodes.size()),s->curvature_nodes.ptr};
+    s->view.boundary_offsets=s->boundary_offsets.ptr;
+    s->view.boundary_links=s->boundary_links.ptr;
+    s->view.boundary_probes=s->boundary_probes.ptr;
     if (s->resident_supported && !t.tiles.empty()) {
         s->tile_jets.reserve(t.tiles.size());
         prepare_tile_jets<<<(t.tiles.size() + 127) / 128, 128, 0, s->stream.id>>>(
@@ -501,8 +513,13 @@ std::vector<ChartSample> Columns::sample_charts(const std::vector<ChartPoint> &q
 }
 ResidentResult advance_resident(const ResidentScene &scene, double step, int steps, RegionReduction reduction,
                                 ResidentExecution execution, bool profile_links, unsigned optimizations) {
-    if(optimizations>15) throw std::invalid_argument("invalid CAD optimization mask");
+    if(optimizations>255) throw std::invalid_argument("invalid CAD optimization mask");
     if(execution!=ResidentExecution::coherent) optimizations=0;
+    if((optimizations&16) && !(optimizations&1)) throw std::invalid_argument("progressive search requires candidate deduplication (bit 1)");
+    if((optimizations&128) && !(optimizations&16)) throw std::invalid_argument("span projection bounds require progressive search (bit 16)");
+    if((optimizations&64) && (optimizations&33)!=33) throw std::invalid_argument("warm projection requires parameter cache and CAD topology (bits 1 and 32)");
+    if((optimizations&64) && reduction!=RegionReduction::audit)
+        throw std::invalid_argument("warm projection is diagnostic-only: use region-reduction audit; cold/warm face membership is not yet equivalent");
     if (scene.coordinates.empty() || scene.coordinates.size() > coordinate_limit ||
         scene.geometry.size() != scene.bodies.size() || steps < 1 || steps == INT_MAX || !(step > 0) ||
         !std::isfinite(step))
@@ -609,6 +626,8 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     const size_t workspace_count = batched ? static_cast<size_t>(np) + 1 + integration_count : 1;
     constexpr int limit = 512, capacity = 65536, column_capacity = 96 * 96 * 32;
     Buffer<int> unique_proposals, link_order;
+    Buffer<SearchProgress> search_progress;
+    if(optimizations&16) search_progress.reserve(workspace_count*limit);
     Buffer<unsigned char> rule_live;
     if(optimizations&1) unique_proposals.reserve(workspace_count*capacity);
     if(optimizations&4) link_order.reserve(workspace_count*limit*(limit-1)/2);
@@ -694,6 +713,7 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     check(cudaMemset(control.ptr, 0, sizeof(StepControl)));
     Workspace w{};
     w.optimizations=optimizations;
+    w.search_progress=search_progress.ptr;
     w.unique_proposals=unique_proposals.ptr;
     w.link_order=link_order.ptr;
     w.rule_live=rule_live.ptr;
@@ -736,6 +756,7 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     for (size_t i = 1; i < workspace_count; ++i) {
         auto &p = workspaces[i];
         if(p.unique_proposals) p.unique_proposals+=i*capacity;
+        if(p.search_progress) p.search_progress+=i*limit;
         if(p.link_order) p.link_order+=i*limit*(limit-1)/2;
         if(p.rule_live) p.rule_live+=i*column_capacity/16;
         p.proposals += i * capacity;
@@ -853,6 +874,7 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     auto start = std::chrono::steady_clock::now();
     check(cudaGraphLaunch(schedule.executable, stream.id));
     check(cudaStreamSynchronize(stream.id));
+    const double device_elapsed=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
     StepControl final{};
     check(cudaMemcpy(&final, control.ptr, sizeof(final), cudaMemcpyDeviceToHost));
     check(cudaMemcpy(&w, work.ptr, sizeof(w), cudaMemcpyDeviceToHost));
@@ -862,6 +884,9 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
         check(cudaMemcpy(workspaces.data(), work.ptr, workspaces.size() * sizeof(Workspace), cudaMemcpyDeviceToHost));
         for (size_t i = 1; i < workspaces.size(); ++i) {
             const auto &p = workspaces[i];
+            w.projection_rounds+=p.projection_rounds; w.avoided_projections+=p.avoided_projections; w.unused_projections+=p.unused_projections; w.projection_culls+=p.projection_culls;
+            w.topology_checks+=p.topology_checks; w.topology_hits+=p.topology_hits;
+            w.warm_attempts+=p.warm_attempts; w.warm_hits+=p.warm_hits; w.warm_fallbacks+=p.warm_fallbacks;
             w.parameter_hint_calls+=p.parameter_hint_calls; w.parameter_hint_hits+=p.parameter_hint_hits; w.projection_attempts+=p.projection_attempts;
             w.tested_rule_blocks+=p.tested_rule_blocks; w.rejected_rule_blocks+=p.rejected_rule_blocks;
             w.local_links+=p.local_links; w.remote_links+=p.remote_links;
@@ -899,6 +924,9 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     result.fused_math = true;
 #endif
     result.optimizations=optimizations;
+    result.projection_rounds=w.projection_rounds; result.avoided_projections=w.avoided_projections; result.unused_projections=w.unused_projections; result.projection_culls=w.projection_culls;
+    result.topology_checks=w.topology_checks; result.topology_hits=w.topology_hits;
+    result.warm_attempts=w.warm_attempts; result.warm_hits=w.warm_hits; result.warm_fallbacks=w.warm_fallbacks;
     result.parameter_hint_calls=w.parameter_hint_calls; result.parameter_hint_hits=w.parameter_hint_hits; result.projection_attempts=w.projection_attempts;
     result.tested_rule_blocks=w.tested_rule_blocks; result.rejected_rule_blocks=w.rejected_rule_blocks;
     result.local_links=w.local_links; result.remote_links=w.remote_links;
@@ -936,6 +964,7 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     std::vector<unsigned long long> clocks(steps + 1);
     check(cudaMemcpy(clocks.data(), finished.ptr, clocks.size() * sizeof(clocks[0]), cudaMemcpyDeviceToHost));
     result.online_s = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+    result.device_s=device_elapsed; result.download_s=result.online_s-device_elapsed;
     result.reduction_s = w.reduction_ns * 1e-9;
     result.reductions = w.reductions;
     result.checked_links = w.checked_links;

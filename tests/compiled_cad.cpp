@@ -40,9 +40,50 @@ PartFile box() {
     append_box(file);
     return file;
 }
+// Assign exact shared topology to a synthetic collection of planar charts.
+// Used only in tests; production uses the original importer feature IDs.
+void planar_topology(PartFile &file) {
+    std::map<Vec,std::size_t> vertices;
+    std::map<std::pair<std::size_t,std::size_t>,std::size_t> edges;
+    for (auto &patch:file.geometry.patches) {
+        const auto r=patch.domain;
+        const std::array<Vec,4> uv{{{r.u.lo,r.v.lo,0},{r.u.hi,r.v.lo,0},
+                                   {r.u.hi,r.v.hi,0},{r.u.lo,r.v.hi,0}}};
+        std::array<std::size_t,4> ids;
+        for (int k=0;k<4;++k) {
+            const auto p=evaluate(patch.surface,{Interval{uv[k][0]},Interval{uv[k][1]}});
+            Vec xyz{p[0].center(),p[1].center(),p[2].center()};
+            ids[k]=vertices.try_emplace(xyz,vertices.size()+1).first->second;
+        }
+        TrimDomain trim; trim.loops.emplace_back();
+        for (int k=0;k<4;++k) {
+            int j=(k+1)%4;
+            const auto key=std::minmax(ids[k],ids[j]);
+            const auto id=edges.try_emplace(key,edges.size()+1).first->second;
+            trim.loops.back().push_back({BezierCurve{{homogeneous(point(uv[k])),homogeneous(point(uv[j]))}},
+                {FeatureKind::edge,id},{FeatureKind::vertex,ids[k]},{FeatureKind::vertex,ids[j]}});
+        }
+        patch.trim_id=file.geometry.trims.size(); file.geometry.trims.push_back(std::move(trim));
+    }
+}
 #ifdef NC_WITH_CUDA_COLUMNS
 void describe_part(const std::filesystem::path &path) {
     const auto solid=load_solid(path);
+    std::map<std::size_t,std::vector<int>> edges;
+    std::map<std::size_t,bool> vertices;
+    for(int id=0;id<int(solid->faces.size());++id) {
+        const auto *trim=solid->faces[id].trim;
+        if(!trim) continue;
+        for(const auto &loop:trim->loops) for(const auto &edge:loop) {
+            if(edge.feature.kind==FeatureKind::edge) {
+                auto &uses=edges[edge.feature.id];
+                if(std::find(uses.begin(),uses.end(),id)==uses.end()) uses.push_back(id);
+            }
+            for(auto v:{edge.start,edge.end}) if(v.kind==FeatureKind::vertex) vertices[v.id]=true;
+        }
+    }
+    std::size_t shared=0;
+    for(const auto &entry:edges) shared+=entry.second.size()==2;
     size_t histogram[4][4]{},spans=0,cells=0,analytic=0,rectangular=0;
     double tail_u=0,tail_v=0,scale=0;
     for (const auto &f:solid->faces) {
@@ -60,7 +101,8 @@ void describe_part(const std::filesystem::path &path) {
         }
     }
     std::cout<<std::setprecision(17)<<"{\"part\":"<<std::quoted(path.filename().string())
-             <<",\"faces\":"<<solid->faces.size()<<",\"analytic_faces\":"<<analytic
+             <<",\"faces\":"<<solid->faces.size()<<",\"source_edges\":"<<edges.size()
+             <<",\"shared_edges\":"<<shared<<",\"source_vertices\":"<<vertices.size()<<",\"analytic_faces\":"<<analytic
              <<",\"rectangular_faces\":"<<rectangular<<",\"spans\":"<<spans<<",\"cells\":"<<cells
              <<",\"tail_u\":"<<tail_u<<",\"tail_v\":"<<tail_v<<",\"scale\":"<<scale
              <<",\"degree_histogram\":[";
@@ -181,6 +223,14 @@ void resident_boxes() {
     scene.pairs={{0,1,1e4,1,0,.0002,true}};
     constexpr double dt=1e-4;
     constexpr int steps=220;
+    bool warm_guard=false;
+    try {
+        device::advance_resident(scene,dt,steps,device::RegionReduction::ordered,
+                                 device::ResidentExecution::coherent,false,121);
+    } catch(const std::invalid_argument &error) {
+        warm_guard=std::string_view(error.what()).find("diagnostic-only")!=std::string_view::npos;
+    }
+    require(warm_guard,"unvalidated warm projection escaped the diagnostic-only guard");
     auto result=device::advance_resident(scene,dt,steps);
     constexpr std::size_t width=8;
     require(result.frames.size()==(steps+1)*width,"missing resident states");
@@ -296,6 +346,7 @@ void resident_boxes() {
     append_box(pads,{0,-3,0});
     append_box(pads,{0,3,0});
     append_box(plate,{}, {1,4,1});
+    planar_topology(pads); planar_topology(plate);
     auto separated=scene;
     separated.geometry={cuda_columns(Solid(std::move(pads)),true,.4),
                         cuda_columns(Solid(std::move(plate)),true,.4)};
@@ -330,6 +381,7 @@ void resident_boxes() {
         }
     }
     auto partitioned=scene;
+    planar_topology(split);
     partitioned.geometry={cuda_columns(Solid(std::move(split)),true,.4),geometry};
     const auto partitioned_ref=device::advance_resident(partitioned,dt,40,device::RegionReduction::ordered,
                                                         device::ResidentExecution::batched);
@@ -342,17 +394,23 @@ void resident_boxes() {
     require(std::equal(cached_pads.frames.begin(),cached_pads.frames.end(),plain_pads.frames.begin(),plain_pads.frames.end(),
                        [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
             "blocking-face reuse changed disconnected-pad dynamics");
+    unsigned long long topology_checks=0,topology_hits=0;
     for(const auto *fixture:{&multiple,&separated,&partitioned}) {
         const auto original=device::advance_resident(*fixture,dt,40,device::RegionReduction::ordered,
                                                      device::ResidentExecution::wavefront);
-        for(unsigned mask:{1u,2u,4u,8u,15u}) {
+        for(unsigned mask:{1u,2u,4u,8u,15u,25u,57u,121u,153u}) {
             const auto improved=device::advance_resident(*fixture,dt,40,device::RegionReduction::audit,
                                                          device::ResidentExecution::coherent,false,mask);
             require(std::equal(improved.frames.begin(),improved.frames.end(),original.frames.begin(),original.frames.end(),
-                              [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
+                              [mask](double a,double b){return a==b || (std::isnan(a) && std::isnan(b)) ||
+                                  ((mask&32) && std::abs(a-b)<1e-10*(1+std::abs(b)));}),
                     "coherent ablation changed pair/region topology or analytic dynamics");
+            if(mask&64) require(improved.warm_hits>0,"warm projection was not exercised");
+            if(mask==57) { topology_checks+=improved.topology_checks; topology_hits+=improved.topology_hits; }
         }
     }
+    require(topology_checks>0 && topology_hits>0,"shared-edge connection proposals were not exercised");
+    std::cout<<"topology probes="<<topology_checks<<" connected="<<topology_hits<<'\n';
     // The same contact plus independent, analytically accelerated coordinates
     // checks active-prefix handling both below and at the native capacity.
     for (int n : {3,16}) {

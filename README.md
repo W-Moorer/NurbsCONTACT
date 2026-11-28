@@ -19,6 +19,18 @@ The frozen CAD assets have a separate [source-to-runtime equivalence audit](resu
 
 ### Precompiled CAD on CUDA
 
+The latest ordered-batch/topology experiment retains `--gpu-opt-mask 9`:
+it takes **135.92 s** for the complete **5 s / 0.1 ms** reducer. The new
+progressive batches take **137.78 s**; adding true CAD shared-edge connection
+proposals takes **137.96 s**. Both reproduce every reference response byte,
+but neither improves runtime. Fresh GPU Mesh takes **92.11 s**, including
+the final result download. Prior-UV projection reuse remains diagnostic-only
+because it changes face-pair detection at the same pose. This experiment
+does **not** establish mesh parity or real-time performance. New progressive
+variants also have unresolved whole-graph racechecker abnormal exits; the
+retained mask-9 control passes that check.
+[Full histories, rejected trials and verification](results/aes/cuda-topology-execution/README.md).
+
 The opt-in `coherent` schedule implements four general query and scheduling
 strategies. Complete reducer runs at **5 s / 0.1 ms** take **138.27 /
 138.27 s** with all four, and **135.30 / 135.43 s**

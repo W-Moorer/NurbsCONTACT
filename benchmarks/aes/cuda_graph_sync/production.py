@@ -23,9 +23,13 @@ def main():
     parser.add_argument("--dll-path", type=Path)
     parser.add_argument("--execution", choices=("wavefront", "batched", "coherent"),
                         help="Validate this production schedule instead of the historical pair")
-    parser.add_argument("--opt-mask", type=int, choices=range(16), default=15)
+    parser.add_argument("--opt-mask", type=int, choices=range(256), default=15)
     parser.add_argument("--skip-native", action="store_true",
                         help="Reuse already verified native tests for the identical executable hashes")
+    parser.add_argument("--check", action="append", choices=("synccheck", "memcheck", "initcheck", "racecheck"),
+                        help="Run only the named diagnostics; repeat to select more than one")
+    parser.add_argument("--reduction", choices=("audit", "ordered"), default="audit",
+                        help="Check the reference-audit graph or the actual ordered production graph")
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
@@ -41,7 +45,8 @@ def main():
                   scene_sha256=digest(args.scene),
                   sanitizer_versions=versions, diagnostic_steps=50, step_s=.0001,
                   sanitizer_full_duration=False, optimization_mask=args.opt_mask if args.execution == "coherent" else None,
-                  native_tests_skipped=args.skip_native, checks=[])
+                  native_tests_skipped=args.skip_native, requested_checks=args.check,
+                  region_reduction=args.reduction, checks=[])
 
     def check(name, command, diagnostic=None):
         command = [str(c) for c in command]
@@ -62,10 +67,11 @@ def main():
             record["zero_errors"] = ("ERROR SUMMARY: 0 errors" in log or
                                       "RACECHECK SUMMARY: 0 hazards displayed (0 errors, 0 warnings)" in log)
             record["zero_errors"] &= "Internal Sanitizer Error" not in log
+        record["passed"] = code == 0 and record.get("zero_errors", True)
         report["checks"].append(record)
         (args.output / "checks.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         print(f"{name}: exit={code}, zero_errors={record.get('zero_errors')}", flush=True)
-        if code != 0 or not record.get("zero_errors", True):
+        if not record["passed"]:
             raise SystemExit(1)
 
     if not args.skip_native:
@@ -79,6 +85,8 @@ def main():
     if args.execution == "coherent":
         # Check the candidate hand-off regression before the other diagnostics.
         checks = [("racecheck", schedule)] + [c for c in checks if c[0] != "racecheck"]
+    if args.check:
+        checks = [c for c in checks if c[0] in args.check]
     for kind, execution in checks:
         name = kind + "-" + execution
         dest = args.output / name
@@ -89,7 +97,7 @@ def main():
                      args.runtime, args.scene, "0", ".0001", ".005", "1", dest / "response",
                      "--method", "cad-compiled", "--device", "cuda-resident", "--solver", "penalty",
                      "--penalty-stiffness", "shared", "--geometry-update", "predictor",
-                     "--spectral-radius", "0", "--region-reduction", "audit",
+                     "--spectral-radius", "0", "--region-reduction", args.reduction,
                      "--gpu-execution", execution]
         if execution == "coherent":
             command.extend(("--gpu-opt-mask", args.opt_mask))

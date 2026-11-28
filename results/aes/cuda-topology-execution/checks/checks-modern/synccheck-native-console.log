@@ -1,0 +1,4 @@
+candidate_sort pads=1 max_proposals=512
+candidate_sort pads=3 max_proposals=1536
+candidate_sort pads=5 max_proposals=2560
+topology probes=123 connected=123

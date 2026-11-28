@@ -297,6 +297,48 @@ void build_segment_tree(device::Tables &t) {
 } // namespace
 std::shared_ptr<device::Columns> cuda_columns(const Solid &solid, bool prepare_rules, double ray_reach_mm) {
     device::Tables t;
+    // Preserve every original shared-edge use, including rectangular charts
+    // whose trim winding query is otherwise omitted. Probes propose interior
+    // connection paths; they never certify absence or merge regions by themselves.
+    std::map<std::size_t,std::vector<int>> edge_faces;
+    for (int id=0;id<int(solid.faces.size());++id) {
+        const auto *trim=solid.faces[id].trim;
+        if (!trim) continue;
+        for (const auto &loop:trim->loops) for (const auto &edge:loop)
+            if (edge.feature.kind==FeatureKind::edge) {
+                auto &uses=edge_faces[edge.feature.id];
+                if (std::find(uses.begin(),uses.end(),id)==uses.end()) uses.push_back(id);
+            }
+    }
+    for (int id=0;id<int(solid.faces.size());++id) {
+        t.boundary_offsets.push_back(int(t.boundary_links.size()));
+        const auto &f=solid.faces[id];
+        if (!f.trim) continue;
+        for (const auto &loop:f.trim->loops) for (const auto &edge:loop) {
+            if (edge.feature.kind!=FeatureKind::edge) continue;
+            const auto &uses=edge_faces.at(edge.feature.id);
+            if (uses.size()!=2) continue; // Unknown/non-manifold: complete online path.
+            const int other=uses[0]==id?uses[1]:uses[0];
+            const int first=int(t.boundary_probes.size());
+            for (double parameter:{.125,.5,.875}) {
+                const auto uv=evaluate(edge.geometry,Interval{parameter});
+                const Param p{uv[0].center(),uv[1].center()};
+                if (p[0]<f.info.domain.u.lo || p[0]>f.info.domain.u.hi ||
+                    p[1]<f.info.domain.v.lo || p[1]>f.info.domain.v.hi ||
+                    (!f.analytic && !f.patch(p))) continue;
+                const auto jet=f.at(p);
+                const auto n=cross3(jet.u,jet.v);
+                const double length_n=length(n);
+                if (length_n>1e-14 && std::isfinite(length_n) &&
+                    std::all_of(jet.p.begin(),jet.p.end(),[](double x){return std::isfinite(x);}))
+                    t.boundary_probes.push_back({pack(jet.p),pack(scale(n,f.info.orientation/length_n))});
+            }
+            t.boundary_links.push_back({other,first,int(t.boundary_probes.size()),edge.feature.id,
+                edge.start.kind==FeatureKind::vertex?edge.start.id:std::numeric_limits<std::size_t>::max(),
+                edge.end.kind==FeatureKind::vertex?edge.end.id:std::numeric_limits<std::size_t>::max()});
+        }
+    }
+    t.boundary_offsets.push_back(int(t.boundary_links.size()));
     std::vector<device::Bounds> span_bounds;
     append_tree(solid.tree, t.faces, 0);
     append_tree(solid.site_tree, t.site_tree, 0);

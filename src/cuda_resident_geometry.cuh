@@ -95,8 +95,9 @@ struct SearchAttempt {
     Witness witness{};
     QueryFault fault{};
     double depth;
-    bool hit{}, skip{}, disjoint{};
+    bool hit{}, skip{}, disjoint{}, projected{};
 };
+struct SearchProgress { int next, done; };
 struct SavedSeed {
     Faces ids;
     Seed seed;
@@ -166,6 +167,9 @@ __device__ unsigned long long timer_ns() {
 }
 struct Workspace {
     unsigned optimizations;
+    SearchProgress *search_progress;
+    unsigned long long projection_rounds, avoided_projections, unused_projections, projection_culls;
+    unsigned long long topology_checks, topology_hits, warm_attempts, warm_hits, warm_fallbacks;
     int *unique_proposals, *link_order;
     unsigned char *rule_live;
     unsigned long long parameter_hint_calls, parameter_hint_hits, projection_attempts, rejected_rule_blocks, tested_rule_blocks, local_links, remote_links;
@@ -247,6 +251,7 @@ struct Query {
     Workspace *work;
     QueryFault *speculative;
     BlockerCache *blockers;
+    bool cold_projection{};
     __device__ static Bound projection(Bounds box,V axis) {
         Bound value{0,0};
         for (int k=0;k<3;++k) {
@@ -336,10 +341,12 @@ struct Query {
         const int side = seed.side, id = ids[1 - side];
         const auto &g = b[1 - side].g;
         const auto &tile = b[1 - side].tiles[seed.tile];
-        // Preserve the canonical projection sequence and witness. A different
-        // valid witness can change the bounded connectivity proof and split a
-        // region. Previous UVs therefore accelerate span lookup, not its root.
+        // The legacy mode preserves its canonical iteration exactly. The
+        // experimental warm mode also fixes the accepted material normal ray;
+        // its same-pose audit checks cold witness/partition compatibility.
         double u = tile.u, v = tile.v;
+        const bool warm=hint && (work->optimizations&64) && !cold_projection;
+        if (warm) { u=hint->u; v=hint->v; }
         int cached_u=-1,cached_v=-1;
         const auto &face=g.charts[id];
         if(hint && face.kind==0 && face.nu>=2 && face.nv>=2) {
@@ -350,8 +357,8 @@ struct Query {
         V p = point(rel[side], site.p), d = direction(rel[side], scale(site.n, -1));
         for (int iter = 0; iter < 8; ++iter) {
             Jet j;
-            // Every projection starts at the same material tile centre, at every pose.
-            if (!iter) {
+            // Cold projections retain the precomputed material tile centre.
+            if (!iter && !warm) {
                 const auto &initial = b[1 - side].tile_jets[seed.tile];
                 if (!initial.defined) {
                     fail(5, id);
@@ -387,6 +394,14 @@ struct Query {
                 best = fmax(best, t);
                 if (t <= 2e-7)
                     return false;
+                if (work->optimizations&64) {
+                    // Fix the accepted witness to the material normal ray.
+                    // Its origin/direction do not depend on Newton's initial UV.
+                    // The complete ray traversal checks earlier/occluding faces.
+                    const auto exact=ray(1-side,p,d,reach);
+                    if (exact.face!=id || exact.t<=2e-7) return false;
+                    t=exact.t;
+                }
                 V mid = sub(site.p, scale(site.n, .5 * t)), n = site.n;
                 if (side) {
                     mid = point(rel[1], mid);
@@ -495,8 +510,19 @@ struct Query {
         Site site;
         if (!q.node(a.seed.side, group.ids[a.seed.side], a.seed.u, a.seed.v, site)) return a;
         const auto &saved=cache.previous[group.prior];
-        a.hit=q.sample(group.ids,a.seed,site,a.depth,a.witness,
-                       (work->optimizations&1)?&saved.exits[1-a.seed.side]:nullptr);
+        const auto *hint=(work->optimizations&1)?&saved.exits[1-a.seed.side]:nullptr;
+        const bool warm=hint && (work->optimizations&64) && !q.cold_projection;
+        if (warm) atomicAdd(&work->warm_attempts,1ULL);
+        a.hit=q.sample(group.ids,a.seed,site,a.depth,a.witness,hint);
+        if (warm && a.hit && !a.fault.code) atomicAdd(&work->warm_hits,1ULL);
+        if (warm && (!a.hit || a.fault.code)) {
+            // A failed speculative initial guess must not suppress discovery
+            // or turn its private fault into a global solver failure.
+            atomicAdd(&work->warm_fallbacks,1ULL);
+            a.fault={}; a.depth=-HUGE_VAL; a.witness={};
+            q.cold_projection=true;
+            a.hit=q.sample(group.ids,a.seed,site,a.depth,a.witness,hint);
+        }
         return a;
     }
     __device__ SearchAttempt proposal_attempt(Group group, int k) const {
@@ -508,10 +534,36 @@ struct Query {
             const auto &previous = work->proposals[j];
             if (previous.side == c.side && previous.source == c.source) return a;
         }
-        if (work->optimizations & 1) atomicAdd(&work->projection_attempts, 1ULL);
         const auto &t = b[c.side].tiles[c.source];
         a.seed = {c.side, c.tile, t.u, t.v};
         Site site{t.point, t.normal, t.u, t.v, 0};
+        if ((work->optimizations&16) && !cold_projection) {
+            const auto &g=b[1-c.side].g;
+            const auto &face=g.charts[group.ids[1-c.side]];
+            const auto direction0=direction(rel[c.side],scale(site.n,-1));
+            const auto origin=sub(point(rel[c.side],site.p),scale(direction0,reach));
+            const Ray segment{origin,direction0};
+            // Enclose BOTH signs of the projection depth. Negative depths
+            // drive the existing local refinement and cannot be discarded.
+            bool possible=intersects(face.box,segment,2*reach,4*face.tol+1e-6);
+            if(possible && face.support_ready) {
+                const auto oriented=Ray{basis(face.support_axes,origin),basis(face.support_axes,direction0)};
+                possible=intersects(face.support_box,oriented,2*reach,4*face.tol+1e-6);
+            }
+            if(possible && face.first>=0 && (work->optimizations&128)) {
+                possible=false;
+                const auto local=slab_ray({basis(face.frame,origin),basis(face.frame,direction0)});
+                for(int node=face.first;node<face.end;) {
+                    const auto &span=g.spans[node];
+                    if(!intersects_slabs(span.box,local,2*reach,4*face.tol+1e-6)) { node=span.next; continue; }
+                    if(span.leaf>=0) { possible=true; break; }
+                    ++node;
+                }
+            }
+            if(!possible) { atomicAdd(&work->projection_culls,1ULL); return a; }
+        }
+        a.projected=true;
+        if (work->optimizations & 1) atomicAdd(&work->projection_attempts, 1ULL);
         Query q = *this;
         q.speculative = &a.fault;
         a.hit = q.sample(group.ids, a.seed, site, a.depth, a.witness);
@@ -584,9 +636,13 @@ struct Query {
             fault = {};
             if (k < group.end) {
                 if constexpr (Queued) {
+                    if ((work->optimizations&16) && k>=work->search_progress[group_index].next) {
+                        // Later proposals were never needed by this ordered search.
+                    } else {
                     const auto &a = work->attempts[k];
                     trial = a.seed; depth = a.depth; hit = a.hit;
                     candidate = a.witness; fault = a.fault;
+                    }
                 } else {
                     const auto a=proposal_attempt(group,k);
                     trial=a.seed; depth=a.depth; hit=a.hit; candidate=a.witness; fault=a.fault;
@@ -779,6 +835,37 @@ struct Query {
         }
         return false;
     }
+    __device__ bool topology_connection(const Witness &a,const Witness &other,Connection &path) const {
+        if (!(work->optimizations&32)) return false;
+        for (int side=0;side<2;++side) {
+            const auto &g=b[side].g;
+            if (!g.boundary_offsets || a.faces[side]==other.faces[side]) continue;
+            for (int i=g.boundary_offsets[a.faces[side]];i<g.boundary_offsets[a.faces[side]+1];++i) {
+                const auto &link=g.boundary_links[i];
+                if (link.other!=other.faces[side]) continue;
+                for (int k=link.first;k<link.end;++k) {
+                    atomicAdd(&work->topology_checks,1ULL);
+                    Query q=*this; QueryFault fault{}; q.speculative=&fault; q.blockers=nullptr;
+                    const auto &probe=g.boundary_probes[k];
+                    const auto h=q.ray(1-side,point(rel[side],probe.point),
+                                       direction(rel[side],scale(probe.normal,-1)),reach);
+                    if (fault.code || h.face<0) continue;
+                    V mid=sub(probe.point,scale(probe.normal,.5*h.t)),n=probe.normal;
+                    if (side) { mid=point(rel[1],mid); n=direction(rel[1],scale(n,-1)); }
+                    Witness bridge;
+                    // A source edge is only a path proposal. Both solids must
+                    // contain the bridge and both complete segments at this pose.
+                    if (!q.chord(mid,n,bridge) || fault.code || !q.straight(a.p,bridge.p) ||
+                        !q.straight(bridge.p,other.p) || fault.code) continue;
+                    path={}; path.left=a.faces; path.right=other.faces;
+                    path.count=1; path.points[0]=bridge.p;
+                    atomicAdd(&work->topology_hits,1ULL);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 };
 __device__ bool before(const Suggestion &a, const Suggestion &b) {
     if (a.faces.a != b.faces.a)
@@ -909,7 +996,7 @@ __device__ bool check_connection(Query &q, const PairScratch &cache, const Witne
     bool joined = false;
     if (!lane) {
         stamp = profile ? timer_ns() : 0;
-        joined = q.connected(a, b, 5, path, false);
+        joined = q.topology_connection(a,b,path) || q.connected(a, b, 5, path, false);
         record_time(3);
     }
     return joined;
@@ -921,12 +1008,23 @@ __device__ __noinline__ bool agrees_with_serial_link(Query q, const PairScratch 
     q.speculative = &fault;
     // Audit the cached decision against the independent uncached traversal.
     q.blockers = nullptr;
-    bool joined = previous_connection(q, cache, a, b, reference) || q.connected(a, b, 5, reference);
+    bool joined = previous_connection(q, cache, a, b, reference) ||
+        q.topology_connection(a,b,reference) || q.connected(a, b, 5, reference);
     if (joined != trial.joined || fault.code != trial.fault.code || fault.face != trial.fault.face ||
         fault.side != trial.fault.side || fault.any != trial.fault.any)
         return false;
     if (!joined)
         return true;
+    if (q.work->optimizations&32) {
+        // Different valid interior paths are equivalent. Independently verify
+        // every segment instead of requiring the same arbitrary path vertices.
+        V last=a.p;
+        for (int i=0;i<trial.path.count;++i) {
+            if (!q.straight(last,trial.path.points[i]) || fault.code) return false;
+            last=trial.path.points[i];
+        }
+        return q.straight(last,b.p) && !fault.code;
+    }
     if (reference.count != trial.path.count)
         return false;
     for (int i = 0; i < reference.count; ++i)

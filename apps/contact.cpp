@@ -1309,7 +1309,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
         gpu_stats<<",proposals,face_groups,confirmed_groups,seed_hits,maximum_proposals,maximum_groups,blocker_checks,blocker_hits,warp_segments,scalar_segments,separated_groups,path_checks,path_hits,batched_rays,ray_batches";
         gpu_stats<<",fused_math,profiled_links";
         for (const char *name:{"cache","endpoints","direct","recursive"}) gpu_stats<<",link_"<<name<<"_work_s,link_"<<name<<"_calls";
-        gpu_stats<<",precomputed_rays,deferred_rays,audited_rays,audited_groups,opt_mask,parameter_hint_calls,parameter_hint_hits,projection_attempts,rule_blocks,rejected_rule_blocks,local_links,remote_links\n";
+        gpu_stats<<",precomputed_rays,deferred_rays,audited_rays,audited_groups,opt_mask,parameter_hint_calls,parameter_hint_hits,projection_attempts,rule_blocks,rejected_rule_blocks,local_links,remote_links,projection_rounds,avoided_projections,unused_projections,device_s,download_s,topology_checks,topology_hits,warm_attempts,warm_hits,warm_fallbacks,projection_culls\n";
         gpu_stats<<*device_wall;
         for(double t:result.phase_s)gpu_stats<<','<<t;
         gpu_stats<<','<<result.p50_s<<','<<result.p99_s<<','<<result.maximum_step_s<<','<<result.missed_deadlines<<','<<steps
@@ -1327,7 +1327,7 @@ void simulate(const Path& scene,double deflection,double dt,double duration,unsi
                  <<','<<result.batched_rays<<','<<result.ray_batches;
         gpu_stats<<','<<result.fused_math<<','<<result.profiled_links;
         for (int k=0;k<4;++k) gpu_stats<<','<<result.link_work_s[k]<<','<<result.link_calls[k];
-        gpu_stats<<','<<result.precomputed_rays<<','<<result.deferred_rays<<','<<result.audited_rays<<','<<result.audited_groups<<','<<result.optimizations<<','<<result.parameter_hint_calls<<','<<result.parameter_hint_hits<<','<<result.projection_attempts<<','<<result.tested_rule_blocks<<','<<result.rejected_rule_blocks<<','<<result.local_links<<','<<result.remote_links<<'\n';
+        gpu_stats<<','<<result.precomputed_rays<<','<<result.deferred_rays<<','<<result.audited_rays<<','<<result.audited_groups<<','<<result.optimizations<<','<<result.parameter_hint_calls<<','<<result.parameter_hint_hits<<','<<result.projection_attempts<<','<<result.tested_rule_blocks<<','<<result.rejected_rule_blocks<<','<<result.local_links<<','<<result.remote_links<<','<<result.projection_rounds<<','<<result.avoided_projections<<','<<result.unused_projections<<','<<result.device_s<<','<<result.download_s<<','<<result.topology_checks<<','<<result.topology_hits<<','<<result.warm_attempts<<','<<result.warm_hits<<','<<result.warm_fallbacks<<','<<result.projection_culls<<'\n';
         if (!result.region_audit.empty()) {
             auto audit=open_output(output.string()+".regions.csv");
             audit<<"step,pair,queries,regions,entered_face_pairs,exited_face_pairs,region_count_changes,"
@@ -1654,7 +1654,7 @@ int main(int argc,char** argv) {
                         "[--event-tol-s SECONDS --ccd-tol-m METRES] [--mesh-region-scope local|full|fcl|finite|contour-ray] [--penalty-stiffness per-region|shared] [--geometry-update newton|predictor] [--spectral-radius RHO]\n"
                         "  or append --method cad-compiled|cad-boundary [--device cpu|cuda-columns|cuda-resident] [--compiled-dir DIR] [--force-tol-n N --moment-tol-nm NM --cubature adaptive|fixed96]\n"
                         "     cuda-resident supports --region-reduction ordered|serial|audit|warp|audit-warp [--gpu-execution cooperative|cached|batched|wavefront|coherent] [--gpu-profile on|off]\n"
-                        "     coherent ablations: --gpu-opt-mask 0..15 (bits: parameter cache, rule blocks, local links, region queue)\n"
+                        "     coherent ablations: --gpu-opt-mask 0..255 (bits: parameter cache, rule blocks, local links, region queue, progressive, topology, warm start, span bounds)\n"
                         "  or append --method cad-occt|cad-local|cad-patch|cad-bezier|cad-bezier-bounds|cad-bezier-relocate|chen-2024|chen-2026 [--solver LAW] [--event-tol-s SECONDS --ccd-tol-m METRES]\n"
                         "  LAW: penalty|sap|lagrange|augmented-lagrange|lcp|ncp|soccp [--progress FILE]\n";
             return 2;
@@ -1715,7 +1715,7 @@ int main(int argc,char** argv) {
                 }
                 else if (key=="--gpu-opt-mask") {
                     surface.gpu_opt_mask=std::stoul(std::string(value));
-                    if(surface.gpu_opt_mask>15) throw std::invalid_argument("GPU optimization mask must be 0..15");
+                    if(surface.gpu_opt_mask>255) throw std::invalid_argument("GPU optimization mask must be 0..255");
                 }
                 else if (key=="--gpu-profile") {
                     if (value!="on" && value!="off") throw std::invalid_argument("GPU profile expects on or off");

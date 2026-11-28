@@ -38,8 +38,8 @@ def main():
         "--gpu-execution", args.execution,
     ]
     if args.execution == "coherent":
-        if not 0 <= args.opt_mask <= 15:
-            raise ValueError("Optimization mask must be 0..15")
+        if not 0 <= args.opt_mask <= 255:
+            raise ValueError("Optimization mask must be 0..255")
         command.extend(("--gpu-opt-mask", str(args.opt_mask)))
     if args.profile_links:
         command.extend(("--gpu-profile", "on"))

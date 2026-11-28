@@ -362,8 +362,11 @@ __global__ void batch_search_audit(BatchControl *control) {
     __shared__ Witness expected;
     for (int job = blockIdx.x; job < g.offsets[g.scene.np]; job += gridDim.x) {
         const int pair = batch_owner(g.offsets, g.scene.np, job), id = job - g.offsets[pair];
-        const auto &q = g.pairs[pair].query;
+        auto q = g.pairs[pair].query;
+        q.cold_projection=true;
         auto &w = *q.work;
+        if(!threadIdx.x) expected={};
+        __syncwarp();
         const bool hit = q.find<32>(w.group[id], g.scene.cache[pair], expected);
         if (!threadIdx.x) {
             const auto &a = w.confirmed[id];
@@ -376,12 +379,31 @@ __global__ void batch_search_audit(BatchControl *control) {
                 for (int k = 0; k < 3; ++k)
                     same &= a.p.x[k] == expected.p.x[k] && a.n.x[k] == expected.n.x[k];
             }
-            if (!same) q.fail(14);
+            if (!same) {
+                if((w.optimizations&64) && hit && w.valid[id] && equal(a.faces,expected.faces)) {
+                    // A seed is not a contact-region identity. Accept a new
+                    // witness only with an independently checked interior path;
+                    // the complete cold partition is audited below as well.
+                    Connection path{};
+                    same=q.connected(a,expected,5,path) || q.topology_connection(a,expected,path);
+                }
+            }
+            if (!same) {
+                printf("candidate audit group=%d faces=%d,%d warm_hit=%d cold_hit=%d warm_seed=%d,%d,%.17g,%.17g cold_seed=%d,%d,%.17g,%.17g depth=%.17g,%.17g position=%.17g,%.17g,%.17g / %.17g,%.17g,%.17g prior_hit=%d prior=%d\n",
+                    id,w.group[id].ids.a,w.group[id].ids.b,int(w.valid[id]),int(hit),
+                    a.seed.side,a.seed.tile,a.seed.u,a.seed.v,expected.seed.side,expected.seed.tile,expected.seed.u,expected.seed.v,
+                    a.depth,expected.depth,a.p.x[0],a.p.x[1],a.p.x[2],expected.p.x[0],expected.p.x[1],expected.p.x[2],
+                    int(w.seed_attempts[id].hit),w.group[id].prior);
+                q.fail(14);
+            }
+            if(hit) w.seed_attempts[id].witness=expected;
             atomicAdd(&g.audited_groups, 1ULL);
         }
         __syncwarp();
     }
 }
+#include "cuda_progressive_search.cuh"
+
 // A bounded pool schedules multiple regions per pair. Completed results are
 // scattered to their original root-label order, independent of completion order.
 __device__ bool integral_assign(BatchControl &g, int slot) {
@@ -433,6 +455,7 @@ __global__ void batch_found(BatchControl *control) {
             w.witnesses[k] = v;
             w.labels[k] = k;
             cache.previous[k] = {v.faces, v.seed, {v.exits[0], v.exits[1]}};
+            if(w.audit && (w.optimizations&64)) w.confirmed[k]=w.seed_attempts[i].witness;
         }
         cache.previous_count = w.found;
         w.confirmed_total += w.found;
@@ -537,6 +560,24 @@ __global__ void batch_links_finish(BatchControl *control) {
         p.link_first += count;
         if (p.link_first < total) pending = true;
         else {
+            if(w.audit && (w.optimizations&64)) {
+                // Rebuild the cold-start partition at the SAME pose. Reuse only
+                // original material paths, with every segment revalidated.
+                Query cold=q; cold.blockers=nullptr; cold.cold_projection=true;
+                for(int i=0;i<w.found;++i) w.valid[i]=i;
+                for(int i=0;i<w.found;++i) for(int j=i+1;j<w.found;++j) {
+                    if(w.valid[i]==w.valid[j]) continue;
+                    Connection path{};
+                    const auto &a=w.confirmed[i],&b=w.confirmed[j];
+                    if(previous_connection(cold,cache,a,b,path) || cold.topology_connection(a,b,path) ||
+                       cold.connected(a,b,5,path)) {
+                        int old=w.valid[j],root=w.valid[i];
+                        for(int k=0;k<w.found;++k) if(w.valid[k]==old) w.valid[k]=root;
+                    }
+                }
+                for(int i=0;i<w.found;++i) for(int j=i+1;j<w.found;++j)
+                    if((w.valid[i]==w.valid[j]) != (w.labels[i]==w.labels[j])) q.fail(16);
+            }
             auto *path = cache.paths; cache.paths = cache.next_paths; cache.next_paths = path;
             auto *blocker = cache.blockers; cache.blockers = cache.next_blockers; cache.next_blockers = blocker;
             cache.path_count = p.saved_paths; cache.blocker_count = p.saved_blockers;
@@ -963,7 +1004,13 @@ void build_batch_graphs(StepGraph &schedule, BatchControl *g, BatchControl &host
     f.kernel(batch_sort_merge, dim3(parallel_sort_limit / 128, pairs), 128, g);
     f.kernel(batch_sort, pairs, 32, g);
     f.kernel(batch_stamp<1>, 1, 1, g);
-    if(host.optimizations&1) {
+    if(host.optimizations&16) {
+        f.kernel(coherent_unique,dim3(sms,pairs),128,g);
+        f.kernel(batch_search_seeds,sms*2,1,g);
+        f.kernel(progressive_round,sms*4,32,g);
+        f.kernel(batch_search_ready,sms*2,32,g);
+        if(audit) f.kernel(batch_search_audit,sms*2,32,g);
+    } else if(host.optimizations&1) {
         f.kernel(coherent_unique,dim3(sms,pairs),128,g);
         f.kernel(batch_search_seeds,sms*2,1,g);
         f.kernel(batch_search_proposals<1>,dim3(sms*4,pairs),32,g);

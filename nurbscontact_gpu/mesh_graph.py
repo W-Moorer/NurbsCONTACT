@@ -87,14 +87,19 @@ def run(model, step):
         )
         if status[0] or abs(status[1] - model.steps * step) > 1e-8:
             raise RuntimeError(("Incomplete graph mesh dynamics", status.tolist()))
-        return model.output.get(), dict(
-            online_s=elapsed,
+        output=model.output.get()
+        finished=model.finished.get()
+        online=perf_counter()-start
+        return output, dict(
+            online_s=online,
+            device_s=elapsed,
+            download_s=online-elapsed,
             setup_s=model.setup_s + preparation,
             graph_setup_s=preparation,
             status=status.tolist(),
             integration=model.integration_stats,
             execution="device conditional CUDA graph",
-            p99_step_s=float(np.percentile(np.diff(model.finished.get()) * 1e-9, 99)),
+            p99_step_s=float(np.percentile(np.diff(finished) * 1e-9, 99)),
             kernels={name: f.attributes for name, f in functions.items()},
         )
     finally:

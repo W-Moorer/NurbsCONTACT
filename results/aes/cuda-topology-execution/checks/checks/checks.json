@@ -1,0 +1,73 @@
+{
+  "runtime_sha256": "411a82ab8a5d8bfbe663fdc8d6b88a89a90c9301d2572e1618fc9710199adb97",
+  "test_sha256": "c3be13be8cdbea5aa222fb9e1a0a48f021980d8b6a3aafac36c53404fba62403",
+  "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+  "sanitizer_versions": {
+    "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\compute-sanitizer\\compute-sanitizer.exe": "NVIDIA (R) Compute Sanitizer\nCopyright (c) 2020-2024 NVIDIA Corporation\nVersion 2024.3.0.0 (build 34551201) (public-release)",
+    "..\\cad-batch-runs\\tools\\cuda_sanitizer_api-windows-x86_64-13.5.25-archive\\compute-sanitizer\\compute-sanitizer.exe": "NVIDIA (R) Compute Sanitizer\nCopyright (c) 2020-2026 NVIDIA Corporation\nVersion 2026.4.0.0 (build 39022338) (public-release)"
+  },
+  "diagnostic_steps": 50,
+  "step_s": 0.0001,
+  "sanitizer_full_duration": false,
+  "optimization_mask": 57,
+  "native_tests_skipped": false,
+  "checks": [
+    {
+      "name": "native",
+      "command": [
+        "..\\cad-topology-runs\\final-tests.exe"
+      ],
+      "exit_code": 0,
+      "process_s": 0.16158319998066872
+    },
+    {
+      "name": "native-cuda",
+      "command": [
+        "..\\cad-topology-runs\\final-tests.exe",
+        "--cuda"
+      ],
+      "exit_code": 0,
+      "process_s": 9.747928199998569
+    },
+    {
+      "name": "racecheck-coherent",
+      "command": [
+        "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\compute-sanitizer\\compute-sanitizer.exe",
+        "--tool",
+        "racecheck",
+        "--error-exitcode",
+        "97",
+        "--log-file",
+        "..\\cad-topology-runs\\checks\\racecheck-coherent.log",
+        "..\\cad-topology-runs\\final.exe",
+        "..\\github-cpu-recheck\\00d0f2a2\\inputs\\scene\\common-200.scene",
+        "0",
+        ".0001",
+        ".005",
+        "1",
+        "..\\cad-topology-runs\\checks\\racecheck-coherent\\response",
+        "--method",
+        "cad-compiled",
+        "--device",
+        "cuda-resident",
+        "--solver",
+        "penalty",
+        "--penalty-stiffness",
+        "shared",
+        "--geometry-update",
+        "predictor",
+        "--spectral-radius",
+        "0",
+        "--region-reduction",
+        "audit",
+        "--gpu-execution",
+        "coherent",
+        "--gpu-opt-mask",
+        "57"
+      ],
+      "exit_code": 3221226356,
+      "process_s": 71.73313920001965,
+      "zero_errors": true
+    }
+  ]
+}

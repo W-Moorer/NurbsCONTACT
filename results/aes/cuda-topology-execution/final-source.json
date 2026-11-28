@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-28",
+  "base_commit": "1e9facae3d88b99c019766f9b3c2b2700831c31d",
+  "source_sha256": {
+    "src/cuda_resident_geometry.cuh": "d4b1150be0f11c254f7ed5bd59871a3b314806e83f93d34292f4e6e822800da1",
+    "src/cuda_trim_intervals.cuh": "3cb093bccfa0fe4c2e6235eefd9457b4b77f04f09efa7bc8e247484fadb3eff0",
+    "src/cuda_cad_roots.cuh": "256262fcd60f79cc7346a762fb4d2b0955c453026243dd59de5d10c62ebd2a0d",
+    "src/cuda_columns.hpp": "030e9da6dd9d17543098c159136bb03e480ae417747f8464f349eb9e02fd30e5",
+    "src/cuda_columns.cu": "950ebef7e7947352400f03e98a9cbe9ca6fe806d39e6c6cefaaf6b82b8277a93",
+    "src/cuda_resident_step.cuh": "e9bf06a93d5ff71085be9fdaa8bf0a789453784d1bc9548af9ba0e22e91b482a",
+    "src/cuda_batched_contact.cuh": "85a99a267d48e4ede7db46d3a9c5c3e8ea834a49b88f60fd9ade98199c07de6a",
+    "src/cuda_coherent_prepare.cuh": "03e4fdb84fcd03a27a33e677790e6645645f43c7225164cec1c01327123d155c",
+    "src/cuda_progressive_search.cuh": "8f7cc292b26b582e80713701a0d65b2bbf63cf8bce10601cce26024dcc4ea662",
+    "src/compiled_cuda_pack.cpp": "4eb250464337f7a4946841c40332b15f76d86c144ce1f41318ebeffa1c496b96",
+    "tests/compiled_cad.cpp": "0e6412e7aa2c140a8de693396de352252aa76eeb8cc63a296e9eb52c75e00185",
+    "apps/contact.cpp": "fb3b3110553ab381a884d083a5235e4739e64013fefebe347dde39c1d922e45c",
+    "benchmarks/aes/cad_gpu_execution.py": "644dd4785621f6c1595485fff472e691666902c3aede0824cdd4aa16ee20be95",
+    "benchmarks/aes/cuda_graph_sync/production.py": "62620af15fe09c823a45431805267b848a2e318d9ec29cfecbd838918f8b16cf",
+    "benchmarks/aes/report_cad_topology.py": "4aafe26c8a09b45b57e87058bf95dfec53af991e48299aa0cadd38c67d35ec60",
+    "nurbscontact_gpu/mesh_graph.py": "82e29865b0f73322b798b316845087f680a9e023a20677952c3ea64ec285ffda"
+  },
+  "runtime_sha256": "411a82ab8a5d8bfbe663fdc8d6b88a89a90c9301d2572e1618fc9710199adb97",
+  "test_sha256": "c3be13be8cdbea5aa222fb9e1a0a48f021980d8b6a3aafac36c53404fba62403",
+  "gpu": "RTX 3070 8 GiB",
+  "cpu": "Ryzen 9 5900X",
+  "driver": "610.88",
+  "cuda": "12.6",
+  "architecture": "sm_86",
+  "fma": true
+}

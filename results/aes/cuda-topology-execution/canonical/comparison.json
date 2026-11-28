@@ -1,0 +1,948 @@
+{
+  "before": {
+    "command": [
+      "G:\\NurbsCONTACT\\build\\cad-coherent-runs\\runtime.exe",
+      "G:\\NurbsCONTACT\\build\\github-cpu-recheck\\00d0f2a2\\inputs\\scene\\common-200.scene",
+      "0",
+      "0.0001",
+      "5.0",
+      "1",
+      "G:\\NurbsCONTACT\\build\\cad-coherent-runs\\mask-9\\response",
+      "--method",
+      "cad-compiled",
+      "--device",
+      "cuda-resident",
+      "--solver",
+      "penalty",
+      "--penalty-stiffness",
+      "shared",
+      "--geometry-update",
+      "predictor",
+      "--spectral-radius",
+      "0",
+      "--region-reduction",
+      "ordered",
+      "--gpu-execution",
+      "coherent",
+      "--gpu-opt-mask",
+      "9"
+    ],
+    "exit_code": 0,
+    "process_s": 194.27177689998643,
+    "requested_duration_s": 5.0,
+    "step_s": 0.0001,
+    "completed": true,
+    "executable_sha256": "69ea61f213f7878c7d020875e636222756330b4651157e59a86cfc0bc868e193",
+    "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+    "profiled_links": false,
+    "gpu": {
+      "online_s": "135.2988225",
+      "broad_s": "13.928275968000001",
+      "sort_s": "4.3333089280000001",
+      "search_s": "34.227901440000004",
+      "group_s": "28.873555968000002",
+      "integral_s": "28.148985856000003",
+      "p50_step_s": "0.0025088000000000003",
+      "p99_step_s": "0.0043233280000000004",
+      "max_step_s": "0.10687795200000001",
+      "missed_deadlines": "50000",
+      "steps": "50000",
+      "reduction_s": "1.0175846400000002",
+      "reductions": "256008",
+      "checked_links": "0",
+      "execution": "coherent",
+      "accepted_level_0": "49956",
+      "accepted_level_1": "88",
+      "accepted_level_2": "0",
+      "accepted_level_3": "0",
+      "accepted_level_4": "0",
+      "accepted_level_5": "0",
+      "accepted_level_6": "0",
+      "accepted_level_7": "0",
+      "accepted_level_8": "0",
+      "proposals": "43541807",
+      "face_groups": "1606449",
+      "confirmed_groups": "364845",
+      "seed_hits": "243251",
+      "maximum_proposals": "664",
+      "maximum_groups": "29",
+      "blocker_checks": "0",
+      "blocker_hits": "0",
+      "warp_segments": "239232",
+      "scalar_segments": "11216",
+      "separated_groups": "105589",
+      "path_checks": "0",
+      "path_hits": "0",
+      "batched_rays": "105669028",
+      "ray_batches": "67618",
+      "fused_math": "1",
+      "profiled_links": "0",
+      "link_cache_work_s": "0",
+      "link_cache_calls": "0",
+      "link_endpoints_work_s": "0",
+      "link_endpoints_calls": "0",
+      "link_direct_work_s": "0",
+      "link_direct_calls": "0",
+      "link_recursive_work_s": "0",
+      "link_recursive_calls": "0",
+      "precomputed_rays": "105667750",
+      "deferred_rays": "1278",
+      "audited_rays": "0",
+      "audited_groups": "0",
+      "opt_mask": "9",
+      "parameter_hint_calls": "364839",
+      "parameter_hint_hits": "1258769",
+      "projection_attempts": "14264081",
+      "rule_blocks": "0",
+      "rejected_rule_blocks": "0",
+      "local_links": "0",
+      "remote_links": "0"
+    },
+    "statistics": {
+      "wall_s": "135.2988225",
+      "setup_s": "43.623581899999991",
+      "steps": "50000",
+      "accepted": "50044",
+      "subdivisions": "44",
+      "force_evaluations": "185780",
+      "max_residual": "9.1454107923321467e-07",
+      "pairs": "0",
+      "culled": "0",
+      "rays": "0",
+      "missing": "0",
+      "triangle_tests": "0",
+      "closest_queries": "0",
+      "unresolved_queries": "0",
+      "native_nodes": "0",
+      "ccd_checks": "0",
+      "ccd_rejected": "0",
+      "ccd_nodes": "0",
+      "ccd_unresolved": "0",
+      "saved_contact_reuses": "50001",
+      "mesh_boolean_queries": "0",
+      "mesh_boolean_input_faces": "0",
+      "mesh_local_solid_uses": "0",
+      "mesh_local_solid_builds": "0",
+      "mesh_detection_s": "0",
+      "mesh_placement_s": "0",
+      "mesh_boolean_s": "0",
+      "cad_boolean_queries": "0",
+      "cad_event_distances": "0",
+      "chen_patch_queries": "0",
+      "chen_confirmed_candidates": "0",
+      "event_tolerance_s": "0",
+      "solver": "penalty",
+      "impulse_solves": "0",
+      "impulse_regions": "0",
+      "impulse_iterations": "0",
+      "impulse_residual_m_s": "0",
+      "ccd_refinements": "0",
+      "ccd_refined_clear": "0",
+      "tdib_cells": "0",
+      "tdib_candidates": "0",
+      "tdib_unresolved": "0",
+      "cad_box_tests": "0",
+      "cad_extrema": "0",
+      "cad_classifications": "0",
+      "cad_region_cache_hits": "0",
+      "cad_distance_cache_hits": "0",
+      "cad_witness_tests": "0",
+      "cad_witness_improvements": "0",
+      "mesh_pair_bvh_builds": "0",
+      "mesh_pair_bvh_reuses": "0",
+      "mesh_patch_builds": "0",
+      "mesh_patch_reuses": "0",
+      "mesh_parallel_batches": "0",
+      "mesh_max_workers": "0",
+      "cad_region_index_s": "0",
+      "cad_region_select_s": "0",
+      "cad_region_common_s": "0",
+      "cad_region_extract_s": "0",
+      "cad_patch_queries": "101648",
+      "cad_patch_batches": "0",
+      "cad_patch_batch_s": "0",
+      "cad_patch_broad_s": "0",
+      "cad_patch_search_s": "0",
+      "cad_patch_group_s": "0",
+      "cad_patch_area_s": "0",
+      "cad_window_builds": "0",
+      "cad_window_reuses": "0",
+      "cad_path_reuses": "0",
+      "cad_skipped_area_nodes": "0",
+      "cad_pressure_clipped": "0",
+      "cad_pressure_full": "0",
+      "cad_full_blocks": "0",
+      "cad_partial_blocks": "0",
+      "cad_shared_columns": "0",
+      "cad_depth_tests": "0",
+      "cad_depth_excluded": "0",
+      "cad_depth_refinements": "0",
+      "cad_depth_accepted": "0",
+      "cad_depth_empty_blocks": "0",
+      "cad_depth_interior_blocks": "0",
+      "cad_quadrature_rules": "0",
+      "cad_quadrature_converged": "0",
+      "cuda_column_rays": "0",
+      "cuda_column_subdivisions": "0"
+    },
+    "frames": 50001,
+    "response_sha256": "8b4fdf24d2d3a4614e1ca2f11bf3982036e6d1d493d07c578ed1cc3ab144437c"
+  },
+  "after": {
+    "command": [
+      "..\\cad-topology-runs\\topology.exe",
+      "..\\github-cpu-recheck\\00d0f2a2\\inputs\\scene\\common-200.scene",
+      "0",
+      "0.0001",
+      "5.0",
+      "1",
+      "..\\cad-topology-runs\\canonical-full\\response",
+      "--method",
+      "cad-compiled",
+      "--device",
+      "cuda-resident",
+      "--solver",
+      "penalty",
+      "--penalty-stiffness",
+      "shared",
+      "--geometry-update",
+      "predictor",
+      "--spectral-radius",
+      "0",
+      "--region-reduction",
+      "ordered",
+      "--gpu-execution",
+      "coherent",
+      "--gpu-opt-mask",
+      "57"
+    ],
+    "exit_code": 0,
+    "process_s": 200.09537070000079,
+    "requested_duration_s": 5.0,
+    "step_s": 0.0001,
+    "completed": true,
+    "executable_sha256": "e5f4c681b62b6f325f015613232d3eb22fe7a1a1bfc0f585b146d40028fbaf91",
+    "scene_sha256": "9ba08262bffca40d7405a8ca1790bea1dcc4328dd7b506bd3d34cdfd5fd632c1",
+    "profiled_links": false,
+    "gpu": {
+      "online_s": "145.38754460000001",
+      "broad_s": "13.923771360000002",
+      "sort_s": "4.6648350720000007",
+      "search_s": "43.647400960000006",
+      "group_s": "28.949934112000001",
+      "integral_s": "28.318424032000003",
+      "p50_step_s": "0.002695168",
+      "p99_step_s": "0.0045455360000000002",
+      "max_step_s": "0.113924096",
+      "missed_deadlines": "50000",
+      "steps": "50000",
+      "reduction_s": "1.0167992320000001",
+      "reductions": "256024",
+      "checked_links": "0",
+      "execution": "coherent",
+      "accepted_level_0": "49955",
+      "accepted_level_1": "90",
+      "accepted_level_2": "0",
+      "accepted_level_3": "0",
+      "accepted_level_4": "0",
+      "accepted_level_5": "0",
+      "accepted_level_6": "0",
+      "accepted_level_7": "0",
+      "accepted_level_8": "0",
+      "proposals": "43543653",
+      "face_groups": "1606525",
+      "confirmed_groups": "364866",
+      "seed_hits": "243272",
+      "maximum_proposals": "664",
+      "maximum_groups": "29",
+      "blocker_checks": "0",
+      "blocker_hits": "0",
+      "warp_segments": "239248",
+      "scalar_segments": "11216",
+      "separated_groups": "105594",
+      "path_checks": "0",
+      "path_hits": "0",
+      "batched_rays": "105680209",
+      "ray_batches": "67624",
+      "fused_math": "1",
+      "profiled_links": "0",
+      "link_cache_work_s": "0",
+      "link_cache_calls": "0",
+      "link_endpoints_work_s": "0",
+      "link_endpoints_calls": "0",
+      "link_direct_work_s": "0",
+      "link_direct_calls": "0",
+      "link_recursive_work_s": "0",
+      "link_recursive_calls": "0",
+      "precomputed_rays": "105678931",
+      "deferred_rays": "1278",
+      "audited_rays": "0",
+      "audited_groups": "0",
+      "opt_mask": "57",
+      "parameter_hint_calls": "364860",
+      "parameter_hint_hits": "1258825",
+      "projection_attempts": "13716064",
+      "rule_blocks": "0",
+      "rejected_rule_blocks": "0",
+      "local_links": "0",
+      "remote_links": "0",
+      "projection_rounds": "2878141",
+      "avoided_projections": "548492",
+      "unused_projections": "241972",
+      "device_s": "145.3808191",
+      "download_s": "0.0067255000000159271",
+      "topology_checks": "0",
+      "topology_hits": "0",
+      "warm_attempts": "0",
+      "warm_hits": "0",
+      "warm_fallbacks": "0"
+    },
+    "statistics": {
+      "wall_s": "145.38754460000001",
+      "setup_s": "39.319603399999977",
+      "steps": "50000",
+      "accepted": "50045",
+      "subdivisions": "45",
+      "force_evaluations": "185788",
+      "max_residual": "9.1454107923321467e-07",
+      "pairs": "0",
+      "culled": "0",
+      "rays": "0",
+      "missing": "0",
+      "triangle_tests": "0",
+      "closest_queries": "0",
+      "unresolved_queries": "0",
+      "native_nodes": "0",
+      "ccd_checks": "0",
+      "ccd_rejected": "0",
+      "ccd_nodes": "0",
+      "ccd_unresolved": "0",
+      "saved_contact_reuses": "50001",
+      "mesh_boolean_queries": "0",
+      "mesh_boolean_input_faces": "0",
+      "mesh_local_solid_uses": "0",
+      "mesh_local_solid_builds": "0",
+      "mesh_detection_s": "0",
+      "mesh_placement_s": "0",
+      "mesh_boolean_s": "0",
+      "cad_boolean_queries": "0",
+      "cad_event_distances": "0",
+      "chen_patch_queries": "0",
+      "chen_confirmed_candidates": "0",
+      "event_tolerance_s": "0",
+      "solver": "penalty",
+      "impulse_solves": "0",
+      "impulse_regions": "0",
+      "impulse_iterations": "0",
+      "impulse_residual_m_s": "0",
+      "ccd_refinements": "0",
+      "ccd_refined_clear": "0",
+      "tdib_cells": "0",
+      "tdib_candidates": "0",
+      "tdib_unresolved": "0",
+      "cad_box_tests": "0",
+      "cad_extrema": "0",
+      "cad_classifications": "0",
+      "cad_region_cache_hits": "0",
+      "cad_distance_cache_hits": "0",
+      "cad_witness_tests": "0",
+      "cad_witness_improvements": "0",
+      "mesh_pair_bvh_builds": "0",
+      "mesh_pair_bvh_reuses": "0",
+      "mesh_patch_builds": "0",
+      "mesh_patch_reuses": "0",
+      "mesh_parallel_batches": "0",
+      "mesh_max_workers": "0",
+      "cad_region_index_s": "0",
+      "cad_region_select_s": "0",
+      "cad_region_common_s": "0",
+      "cad_region_extract_s": "0",
+      "cad_patch_queries": "101653",
+      "cad_patch_batches": "0",
+      "cad_patch_batch_s": "0",
+      "cad_patch_broad_s": "0",
+      "cad_patch_search_s": "0",
+      "cad_patch_group_s": "0",
+      "cad_patch_area_s": "0",
+      "cad_window_builds": "0",
+      "cad_window_reuses": "0",
+      "cad_path_reuses": "0",
+      "cad_skipped_area_nodes": "0",
+      "cad_pressure_clipped": "0",
+      "cad_pressure_full": "0",
+      "cad_full_blocks": "0",
+      "cad_partial_blocks": "0",
+      "cad_shared_columns": "0",
+      "cad_depth_tests": "0",
+      "cad_depth_excluded": "0",
+      "cad_depth_refinements": "0",
+      "cad_depth_accepted": "0",
+      "cad_depth_empty_blocks": "0",
+      "cad_depth_interior_blocks": "0",
+      "cad_quadrature_rules": "0",
+      "cad_quadrature_converged": "0",
+      "cuda_column_rays": "0",
+      "cuda_column_subdivisions": "0"
+    },
+    "frames": 50001,
+    "response_sha256": "0440c2621b84b7187cf2ffb44cc0d5e17b6712694c36535f1fe4165749e3f5cf"
+  },
+  "cpu_statistics": {
+    "wall_s": "193.6289707",
+    "setup_s": "2.7190652000000002",
+    "steps": "50000",
+    "accepted": "50044",
+    "subdivisions": "44",
+    "force_evaluations": "185691",
+    "max_residual": "9.1431726900736976e-07",
+    "pairs": "371384",
+    "culled": "27",
+    "rays": "0",
+    "missing": "0",
+    "triangle_tests": "0",
+    "closest_queries": "0",
+    "unresolved_queries": "0",
+    "native_nodes": "0",
+    "ccd_checks": "0",
+    "ccd_rejected": "0",
+    "ccd_nodes": "0",
+    "ccd_unresolved": "0",
+    "saved_contact_reuses": "50001",
+    "mesh_boolean_queries": "0",
+    "mesh_boolean_input_faces": "0",
+    "mesh_local_solid_uses": "0",
+    "mesh_local_solid_builds": "0",
+    "mesh_detection_s": "0",
+    "mesh_placement_s": "0",
+    "mesh_boolean_s": "0",
+    "cad_boolean_queries": "0",
+    "cad_event_distances": "0",
+    "chen_patch_queries": "0",
+    "chen_confirmed_candidates": "0",
+    "event_tolerance_s": "0",
+    "solver": "penalty",
+    "impulse_solves": "0",
+    "impulse_regions": "0",
+    "impulse_iterations": "0",
+    "impulse_residual_m_s": "0",
+    "ccd_refinements": "0",
+    "ccd_refined_clear": "0",
+    "tdib_cells": "0",
+    "tdib_candidates": "0",
+    "tdib_unresolved": "0",
+    "cad_box_tests": "0",
+    "cad_extrema": "0",
+    "cad_classifications": "0",
+    "cad_region_cache_hits": "0",
+    "cad_distance_cache_hits": "0",
+    "cad_witness_tests": "0",
+    "cad_witness_improvements": "0",
+    "mesh_pair_bvh_builds": "0",
+    "mesh_pair_bvh_reuses": "0",
+    "mesh_patch_builds": "0",
+    "mesh_patch_reuses": "0",
+    "mesh_parallel_batches": "0",
+    "mesh_max_workers": "0",
+    "cad_region_index_s": "0",
+    "cad_region_select_s": "0",
+    "cad_region_common_s": "0",
+    "cad_region_extract_s": "0",
+    "cad_patch_queries": "101648",
+    "cad_patch_batches": "50089",
+    "cad_patch_batch_s": "174.78442059999912",
+    "cad_patch_broad_s": "80.687332800000462",
+    "cad_patch_search_s": "39.898576900000158",
+    "cad_patch_group_s": "15.439424700000785",
+    "cad_patch_area_s": "99.298627899998692",
+    "cad_window_builds": "0",
+    "cad_window_reuses": "0",
+    "cad_path_reuses": "0",
+    "cad_skipped_area_nodes": "0",
+    "cad_pressure_clipped": "0",
+    "cad_pressure_full": "0",
+    "cad_full_blocks": "0",
+    "cad_partial_blocks": "0",
+    "cad_shared_columns": "0",
+    "cad_depth_tests": "0",
+    "cad_depth_excluded": "0",
+    "cad_depth_refinements": "0",
+    "cad_depth_accepted": "0",
+    "cad_depth_empty_blocks": "0",
+    "cad_depth_interior_blocks": "0",
+    "cad_quadrature_rules": "0",
+    "cad_quadrature_converged": "0"
+  },
+  "cpu_source": "..\\cpu-scaling\\fused-cad-compiled-4-50000",
+  "cpu_rerun": false,
+  "cpu_sha256": "53e8c424b4b8cdd13bc3221ef73f0ebe1d87278f1a68290462ca1a91b22e50dd",
+  "differences_old": {
+    "time_s": {
+      "same_missing_pattern": true,
+      "maximum": 4.440892098500626e-16,
+      "rms": 2.0208540841200267e-16
+    },
+    "q0": {
+      "same_missing_pattern": true,
+      "maximum": 5.203038881518296e-06,
+      "rms": 8.565591444530887e-08
+    },
+    "v0": {
+      "same_missing_pattern": true,
+      "maximum": 0.09257567051943738,
+      "rms": 0.0005278451421081519
+    },
+    "a0": {
+      "same_missing_pattern": true,
+      "maximum": 870.5910664683131,
+      "rms": 4.944080159485024
+    },
+    "q1": {
+      "same_missing_pattern": true,
+      "maximum": 1.913400012654165e-06,
+      "rms": 3.9902883457757624e-08
+    },
+    "v1": {
+      "same_missing_pattern": true,
+      "maximum": 0.016887865166381744,
+      "rms": 0.00013557801331640177
+    },
+    "a1": {
+      "same_missing_pattern": true,
+      "maximum": 142.50488634120114,
+      "rms": 1.0643077063714301
+    },
+    "q2": {
+      "same_missing_pattern": true,
+      "maximum": 1.4364633500463242e-06,
+      "rms": 2.3018936498556335e-08
+    },
+    "v2": {
+      "same_missing_pattern": true,
+      "maximum": 0.009098057642717094,
+      "rms": 9.534952113881264e-05
+    },
+    "a2": {
+      "same_missing_pattern": true,
+      "maximum": 116.64340134258623,
+      "rms": 0.7628031113674958
+    },
+    "b0_x_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b0_y_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b0_z_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b0_angle_rad": {
+      "same_missing_pattern": true,
+      "maximum": 5.203038881518296e-06,
+      "rms": 8.565591444530887e-08
+    },
+    "b1_x_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b1_y_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b1_z_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b1_angle_rad": {
+      "same_missing_pattern": true,
+      "maximum": 1.913400012654165e-06,
+      "rms": 3.9902883457757624e-08
+    },
+    "b2_x_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b2_y_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b2_z_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b2_angle_rad": {
+      "same_missing_pattern": true,
+      "maximum": 1.913400012654165e-06,
+      "rms": 3.9902883457757624e-08
+    },
+    "b3_x_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b3_y_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b3_z_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b3_angle_rad": {
+      "same_missing_pattern": true,
+      "maximum": 1.4364633216246148e-06,
+      "rms": 2.301893633528469e-08
+    },
+    "p0_gap_m": {
+      "same_missing_pattern": true,
+      "maximum": 2.984167806764336e-07,
+      "rms": 1.689190343926512e-09
+    },
+    "p0_normal_N": {
+      "same_missing_pattern": true,
+      "maximum": 34.180246901003784,
+      "rms": 0.21139657616374394
+    },
+    "p0_friction_N": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "p0_hit": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "p1_gap_m": {
+      "same_missing_pattern": true,
+      "maximum": 9.472879467112641e-08,
+      "rms": 8.998674528229614e-10
+    },
+    "p1_normal_N": {
+      "same_missing_pattern": true,
+      "maximum": 13.787958384497642,
+      "rms": 0.1368282345045235
+    },
+    "p1_friction_N": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "p1_hit": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "generalized_force0": {
+      "same_missing_pattern": true,
+      "maximum": 0.9625636080420712,
+      "rms": 0.006153900059388116
+    },
+    "generalized_force1": {
+      "same_missing_pattern": true,
+      "maximum": 1.8099213438522908,
+      "rms": 0.012605298702256464
+    },
+    "generalized_force2": {
+      "same_missing_pattern": true,
+      "maximum": 0.8758847608566027,
+      "rms": 0.00855668319169034
+    }
+  },
+  "differences_cpu": {
+    "time_s": {
+      "same_missing_pattern": true,
+      "maximum": 4.440892098500626e-16,
+      "rms": 2.0208540841200267e-16
+    },
+    "q0": {
+      "same_missing_pattern": true,
+      "maximum": 5.203037744649919e-06,
+      "rms": 8.565586837269675e-08
+    },
+    "v0": {
+      "same_missing_pattern": true,
+      "maximum": 0.09257567144993573,
+      "rms": 0.000527845131215585
+    },
+    "a0": {
+      "same_missing_pattern": true,
+      "maximum": 870.591063328504,
+      "rms": 4.9440801338759135
+    },
+    "q1": {
+      "same_missing_pattern": true,
+      "maximum": 1.91339927368972e-06,
+      "rms": 3.990286081360086e-08
+    },
+    "v1": {
+      "same_missing_pattern": true,
+      "maximum": 0.01688786384355012,
+      "rms": 0.00013557800810023776
+    },
+    "a1": {
+      "same_missing_pattern": true,
+      "maximum": 142.50488524986105,
+      "rms": 1.0643077165271102
+    },
+    "q2": {
+      "same_missing_pattern": true,
+      "maximum": 1.4364631226726488e-06,
+      "rms": 2.3018926679510257e-08
+    },
+    "v2": {
+      "same_missing_pattern": true,
+      "maximum": 0.009098057176153418,
+      "rms": 9.534951846760819e-05
+    },
+    "a2": {
+      "same_missing_pattern": true,
+      "maximum": 116.64340054956645,
+      "rms": 0.7628031111093263
+    },
+    "b0_x_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b0_y_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b0_z_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b0_angle_rad": {
+      "same_missing_pattern": true,
+      "maximum": 5.203037744649919e-06,
+      "rms": 8.565586837269675e-08
+    },
+    "b1_x_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b1_y_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b1_z_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b1_angle_rad": {
+      "same_missing_pattern": true,
+      "maximum": 1.91339927368972e-06,
+      "rms": 3.990286081360086e-08
+    },
+    "b2_x_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b2_y_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b2_z_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b2_angle_rad": {
+      "same_missing_pattern": true,
+      "maximum": 1.91339927368972e-06,
+      "rms": 3.990286081360086e-08
+    },
+    "b3_x_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b3_y_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b3_z_m": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "b3_angle_rad": {
+      "same_missing_pattern": true,
+      "maximum": 1.4364630942509393e-06,
+      "rms": 2.3018926664478185e-08
+    },
+    "p0_gap_m": {
+      "same_missing_pattern": true,
+      "maximum": 2.9841678259012073e-07,
+      "rms": 1.689190350958961e-09
+    },
+    "p0_normal_N": {
+      "same_missing_pattern": true,
+      "maximum": 34.18024741004615,
+      "rms": 0.21139657755772692
+    },
+    "p0_friction_N": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "p0_hit": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "p1_gap_m": {
+      "same_missing_pattern": true,
+      "maximum": 9.472879642040869e-08,
+      "rms": 8.998674614990319e-10
+    },
+    "p1_normal_N": {
+      "same_missing_pattern": true,
+      "maximum": 13.787957824371006,
+      "rms": 0.13682823543513048
+    },
+    "p1_friction_N": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "p1_hit": {
+      "same_missing_pattern": true,
+      "maximum": 0.0,
+      "rms": 0.0
+    },
+    "generalized_force0": {
+      "same_missing_pattern": true,
+      "maximum": 0.9625636224056784,
+      "rms": 0.006153900089275465
+    },
+    "generalized_force1": {
+      "same_missing_pattern": true,
+      "maximum": 1.8099213981329796,
+      "rms": 0.01260529906462
+    },
+    "generalized_force2": {
+      "same_missing_pattern": true,
+      "maximum": 0.8758847775430656,
+      "rms": 0.008556683249854511
+    }
+  },
+  "contact_events": {
+    "p0_hit": {
+      "different_frames_old": 0,
+      "different_frames_cpu": 0,
+      "transitions": 1,
+      "same_switch_frames_old": true,
+      "same_switch_frames_cpu": true
+    },
+    "p1_hit": {
+      "different_frames_old": 0,
+      "different_frames_cpu": 0,
+      "transitions": 5,
+      "same_switch_frames_old": true,
+      "same_switch_frames_cpu": true
+    }
+  },
+  "curves": {
+    "Input speed [rad/s]": {
+      "maximum_difference_old": 0.09257567051943738,
+      "maximum_difference_cpu": 0.09257567144993573,
+      "increment_difference_old": 0.11262236732414976,
+      "peak_time_old": 0.0002,
+      "peak_time_new": 0.0002,
+      "peak_time_cpu": 0.0002
+    },
+    "Middle speed [rad/s]": {
+      "maximum_difference_old": 0.016887865166381744,
+      "maximum_difference_cpu": 0.01688786384355012,
+      "increment_difference_old": 0.026291287839541155,
+      "peak_time_old": 0.0004,
+      "peak_time_new": 0.0004,
+      "peak_time_cpu": 0.0004
+    },
+    "Output speed [rad/s]": {
+      "maximum_difference_old": 0.009098057642717094,
+      "maximum_difference_cpu": 0.009098057176153418,
+      "increment_difference_old": 0.00801990783517681,
+      "peak_time_old": 0.0007000000000000001,
+      "peak_time_new": 0.0007000000000000001,
+      "peak_time_cpu": 0.0007000000000000001
+    },
+    "Input contact torque [N m]": {
+      "maximum_difference_old": 0.9670303587011198,
+      "maximum_difference_cpu": 0.967030373064727,
+      "increment_difference_old": 0.8158446048160997,
+      "peak_time_old": 0.0004,
+      "peak_time_new": 0.0004,
+      "peak_time_cpu": 0.0004
+    },
+    "Middle contact torque [N m]": {
+      "maximum_difference_old": 1.810767651892875,
+      "maximum_difference_cpu": 1.8107677062752052,
+      "increment_difference_old": 1.8156407054865706,
+      "peak_time_old": 0.0006000000000000001,
+      "peak_time_new": 0.0006000000000000001,
+      "peak_time_cpu": 0.0006000000000000001
+    },
+    "Output contact torque [N m]": {
+      "maximum_difference_old": 0.876135448030567,
+      "maximum_difference_cpu": 0.8761354647448911,
+      "increment_difference_old": 0.6489737987373303,
+      "peak_time_old": 0.0005,
+      "peak_time_new": 0.0005,
+      "peak_time_cpu": 0.0005
+    },
+    "Stage 1 normal load [N]": {
+      "maximum_difference_old": 34.180246901003784,
+      "maximum_difference_cpu": 34.18024741004615,
+      "increment_difference_old": 28.965880333162204,
+      "peak_time_old": 0.0004,
+      "peak_time_new": 0.0004,
+      "peak_time_cpu": 0.0004
+    },
+    "Stage 2 normal load [N]": {
+      "maximum_difference_old": 13.787958384497642,
+      "maximum_difference_cpu": 13.787957824371006,
+      "increment_difference_old": 10.498249456806207,
+      "peak_time_old": 0.0005,
+      "peak_time_new": 0.0005,
+      "peak_time_cpu": 0.0005
+    },
+    "Middle acceleration [rad/s^2]": {
+      "maximum_difference_old": 142.50488634120114,
+      "maximum_difference_cpu": 142.50488524986105,
+      "increment_difference_old": 240.81598410823995,
+      "peak_time_old": 0.0006000000000000001,
+      "peak_time_new": 0.0006000000000000001,
+      "peak_time_cpu": 0.0006000000000000001
+    }
+  },
+  "exact_response_old": false,
+  "response_sha256_identical_old": false,
+  "time_alignment": "integer main-step index; increments and cross-history time differences checked within four FP64 ulps; no interpolation",
+  "gpu_speedup": 0.930608071497756,
+  "cpu_speedup": 1.3318126475876944,
+  "scope": "Absolute numerical agreement; independent physical accuracy not inferred"
+}

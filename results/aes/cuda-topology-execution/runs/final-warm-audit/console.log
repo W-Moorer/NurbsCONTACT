@@ -1,0 +1,2 @@
+candidate audit group=8 faces=117,33 warm_hit=1 cold_hit=0 warm_seed=1,4244,0.41666666666666663,0.41666666666666663 cold_seed=0,0,0,0 depth=0.0005309493647296438,0 position=9.2251541552011265,-31.151862544211333,-1.9999999999999996 / 0,0,0 prior_hit=1 prior=2
+device CAD unresolved: status=14 step=82 pair=1 face=-1 time_s=0.008100 geometry_queries=205 side=0 crossing=0 ray=0 0 0 0 0 0 0

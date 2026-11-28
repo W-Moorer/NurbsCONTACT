@@ -121,6 +121,12 @@ struct Depth {
     double value;
     int job, local;
 };
+// Incidence comes from the saved CAD topology, never from spatial proximity.
+struct BoundaryLink {
+    int other, first, end;
+    std::size_t edge, start_vertex, end_vertex;
+};
+struct BoundaryProbe { V point, normal; };
 struct Sites {
     explicit Sites(const std::vector<RuleSite> &);
     ~Sites();
@@ -129,6 +135,9 @@ struct Sites {
     RuleSite *ptr{};
 };
 struct Tables {
+    std::vector<int> boundary_offsets;
+    std::vector<BoundaryLink> boundary_links;
+    std::vector<BoundaryProbe> boundary_probes;
     RayGrid ray_grid{};
     std::vector<int> ray_offsets, ray_ids;
     std::vector<RayPrimitive> ray_primitives;
@@ -209,7 +218,7 @@ struct ResidentResult {
     std::vector<RegionAudit> region_audit;
     double reduction_s{};
     unsigned long long reductions{}, checked_links{};
-    double online_s{}, maximum_residual{};
+    double online_s{}, device_s{}, download_s{}, maximum_residual{};
     unsigned long long queries{}, forces{}, splits{}, missed_deadlines{};
     double phase_s[5]{}, p50_s{}, p99_s{}, maximum_step_s{};
     unsigned long long accepted_by_level[9]{};
@@ -221,6 +230,8 @@ struct ResidentResult {
     unsigned long long path_checks{}, path_hits{};
     unsigned long long batched_rays{}, ray_batches{}, precomputed_rays{}, deferred_rays{}, audited_rays{}, audited_groups{};
     unsigned optimizations{};
+    unsigned long long projection_rounds{}, avoided_projections{}, unused_projections{}, projection_culls{};
+    unsigned long long topology_checks{}, topology_hits{}, warm_attempts{}, warm_hits{}, warm_fallbacks{};
     unsigned long long parameter_hint_calls{}, parameter_hint_hits{}, projection_attempts{}, rejected_rule_blocks{}, tested_rule_blocks{}, local_links{}, remote_links{};
     bool fused_math{}, profiled_links{};
     double link_work_s[4]{};
