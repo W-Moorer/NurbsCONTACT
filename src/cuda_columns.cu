@@ -363,6 +363,7 @@ __global__ void pressure_columns(View a, View b, const RuleBlock *jobs, int coun
 }
 #include "cuda_resident_geometry.cuh"
 #include "cuda_resident_step.cuh"
+#include "cuda_coherent_prepare.cuh"
 #include "cuda_batched_contact.cuh"
 } // namespace
 struct Columns::Storage {
@@ -499,7 +500,9 @@ std::vector<ChartSample> Columns::sample_charts(const std::vector<ChartPoint> &q
     return out;
 }
 ResidentResult advance_resident(const ResidentScene &scene, double step, int steps, RegionReduction reduction,
-                                ResidentExecution execution, bool profile_links) {
+                                ResidentExecution execution, bool profile_links, unsigned optimizations) {
+    if(optimizations>15) throw std::invalid_argument("invalid CAD optimization mask");
+    if(execution!=ResidentExecution::coherent) optimizations=0;
     if (scene.coordinates.empty() || scene.coordinates.size() > coordinate_limit ||
         scene.geometry.size() != scene.bodies.size() || steps < 1 || steps == INT_MAX || !(step > 0) ||
         !std::isfinite(step))
@@ -536,6 +539,8 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     Buffer<BodyView> bodies;
     std::vector<BodyView> views;
     std::vector<std::unique_ptr<Buffer<WeightedSite>>> refined_rules;
+    std::vector<std::unique_ptr<Buffer<RuleEnvelope>>> envelopes;
+    std::vector<std::unique_ptr<Buffer<unsigned char>>> neighborhoods;
     Buffer<int> rule_status;
     if (execution != ResidentExecution::cooperative) {
         rule_status.reserve(1);
@@ -550,7 +555,8 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
                 "resident CAD requires supported analytic or polynomial bicubic charts");
         views.push_back({s.view, s.tiles.ptr, s.sites.ptr, s.ids.ptr, s.tile_jets.ptr, static_cast<int>(s.sites.capacity),
                          static_cast<int>(s.ids.capacity)});
-        views.back().g.curvature_filter = execution == ResidentExecution::wavefront;
+        views.back().g.curvature_filter = execution == ResidentExecution::wavefront || execution == ResidentExecution::coherent;
+        views.back().face_count=static_cast<int>(s.charts.capacity);
         if (execution != ResidentExecution::cooperative) {
             if (s.charts.capacity > static_cast<size_t>(INT_MAX / refined_rule_sites))
                 throw std::length_error("refined CAD quadrature cache is too large");
@@ -561,6 +567,24 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
             check(cudaGetLastError());
             views.back().refined_rules = cache->ptr;
             refined_rules.push_back(std::move(cache));
+        }
+        if(optimizations&2) {
+            auto cache=std::make_unique<Buffer<RuleEnvelope>>();
+            const size_t count=s.charts.capacity*rule_envelopes;
+            if(count>INT_MAX) throw std::length_error("rule enclosure cache too large");
+            cache->reserve(count);
+            prepare_rule_envelopes<<<(count+127)/128,128>>>(views.back(),cache->ptr,static_cast<int>(count));
+            check(cudaGetLastError()); views.back().envelopes=cache->ptr;
+            envelopes.push_back(std::move(cache));
+        }
+        if(optimizations&4) {
+            auto cache=std::make_unique<Buffer<unsigned char>>();
+            const size_t count=s.charts.capacity*s.charts.capacity;
+            if(count>INT_MAX) throw std::length_error("chart neighborhood cache too large");
+            cache->reserve(count);
+            prepare_chart_neighbors<<<(count+127)/128,128>>>(s.view,cache->ptr,views.back().face_count);
+            check(cudaGetLastError()); views.back().neighbors=cache->ptr;
+            neighborhoods.push_back(std::move(cache));
         }
     }
     if (rule_status.ptr) {
@@ -578,10 +602,17 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     Buffer<LoadPoint> loads;
     loads.upload(scene.loads);
     const int n = static_cast<int>(scene.coordinates.size()), np = static_cast<int>(scene.pairs.size());
-    const bool wavefront = execution == ResidentExecution::wavefront;
+    const bool wavefront = execution == ResidentExecution::wavefront || execution == ResidentExecution::coherent;
     const bool batched = (execution == ResidentExecution::batched || wavefront) && np > 0;
-    const size_t workspace_count = batched ? static_cast<size_t>(np) + 1 : 1;
+    const int integration_slots=(optimizations&8)?4:0;
+    const size_t integration_count=static_cast<size_t>(np)*integration_slots;
+    const size_t workspace_count = batched ? static_cast<size_t>(np) + 1 + integration_count : 1;
     constexpr int limit = 512, capacity = 65536, column_capacity = 96 * 96 * 32;
+    Buffer<int> unique_proposals, link_order;
+    Buffer<unsigned char> rule_live;
+    if(optimizations&1) unique_proposals.reserve(workspace_count*capacity);
+    if(optimizations&4) link_order.reserve(workspace_count*limit*(limit-1)/2);
+    if(optimizations&2) rule_live.reserve(workspace_count*column_capacity/16);
     Buffer<Suggestion> proposals, sorted_proposals;
     proposals.reserve(workspace_count * capacity);
     if (batched) {
@@ -662,6 +693,10 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     control.reserve(1);
     check(cudaMemset(control.ptr, 0, sizeof(StepControl)));
     Workspace w{};
+    w.optimizations=optimizations;
+    w.unique_proposals=unique_proposals.ptr;
+    w.link_order=link_order.ptr;
+    w.rule_live=rule_live.ptr;
     w.profile_links = profile_links;
     w.capacity = capacity;
     w.limit = limit;
@@ -700,6 +735,9 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     std::vector<Workspace> workspaces(workspace_count, w);
     for (size_t i = 1; i < workspace_count; ++i) {
         auto &p = workspaces[i];
+        if(p.unique_proposals) p.unique_proposals+=i*capacity;
+        if(p.link_order) p.link_order+=i*limit*(limit-1)/2;
+        if(p.rule_live) p.rule_live+=i*column_capacity/16;
         p.proposals += i * capacity;
         if (p.sorted_proposals) p.sorted_proposals += i * capacity;
         if (p.seed_attempts) p.seed_attempts += i * limit;
@@ -748,8 +786,9 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     Stream stream;
     StepGraph schedule;
     Buffer<BatchControl> batch_control;
-    Buffer<BatchPair> batch_pairs;
-    Buffer<BatchRay> batch_rays;
+    Buffer<BatchPair> batch_pairs, integration_pairs;
+    Buffer<BatchRay> batch_rays, sorted_rays;
+    Buffer<int> bucket_offsets,bucket_counts,bucket_starts;
     Buffer<int> deferred_rays;
     Buffer<Hit> audited_hits;
     Buffer<int> batch_offsets;
@@ -757,11 +796,31 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
         batch_control.reserve(1);
         batch_pairs.reserve(np);
         check(cudaMemset(batch_pairs.ptr, 0, np * sizeof(BatchPair)));
-        if (static_cast<size_t>(np) * column_capacity > INT_MAX)
+        if ((integration_count?integration_count:static_cast<size_t>(np)) * column_capacity > INT_MAX)
             throw std::length_error("batched CAD ray queue exceeds index range");
-        batch_rays.reserve(static_cast<size_t>(np) * column_capacity);
+        batch_rays.reserve((integration_count?integration_count:static_cast<size_t>(np)) * column_capacity);
         batch_offsets.reserve(2 * static_cast<size_t>(np) + 1);
         BatchControl g{};
+        g.optimizations=optimizations;
+        if(integration_count) {
+            integration_pairs.reserve(integration_count);
+            check(cudaMemset(integration_pairs.ptr,0,integration_count*sizeof(BatchPair)));
+            g.integration=integration_pairs.ptr;
+            g.integration_work=work.ptr+np+1;
+            g.integration_count=static_cast<int>(integration_count);
+            g.integration_slots=integration_slots;
+            sorted_rays.reserve(batch_rays.capacity);
+            g.sorted_rays=sorted_rays.ptr;
+            std::vector<int> offsets{0};
+            for(const auto &pair:scene.pairs) for(int side=0;side<2;++side) {
+                const int count=views[side?pair.a:pair.b].face_count;
+                if(offsets.back()>INT_MAX-count) throw std::length_error("CAD target buckets too large");
+                offsets.push_back(offsets.back()+count);
+            }
+            bucket_offsets.upload(offsets); bucket_counts.reserve(offsets.back()); bucket_starts.reserve(offsets.back());
+            g.bucket_offsets=bucket_offsets.ptr; g.bucket_counts=bucket_counts.ptr;
+            g.bucket_starts=bucket_starts.ptr; g.buckets=offsets.back();
+        }
         g.scene = s; g.pairs = batch_pairs.ptr; g.rays = batch_rays.ptr; g.offsets = batch_offsets.ptr;
         g.ray_capacity = static_cast<int>(batch_rays.capacity);
         g.end = steps; g.base_dt = step;
@@ -803,6 +862,9 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
         check(cudaMemcpy(workspaces.data(), work.ptr, workspaces.size() * sizeof(Workspace), cudaMemcpyDeviceToHost));
         for (size_t i = 1; i < workspaces.size(); ++i) {
             const auto &p = workspaces[i];
+            w.parameter_hint_calls+=p.parameter_hint_calls; w.parameter_hint_hits+=p.parameter_hint_hits; w.projection_attempts+=p.projection_attempts;
+            w.tested_rule_blocks+=p.tested_rule_blocks; w.rejected_rule_blocks+=p.rejected_rule_blocks;
+            w.local_links+=p.local_links; w.remote_links+=p.remote_links;
             w.queries += p.queries; w.proposal_total += p.proposal_total;
             w.group_total += p.group_total; w.confirmed_total += p.confirmed_total; w.seed_hits += p.seed_hits;
             w.maximum_proposals = std::max(w.maximum_proposals, p.maximum_proposals);
@@ -836,6 +898,10 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
 #ifdef NC_CUDA_FMA_ENABLED
     result.fused_math = true;
 #endif
+    result.optimizations=optimizations;
+    result.parameter_hint_calls=w.parameter_hint_calls; result.parameter_hint_hits=w.parameter_hint_hits; result.projection_attempts=w.projection_attempts;
+    result.tested_rule_blocks=w.tested_rule_blocks; result.rejected_rule_blocks=w.rejected_rule_blocks;
+    result.local_links=w.local_links; result.remote_links=w.remote_links;
     result.profiled_links = profile_links;
     for (int k = 0; k < 4; ++k) { result.link_work_s[k] = w.link_ns[k] * 1e-9; result.link_calls[k] = w.link_calls[k]; }
     if (batched) {

@@ -1,5 +1,7 @@
 # 刚体接触后端技术路线
 
+当前可选的 `coherent` 调度实现四项策略：参数区间复用及分批候选、积分点块排除、局部连通检查排序、多接触区任务池及目标曲面分桶。相同减速器 **5 s / 0.1 ms**，四项全开为 **138.27 / 138.27 s**；开启第 1、4 项（`--gpu-opt-mask 9`）为 **135.30 / 135.43 s**。后者均值比本轮冻结 GPU CAD 对照 161.24 s 降低 16.0%；本轮 GPU Mesh 为 92.10 s，归档 CPU CAD 为 193.63 s，CPU 不重跑。第 2 项减少查询数量却增加耗时，第 3 项没有明显收益，因此保留可选，推荐本算例显式选 mask 9。默认调度不变。[完整对照、消融和响应曲线](../results/aes/cuda-coherent-execution/README.md)。
+
 用户在同一场景中用 `method` 选择接触几何，用 `solver` 选择接触响应，用 `device` 选择执行设备。冻结的 CPU 实现提供迁移的对照。当前动力学算例通过离散接触的侵入深度计算载荷。
 
 ## 开发分支的全 GPU 路径
@@ -79,6 +81,8 @@ CPU `relative()` 与 GPU `between()` 增加了旋转基正交化，消除旋转�
 已有 GPU 包面向固定平行转轴，使用网格及预计算的载荷或材料点映射。可复用其中的设备常驻与载荷交换经验。新 CAD 路径按当前姿态从零件几何求载荷，需单独验收。[现有 GPU 后端范围](../nurbscontact_gpu/README.md)
 
 ## Last verified against
+
+2026-11-28 四项优化验证：`cuda_coherent_prepare.cuh`、`cuda_batched_contact.cuh`、`cuda_resident_geometry.cuh`、`cuda_columns.cu` 及 `tests/compiled_cad.cpp`。原生 CPU/CUDA 回归通过；mask 15 与 mask 9 的未过滤整图 racecheck、synccheck、memcheck、initcheck 通过，竞争检查零警告。检查器覆盖 50 步诊断，十次独立 CAD 完整时程均与冻结 GPU 响应逐字节一致。直接用上一姿态投影作为新见证点的试验改变了接触区，已撤回；当前只借其参数加速区间定位，保持原始投影初值和见证点。任务池复用和分桶不改变积分点、权重或累加顺序。没有在线 CPU/OCCT 几何回退或机构特调。所有主步仍超实时期限，GPU Mesh/CAD 的同等物理精度没有由计时实验确立。已通过和已拒绝记录均保留于[实验报告](../results/aes/cuda-coherent-execution/README.md)。
 
 2026-11-28 同步修复：条件图中需要协作的工作改为完整线程束内同步；候选列表分块并行排序后，协作加载面编号，保留原有分组及合力累加顺序。`wavefront` 与 `batched` 的未过滤整图 synccheck 均通过 50 步诊断；原生 CPU/CUDA、内存、未初始化读取及竞争检查通过，检查器版本区别见[验证报告](../results/aes/cuda-graph-sync/README.md)。两次独立的减速器 5 s / 0.1 ms 完整仿真在线耗时为 **164.76 / 164.73 s**，全部 50,001 帧与修复前逐字节一致，接触切换、44 次细分和查询计数不变。排序及面对分组从中间版本的 11.83 s 降至 4.76 s；整机比修复前约慢 0.8%，相对归档 CPU 的 193.63 s 耗时降低约 14.9%，CPU 未重跑。没有在线 OCCT 回退或机构专用分支。同步检查通过不代表实时：全部主步仍超过 0.1 ms 期限。预编译零件哈希与原 STEP 等价性核验记录一致。实现来源为 `cuda_batched_contact.cuh`、`cuda_resident_geometry.cuh`、`cuda_columns.cu` 和 `tests/compiled_cad.cpp`；默认调度未改动。
 

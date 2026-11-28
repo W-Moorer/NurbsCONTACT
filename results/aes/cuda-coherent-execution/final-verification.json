@@ -1,0 +1,32 @@
+{
+  "source_hashes_match": true,
+  "all_final_checks_pass": true,
+  "exact_full_cad_runs": 10,
+  "relative_report_links_checked": [
+    "../gpu-mesh-dynamics/README.md",
+    "ablations.png",
+    "backends.png",
+    "selected/responses.png",
+    "selected/differences.png",
+    "selected/comparison.json",
+    "ablations.json",
+    "backend-comparison.json",
+    "checks/checks.json",
+    "checks-9/checks.json",
+    "source-manifest.json",
+    "rejected-warm-witness.json",
+    "rejected-race-checks/checks.json",
+    "../cpu-bezier/standalone/reducer-inputs.zip",
+    "../../../benchmarks/aes/cad_gpu_execution.py",
+    "../../../benchmarks/aes/report_cad_coherent.py",
+    "../cpu-bezier/standalone/README.md#source-to-runtime-geometry-check"
+  ],
+  "figures_visually_checked": [
+    "ablations.png",
+    "backends.png",
+    "selected/responses.png",
+    "selected/differences.png"
+  ],
+  "cpu_performance_rerun": false,
+  "AGENTS_changed": false
+}

@@ -1,0 +1,2 @@
+# Preserve diagnostic logs verbatim, including sanitizer separator whitespace.
+*.log -text -whitespace

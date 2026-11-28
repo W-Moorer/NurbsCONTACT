@@ -1,0 +1,102 @@
+========= COMPUTE-SANITIZER
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x60090
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b4c0 [296 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7bf20 [96 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x600e0
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b510 [296 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7bf70 [96 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x600f0
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b520 [296 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7bf80 [96 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x60100
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b530 [296 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7bf90 [96 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x60140
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b560 [296 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7bfc0 [96 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x60170
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b590 [296 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7bff0 [96 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x600c0
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b4f0 [296 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7bf50 [95 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x600d0
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b500 [296 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7bf60 [95 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x60120
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b540 [295 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7bfa0 [96 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x60160
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b580 [295 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7bfe0 [96 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x600a0
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b4d0 [295 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7bf30 [95 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x601b0
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b5d0 [294 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7c030 [96 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x601c0
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b5e0 [294 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7c040 [96 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x60150
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b570 [295 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7bfd0 [94 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x601a0
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b5c0 [294 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7c020 [94 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x60130
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b550 [289 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7bfb0 [89 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x600b0
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b4e0 [275 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7bf40 [95 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x601e0
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b600 [290 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7c060 [78 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x60180
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b5a0 [275 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7c000 [91 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x60190
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b5b0 [274 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7c010 [90 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x601f0
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b610 [256 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7c070 [78 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x601d0
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b5f0 [81 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7c050 [30 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x60080
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b4b0 [77 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7bf10 [25 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x60210
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b630 [40 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7c090 [13 hazards]
+========= 
+========= Warning: Race reported between Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x60200
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7b620 [37 hazards]
+=========     and Write access at nc::compiled::device::<unnamed>::batch_search_audit(nc::compiled::device::<unnamed>::BatchControl *)+0x7c080 [12 hazards]
+========= 
+========= RACECHECK SUMMARY: 25 hazards displayed (0 errors, 25 warnings)

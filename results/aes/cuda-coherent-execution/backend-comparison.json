@@ -1,0 +1,71 @@
+{
+  "rows": [
+    {
+      "label": "CPU mesh (archived)",
+      "online_s": [
+        222.0156881
+      ],
+      "source": "G:\\NurbsCONTACT\\build\\cad-device-source\\results\\aes\\cpu-bezier\\standalone\\simulation-timing\\cpu-worker-scaling.json",
+      "rerun": false
+    },
+    {
+      "label": "CPU CAD (archived)",
+      "online_s": [
+        193.6289707
+      ],
+      "source": "G:\\NurbsCONTACT\\build\\cad-device-source\\results\\aes\\cpu-bezier\\standalone\\simulation-timing\\cpu-worker-scaling.json",
+      "rerun": false
+    },
+    {
+      "label": "GPU mesh",
+      "online_s": [
+        92.09950799995568
+      ],
+      "source": "runs/mesh/run.json",
+      "rerun": true
+    },
+    {
+      "label": "GPU CAD before",
+      "online_s": [
+        161.241354
+      ],
+      "source": [
+        "runs/control/run.json"
+      ],
+      "rerun": true
+    },
+    {
+      "label": "GPU CAD all four",
+      "online_s": [
+        138.2672937,
+        138.2650894
+      ],
+      "source": [
+        "runs/mask-15/run.json",
+        "runs/all-repeat/run.json"
+      ],
+      "rerun": true
+    },
+    {
+      "label": "GPU CAD 1 + 4 (ours)",
+      "online_s": [
+        135.2988225,
+        135.4294195
+      ],
+      "source": [
+        "runs/mask-9/run.json",
+        "runs/mask-9-repeat/run.json"
+      ],
+      "rerun": true
+    }
+  ],
+  "cpu_rerun": false,
+  "duration_s": 5,
+  "step_s": 0.0001,
+  "mesh_response_sha256": "fb18a68d05430015acc80ca8eaeb8387cfe57fd730a334a3d9a8639ceae1d2ec",
+  "mesh_response_shape": [
+    50001,
+    19
+  ],
+  "scope": "Online timing only. Mesh/CAD timing comparison does not establish equal physical accuracy."
+}

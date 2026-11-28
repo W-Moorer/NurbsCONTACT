@@ -10,6 +10,8 @@ __global__ void prepare_tile_jets(View g, const Tile *tiles, int count, TileJet 
         out[i].defined = face_jet(g, t.face, t.u, t.v, out[i].jet);
     }
 }
+struct RuleEnvelope { Bounds points, normals; int valid; };
+constexpr int rule_envelopes = 9 + 36 + 144 + 576;
 struct BodyView {
     View g;
     const Tile *tiles;
@@ -18,6 +20,9 @@ struct BodyView {
     const TileJet *tile_jets;
     int ns, nt;
     const WeightedSite *refined_rules;
+    const RuleEnvelope *envelopes;
+    const unsigned char *neighbors;
+    int face_count;
 };
 struct MatPose {
     V origin, axis;
@@ -95,6 +100,7 @@ struct SearchAttempt {
 struct SavedSeed {
     Faces ids;
     Seed seed;
+    Hit exits[2];
 };
 struct TileWindow {
     Pose pose;
@@ -159,6 +165,10 @@ __device__ unsigned long long timer_ns() {
     return value;
 }
 struct Workspace {
+    unsigned optimizations;
+    int *unique_proposals, *link_order;
+    unsigned char *rule_live;
+    unsigned long long parameter_hint_calls, parameter_hint_hits, projection_attempts, rejected_rule_blocks, tested_rule_blocks, local_links, remote_links;
     unsigned int count;
     int groups, found, regions, selected, active_faces, capacity, limit;
     Suggestion *proposals, *sorted_proposals;
@@ -322,11 +332,21 @@ struct Query {
         w = {{a.face, h.face}, plus(p, scale(n, .5 * (a.t - h.t))), n, a.t + h.t, {a, h}, {}};
         return true;
     }
-    __device__ bool sample(Faces ids, Seed seed, Site site, double &best, Witness &out) const {
+    __device__ bool sample(Faces ids, Seed seed, Site site, double &best, Witness &out, const Hit *hint = nullptr) const {
         const int side = seed.side, id = ids[1 - side];
         const auto &g = b[1 - side].g;
         const auto &tile = b[1 - side].tiles[seed.tile];
+        // Preserve the canonical projection sequence and witness. A different
+        // valid witness can change the bounded connectivity proof and split a
+        // region. Previous UVs therefore accelerate span lookup, not its root.
         double u = tile.u, v = tile.v;
+        int cached_u=-1,cached_v=-1;
+        const auto &face=g.charts[id];
+        if(hint && face.kind==0 && face.nu>=2 && face.nv>=2) {
+            cached_u=knot_slot(g.knots+face.knots_u,face.nu,hint->u);
+            cached_v=knot_slot(g.knots+face.knots_v,face.nv,hint->v);
+            atomicAdd(&work->parameter_hint_calls,1ULL);
+        }
         V p = point(rel[side], site.p), d = direction(rel[side], scale(site.n, -1));
         for (int iter = 0; iter < 8; ++iter) {
             Jet j;
@@ -338,9 +358,25 @@ struct Query {
                     return false;
                 }
                 j = initial.jet;
-            } else if (!face_jet(g, id, u, v, j)) {
-                fail(5, id);
-                return false;
+            } else {
+                bool cached=false;
+                if(cached_u>=0) {
+                    const auto ku=g.knots+face.knots_u, kv=g.knots+face.knots_v;
+                    // Adjacent knot intervals are cheap to check; all other
+                    // locations retain the original binary grid lookup.
+                    if(u<ku[cached_u] && cached_u>0) --cached_u;
+                    else if(u>=ku[cached_u+1] && cached_u<face.nu-2) ++cached_u;
+                    if(v<kv[cached_v] && cached_v>0) --cached_v;
+                    else if(v>=kv[cached_v+1] && cached_v<face.nv-2) ++cached_v;
+                    if(u>=ku[cached_u] && u<ku[cached_u+1] && v>=kv[cached_v] && v<kv[cached_v+1]) {
+                        const int span=g.grid[face.grid+cached_u*(face.nv-1)+cached_v];
+                        if(span>=0 && g.patches[span].cell>=0) {
+                            j=at(g.patches[span],u,v); cached=true;
+                            atomicAdd(&work->parameter_hint_hits,1ULL);
+                        }
+                    }
+                }
+                if(!cached && !face_jet(g,id,u,v,j)) { fail(5,id); return false; }
             }
             V delta = sub(j.p, p);
             double t = dot(delta, d);
@@ -457,18 +493,22 @@ struct Query {
         Query q = *this;
         q.speculative = &a.fault;
         Site site;
-        a.hit = q.node(a.seed.side, group.ids[a.seed.side], a.seed.u, a.seed.v, site) &&
-                q.sample(group.ids, a.seed, site, a.depth, a.witness);
+        if (!q.node(a.seed.side, group.ids[a.seed.side], a.seed.u, a.seed.v, site)) return a;
+        const auto &saved=cache.previous[group.prior];
+        a.hit=q.sample(group.ids,a.seed,site,a.depth,a.witness,
+                       (work->optimizations&1)?&saved.exits[1-a.seed.side]:nullptr);
         return a;
     }
     __device__ SearchAttempt proposal_attempt(Group group, int k) const {
         SearchAttempt a{};
         a.depth = -HUGE_VAL;
         const auto &c = work->proposals[k];
-        for (int j = group.begin; j < k; ++j) {
+        if ((work->optimizations & 1) && !work->unique_proposals[k]) return a;
+        for (int j = group.begin; !(work->optimizations & 1) && j < k; ++j) {
             const auto &previous = work->proposals[j];
             if (previous.side == c.side && previous.source == c.source) return a;
         }
+        if (work->optimizations & 1) atomicAdd(&work->projection_attempts, 1ULL);
         const auto &t = b[c.side].tiles[c.source];
         a.seed = {c.side, c.tile, t.u, t.v};
         Site site{t.point, t.normal, t.u, t.v, 0};
@@ -506,12 +546,16 @@ struct Query {
                     hit = a.hit; best = a.depth; out = a.witness;
                     if (a.fault.code) record(a.fault);
                 } else {
-                    Site s;
-                    hit = node(seed.side, group.ids[seed.side], seed.u, seed.v, s) &&
-                          sample(group.ids, seed, s, best, out);
+                    const auto a = prior_attempt(group, cache);
+                    hit = a.hit; best = a.depth; out = a.witness;
+                    if (a.fault.code) record(a.fault);
                 }
             }
             if constexpr (Width == 32) {
+                // A failed prior attempt also copies its witness. Register
+                // shuffles do not order those shared-memory stores against a
+                // different lane writing the next accepted proposal.
+                __syncwarp();
                 if (__shfl_sync(0xffffffffu, hit, 0)) {
                     if (!lane) atomicAdd(&work->seed_hits, 1ULL);
                     return accepted();
@@ -544,21 +588,8 @@ struct Query {
                     trial = a.seed; depth = a.depth; hit = a.hit;
                     candidate = a.witness; fault = a.fault;
                 } else {
-                const auto &c = work->proposals[k];
-                bool repeat = false;
-                for (int j = group.begin; j < k; ++j) {
-                    const auto &a = work->proposals[j];
-                    if (a.side == c.side && a.source == c.source) {
-                        repeat = true;
-                        break;
-                    }
-                }
-                if (!repeat) {
-                    const auto &t = b[c.side].tiles[c.source];
-                    trial = {c.side, c.tile, t.u, t.v};
-                    Site s{t.point, t.normal, t.u, t.v, 0};
-                    hit = q.sample(group.ids, trial, s, depth, candidate);
-                }
+                    const auto a=proposal_attempt(group,k);
+                    trial=a.seed; depth=a.depth; hit=a.hit; candidate=a.witness; fault=a.fault;
                 }
             }
             if (collect_attempt<Width>(batch, lane, trial, depth, hit, candidate, fault, seed, best, out))
@@ -1092,7 +1123,7 @@ template <class Grid> __device__ void detect_group(Grid grid, Query &q, PairScra
                 int k = w.found++;
                 w.witnesses[k] = v;
                 w.labels[k] = k;
-                cache.previous[k] = {v.faces, v.seed};
+                cache.previous[k] = {v.faces, v.seed, {v.exits[0], v.exits[1]}};
             }
         cache.previous_count = w.found;
         w.confirmed_total += w.found;

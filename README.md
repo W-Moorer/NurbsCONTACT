@@ -19,12 +19,26 @@ The frozen CAD assets have a separate [source-to-runtime equivalence audit](resu
 
 ### Precompiled CAD on CUDA
 
-The current `wavefront` build passes unfiltered whole-graph synchronization diagnostics. Two complete reducer runs at **5 s / 0.1 ms** take **164.76 / 164.73 s online**, with all 50,001 response frames identical to the preceding GPU version. This retains the previous 163.39 / 163.49 s performance scale after fixing synchronization, and is about 15% below the archived CPU time of 193.63 s. It is **not real time**. [Current checks, full response curves, intermediate regressions and timing scope](results/aes/cuda-graph-sync/README.md).
+The opt-in `coherent` schedule implements four general query and scheduling
+strategies. Complete reducer runs at **5 s / 0.1 ms** take **138.27 /
+138.27 s** with all four, and **135.30 / 135.43 s**
+with the faster measured combination `--gpu-opt-mask 9` (parameter lookup /
+candidate batches plus pooled region integration). The latter average is
+16.0% below the fresh frozen GPU CAD control (161.24 s). All 50,001
+response frames remain identical, and both configurations pass unfiltered
+production-graph diagnostics. Fresh GPU mesh takes **92.10 s**; archived CPU CAD
+takes **193.63 s**. CAD still trails mesh and is **not real time**. Two other
+strategies are retained as optional ablations because they did not improve
+this workload. [Timings, failed trials, checks and complete response curves](results/aes/cuda-coherent-execution/README.md).
+
+The preceding `wavefront` build remains the frozen control. Its earlier
+164.76 / 164.73 s runs and synchronization repairs are preserved in the
+[previous report](results/aes/cuda-graph-sync/README.md).
 
 Build with `NC_WITH_CUDA_COLUMNS=ON`; the current measured configuration also uses `NC_CUDA_FMA=ON`. The experimental `cuda-resident` path uploads the compiled surface charts, spatial indices, quadrature data, joint coordinates and input loads during setup. A CUDA graph advances contact discovery, pressure integration, penalty forces and generalized-alpha time integration. After the graph finishes, the runtime downloads its status, dynamics trace and step timings. An unresolved geometric query, insufficient workspace or exhausted integration retries stops the simulation and reports the failing step.
 
 ```text
-nc_contact_runtime <scene> 0 0.0001 5 1 gpu --method cad-compiled --device cuda-resident --solver penalty --penalty-stiffness shared --geometry-update predictor --spectral-radius 0 --gpu-execution wavefront --region-reduction ordered
+nc_contact_runtime <scene> 0 0.0001 5 1 gpu --method cad-compiled --device cuda-resident --solver penalty --penalty-stiffness shared --geometry-update predictor --spectral-radius 0 --gpu-execution coherent --gpu-opt-mask 9 --region-reduction ordered
 python benchmarks/aes/compare_compiled_devices.py cpu.csv gpu.csv comparison --plot
 ```
 

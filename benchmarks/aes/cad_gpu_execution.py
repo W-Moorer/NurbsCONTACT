@@ -17,10 +17,11 @@ def main():
     parser.add_argument("out", type=Path)
     parser.add_argument("--step", type=float, default=0.001)
     parser.add_argument("--duration", type=float, default=5.0)
-    parser.add_argument("--execution", choices=("cooperative", "cached", "batched", "wavefront"), default="cooperative")
+    parser.add_argument("--execution", choices=("cooperative", "cached", "batched", "wavefront", "coherent"), default="cooperative")
     parser.add_argument("--reduction", choices=("ordered", "audit"), default="ordered")
     parser.add_argument("--profile-links", action="store_true",
                         help="Collect intrusive connection-stage work counters; not an acceptance timing")
+    parser.add_argument("--opt-mask", type=int, default=15)
     args = parser.parse_args()
     if not (math.isfinite(args.step) and math.isfinite(args.duration)
             and args.step > 0 and args.duration > 0):
@@ -36,6 +37,10 @@ def main():
         "--spectral-radius", "0", "--region-reduction", args.reduction,
         "--gpu-execution", args.execution,
     ]
+    if args.execution == "coherent":
+        if not 0 <= args.opt_mask <= 15:
+            raise ValueError("Optimization mask must be 0..15")
+        command.extend(("--gpu-opt-mask", str(args.opt_mask)))
     if args.profile_links:
         command.extend(("--gpu-profile", "on"))
     executable_hash = hashlib.sha256(args.executable.read_bytes()).hexdigest()

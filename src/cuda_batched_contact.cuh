@@ -6,15 +6,22 @@ struct BatchPair {
     MatPose a, b;
     int fresh, link_first, saved_paths, saved_blockers;
     int label, pass, columns, column_begin;
+    int parent, result_index;
 };
 struct BatchRay {
     Ray ray;
-    int pair, side, column;
+    int pair, side, column, bucket;
 };
 struct BatchControl {
     DeviceScene scene;
-    BatchPair *pairs;
-    BatchRay *rays;
+    BatchPair *pairs, *integration;
+    Workspace *integration_work;
+    int integration_count, integration_slots;
+    unsigned optimizations;
+    BatchRay *rays, *sorted_rays;
+    const int *bucket_offsets;
+    int *bucket_counts, *bucket_starts;
+    int buckets;
     int *deferred;
     Hit *audit_hits;
     int deferred_count;
@@ -26,6 +33,8 @@ struct BatchControl {
     unsigned long long stamp, accepted[9];
     unsigned long long ray_queries, ray_batches, precomputed_rays, deferred_rays, audited_rays, audited_groups;
 };
+__device__ BatchPair &integral_pair(BatchControl &g, int index) { return g.integration ? g.integration[index] : g.pairs[index]; }
+__device__ int integral_count(const BatchControl &g) { return g.integration ? g.integration_count : g.scene.np; }
 __device__ Trial &batch_trial(BatchControl &g) {
     return g.evaluated ? g.scene.control->next : g.scene.control->working;
 }
@@ -265,6 +274,18 @@ __global__ void batch_sort(BatchControl *control) {
     }
     detect_sort(BatchWarp{}, q, g.scene.cache[pair], merged, merged ? keys : nullptr);
 }
+__global__ void coherent_unique(BatchControl *control) {
+    auto &g=*control;
+    const int pair=blockIdx.y;
+    if(g.scene.control->status || !g.pairs[pair].fresh) return;
+    auto &w=*g.pairs[pair].query.work;
+    for(int k=blockIdx.x*blockDim.x+threadIdx.x;k<w.count;k+=gridDim.x*blockDim.x) {
+        const auto c=w.proposals[k]; int unique=1;
+        for(int j=k-1;j>=0 && equal(w.proposals[j].faces,c.faces);--j)
+            if(w.proposals[j].side==c.side && w.proposals[j].source==c.source) { unique=0; break; }
+        w.unique_proposals[k]=unique;
+    }
+}
 __global__ void batch_search(BatchControl *control) {
     auto &g = *control;
     if (!batch_enabled(g)) return;
@@ -290,7 +311,7 @@ __global__ void batch_search_seeds(BatchControl *control) {
         w.seed_attempts[id] = q.prior_attempt(w.group[id], g.scene.cache[pair]);
     }
 }
-__global__ void batch_search_proposals(BatchControl *control) {
+template<int Phase=0> __global__ void batch_search_proposals(BatchControl *control) {
     auto &g = *control;
     const int pair = blockIdx.y;
     if (g.scene.control->status || !g.pairs[pair].fresh) return;
@@ -305,8 +326,17 @@ __global__ void batch_search_proposals(BatchControl *control) {
             if (w.group[mid].begin <= k) lo = mid; else hi = mid;
         }
         const auto &seed = w.seed_attempts[lo];
-        if (!seed.skip && !seed.hit && !seed.fault.code)
-            w.attempts[k] = q.proposal_attempt(w.group[lo], k);
+        if (seed.skip || seed.hit || seed.fault.code) continue;
+        const auto group=w.group[lo];
+        if constexpr(Phase==1) { if(k>=group.begin+32) continue; }
+        if constexpr(Phase==2) {
+            if(k<group.begin+32) continue;
+            bool stopped=false;
+            for(int j=group.begin;j<min(group.begin+32,group.end);++j)
+                stopped |= w.attempts[j].hit || w.attempts[j].fault.code;
+            if(stopped) continue;
+        }
+        w.attempts[k] = q.proposal_attempt(group, k);
     }
 }
 __global__ void batch_search_ready(BatchControl *control) {
@@ -352,18 +382,36 @@ __global__ void batch_search_audit(BatchControl *control) {
         __syncwarp();
     }
 }
+// A bounded pool schedules multiple regions per pair. Completed results are
+// scattered to their original root-label order, independent of completion order.
+__device__ bool integral_assign(BatchControl &g, int slot) {
+    auto &p=g.integration[slot];
+    const int pair=slot/g.integration_slots;
+    auto &parent=g.pairs[pair]; auto &source=*parent.query.work;
+    const int label=parent.label;
+    p=parent; p.parent=pair; p.columns=0; p.pass=0;
+    p.query.work=&g.integration_work[slot];
+    auto &w=*p.query.work;
+    w.found=source.found; w.witnesses=source.witnesses; w.labels=source.labels;
+    w.regions=w.selected=0;
+    if(!parent.fresh || label>=source.found) { p.label=source.found; return false; }
+    p.label=label; p.result_index=parent.result_index++;
+    do { ++parent.label; } while(parent.label<source.found && source.labels[parent.label]!=parent.label);
+    return true;
+}
 __device__ void batch_integral_start(BatchControl &g) {
     const auto now = timer_ns();
     g.scene.workspace->group_ns += now - g.stamp;
     g.stamp = now;
     for (int i = 0; i < g.scene.np; ++i) {
         auto &p = g.pairs[i];
-        p.label = p.pass = 0;
+        p.label = p.pass = p.result_index = 0;
         if (p.fresh) {
             auto &w = *p.query.work;
             while (p.label < w.found && w.labels[p.label] != p.label) ++p.label;
         }
     }
+    if(g.integration) for(int i=0;i<g.integration_count;++i) integral_assign(g,i);
     batch_launch(g, g.integral_graph);
 }
 __global__ void batch_found(BatchControl *control) {
@@ -384,7 +432,7 @@ __global__ void batch_found(BatchControl *control) {
             int k = w.found++;
             w.witnesses[k] = v;
             w.labels[k] = k;
-            cache.previous[k] = {v.faces, v.seed};
+            cache.previous[k] = {v.faces, v.seed, {v.exits[0], v.exits[1]}};
         }
         cache.previous_count = w.found;
         w.confirmed_total += w.found;
@@ -397,6 +445,24 @@ __global__ void batch_found(BatchControl *control) {
     }
     if (links) batch_launch(g, g.link_graph); else batch_integral_start(g);
 }
+__global__ void coherent_link_order(BatchControl *control) {
+    auto &g=*control; const int pair=blockIdx.x;
+    auto &p=g.pairs[pair]; auto &w=*p.query.work;
+    if(g.scene.control->status || !p.fresh) return;
+    int at=0;
+    for(int priority=0;priority<2;++priority) {
+        int rank=0;
+        for(int i=0;i<w.found;++i) for(int j=i+1;j<w.found;++j,++rank) {
+            bool local=false;
+            for(int side=0;side<2;++side) {
+                auto &b=p.query.b[side];
+                int a=w.witnesses[i].faces[side], c=w.witnesses[j].faces[side];
+                local |= a==c || (b.neighbors && b.neighbors[static_cast<size_t>(a)*b.face_count+c]);
+            }
+            if(int(!local)==priority) { w.link_order[at++]=rank; if(local) ++w.local_links; else ++w.remote_links; }
+        }
+    }
+}
 __global__ void batch_links(BatchControl *control) {
     auto &g = *control;
     int pair = blockIdx.x / connection_batch, slot = blockIdx.x % connection_batch;
@@ -407,6 +473,7 @@ __global__ void batch_links(BatchControl *control) {
     if (!batch_enabled(g, p.fresh && p.link_first + slot < total)) return;
     auto &cache = g.scene.cache[pair];
     int rank = p.link_first + slot, i = 0;
+    if(g.optimizations & 4) rank=w.link_order[rank];
     while (rank >= w.found - 1 - i) { rank -= w.found - 1 - i; ++i; }
     const int j = i + rank + 1, lane = threadIdx.x;
     auto &trial = w.bridges[slot];
@@ -456,6 +523,8 @@ __global__ void batch_links_finish(BatchControl *control) {
             int left = w.labels[t.left], right = w.labels[t.right];
             if (left == right) continue;
             if (t.fault.code) { q.record(t.fault); return; }
+            // Keep the smallest original witness index as the component root.
+            if(left>right) { int swap=left; left=right; right=swap; }
             if (t.blockers.count && p.saved_blockers < w.limit)
                 cache.next_blockers[p.saved_blockers++] = t.blockers;
             if (!t.joined) continue;
@@ -480,8 +549,8 @@ __global__ void batch_integral_prepare(BatchControl *control) {
     auto &g = *control;
     if (g.scene.control->status) return;
     g.ray_count = g.total_columns = g.deferred_count = 0;
-    for (int pair = 0; pair < g.scene.np; ++pair) {
-        auto &p = g.pairs[pair];
+    for (int pair = 0; pair < integral_count(g); ++pair) {
+        auto &p = integral_pair(g,pair);
         auto &w = *p.query.work;
         p.columns = 0; p.column_begin = g.total_columns;
         if (!p.fresh || p.label >= w.found) continue;
@@ -508,11 +577,50 @@ __global__ void batch_integral_prepare(BatchControl *control) {
 __global__ void batch_footprints(BatchControl *control) {
     auto &g = *control;
     if (g.scene.control->status) return;
-    auto &p = g.pairs[blockIdx.y];
+    auto &p = integral_pair(g,blockIdx.y);
     auto &w = *p.query.work;
     if (!p.columns || p.pass != 4) return;
     for (int k = blockIdx.x * blockDim.x + threadIdx.x; k < w.active_faces; k += blockDim.x * gridDim.x)
         w.windows[k] = footprint(p.query, p.label, w.sides[k], w.faces[k]);
+}
+__device__ bool envelope_hits(const Query &q, int side, const RuleEnvelope &e, int target) {
+    if(!e.valid) return false;
+    Bounds sweep=e.points;
+    for(int d=0;d<3;++d) {
+        sweep.lo.x[d]-=q.reach*fmax(0.,e.normals.hi.x[d]);
+        sweep.hi.x[d]-=q.reach*fmin(0.,e.normals.lo.x[d]);
+    }
+    sweep=placed(q.rel[side],sweep);
+    const auto &g=q.b[1-side].g; const auto &f=g.charts[target];
+    if(!overlaps(sweep,f.box,1e-6)) return false;
+    if(f.first<0) return true;
+    Pose frame{};
+    for(int a=0;a<3;++a) for(int b=0;b<3;++b) frame.cols[a].x[b]=f.frame[b].x[a];
+    const auto local=placed(frame,sweep);
+    for(int i=f.first;i<f.end;) {
+        const auto &node=g.spans[i];
+        if(!overlaps(local,node.box,2*f.tol+1e-6)) { i=node.next; continue; }
+        if(node.leaf>=0) return true;
+        ++i;
+    }
+    return false;
+}
+__global__ void coherent_cull_rules(BatchControl *control) {
+    auto &g=*control; auto &p=integral_pair(g,blockIdx.y); auto &w=*p.query.work;
+    if(g.scene.control->status || !p.columns || p.pass==4) return;
+    const int order=12<<p.pass, n=(order/4)*(order/4);
+    const int offset=p.pass==0?0:p.pass==1?9:p.pass==2?45:189;
+    for(int k=blockIdx.x*blockDim.x+threadIdx.x;k<w.active_faces*n;k+=blockDim.x*gridDim.x) {
+        const int at=k/n, side=w.sides[at], face=w.faces[at];
+        const auto &e=p.query.b[side].envelopes[face*rule_envelopes+offset+k%n];
+        bool live=false;
+        for(int j=0;j<w.found && !live;++j)
+            if(w.labels[j]==p.label && w.witnesses[j].faces[side]==face)
+                live=envelope_hits(p.query,side,e,w.witnesses[j].faces[1-side]);
+        w.rule_live[k]=live;
+        atomicAdd(&w.tested_rule_blocks,1ULL);
+        if(!live) atomicAdd(&w.rejected_rule_blocks,1ULL);
+    }
 }
 __global__ void batch_column_tasks(BatchControl *control) {
     auto &g = *control;
@@ -521,8 +629,8 @@ __global__ void batch_column_tasks(BatchControl *control) {
     for (int job = blockIdx.x * blockDim.x + threadIdx.x; job < g.total_columns;
          job += gridDim.x * blockDim.x) {
         int pair = 0;
-        while (pair + 1 < g.scene.np && g.pairs[pair + 1].column_begin <= job) ++pair;
-        auto &p = g.pairs[pair];
+        while (pair + 1 < integral_count(g) && integral_pair(g,pair + 1).column_begin <= job) ++pair;
+        auto &p = integral_pair(g,pair);
         auto &q = p.query;
         auto &w = *q.work;
         int index = job - p.column_begin;
@@ -553,15 +661,30 @@ __global__ void batch_column_tasks(BatchControl *control) {
                                          : value.s.area * du * dv;
                 valid = true;
             }
-            if (valid) {
+            bool block_live=true;
+            if((g.optimizations&2) && !local_rule) {
+                const int n=order/4;
+                block_live=w.rule_live[face_index*n*n+(ij/order/4)*n+(ij%order/4)];
+            }
+            if(valid && !block_live && w.reference) {
+                const auto hit=q.ray(1-side,point(q.rel[side],value.s.p),direction(q.rel[side],scale(value.s.n,-1)),q.reach);
+                if(hit.face>=0 && accepts(w,p.label,side,id,hit.face)) q.fail(15);
+            }
+            if (valid && block_live) {
                 V origin = point(q.rel[side], value.s.p), direction0 = direction(q.rel[side], scale(value.s.n, -1));
+                int target=-1;
                 for (int j = 0; j < w.found && !possible; ++j)
-                    if (w.labels[j] == p.label && w.witnesses[j].faces[side] == id)
-                        possible = intersects(q.b[1 - side].g.charts[w.witnesses[j].faces[1 - side]].box,
-                                              {origin, direction0}, q.reach, 1e-7);
+                    if (w.labels[j] == p.label && w.witnesses[j].faces[side] == id) {
+                        target=w.witnesses[j].faces[1-side];
+                        possible = intersects(q.b[1-side].g.charts[target].box,{origin,direction0},q.reach,1e-7);
+                    }
                 if (possible) {
                     w.columns[index] = value;
-                    task = {{origin, direction0}, pair, side, index};
+                    task = {{origin, direction0}, pair, side, index, 0};
+                    if(g.integration) {
+                        task.bucket=g.bucket_offsets[2*p.parent+side]+target;
+                        atomicAdd(&g.bucket_counts[task.bucket],1);
+                    }
                 }
             }
         }
@@ -575,6 +698,36 @@ __global__ void batch_column_tasks(BatchControl *control) {
         }
     }
 }
+__global__ void coherent_bucket_clear(BatchControl *control) {
+    auto &g=*control;
+    for(int i=blockIdx.x*blockDim.x+threadIdx.x;i<g.buckets;i+=gridDim.x*blockDim.x) g.bucket_counts[i]=0;
+}
+__global__ void coherent_bucket_prefix(BatchControl *control) {
+    auto &g=*control; int total=0;
+    const int lane=threadIdx.x;
+    for(int base=0;base<g.buckets;base+=32) {
+        const int i=base+lane, value=i<g.buckets?g.bucket_counts[i]:0;
+        int scan=value;
+        for(int shift=1;shift<32;shift*=2) {
+            const int left=__shfl_up_sync(0xffffffffu,scan,shift);
+            if(lane>=shift) scan+=left;
+        }
+        if(i<g.buckets) { g.bucket_starts[i]=total+scan-value; g.bucket_counts[i]=0; }
+        total+=__shfl_sync(0xffffffffu,scan,31);
+    }
+}
+__global__ void coherent_bucket_scatter(BatchControl *control) {
+    auto &g=*control;
+    if(g.scene.control->status) return;
+    for(int i=blockIdx.x*blockDim.x+threadIdx.x;i<g.ray_count;i+=gridDim.x*blockDim.x) {
+        const auto ray=g.rays[i];
+        const int at=g.bucket_starts[ray.bucket]+atomicAdd(&g.bucket_counts[ray.bucket],1);
+        g.sorted_rays[at]=ray;
+    }
+}
+__global__ void coherent_bucket_swap(BatchControl *control) {
+    auto &g=*control; auto *p=g.rays; g.rays=g.sorted_rays; g.sorted_rays=p;
+}
 // One compact queue spans all active regions and rigid-body pairs. Scatter to
 // original column indices preserves the deterministic integration ordering.
 __global__ void batch_trace_columns(BatchControl *control) {
@@ -582,7 +735,7 @@ __global__ void batch_trace_columns(BatchControl *control) {
     if (g.scene.control->status) return;
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < g.ray_count; i += gridDim.x * blockDim.x) {
         const auto task = g.rays[i];
-        auto &p = g.pairs[task.pair];
+        auto &p = integral_pair(g,task.pair);
         auto &q = p.query;
         auto &w = *q.work;
         const auto hit = q.ray(1 - task.side, task.ray.p, task.ray.d, q.reach);
@@ -598,7 +751,7 @@ __global__ void batch_trace_columns(BatchControl *control) {
 // An undecided query is compacted for the original complete GPU solver. Starting
 // the deferred query from scratch retains all root/ambiguity/error ordering.
 __device__ void batch_accept_hit(BatchControl &g, const BatchRay &task, const Hit &hit) {
-    auto &p = g.pairs[task.pair];
+    auto &p = integral_pair(g,task.pair);
     auto &w = *p.query.work;
     const int order = p.pass == 4 ? 24 : 12 << p.pass;
     const int face = w.faces[task.column / (order * order)];
@@ -616,7 +769,7 @@ __global__ void batch_trace_precomputed(BatchControl *control) {
     if (threadIdx.x >= width) return;
     for (int i = blockIdx.x * width + threadIdx.x; i < g.ray_count; i += gridDim.x * width) {
         const auto task = g.rays[i];
-        const auto &q = g.pairs[task.pair].query;
+        const auto &q = integral_pair(g,task.pair).query;
         const Hit hit = first<true>(q.b[1 - task.side].g, task.ray, q.reach);
         if (g.audit_hits) g.audit_hits[i] = hit;
         if (hit.face == -3) g.deferred[atomicAdd(&g.deferred_count, 1)] = i;
@@ -628,7 +781,7 @@ __global__ void batch_trace_deferred(BatchControl *control) {
     if (g.scene.control->status) return;
     for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < g.deferred_count; i += gridDim.x * blockDim.x) {
         const auto task = g.rays[g.deferred[i]];
-        const auto &q = g.pairs[task.pair].query;
+        const auto &q = integral_pair(g,task.pair).query;
         batch_accept_hit(g, task, q.ray(1 - task.side, task.ray.p, task.ray.d, q.reach));
     }
 }
@@ -639,7 +792,7 @@ __global__ void batch_audit_precomputed(BatchControl *control) {
         const Hit actual = g.audit_hits[i];
         if (actual.face == -3) continue;
         const auto task = g.rays[i];
-        const auto &q = g.pairs[task.pair].query;
+        const auto &q = integral_pair(g,task.pair).query;
         const Hit expected = q.ray(1 - task.side, task.ray.p, task.ray.d, q.reach);
         bool same = actual.face == expected.face;
         if (same && actual.face >= 0) {
@@ -652,7 +805,7 @@ __global__ void batch_audit_precomputed(BatchControl *control) {
 }
 __global__ void batch_integral_reduce(BatchControl *control) {
     auto &g = *control;
-    auto &p = g.pairs[blockIdx.x];
+    auto &p = integral_pair(g,blockIdx.x);
     if (!batch_enabled(g, p.columns > 0)) return;
     auto &q = p.query;
     auto &w = *q.work;
@@ -750,10 +903,18 @@ __global__ void batch_integral_finish(BatchControl *control) {
     if (g.deferred) { g.precomputed_rays += g.ray_count - g.deferred_count; g.deferred_rays += g.deferred_count; }
     g.ray_batches += g.ray_count > 0;
     bool pending = false;
-    for (int pair = 0; pair < g.scene.np; ++pair) {
-        auto &p = g.pairs[pair];
+    for (int pair = 0; pair < integral_count(g); ++pair) {
+        auto &p = integral_pair(g,pair);
         auto &w = *p.query.work;
         if (!p.columns) continue;
+        if(g.integration && w.selected) {
+            auto &parent=*g.pairs[p.parent].query.work;
+            parent.result[p.result_index]=w.result[0];
+            if(parent.reference) parent.reference[p.result_index]=w.reference[0];
+            ++parent.regions;
+            pending |= integral_assign(g,pair);
+            continue;
+        }
         if (w.selected) {
             do { ++p.label; } while (p.label < w.found && w.labels[p.label] != p.label);
             p.pass = 0;
@@ -802,26 +963,42 @@ void build_batch_graphs(StepGraph &schedule, BatchControl *g, BatchControl &host
     f.kernel(batch_sort_merge, dim3(parallel_sort_limit / 128, pairs), 128, g);
     f.kernel(batch_sort, pairs, 32, g);
     f.kernel(batch_stamp<1>, 1, 1, g);
-    if (wavefront) {
+    if(host.optimizations&1) {
+        f.kernel(coherent_unique,dim3(sms,pairs),128,g);
+        f.kernel(batch_search_seeds,sms*2,1,g);
+        f.kernel(batch_search_proposals<1>,dim3(sms*4,pairs),32,g);
+        f.kernel(batch_search_proposals<2>,dim3(sms*4,pairs),32,g);
+        f.kernel(batch_search_ready,sms*2,32,g);
+        if(audit) f.kernel(batch_search_audit,sms*2,32,g);
+    } else if (wavefront) {
         f.kernel(batch_search_seeds, sms * 2, 1, g);
-        f.kernel(batch_search_proposals, dim3(sms * 4, pairs), 32, g);
+        f.kernel(batch_search_proposals<0>, dim3(sms * 4, pairs), 32, g);
         f.kernel(batch_search_ready, sms * 2, 32, g);
         if (audit) f.kernel(batch_search_audit, sms * 2, 32, g);
     } else f.kernel(batch_search, sms * 2, 32, g);
     f.kernel(batch_found, 1, 1, g);
+    if(host.optimizations&4) f.kernel(coherent_link_order,pairs,1,g);
     auto l = f.loop(host.link_graph);
     l.kernel(batch_links, pairs * connection_batch, 32, g);
     l.kernel(batch_links_finish, 1, 1, g);
     auto i = f.loop(host.integral_graph);
     i.kernel(batch_integral_prepare, 1, 1, g);
-    i.kernel(batch_footprints, dim3(1, pairs), 32, g);
+    const int jobs=host.integration?host.integration_count:pairs;
+    i.kernel(batch_footprints, dim3(1, jobs), 32, g);
+    if(host.optimizations&2) i.kernel(coherent_cull_rules,dim3(sms,jobs),128,g);
+    if(host.integration) i.kernel(coherent_bucket_clear,sms,128,g);
     i.kernel(batch_column_tasks, sms * 4, 128, g);
+    if(host.integration) {
+        i.kernel(coherent_bucket_prefix,1,32,g);
+        i.kernel(coherent_bucket_scatter,sms*4,128,g);
+        i.kernel(coherent_bucket_swap,1,1,g);
+    }
     if (wavefront) {
         i.kernel(batch_trace_precomputed, sms * 4, 32, g);
         i.kernel(batch_trace_deferred, sms * 4, 32, g);
         if (audit) i.kernel(batch_audit_precomputed, sms * 4, 32, g);
     } else i.kernel(batch_trace_columns, sms * 4, 32, g);
-    i.kernel(batch_integral_reduce, pairs, 32, g);
+    i.kernel(batch_integral_reduce, jobs, 32, g);
     i.kernel(batch_integral_finish, 1, 1, g);
     check(cudaGraphInstantiate(&schedule.executable, schedule.graph, 0));
 }

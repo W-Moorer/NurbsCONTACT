@@ -392,3 +392,40 @@ Nonqueued candidate confirmation and its audit use one 32-thread block per work 
 After the merge, the warp collectively reads the sorted face IDs into an 8 KiB shared array. The ordered group scan consumes these IDs rather than loading each candidate from global memory serially. This changes integer data access only. The independent 32-entry sorting tiles use 1 KiB each; the second full-capacity candidate buffer uses 2 MiB per workspace.
 
 Last verified against `src/cuda_batched_contact.cuh`, `src/cuda_resident_geometry.cuh`, `src/cuda_columns.cu`, `tests/compiled_cad.cpp` and `benchmarks/aes/cuda_graph_sync` on 2026-11-28: native CPU/CUDA regressions, unfiltered whole-graph synccheck for `wavefront` and `batched` (50-step reducer diagnostics), synccheck over the analytic CUDA suite, memcheck, initcheck and racecheck passed. Synccheck/memcheck/initcheck used 2026.4; accepted racecheck used 2024.3. The independent probe also rejects an invalid runtime warp mask. Two complete 5 s / 0.1 ms runs took 164.76 / 164.73 s, retaining all 50,001 reference frames and work counts. The 500-step same-pose audit reports zero force/moment discrepancies. [Exact commands, scope and full-history verification](../results/aes/cuda-graph-sync/README.md). These passes resolve the synchronization-check limitation for the tested build; they do not imply real-time performance or support for additional geometry/solvers.
+
+
+### Coherent scheduling and optional ablations (2026-11-28)
+
+`--gpu-execution coherent --gpu-opt-mask N` adds four independently selectable
+strategies. Bit 1 stores prior exit UVs for polynomial knot-span lookup,
+marks duplicate source proposals before projection and evaluates candidates
+in two ordered batches. It preserves the canonical Newton start and witness;
+direct warm-witness reuse was rejected after changing a contact partition.
+Bit 2 precomputes bounds for 4 x 4 original quadrature-point groups and
+rejects empty swept-ray groups against target bounds. Audit mode checks
+rejected valid points using the complete GPU query. Bit 4 orders connection
+proofs using conservative AABB chart neighborhoods; these are not exact B-rep
+adjacency and never replace full connectivity checks. Bit 8 uses a bounded
+four-slot-per-pair integration pool and target-chart buckets. Completed
+depths and region results scatter back to their original summation order.
+Five-region tests exercise pool refill; four slots are not a region limit.
+
+All four are implemented. Full-run online times are 138.27 /
+138.27 s. Bits 1 + 8 (strategies 1 + 4, mask 9) take
+135.30 / 135.43 s, versus 161.24 s for the fresh
+frozen control and 92.10 s for fresh GPU mesh. Block culling reduces ray
+count but increases runtime; local link ordering provides no measured gain.
+Select mask 9 explicitly for this measured workload; no global default or
+geometry/solver scope changes. CPU timings are archived and not rerun.
+There is no online host geometry query or mechanism-specific dispatch.
+
+Last verified against `src/cuda_coherent_prepare.cuh`,
+`src/cuda_batched_contact.cuh`, `src/cuda_resident_geometry.cuh`,
+`src/cuda_columns.cu`, `tests/compiled_cad.cpp` and
+`benchmarks/aes/cuda_graph_sync/production.py` on 2026-11-28: native CPU/CUDA
+regressions and mask-15/mask-9 unfiltered racecheck, synccheck, memcheck and
+initcheck pass. Final native CUDA synccheck also passes. The graph diagnostics
+cover 50 steps; ten separate full 5 s / 0.1 ms CAD runs retain every response
+byte of the frozen reference. [Commands, validation scope, complete curves and
+rejected trials](../results/aes/cuda-coherent-execution/README.md). Real-time
+performance and equal physical accuracy against GPU mesh are not established.

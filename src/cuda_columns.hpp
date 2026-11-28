@@ -199,7 +199,7 @@ struct ResidentScene {
     std::vector<std::shared_ptr<Columns>> geometry;
 };
 enum class RegionReduction { serial, ordered, warp, audit, audit_warp };
-enum class ResidentExecution { cooperative, cached, batched, wavefront };
+enum class ResidentExecution { cooperative, cached, batched, wavefront, coherent };
 struct RegionAudit {
     unsigned queries{}, regions{}, entered_faces{}, exited_faces{}, count_changes{};
     double force_error[3]{}, torque_a_error[3]{}, torque_b_error[3]{};
@@ -220,6 +220,8 @@ struct ResidentResult {
     unsigned long long separated_groups{};
     unsigned long long path_checks{}, path_hits{};
     unsigned long long batched_rays{}, ray_batches{}, precomputed_rays{}, deferred_rays{}, audited_rays{}, audited_groups{};
+    unsigned optimizations{};
+    unsigned long long parameter_hint_calls{}, parameter_hint_hits{}, projection_attempts{}, rejected_rule_blocks{}, tested_rule_blocks{}, local_links{}, remote_links{};
     bool fused_math{}, profiled_links{};
     double link_work_s[4]{};
     unsigned long long link_calls[4]{};
@@ -227,5 +229,5 @@ struct ResidentResult {
 ResidentResult advance_resident(const ResidentScene &, double step, int steps,
                                 RegionReduction = RegionReduction::ordered,
                                 ResidentExecution = ResidentExecution::cooperative,
-                                bool profile_links = false);
+                                bool profile_links = false, unsigned optimizations = 15);
 } // namespace nc::compiled::device

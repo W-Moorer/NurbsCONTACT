@@ -216,9 +216,23 @@ void resident_boxes() {
             "deferred ray coverage was not exercised");
     require(wave.audited_groups>0,"queued search was not checked against the original search");
 
+    const auto coherent=device::advance_resident(scene,dt,steps,device::RegionReduction::audit,
+                                                 device::ResidentExecution::coherent);
+    require(std::equal(coherent.frames.begin(),coherent.frames.end(),result.frames.begin(),result.frames.end(),
+                       [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
+            "coherent execution changed analytic box response");
+    require(coherent.tested_rule_blocks>0,"coherent caches were not exercised");
+    auto uncached_scene=scene;
+    const auto uncached_geometry=cuda_columns(Solid(box()),false,.4);
+    uncached_scene.geometry={uncached_geometry,uncached_geometry};
+    const auto uncached=device::advance_resident(uncached_scene,dt,2,device::RegionReduction::audit,
+                                                device::ResidentExecution::coherent);
+    require(std::equal(uncached.frames.begin(),uncached.frames.end(),result.frames.begin(),
+                       [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
+            "rule enclosure setup requires an optional low-order quadrature cache");
     // One or three disjoint analytic box contacts exercise the parallel merge
     // and the global sorting network used for larger lists.
-    for (int pads : {1, 3}) {
+    for (int pads : {1, 3, 5}) {
         auto sorted_scene = scene;
         PartFile sorting_fixture;
         for (int j = 0; j < pads; ++j) append_box(sorting_fixture, {0, 4. * (j - pads / 2), 0});
@@ -228,6 +242,11 @@ void resident_boxes() {
             device::RegionReduction::ordered, device::ResidentExecution::cached);
         const auto staged = device::advance_resident(sorted_scene, dt, 2,
             device::RegionReduction::audit, device::ResidentExecution::wavefront);
+        const auto pooled = device::advance_resident(sorted_scene, dt, 2,
+            device::RegionReduction::audit, device::ResidentExecution::coherent);
+        require(std::equal(pooled.frames.begin(), pooled.frames.end(), reference.frames.begin(), reference.frames.end(),
+                           [](double a, double b) { return a == b || (std::isnan(a) && std::isnan(b)); }),
+                "bounded region pool changed separated contacts when refilling slots");
         std::cout << "candidate_sort pads=" << pads << " max_proposals=" << staged.maximum_proposals << '\n';
         require(std::equal(staged.frames.begin(), staged.frames.end(), reference.frames.begin(), reference.frames.end(),
                            [](double a, double b) { return a == b || (std::isnan(a) && std::isnan(b)); }),
@@ -323,6 +342,17 @@ void resident_boxes() {
     require(std::equal(cached_pads.frames.begin(),cached_pads.frames.end(),plain_pads.frames.begin(),plain_pads.frames.end(),
                        [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
             "blocking-face reuse changed disconnected-pad dynamics");
+    for(const auto *fixture:{&multiple,&separated,&partitioned}) {
+        const auto original=device::advance_resident(*fixture,dt,40,device::RegionReduction::ordered,
+                                                     device::ResidentExecution::wavefront);
+        for(unsigned mask:{1u,2u,4u,8u,15u}) {
+            const auto improved=device::advance_resident(*fixture,dt,40,device::RegionReduction::audit,
+                                                         device::ResidentExecution::coherent,false,mask);
+            require(std::equal(improved.frames.begin(),improved.frames.end(),original.frames.begin(),original.frames.end(),
+                              [](double a,double b){return a==b || (std::isnan(a) && std::isnan(b));}),
+                    "coherent ablation changed pair/region topology or analytic dynamics");
+        }
+    }
     // The same contact plus independent, analytically accelerated coordinates
     // checks active-prefix handling both below and at the native capacity.
     for (int n : {3,16}) {

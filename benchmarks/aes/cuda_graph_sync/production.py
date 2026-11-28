@@ -21,6 +21,11 @@ def main():
     parser.add_argument("output", type=Path)
     parser.add_argument("--racecheck", type=Path, help="Explicit separate racechecker executable")
     parser.add_argument("--dll-path", type=Path)
+    parser.add_argument("--execution", choices=("wavefront", "batched", "coherent"),
+                        help="Validate this production schedule instead of the historical pair")
+    parser.add_argument("--opt-mask", type=int, choices=range(16), default=15)
+    parser.add_argument("--skip-native", action="store_true",
+                        help="Reuse already verified native tests for the identical executable hashes")
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
@@ -35,7 +40,8 @@ def main():
     report = dict(runtime_sha256=digest(args.runtime), test_sha256=digest(args.native_test),
                   scene_sha256=digest(args.scene),
                   sanitizer_versions=versions, diagnostic_steps=50, step_s=.0001,
-                  sanitizer_full_duration=False, checks=[])
+                  sanitizer_full_duration=False, optimization_mask=args.opt_mask if args.execution == "coherent" else None,
+                  native_tests_skipped=args.skip_native, checks=[])
 
     def check(name, command, diagnostic=None):
         command = [str(c) for c in command]
@@ -62,25 +68,36 @@ def main():
         if code != 0 or not record.get("zero_errors", True):
             raise SystemExit(1)
 
-    check("native", [args.native_test])
-    check("native-cuda", [args.native_test, "--cuda"])
-    for kind, execution in [("synccheck", "wavefront"), ("synccheck", "batched"),
-                            ("memcheck", "wavefront"), ("initcheck", "wavefront"),
-                            ("racecheck", "wavefront")]:
+    if not args.skip_native:
+        check("native", [args.native_test])
+        check("native-cuda", [args.native_test, "--cuda"])
+    schedule = args.execution or "wavefront"
+    checks = [("synccheck", schedule)]
+    if not args.execution:
+        checks.append(("synccheck", "batched"))
+    checks.extend((kind, schedule) for kind in ("memcheck", "initcheck", "racecheck"))
+    if args.execution == "coherent":
+        # Check the candidate hand-off regression before the other diagnostics.
+        checks = [("racecheck", schedule)] + [c for c in checks if c[0] != "racecheck"]
+    for kind, execution in checks:
         name = kind + "-" + execution
         dest = args.output / name
         dest.mkdir(exist_ok=True)
         log = args.output / (name + ".log")
         tool = racecheck if kind == "racecheck" else args.sanitizer
-        check(name, [tool, "--tool", kind, "--error-exitcode", "97", "--log-file", log,
+        command = [tool, "--tool", kind, "--error-exitcode", "97", "--log-file", log,
                      args.runtime, args.scene, "0", ".0001", ".005", "1", dest / "response",
                      "--method", "cad-compiled", "--device", "cuda-resident", "--solver", "penalty",
                      "--penalty-stiffness", "shared", "--geometry-update", "predictor",
                      "--spectral-radius", "0", "--region-reduction", "audit",
-                     "--gpu-execution", execution], log)
-    log = args.output / "synccheck-native.log"
-    check("synccheck-native", [args.sanitizer, "--tool", "synccheck", "--error-exitcode", "97",
-                               "--log-file", log, args.native_test, "--cuda"], log)
+                     "--gpu-execution", execution]
+        if execution == "coherent":
+            command.extend(("--gpu-opt-mask", args.opt_mask))
+        check(name, command, log)
+    if not args.skip_native:
+        log = args.output / "synccheck-native.log"
+        check("synccheck-native", [args.sanitizer, "--tool", "synccheck", "--error-exitcode", "97",
+                                   "--log-file", log, args.native_test, "--cuda"], log)
 
 
 if __name__ == "__main__":
