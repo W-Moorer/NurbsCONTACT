@@ -4,6 +4,14 @@
 
 The source follows the Elsevier CAS single-column layout of the ICRL `CoFlexSim-AES` manuscript. Add the confirmed author order, affiliations, and corresponding author before preparing the submission metadata.
 
+## Review the manuscript argument
+
+Open [Manuscript-Argument.papergraph](Manuscript-Argument.papergraph) with File → Open in [Papergraph 0.16.0-preview.8](https://github.com/wangyuer1-lang/papergraph/releases/tag/v0.16.0-preview.8). On Windows, extract `Papergraph-0.16.0-preview.8-windows-x64.zip` and run `papergraph.exe` from the extracted folder. Use **F** on the canvas to fit the board and **Shift+Space** to show proposition titles.
+
+The middle column follows the introduction's contribution order. The left and right columns connect each claim to its evidence and scope. Select a proposition and open Notes **2** for the LaTeX source path and label or section name. Open Notes **3** on a middle-column proposition for its revision notes. Use **Full text** to review the argument in order with the linked evidence and qualifications shown in parentheses.
+
+Revise submission prose, citations, and cross-references in the [LaTeX source](Residual-Aware-CAD-Contact.tex) and its included sections. When a revision changes a claim, its evidence, or its scope, update the corresponding proposition and source note in the graph. The graph can be edited in Papergraph or read through its [local agent interface](https://github.com/wangyuer1-lang/papergraph/blob/4ff5962/Agent%20guide.md) while the app is open.
+
 ## Build
 
 From the repository root, run `python benchmarks/hht/paper.py results/hht` with XeLaTeX, BibTeX, and `latexmk` on `PATH`. The build uses the figures here and publishes the same PDF in this directory and at `docs/manuscript.pdf`. The template uses Times New Roman, Arial, and Consolas and the TeX Live STIX Two Math font.

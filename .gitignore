@@ -4,6 +4,7 @@
 /manuscript/*.log
 /manuscript/*.out
 /manuscript/*.pdf
+/docs/AES/*.papergraph.bak
 __pycache__/
 
 # Source-figure overlay generated locally for digitization review.

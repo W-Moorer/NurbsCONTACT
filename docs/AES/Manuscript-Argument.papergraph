@@ -1,0 +1,380 @@
+{
+  "Version": 1,
+  "Title": "NurbsCONTACT AES — manuscript argument",
+  "Nodes": [
+    {
+      "Id": "question",
+      "Caption": "Engineering question",
+      "Title": "Narrow clearances make the required contact accuracy depend on the response being resolved. An implicit solver can use its nonlinear acceptance tests to decide when a contact-force estimate needs refinement.",
+      "AdditionalNotes": [
+        {
+          "Title": "Manuscript sources",
+          "Body": "docs/AES/Residual-Aware-CAD-Contact.tex — Introduction, first two paragraphs"
+        },
+        {
+          "Title": "Revision note",
+          "Body": "Align the abstract and introduction on the order of the main contributions. The abstract currently leads with continuous detection, while the numbered contributions start with residual-controlled HHT and reuse."
+        }
+      ],
+      "X": 415,
+      "Y": 60
+    },
+    {
+      "Id": "hht",
+      "Caption": "Residual-controlled HHT",
+      "Title": "Force enclosures bound the HHT residual at each trial. The solver tightens the force estimate when its uncertainty prevents a convergence or line-search decision.",
+      "AdditionalNotes": [
+        {
+          "Title": "Manuscript sources",
+          "Body": "docs/AES/method.tex — sec:method, eq:residual, eq:resid-error, alg:trial"
+        },
+        {
+          "Title": "Revision note",
+          "Body": "Distinguish convergence from descent. Acceptance uses the residual upper bound against the tolerance lower bound. Descent uses the trial upper bound against the current lower bound."
+        }
+      ],
+      "X": 415,
+      "Y": 180
+    },
+    {
+      "Id": "reuse",
+      "Caption": "Revalidated contact reuse",
+      "Title": "Relative point-travel bounds revalidate stored pair exclusions. Previously evaluated gear points can propose ray intersections, with the root and ray bounds checked again at the current trial.",
+      "AdditionalNotes": [
+        {
+          "Title": "Manuscript sources",
+          "Body": "docs/AES/method.tex — sec:gear-root, eq:probe-error, eq:transport\ndocs/AES/force-kernel-results.tex — sec:ablation"
+        },
+        {
+          "Title": "Revision note",
+          "Body": "Describe this contribution as reuse under a force budget. Report the cam benefit together with the gear cases in which extra refinements offset it."
+        }
+      ],
+      "X": 415,
+      "Y": 300
+    },
+    {
+      "Id": "matched",
+      "Caption": "Matched-accuracy cost",
+      "Title": "The mechanism-specific tests compare query cost at joint RMS position and force targets. Tuned section baselines achieve similar errors and online times to native CAD on the tested gears.",
+      "AdditionalNotes": [
+        {
+          "Title": "Manuscript sources",
+          "Body": "docs/AES/force-kernel-results.tex — sec:industrial, tab:industrial, fig:cam, fig:spur, fig:reducer"
+        },
+        {
+          "Title": "Revision note",
+          "Body": "Keep setup and online time distinct. Name the general triangle BVH and the structure-aware polyline separately when discussing cost."
+        }
+      ],
+      "X": 415,
+      "Y": 420
+    },
+    {
+      "Id": "onset",
+      "Caption": "Prescribed-motion onset",
+      "Title": "The general STEP query bounds contact onset for prescribed rigid motion. It reports a verified inactive interval and an upper time bound when a feasible point pair is verified against the activation distance.",
+      "AdditionalNotes": [
+        {
+          "Title": "Manuscript sources",
+          "Body": "docs/AES/method.tex — Contact onset on a prescribed motion, fig:event-schematic\ndocs/AES/generic-contact-results.tex — sec:general-contact, tab:cam-onset\ndocs/AES/generic-assembly-results.tex — tab:production-contact"
+        },
+        {
+          "Title": "Revision note",
+          "Body": "Report complete, wider-than-target and unresolved outcomes distinctly. The loaded spur and reducer segments already start inside the activation layer."
+        }
+      ],
+      "X": 415,
+      "Y": 540
+    },
+    {
+      "Id": "gpu",
+      "Caption": "Independent GPU study",
+      "Title": "The sampled-contact GPU experiments assess how surface representation, contact-region grouping, and stiffness assignment affect mechanism response. In the coupled reducer, the pair-stiffness model improves agreement in shaft-level outputs with refined RecurDyn.",
+      "AdditionalNotes": [
+        {
+          "Title": "Manuscript sources",
+          "Body": "docs/AES/sampled-dynamics-results.tex — sec:sampled-dynamics, tab:refined-reducer"
+        },
+        {
+          "Title": "Revision note",
+          "Body": "Identify this as a separate sampled-contact solver when discussing timings or response agreement. State the stiffness assignment and common output interval beside the reported RMS differences."
+        }
+      ],
+      "X": 415,
+      "Y": 660
+    },
+    {
+      "Id": "oscillator",
+      "Caption": "Published oscillator",
+      "Title": "The exact scalar force callback reproduces all 100 contact transitions over 50 periods",
+      "AdditionalNotes": [
+        {
+          "Title": "Manuscript sources",
+          "Body": "docs/AES/published-validation.tex — sec:oscillator, tab:oscillator, fig:oscillator\nThis benchmark checks integration through repeated contact and release. The method section supplies the enclosure argument."
+        }
+      ],
+      "X": 75,
+      "Y": 180
+    },
+    {
+      "Id": "ablation",
+      "Caption": "Force and reuse ablation",
+      "Title": "The 20 s cam run records 692 revalidated exclusions and 119 precision refinements at a 500 µs step",
+      "AdditionalNotes": [
+        {
+          "Title": "Manuscript sources",
+          "Body": "docs/AES/force-kernel-results.tex — sec:ablation, cam paragraph"
+        }
+      ],
+      "X": 75,
+      "Y": 300
+    },
+    {
+      "Id": "matched-table",
+      "Caption": "Matched gear results",
+      "Title": "At 5 µs, the spur CAD and 1024-segment polyline give 0.037 µm RMS transmission error and 0.89% relative RMS force error, with median online times of 4.03 s and 3.94 s",
+      "AdditionalNotes": [
+        {
+          "Title": "Manuscript sources",
+          "Body": "docs/AES/force-kernel-results.tex — tab:industrial, Single-stage spur pair\nFor the reducer at 10 µs, the native 31-section and 256-segment polyline cases take 41.04 s and 41.45 s online, respectively."
+        }
+      ],
+      "X": 75,
+      "Y": 420
+    },
+    {
+      "Id": "step-translations",
+      "Caption": "Production STEP translations",
+      "Title": "Direct B-rep search completes six of eight production translation paths and agrees with the numerical reference on those six",
+      "AdditionalNotes": [
+        {
+          "Title": "Manuscript sources",
+          "Body": "docs/AES/generic-assembly-results.tex — tab:production-contact\nOne reference path is unresolved. OCCT advancement shares the reference distance kernel."
+        }
+      ],
+      "X": 75,
+      "Y": 540
+    },
+    {
+      "Id": "refined-reducer",
+      "Caption": "Refined RecurDyn comparison",
+      "Title": "STEP with pair stiffness gives 0.210 rad/s middle-speed RMS difference and 17.55 N·m output-torque RMS difference over 0–1.26 s",
+      "AdditionalNotes": [
+        {
+          "Title": "Manuscript sources",
+          "Body": "docs/AES/sampled-dynamics-results.tex — tab:refined-reducer\nTorque is averaged over common 125 µs output intervals."
+        }
+      ],
+      "X": 75,
+      "Y": 660
+    },
+    {
+      "Id": "discrete-scope",
+      "Caption": "Discrete residual scope",
+      "Title": "The enclosure controls the discrete equations for supported force callbacks. Step size still affects transition timing",
+      "AdditionalNotes": [
+        {
+          "Title": "Manuscript sources",
+          "Body": "docs/AES/Residual-Aware-CAD-Contact.tex — Discussion\ndocs/AES/method.tex — sec:method, eq:resid-error\ndocs/AES/published-validation.tex — tab:oscillator"
+        }
+      ],
+      "X": 755,
+      "Y": 180
+    },
+    {
+      "Id": "reuse-cost",
+      "Caption": "Reuse cost varies",
+      "Title": "The cached bounded cam is faster than the tight bounded mode and slower than direct evaluation. The tested cached gear runs take longer than their tight bounded counterparts",
+      "AdditionalNotes": [
+        {
+          "Title": "Manuscript sources",
+          "Body": "docs/AES/force-kernel-results.tex — sec:ablation\nThe reducer ablation covers a 0.2 s diagnostic through the first load transient."
+        }
+      ],
+      "X": 755,
+      "Y": 300
+    },
+    {
+      "Id": "matched-scope",
+      "Caption": "Comparison scope",
+      "Title": "The specialized gear comparison holds the sampled projected contact law fixed. Time step and geometry resolution both affect the force error",
+      "AdditionalNotes": [
+        {
+          "Title": "Manuscript sources",
+          "Body": "docs/AES/force-kernel-results.tex — sec:industrial, Single-stage spur pair, Two-stage reducer"
+        }
+      ],
+      "X": 755,
+      "Y": 420
+    },
+    {
+      "Id": "rotating-cam-budget",
+      "Caption": "Rotating-cam task cap",
+      "Title": "Under the 20,000-task cap, direct B-rep search meets the requested width on zero of 22 onset paths and returns wider contact brackets on three",
+      "AdditionalNotes": [
+        {
+          "Title": "Manuscript sources",
+          "Body": "docs/AES/generic-contact-results.tex — tab:cam-onset and the paragraph below it\nThe analytic cylinder–plane gap independently scores the brackets. The numerical and mesh setups have their own geometry and accuracy limits."
+        }
+      ],
+      "X": 755,
+      "Y": 540
+    },
+    {
+      "Id": "shaft-agreement-scope",
+      "Caption": "Shaft versus mesh response",
+      "Title": "The comparison supports shaft-level load transfer. Mesh-frequency amplitudes remain sensitive to the stiffness model",
+      "AdditionalNotes": [
+        {
+          "Title": "Manuscript sources",
+          "Body": "docs/AES/sampled-dynamics-results.tex — paragraph after tab:refined-reducer"
+        }
+      ],
+      "X": 755,
+      "Y": 660
+    }
+  ],
+  "Edges": [
+    {
+      "Id": "question-to-hht",
+      "From": "question",
+      "To": "hht",
+      "Label": "Association",
+      "TextRole": "flow"
+    },
+    {
+      "Id": "hht-to-reuse",
+      "From": "hht",
+      "To": "reuse",
+      "Label": "Association",
+      "TextRole": "flow"
+    },
+    {
+      "Id": "reuse-to-matched",
+      "From": "reuse",
+      "To": "matched",
+      "Label": "Association",
+      "TextRole": "flow"
+    },
+    {
+      "Id": "matched-to-onset",
+      "From": "matched",
+      "To": "onset",
+      "Label": "Association",
+      "TextRole": "flow"
+    },
+    {
+      "Id": "onset-to-gpu",
+      "From": "onset",
+      "To": "gpu",
+      "Label": "Association",
+      "TextRole": "flow"
+    },
+    {
+      "Id": "oscillator-link",
+      "From": "oscillator",
+      "To": "hht",
+      "Label": "Support",
+      "TextRole": "reference"
+    },
+    {
+      "Id": "ablation-link",
+      "From": "ablation",
+      "To": "reuse",
+      "Label": "Support",
+      "TextRole": "reference"
+    },
+    {
+      "Id": "matched-table-link",
+      "From": "matched-table",
+      "To": "matched",
+      "Label": "Support",
+      "TextRole": "reference"
+    },
+    {
+      "Id": "step-translations-link",
+      "From": "step-translations",
+      "To": "onset",
+      "Label": "Support",
+      "TextRole": "reference"
+    },
+    {
+      "Id": "refined-reducer-link",
+      "From": "refined-reducer",
+      "To": "gpu",
+      "Label": "Support",
+      "TextRole": "reference"
+    },
+    {
+      "Id": "discrete-scope-link",
+      "From": "discrete-scope",
+      "To": "hht",
+      "Label": "Qualification",
+      "TextRole": "reference"
+    },
+    {
+      "Id": "reuse-cost-link",
+      "From": "reuse-cost",
+      "To": "reuse",
+      "Label": "Qualification",
+      "TextRole": "reference"
+    },
+    {
+      "Id": "matched-scope-link",
+      "From": "matched-scope",
+      "To": "matched",
+      "Label": "Qualification",
+      "TextRole": "reference"
+    },
+    {
+      "Id": "rotating-cam-budget-link",
+      "From": "rotating-cam-budget",
+      "To": "onset",
+      "Label": "Qualification",
+      "TextRole": "reference"
+    },
+    {
+      "Id": "shaft-agreement-scope-link",
+      "From": "shaft-agreement-scope",
+      "To": "gpu",
+      "Label": "Qualification",
+      "TextRole": "reference"
+    }
+  ],
+  "Regions": [
+    {
+      "Id": "evidence-frame",
+      "Caption": "Evidence",
+      "Title": "Measured results and validation cases.",
+      "Color": "#76A899",
+      "IsAbsolute": true,
+      "X": 50,
+      "Y": 175,
+      "Width": 300,
+      "Height": 615
+    },
+    {
+      "Id": "manuscript-frame",
+      "Caption": "Manuscript argument",
+      "Title": "Working prose outline. See Notes 3 for revision decisions.",
+      "Color": "#719AC7",
+      "IsAbsolute": true,
+      "X": 390,
+      "Y": 55,
+      "Width": 300,
+      "Height": 735
+    },
+    {
+      "Id": "scope-frame",
+      "Caption": "Scope and limits",
+      "Title": "Conditions that qualify individual claims.",
+      "Color": "#C5A16B",
+      "IsAbsolute": true,
+      "X": 730,
+      "Y": 175,
+      "Width": 300,
+      "Height": 615
+    }
+  ]
+}
