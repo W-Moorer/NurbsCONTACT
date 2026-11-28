@@ -4,13 +4,9 @@
 
 The source follows the Elsevier CAS single-column layout of the ICRL `CoFlexSim-AES` manuscript. Add the confirmed author order, affiliations, and corresponding author before preparing the submission metadata.
 
-## Review the manuscript argument
+## Research status
 
-Open [Manuscript-Argument.papergraph](Manuscript-Argument.papergraph) with File → Open in [Papergraph 0.16.0-preview.8](https://github.com/wangyuer1-lang/papergraph/releases/tag/v0.16.0-preview.8). On Windows, extract `Papergraph-0.16.0-preview.8-windows-x64.zip` and run `papergraph.exe` from the extracted folder. Use **F** on the canvas to fit the board and **Shift+Space** to show proposition titles.
-
-The middle column follows the introduction's contribution order. The left and right columns connect each claim to its evidence and scope. Select a proposition and open Notes **2** for the LaTeX source path and label or section name. Open Notes **3** on a middle-column proposition for its revision notes. Use **Full text** to review the argument in order with the linked evidence and qualifications shown in parentheses.
-
-Revise submission prose, citations, and cross-references in the [LaTeX source](Residual-Aware-CAD-Contact.tex) and its included sections. When a revision changes a claim, its evidence, or its scope, update the corresponding proposition and source note in the graph. The graph can be edited in Papergraph or read through its [local agent interface](https://github.com/wangyuer1-lang/papergraph/blob/4ff5962/Agent%20guide.md) while the app is open.
+The project has a frozen CPU baseline for CAD and mesh contact. The research contribution is still open. The [argument map](Manuscript-Argument.papergraph) records claims and evidence from the existing draft. Use the [baseline workflow](../../wiki/RigidContactBackend.md#如何使用和更新四线程基线) to reproduce the controls, evaluate a candidate against an independent reference, and record the evidence for changing the baseline.
 
 ## Build
 

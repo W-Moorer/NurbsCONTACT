@@ -15,7 +15,7 @@ The CPU reference for porting CAD contact is [commit 1406914](https://github.com
 
 Build Release with `NC_WITH_CPU_MESH=ON` and oneTBB available for the comparison. Set `OMP_NUM_THREADS=4`. Run `nc_contact <scene> 0 0.0001 5 1 response --method cad-compiled --solver penalty --penalty-stiffness shared --geometry-update predictor --spectral-radius 0`. The standalone `nc_contact_runtime` also runs the CAD method directly from the four compiled parts. Part compilation and scene initialization are timed separately. The original STEP files and Gmsh meshes are in the [CPU input deck](results/aes/cpu-foundation/reducer-physics/cpu-deck.zip). Use the [compiled scene and parts](results/aes/cpu-bezier/standalone/reducer-inputs.zip), [validation results and known narrow-contact cases](results/aes/cpu-bezier/standalone/README.md) and [raw thread-scaling measurements](results/aes/cpu-bezier/standalone/simulation-timing/cpu-worker-scaling.json) to reproduce and interpret the comparison.
 
-The frozen CAD assets have a separate [source-to-runtime equivalence audit](results/aes/cpu-bezier/standalone/README.md#source-to-runtime-geometry-check). It compares the compiled contact charts with the original STEP solids.
+The frozen CAD assets have a separate [source-to-runtime equivalence audit](results/aes/cpu-bezier/standalone/README.md#source-to-runtime-geometry-check). It compares the compiled contact charts with the original STEP solids. The [baseline workflow](wiki/RigidContactBackend.md#如何使用和更新四线程基线) covers regression checks, same-pose accuracy comparisons, and promotion of a new reference.
 
 ### GPU mesh package
 

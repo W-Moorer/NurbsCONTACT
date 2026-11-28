@@ -15,6 +15,22 @@ GPU 移植使用 [1406914 的 CPU 实现](https://github.com/W-Moorer/NurbsCONTA
 
 两级减速器的场景、初态、载荷和四个零件固定。两种方法共用共享罚刚度、预测姿态更新、HHT 谱半径 0、两个 OpenMP 线程、0.1 ms 主步和输出间隔。全程 50,000 个主步、50,001 帧。计时统一使用 `statistics.wall_s`，包含积分中的接触检测、求力、迭代和进度输出。预编译、初始化和结束后的文件导出单列在该指标之外。性能对照在同一台机器交替独占项目计算资源，记录各次时间及中位数，单次上限 30 min。[网格和 STEP 输入包](../results/aes/cpu-foundation/reducer-physics/cpu-deck.zip) · [编译 CAD 输入包](../results/aes/cpu-bezier/standalone/reducer-inputs.zip) · [计时说明](../results/aes/cpu-bezier/standalone/README.md)
 
+## 如何使用和更新四线程基线
+
+**复现一次改动。** 取冻结提交 `1406914` 的 Release 构建、相同的场景与零件。CAD 和网格各有自己的参考响应。先在本机核对两份参考 CSV 的 SHA-256 与[四线程五秒记录](../results/aes/cpu-bezier/standalone/simulation-timing/cpu-worker-scaling.json)中对应的 `fused` 运行一致。新检出若只有输入包，可用[根目录的运行命令](../README.md#frozen-cpu-rigid-contact-baseline)跑完整五秒生成 CSV；网格选择 `--method mesh-obb --mesh-region-scope contour-ray`，两个后端均加 `--progress` 和各自的进度文件路径。按哈希确认后保留这两份 CSV。用短前缀快速发现输入或行为变化，五秒全程用于正式回归。
+
+```powershell
+# 从仓库根目录运行。变量指向 Release 程序、解压后的场景和已核对的完整响应 CSV。
+python benchmarks/aes/cpu_contact_scaling.py $exe $scene $cadReference  build/check-cad-64  --method cad-compiled --threads 4 --steps 64
+python benchmarks/aes/cpu_contact_scaling.py $exe $scene $meshReference build/check-mesh-64 --method mesh-obb     --threads 4 --steps 64
+```
+
+复测脚本会逐行检查输出，并写入程序、场景和响应指纹。完整运行用 `--steps 50000` 并给每次运行一个新的输出目录。做速度优化时在同一台机器交替运行旧版和候选版，记录每次的 `wall_s`、工作计数与主机状态。先核对行为，再解释计时差。
+
+**评估会改变响应的方法。** 在[相同姿态](../results/aes/cpu-bezier/boundary/poses.json)上分别运行冻结 CAD、网格和候选法，用[原 STEP 实体参照](../results/aes/cpu-bezier/boundary/step-reference.json)检验区域数、合力矢量和同一根轴的力矩。固定共享刚度和位姿，才能把这一步的误差定位在几何或积分。原有 13 个诊断姿态与 12 个历史留出姿态分别统计。一旦用其中的数据选过方法，对新方法就另选未参与调参的姿态。然后用凸轮解析响应、减速器五秒闭环检查切换、力矩和耗时。[回放命令和边界补搜对照](../results/aes/cpu-bezier/boundary/README.md)
+
+**更新的对象。** 新发现的失败姿态可直接加入回归集，注明来源、物理量、单位和参考求法。优化或算法改动先作为候选保存，记录源提交、输入哈希、参数和同批旧版结果。纯性能改动用原响应验证；修正载荷导致响应改变时，记录最早出现差异的姿态、原 STEP 对照和闭环影响。候选复测通过且决定用于后续对照时，再在本节和根 README 登记新的冻结提交、配置和响应指纹，保留旧版与失败记录。更换罚力模型、场景或硬件时单列比较条件。
+
 ## CPU 先完成什么
 
 1. **固定姿态下找全承载区。** 在同一预测姿态，对物体对做 BVH 粗筛，以带裁剪边界的曲面块对为候选。在已有离散搜索的基础上，为采样点之间、裁剪边界附近和新进入接触的曲面建立补搜路径。分离条件可核验时整块排除，其余候选局部细分并在实际 CAD 曲面上求解。上一姿态的面和参数只用作初值或有位移余量的候选缓存。保留冷启动搜索，复用时检查覆盖范围，积分步被拒绝时重新验证缓存。运行时仅用预编译几何；预算耗尽的候选返回未解状态，不能作为分离或零载荷。
