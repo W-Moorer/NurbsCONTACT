@@ -1,0 +1,143 @@
+{
+  "executable_sha256": "1bac48e8637d48af57ecc9c8ea68509bd5d70cb7ef092d60754876ad453cf4f0",
+  "checks": [
+    {
+      "command": [
+        "..\\cad-batch-runs\\tools\\cuda_sanitizer_api-windows-x86_64-13.5.25-archive\\compute-sanitizer\\compute-sanitizer.exe",
+        "--tool",
+        "synccheck",
+        "--error-exitcode",
+        "97",
+        "--print-limit",
+        "5",
+        "--log-file",
+        "results\\aes\\cuda-graph-sync\\probe\\flat-block-128.log",
+        "..\\cad-sync-runs\\regression-build\\Release\\nc_graph_sync_probe.exe",
+        "flat",
+        "block",
+        "128"
+      ],
+      "exit_code": 0,
+      "process_s": 3.84520830004476,
+      "clean": true,
+      "error_detected": false,
+      "required": true,
+      "passed": true
+    },
+    {
+      "command": [
+        "..\\cad-batch-runs\\tools\\cuda_sanitizer_api-windows-x86_64-13.5.25-archive\\compute-sanitizer\\compute-sanitizer.exe",
+        "--tool",
+        "synccheck",
+        "--error-exitcode",
+        "97",
+        "--print-limit",
+        "5",
+        "--log-file",
+        "results\\aes\\cuda-graph-sync\\probe\\if-block-128.log",
+        "..\\cad-sync-runs\\regression-build\\Release\\nc_graph_sync_probe.exe",
+        "if",
+        "block",
+        "128"
+      ],
+      "exit_code": 0,
+      "process_s": 3.2817343000206165,
+      "clean": true,
+      "error_detected": false,
+      "required": true,
+      "passed": true
+    },
+    {
+      "command": [
+        "..\\cad-batch-runs\\tools\\cuda_sanitizer_api-windows-x86_64-13.5.25-archive\\compute-sanitizer\\compute-sanitizer.exe",
+        "--tool",
+        "synccheck",
+        "--error-exitcode",
+        "97",
+        "--print-limit",
+        "5",
+        "--log-file",
+        "results\\aes\\cuda-graph-sync\\probe\\while-block-128.log",
+        "..\\cad-sync-runs\\regression-build\\Release\\nc_graph_sync_probe.exe",
+        "while",
+        "block",
+        "128"
+      ],
+      "exit_code": 97,
+      "process_s": 3.853626500000246,
+      "clean": false,
+      "error_detected": true,
+      "required": false,
+      "passed": false
+    },
+    {
+      "command": [
+        "..\\cad-batch-runs\\tools\\cuda_sanitizer_api-windows-x86_64-13.5.25-archive\\compute-sanitizer\\compute-sanitizer.exe",
+        "--tool",
+        "synccheck",
+        "--error-exitcode",
+        "97",
+        "--print-limit",
+        "5",
+        "--log-file",
+        "results\\aes\\cuda-graph-sync\\probe\\while-warp-32.log",
+        "..\\cad-sync-runs\\regression-build\\Release\\nc_graph_sync_probe.exe",
+        "while",
+        "warp",
+        "32"
+      ],
+      "exit_code": 0,
+      "process_s": 3.3355690999887884,
+      "clean": true,
+      "error_detected": false,
+      "required": true,
+      "passed": true
+    },
+    {
+      "command": [
+        "..\\cad-batch-runs\\tools\\cuda_sanitizer_api-windows-x86_64-13.5.25-archive\\compute-sanitizer\\compute-sanitizer.exe",
+        "--tool",
+        "synccheck",
+        "--error-exitcode",
+        "97",
+        "--print-limit",
+        "5",
+        "--log-file",
+        "results\\aes\\cuda-graph-sync\\probe\\while-warp-128.log",
+        "..\\cad-sync-runs\\regression-build\\Release\\nc_graph_sync_probe.exe",
+        "while",
+        "warp",
+        "128"
+      ],
+      "exit_code": 0,
+      "process_s": 3.182215000037104,
+      "clean": true,
+      "error_detected": false,
+      "required": true,
+      "passed": true
+    },
+    {
+      "command": [
+        "..\\cad-batch-runs\\tools\\cuda_sanitizer_api-windows-x86_64-13.5.25-archive\\compute-sanitizer\\compute-sanitizer.exe",
+        "--tool",
+        "synccheck",
+        "--error-exitcode",
+        "97",
+        "--print-limit",
+        "5",
+        "--log-file",
+        "results\\aes\\cuda-graph-sync\\probe\\while-invalid-32.log",
+        "..\\cad-sync-runs\\regression-build\\Release\\nc_graph_sync_probe.exe",
+        "while",
+        "invalid",
+        "32"
+      ],
+      "exit_code": 97,
+      "process_s": 3.3790515000000596,
+      "clean": false,
+      "error_detected": true,
+      "required": true,
+      "passed": true
+    }
+  ]
+}

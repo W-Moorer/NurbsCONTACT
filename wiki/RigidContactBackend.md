@@ -6,7 +6,7 @@
 
 `--gpu-execution cached` 为每个候选面对分配一个 128 线程块，将独立连线分散到不同块，并把低阶积分的线程束分散到更多计算单元。它还移植了 CPU 的阻挡面复核缓存，并在初始化时缓存高阶固定积分点。`cooperative` 保留为默认对照。两者都用当前姿态查询原曲面，整段仿真期间没有逐步 CPU 力交换。此前条件图实验未通过 CUDA 同步检查，已移出运行时接口；完整曲线一致不等于同步安全通过。GPU 超过 CPU 的性能验收仍需看同一减速器完整五秒结果。[实现](../src/cuda_resident_geometry.cuh) · [完整实验与失败对照](../results/aes/cuda-graph-execution/README.md)
 
-`--gpu-execution batched` 是另一个实验选项：物体对分别拥有工作区，候选与积分射线跨物体对批量执行；积分结果按原列号写回，保留 FP64 累加顺序。此版本使用普通 kernel 的条件图，与早期被移除的嵌套协作式 kernel 方案不同。完整仿真、逐核跟踪和同步检查尚未解决的项目均见 [批处理实验记录](../results/aes/cuda-batched-execution/README.md)。默认调度未改动。
+`--gpu-execution batched` 是另一个实验选项：物体对分别拥有工作区，候选与积分射线跨物体对批量执行；积分结果按原列号写回，保留 FP64 累加顺序。此版本使用普通 kernel 的条件图，与早期被移除的嵌套协作式 kernel 方案不同。完整仿真、逐核跟踪和当时的同步检查失败见 [批处理实验记录](../results/aes/cuda-batched-execution/README.md)。后续通过 warp 内协作修复的整图检查见[同步验证](../results/aes/cuda-graph-sync/README.md)。默认调度未改动。
 
 确认候选面时，GPU 在加载零件时为每块曲面保存参数中心的位置和两个一阶导数，供每次牛顿投影的第一轮读取。后续迭代按新参数求值。合并承载区时，同一线程束并行检查连线的四个端点条件，再检查该线段是否穿过两侧实体的边界。曲线路径仍按原次序搜索。短射线空间索引和包围盒树都复用同一坐标系内的射线方向倒数。这些操作只依赖曲面、射线和当前姿态。[曲面与连通判定](../src/cuda_resident_geometry.cuh) · [射线与包围盒](../src/cuda_cad_roots.cuh) · [完整减速器对照](../results/aes/cuda-face-search/README.md)
 
@@ -80,9 +80,11 @@ CPU `relative()` 与 GPU `between()` 增加了旋转基正交化，消除旋转�
 
 ## Last verified against
 
-2026-11-28：GPU CAD 增加曲面小块并行遍历、沿射线横向选择细分方向、Horner 多项式限制及静态量预计算。相同减速器、5 s / 0.1 ms 的两次在线耗时为 191.53 s、191.68 s，完整响应相同，均略低于归档 CPU CAD 的 193.63 s（本轮未重跑 CPU）。相对 CPU 仅约 1% 的优势，应描述为接近持平；仍未实时。两级接触状态逐帧相同，最大载荷差 1.31e-5 N。改变积分细分并引入 17.48 N 偏差的倒数乘法试验已删除；正确但更慢的倒数核验及二进制缩放试验也保留为失败记录。当前需要 `NC_CUDA_FMA=ON` 与 `--gpu-execution batched`；默认调度未变，整图 synccheck 问题仍未解决。[完整结果、曲线及验证范围](../results/aes/cuda-segment-queries/README.md)。
+2026-11-28 同步修复：条件图中需要协作的工作改为完整线程束内同步；候选列表分块并行排序后，协作加载面编号，保留原有分组及合力累加顺序。`wavefront` 与 `batched` 的未过滤整图 synccheck 均通过 50 步诊断；原生 CPU/CUDA、内存、未初始化读取及竞争检查通过，检查器版本区别见[验证报告](../results/aes/cuda-graph-sync/README.md)。两次独立的减速器 5 s / 0.1 ms 完整仿真在线耗时为 **164.76 / 164.73 s**，全部 50,001 帧与修复前逐字节一致，接触切换、44 次细分和查询计数不变。排序及面对分组从中间版本的 11.83 s 降至 4.76 s；整机比修复前约慢 0.8%，相对归档 CPU 的 193.63 s 耗时降低约 14.9%，CPU 未重跑。没有在线 OCCT 回退或机构专用分支。同步检查通过不代表实时：全部主步仍超过 0.1 ms 期限。预编译零件哈希与原 STEP 等价性核验记录一致。实现来源为 `cuda_batched_contact.cuh`、`cuda_resident_geometry.cuh`、`cuda_columns.cu` 和 `tests/compiled_cad.cpp`；默认调度未改动。
 
-2026-11-28 后续更新：`--gpu-execution wavefront` 将独立候选投影放入任务队列，将常规积分射线与需要完整求解的射线分开，并在初始化时增加按曲率划分的控制网包围界。原 CAD、接触力、积分规则及精度设置保持不变。相同减速器 5 s / 0.1 ms 的两次在线耗时为 **163.39 / 163.49 s**；同一可执行文件中的原调度为 **192.30 s**，在线耗时降低约 15.0%。相对归档 CPU CAD 的 193.63 s 降低约 15.6%，CPU 未重跑。三次运行的全部 50,001 帧与原归档 GPU 响应逐字节一致，接触切换、44 次细分和工作计数保持一致。预处理分别用时 31.36 / 38.63 s，未计入在线时间。没有齿轮专用公式、载荷回放或在线 OCCT 回退。所有主步仍超出实时期限，整图 synccheck 仍未解决。实现来源为 `compiled_cuda_pack.cpp`、`cuda_batched_contact.cuh`、`cuda_cad_roots.cuh` 和 `cuda_resident_geometry.cuh`；完整验证与已撤回试验见[查询流水线报告](../results/aes/cuda-query-pipeline/README.md)。
+2026-11-28：GPU CAD 增加曲面小块并行遍历、沿射线横向选择细分方向、Horner 多项式限制及静态量预计算。相同减速器、5 s / 0.1 ms 的两次在线耗时为 191.53 s、191.68 s，完整响应相同，均略低于归档 CPU CAD 的 193.63 s（本轮未重跑 CPU）。相对 CPU 仅约 1% 的优势，应描述为接近持平；仍未实时。两级接触状态逐帧相同，最大载荷差 1.31e-5 N。改变积分细分并引入 17.48 N 偏差的倒数乘法试验已删除；正确但更慢的倒数核验及二进制缩放试验也保留为失败记录。当时使用 `NC_CUDA_FMA=ON` 与 `--gpu-execution batched`；默认调度未变，当时整图 synccheck 尚未通过，后续修复见[同步验证](../results/aes/cuda-graph-sync/README.md)。[完整结果、曲线及验证范围](../results/aes/cuda-segment-queries/README.md)。
+
+2026-11-28 查询流水线更新：`--gpu-execution wavefront` 将独立候选投影放入任务队列，将常规积分射线与需要完整求解的射线分开，并在初始化时增加按曲率划分的控制网包围界。原 CAD、接触力、积分规则及精度设置保持不变。相同减速器 5 s / 0.1 ms 的两次在线耗时为 **163.39 / 163.49 s**；同一可执行文件中的原调度为 **192.30 s**，在线耗时降低约 15.0%。相对归档 CPU CAD 的 193.63 s 降低约 15.6%，CPU 未重跑。三次运行的全部 50,001 帧与原归档 GPU 响应逐字节一致，接触切换、44 次细分和工作计数保持一致。预处理分别用时 31.36 / 38.63 s，未计入在线时间。没有齿轮专用公式、载荷回放或在线 OCCT 回退。所有主步仍超出实时期限，当时整图 synccheck 尚未解决；后续修复见[同步验证](../results/aes/cuda-graph-sync/README.md)。实现来源为 `compiled_cuda_pack.cpp`、`cuda_batched_contact.cuh`、`cuda_cad_roots.cuh` 和 `cuda_resident_geometry.cuh`；完整验证与已撤回试验见[查询流水线报告](../results/aes/cuda-query-pipeline/README.md)。
 
 2026-11-27：修复 GPU 网格闭环在试算接触状态 26/27 时直接终止的问题。设备端从最后已接受状态二分步长、清空候选缓存并重新检测；初始几何错误、容量溢出及达到八层细分上限仍报错。1 ms 主步长完成同一减速器 5 s，在线耗时 21.84 s，实际接受 5,583 个子步，最小 0.0625 ms。修复后的 0.1 ms 完整回归用时 91.99 s，50,001 帧与归档逐值一致。较大步长的高频载荷和峰值有明显差异，未作为时间精度验收。新增恢复测试仅验证推进流程；欠分辨率冲击的能量检查问题也保留在报告中。[完整报告与曲线](../results/aes/gpu-mesh-dynamics/step-1ms-repaired/README.md)。
 

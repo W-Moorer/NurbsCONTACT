@@ -1,0 +1,69 @@
+========= COMPUTE-SANITIZER
+========= Barrier error detected. Invalid arguments.
+=========     at __syncwarp(unsigned int)+0x110 in sm_30_intrinsics.hpp:110
+=========     by thread (0,0,0) in block (0,0,0)
+=========         Device Frame: void work<(int)2>(State *)+0x110 in main.cu:20
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========         Host Frame: cuGraphLaunch [0x7ffb596e6325] in nvcuda64.dll
+=========         Host Frame:  [0x3e4c] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x3144] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x1ec9] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x198c0] in nc_graph_sync_probe.exe
+=========         Host Frame: BaseThreadInitThunk [0x7ffcbcc2259d] in KERNEL32.DLL
+=========         Host Frame: RtlUserThreadStart [0x7ffcbdbeaf78] in ntdll.dll
+========= 
+========= Barrier error detected. Invalid arguments.
+=========     at __syncwarp(unsigned int)+0x110 in sm_30_intrinsics.hpp:110
+=========     by thread (1,0,0) in block (0,0,0)
+=========         Device Frame: void work<(int)2>(State *)+0x110 in main.cu:20
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========         Host Frame: cuGraphLaunch [0x7ffb596e6325] in nvcuda64.dll
+=========         Host Frame:  [0x3e4c] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x3144] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x1ec9] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x198c0] in nc_graph_sync_probe.exe
+=========         Host Frame: BaseThreadInitThunk [0x7ffcbcc2259d] in KERNEL32.DLL
+=========         Host Frame: RtlUserThreadStart [0x7ffcbdbeaf78] in ntdll.dll
+========= 
+========= Barrier error detected. Invalid arguments.
+=========     at __syncwarp(unsigned int)+0x110 in sm_30_intrinsics.hpp:110
+=========     by thread (2,0,0) in block (0,0,0)
+=========         Device Frame: void work<(int)2>(State *)+0x110 in main.cu:20
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========         Host Frame: cuGraphLaunch [0x7ffb596e6325] in nvcuda64.dll
+=========         Host Frame:  [0x3e4c] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x3144] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x1ec9] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x198c0] in nc_graph_sync_probe.exe
+=========         Host Frame: BaseThreadInitThunk [0x7ffcbcc2259d] in KERNEL32.DLL
+=========         Host Frame: RtlUserThreadStart [0x7ffcbdbeaf78] in ntdll.dll
+========= 
+========= Barrier error detected. Invalid arguments.
+=========     at __syncwarp(unsigned int)+0x110 in sm_30_intrinsics.hpp:110
+=========     by thread (3,0,0) in block (0,0,0)
+=========         Device Frame: void work<(int)2>(State *)+0x110 in main.cu:20
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========         Host Frame: cuGraphLaunch [0x7ffb596e6325] in nvcuda64.dll
+=========         Host Frame:  [0x3e4c] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x3144] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x1ec9] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x198c0] in nc_graph_sync_probe.exe
+=========         Host Frame: BaseThreadInitThunk [0x7ffcbcc2259d] in KERNEL32.DLL
+=========         Host Frame: RtlUserThreadStart [0x7ffcbdbeaf78] in ntdll.dll
+========= 
+========= Barrier error detected. Invalid arguments.
+=========     at __syncwarp(unsigned int)+0x110 in sm_30_intrinsics.hpp:110
+=========     by thread (4,0,0) in block (0,0,0)
+=========         Device Frame: void work<(int)2>(State *)+0x110 in main.cu:20
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========         Host Frame: cuGraphLaunch [0x7ffb596e6325] in nvcuda64.dll
+=========         Host Frame:  [0x3e4c] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x3144] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x1ec9] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x198c0] in nc_graph_sync_probe.exe
+=========         Host Frame: BaseThreadInitThunk [0x7ffcbcc2259d] in KERNEL32.DLL
+=========         Host Frame: RtlUserThreadStart [0x7ffcbdbeaf78] in ntdll.dll
+========= 
+========= Target application returned an error
+========= ERROR SUMMARY: 64 errors
+========= ERROR SUMMARY: 59 errors were not printed. Use --print-limit option to adjust the number of printed errors

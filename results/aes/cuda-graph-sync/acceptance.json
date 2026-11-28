@@ -1,0 +1,26 @@
+{
+  "whole_graph_synccheck": "passed on unfiltered 50-step production diagnostics in audit mode and native CUDA regression suite",
+  "sanitizer_full_duration": false,
+  "complete_full_runs": true,
+  "frames": 50001,
+  "duration_s": 5,
+  "step_s": 0.0001,
+  "response_sha256": "8b4fdf24d2d3a4614e1ca2f11bf3982036e6d1d493d07c578ed1cc3ab144437c",
+  "online_s": [
+    164.7601821,
+    164.7272183
+  ],
+  "before_online_s": [
+    163.3907654,
+    163.4940013
+  ],
+  "archived_cpu_s": 193.6289707,
+  "cpu_rerun": false,
+  "preprocessing_excluded": true,
+  "real_time": false,
+  "speedup_against_archived_cpu": [
+    1.175217022899855,
+    1.175452197264476
+  ],
+  "scope": "Fixed reducer performance; generic analytic and multi-pair correctness regressions. Current supported charts and frictionless penalty solver limits remain."
+}

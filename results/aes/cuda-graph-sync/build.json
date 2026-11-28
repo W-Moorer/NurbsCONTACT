@@ -1,0 +1,50 @@
+{
+  "base_commit": "c6f90ed1c55b6011c1f52b54de791a674378acac",
+  "runtime_sha256": "c755d3866dd4145fef040891e5b7c4ff0237c4c80728044f1ae4f790646f71bc",
+  "native_sha256": "30d4d4d4e3c6d3f539bd1c607173ea5fc84daaa35b918a05b31b65dfef200d8a",
+  "source_sha256": {
+    "apps/contact.cpp": "c45bec4238fe64c28c12a0f346cd33b103ec7dbb83c18bffaa53aa1703040b7b",
+    "benchmarks/aes/cad_gpu_execution.py": "be0aa4cb132714893cdd80809af10b1a1e74097001fe884c0ae591cea27aa70a",
+    "benchmarks/aes/report_cad_segments.py": "cd99470d86f836630fd57bf0203488fea59852da9018f57f78a37be41ad1782b",
+    "src/compiled_cuda_pack.cpp": "1de62a553ecf18177ac4caef93f5891f92a5ea1dc15a3da8e97c51bfda64329d",
+    "src/cuda_batched_contact.cuh": "bf23af542e37ea2472db5103cc15b991b0da45ec52187465565622d7286db622",
+    "src/cuda_cad_roots.cuh": "256262fcd60f79cc7346a762fb4d2b0955c453026243dd59de5d10c62ebd2a0d",
+    "src/cuda_columns.cu": "2d4326da140cf18ff1dcad9b3e8ba913a78f6a0b008cbe153e0a9860997198a2",
+    "src/cuda_columns.hpp": "0d7d77825132d58a6eee7235c23a76e791a98ac1b6d20c3fad5ff05db2181669",
+    "src/cuda_resident_geometry.cuh": "8cf10dbd20a96a910e904a24feccab29c9fec4dfe2dc66c12f2081bc4e787afc",
+    "tests/compiled_cad.cpp": "2ab2fbf326aa8818699e3a7f6daec6aae5a124e4c61e917aef9dd9072b7d2ec5",
+    "benchmarks/aes/cuda_graph_sync/main.cu": "ec97498e823ec34beb3bd259b964169470be7f0ddc7927d3613b7a1738cc0f14",
+    "benchmarks/aes/cuda_graph_sync/check.py": "5414e1d10b441dda33eeac4fd1cf684b9155bfce74a72ca9ad91b44c193041c3",
+    "benchmarks/aes/cuda_graph_sync/production.py": "46d27ddcf4ceac2f452b026e814907295b7643c8b3ba7d1a628bfc7189641133"
+  },
+  "build_command": "cmake --build ../cad-device-verify --config Release --target nc_contact_runtime nc_compiled_tests --parallel 12",
+  "configuration": "Release; CUDA 12.6; architecture 86; NC_CUDA_FMA=ON; no fast_math",
+  "hardware": "RTX 3070 / Ryzen 9 5900X / driver 610.88",
+  "sanitizer": "Compute Sanitizer 2026.4.0.0 (CUDA sanitizer package 13.5.25); racecheck 2024.3.0.0",
+  "cpu_benchmark_rerun": false,
+  "parts": [
+    {
+      "file": "..\\github-cpu-recheck\\00d0f2a2\\inputs\\cpu-contact\\reducer-edge-compact\\reducer-1a.ncpart",
+      "sha256": "da49161ea7cd13eb0bb003b4c24a6459a21aff0a1b87bff7c112d69318b460dc",
+      "matches_equivalence_audit": true
+    },
+    {
+      "file": "..\\github-cpu-recheck\\00d0f2a2\\inputs\\cpu-contact\\reducer-edge-compact\\reducer-1b.ncpart",
+      "sha256": "67d74054f362f0b7b0d8d6f1bffb66ef565a4e2cb90fd28625150cda52210b48",
+      "matches_equivalence_audit": true
+    },
+    {
+      "file": "..\\github-cpu-recheck\\00d0f2a2\\inputs\\cpu-contact\\reducer-edge-compact\\reducer-2a.ncpart",
+      "sha256": "c3c292c1a22baa70ceecf542be54486d252b61b0284d56e68253e59c1d6e0e31",
+      "matches_equivalence_audit": true
+    },
+    {
+      "file": "..\\github-cpu-recheck\\00d0f2a2\\inputs\\cpu-contact\\reducer-edge-compact\\reducer-2b.ncpart",
+      "sha256": "ec870e7dccfa05a08176039ec056000c2fb7063b3b295cd41e15469bead56f4f",
+      "matches_equivalence_audit": true
+    }
+  ],
+  "sort_tile_shared_memory_bytes": 1024,
+  "extra_candidate_allocation_bytes": 6291456,
+  "group_key_shared_memory_bytes": 8192
+}

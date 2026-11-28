@@ -161,7 +161,7 @@ __device__ unsigned long long timer_ns() {
 struct Workspace {
     unsigned int count;
     int groups, found, regions, selected, active_faces, capacity, limit;
-    Suggestion *proposals;
+    Suggestion *proposals, *sorted_proposals;
     SearchAttempt *seed_attempts, *attempts;
     Group *group;
     Witness *witnesses, *confirmed;
@@ -1025,19 +1025,20 @@ template <class Grid> __device__ void detect_broad(Grid grid, Query &q, PairScra
         stamp = now;
     }
 }
-template <class Grid> __device__ void detect_sort(Grid grid, Query &q, PairScratch &cache) {
+template <class Grid> __device__ void detect_sort(Grid grid, Query &q, PairScratch &cache,
+                                                bool presorted = false, const Faces *keys = nullptr) {
     auto &w = *q.work;
-    int lane = grid.thread_rank(), threads = grid.size();
+    int lane = grid.thread_rank();
     unsigned long long stamp = lane ? 0 : timer_ns();
-    sort_proposals(grid, w.proposals, w.count);
+    if (!presorted) sort_proposals(grid, w.proposals, w.count);
     if (!lane) {
         int k = 0, j = 0;
         while (k < w.count || j < cache.previous_count) {
-            Faces p = k < w.count ? w.proposals[k].faces : Faces{INT_MAX, INT_MAX};
+            Faces p = k < w.count ? (keys ? keys[k] : w.proposals[k].faces) : Faces{INT_MAX, INT_MAX};
             Faces h = j < cache.previous_count ? cache.previous[j].ids : Faces{INT_MAX, INT_MAX};
             Faces ids = (h.a < p.a || (h.a == p.a && h.b < p.b)) ? h : p;
             int begin = k;
-            while (k < w.count && equal(w.proposals[k].faces, ids))
+            while (k < w.count && equal(keys ? keys[k] : w.proposals[k].faces, ids))
                 ++k;
             if (w.groups >= w.limit) {
                 q.fail(1);

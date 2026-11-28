@@ -216,6 +216,27 @@ void resident_boxes() {
             "deferred ray coverage was not exercised");
     require(wave.audited_groups>0,"queued search was not checked against the original search");
 
+    // One or three disjoint analytic box contacts exercise the parallel merge
+    // and the global sorting network used for larger lists.
+    for (int pads : {1, 3}) {
+        auto sorted_scene = scene;
+        PartFile sorting_fixture;
+        for (int j = 0; j < pads; ++j) append_box(sorting_fixture, {0, 4. * (j - pads / 2), 0});
+        auto sorted_geometry = cuda_columns(Solid(std::move(sorting_fixture)), true, .4);
+        sorted_scene.geometry = {sorted_geometry, sorted_geometry};
+        const auto reference = device::advance_resident(sorted_scene, dt, 2,
+            device::RegionReduction::ordered, device::ResidentExecution::cached);
+        const auto staged = device::advance_resident(sorted_scene, dt, 2,
+            device::RegionReduction::audit, device::ResidentExecution::wavefront);
+        std::cout << "candidate_sort pads=" << pads << " max_proposals=" << staged.maximum_proposals << '\n';
+        require(std::equal(staged.frames.begin(), staged.frames.end(), reference.frames.begin(), reference.frames.end(),
+                           [](double a, double b) { return a == b || (std::isnan(a) && std::isnan(b)); }),
+                "merged/global candidate sorting changed analytic contact response");
+        require(staged.maximum_proposals > 32 &&
+                    (pads == 1 ? staged.maximum_proposals <= 1024 : staged.maximum_proposals > 1024),
+                "candidate sorting regression did not exercise both storage paths");
+    }
+
     // Independent contact pairs enter and leave at different times. The second
     // pair is initially open, so queue offsets must handle empty middle ranges.
     auto multiple=scene;

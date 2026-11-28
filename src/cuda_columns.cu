@@ -582,8 +582,15 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     const bool batched = (execution == ResidentExecution::batched || wavefront) && np > 0;
     const size_t workspace_count = batched ? static_cast<size_t>(np) + 1 : 1;
     constexpr int limit = 512, capacity = 65536, column_capacity = 96 * 96 * 32;
-    Buffer<Suggestion> proposals;
+    Buffer<Suggestion> proposals, sorted_proposals;
     proposals.reserve(workspace_count * capacity);
+    if (batched) {
+        // Both arrays need full capacity: after a pointer swap the next pose
+        // may produce a larger candidate list than the parallel-sort threshold.
+        sorted_proposals.reserve(workspace_count * capacity);
+        check(cudaMemset(proposals.ptr, 0, proposals.capacity * sizeof(Suggestion)));
+        check(cudaMemset(sorted_proposals.ptr, 0, sorted_proposals.capacity * sizeof(Suggestion)));
+    }
     Buffer<SearchAttempt> seed_attempts, attempts;
     if (wavefront) {
         seed_attempts.reserve(workspace_count * limit);
@@ -659,6 +666,7 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     w.capacity = capacity;
     w.limit = limit;
     w.proposals = proposals.ptr;
+    w.sorted_proposals = sorted_proposals.ptr;
     w.seed_attempts = seed_attempts.ptr;
     w.attempts = attempts.ptr;
     w.group = groups.ptr;
@@ -693,6 +701,7 @@ ResidentResult advance_resident(const ResidentScene &scene, double step, int ste
     for (size_t i = 1; i < workspace_count; ++i) {
         auto &p = workspaces[i];
         p.proposals += i * capacity;
+        if (p.sorted_proposals) p.sorted_proposals += i * capacity;
         if (p.seed_attempts) p.seed_attempts += i * limit;
         if (p.attempts) p.attempts += i * capacity;
         p.group += i * limit;

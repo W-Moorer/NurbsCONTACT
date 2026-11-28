@@ -1,0 +1,62 @@
+{
+  "proposals": {
+    "before": "43541807",
+    "after": "43541807",
+    "repeat": "43541807"
+  },
+  "face_groups": {
+    "before": "1606449",
+    "after": "1606449",
+    "repeat": "1606449"
+  },
+  "confirmed_groups": {
+    "before": "364845",
+    "after": "364845",
+    "repeat": "364845"
+  },
+  "seed_hits": {
+    "before": "243251",
+    "after": "243251",
+    "repeat": "243251"
+  },
+  "batched_rays": {
+    "before": "105669028",
+    "after": "105669028",
+    "repeat": "105669028"
+  },
+  "ray_batches": {
+    "before": "164173",
+    "after": "164173",
+    "repeat": "164173"
+  },
+  "accepted_level_0": {
+    "before": "49956",
+    "after": "49956",
+    "repeat": "49956"
+  },
+  "accepted_level_1": {
+    "before": "88",
+    "after": "88",
+    "repeat": "88"
+  },
+  "accepted": {
+    "before": "50044",
+    "after": "50044",
+    "repeat": "50044"
+  },
+  "subdivisions": {
+    "before": "44",
+    "after": "44",
+    "repeat": "44"
+  },
+  "force_evaluations": {
+    "before": "185780",
+    "after": "185780",
+    "repeat": "185780"
+  },
+  "max_residual": {
+    "before": "9.1454107923321467e-07",
+    "after": "9.1454107923321467e-07",
+    "repeat": "9.1454107923321467e-07"
+  }
+}

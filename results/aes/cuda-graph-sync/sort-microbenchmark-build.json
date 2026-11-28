@@ -1,0 +1,9 @@
+{
+  "source_sha256": "dd69d6c72776663cc8009a912c0efc956e8e10a2eccf24a2912bb912f90da8d4",
+  "executable_sha256": "63d3bb9043f37ab5495569720a4c8961c209920c06fef3d54730ef97a2fcb69c",
+  "configuration": "CUDA 12.6.20, Release, sm_86",
+  "repetitions": 1000,
+  "lists": 2,
+  "seed": 17,
+  "scope": "Synthetic sorting diagnostic; acceptance uses complete production runs"
+}

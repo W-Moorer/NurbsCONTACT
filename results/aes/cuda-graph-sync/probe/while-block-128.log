@@ -1,0 +1,64 @@
+========= COMPUTE-SANITIZER
+========= Barrier error detected. Divergent thread(s) in warp.
+=========     at void work<(int)0>(State *)+0xe0 in main.cu:16
+=========     by thread (32,0,0) in block (0,0,0)
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========         Host Frame: cuGraphLaunch [0x7ffb596e6325] in nvcuda64.dll
+=========         Host Frame:  [0x3e4c] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x3144] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x1ec9] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x198c0] in nc_graph_sync_probe.exe
+=========         Host Frame: BaseThreadInitThunk [0x7ffcbcc2259d] in KERNEL32.DLL
+=========         Host Frame: RtlUserThreadStart [0x7ffcbdbeaf78] in ntdll.dll
+========= 
+========= Barrier error detected. Divergent thread(s) in warp.
+=========     at void work<(int)0>(State *)+0xe0 in main.cu:16
+=========     by thread (33,0,0) in block (0,0,0)
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========         Host Frame: cuGraphLaunch [0x7ffb596e6325] in nvcuda64.dll
+=========         Host Frame:  [0x3e4c] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x3144] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x1ec9] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x198c0] in nc_graph_sync_probe.exe
+=========         Host Frame: BaseThreadInitThunk [0x7ffcbcc2259d] in KERNEL32.DLL
+=========         Host Frame: RtlUserThreadStart [0x7ffcbdbeaf78] in ntdll.dll
+========= 
+========= Barrier error detected. Divergent thread(s) in warp.
+=========     at void work<(int)0>(State *)+0xe0 in main.cu:16
+=========     by thread (34,0,0) in block (0,0,0)
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========         Host Frame: cuGraphLaunch [0x7ffb596e6325] in nvcuda64.dll
+=========         Host Frame:  [0x3e4c] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x3144] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x1ec9] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x198c0] in nc_graph_sync_probe.exe
+=========         Host Frame: BaseThreadInitThunk [0x7ffcbcc2259d] in KERNEL32.DLL
+=========         Host Frame: RtlUserThreadStart [0x7ffcbdbeaf78] in ntdll.dll
+========= 
+========= Barrier error detected. Divergent thread(s) in warp.
+=========     at void work<(int)0>(State *)+0xe0 in main.cu:16
+=========     by thread (35,0,0) in block (0,0,0)
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========         Host Frame: cuGraphLaunch [0x7ffb596e6325] in nvcuda64.dll
+=========         Host Frame:  [0x3e4c] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x3144] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x1ec9] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x198c0] in nc_graph_sync_probe.exe
+=========         Host Frame: BaseThreadInitThunk [0x7ffcbcc2259d] in KERNEL32.DLL
+=========         Host Frame: RtlUserThreadStart [0x7ffcbdbeaf78] in ntdll.dll
+========= 
+========= Barrier error detected. Divergent thread(s) in warp.
+=========     at void work<(int)0>(State *)+0xe0 in main.cu:16
+=========     by thread (36,0,0) in block (0,0,0)
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========         Host Frame: cuGraphLaunch [0x7ffb596e6325] in nvcuda64.dll
+=========         Host Frame:  [0x3e4c] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x3144] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x1ec9] in nc_graph_sync_probe.exe
+=========         Host Frame:  [0x198c0] in nc_graph_sync_probe.exe
+=========         Host Frame: BaseThreadInitThunk [0x7ffcbcc2259d] in KERNEL32.DLL
+=========         Host Frame: RtlUserThreadStart [0x7ffcbdbeaf78] in ntdll.dll
+========= 
+========= Target application returned an error
+========= ERROR SUMMARY: 224 errors
+========= ERROR SUMMARY: 219 errors were not printed. Use --print-limit option to adjust the number of printed errors

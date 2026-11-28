@@ -30,13 +30,17 @@ __device__ Trial &batch_trial(BatchControl &g) {
     return g.evaluated ? g.scene.control->next : g.scene.control->working;
 }
 __device__ bool batch_enabled(const BatchControl &g, bool enabled = true) {
-    // A different block can report an error while this block is starting.
-    // Publish one decision for every lane before any warp/block collective.
-    __shared__ int run;
-    if (!threadIdx.x) run = !g.scene.control->status && enabled;
-    __syncthreads();
-    return run;
+    // Conditional-graph workers cooperate within full warps. Publish one
+    // decision per warp even if another block reports an error concurrently.
+    const int run = (threadIdx.x % 32 == 0) ? !g.scene.control->status && enabled : 0;
+    return __shfl_sync(0xffffffffu, run, 0);
 }
+// Only used by a 32-thread block. No cross-warp shared state is involved.
+struct BatchWarp {
+    __device__ int thread_rank() const { return threadIdx.x; }
+    __device__ int size() const { return 32; }
+    __device__ void sync() const { __syncwarp(); }
+};
 __device__ void batch_launch(BatchControl &g, cudaGraphConditionalHandle graph) {
     if (g.scene.control->status) return;
     cudaGraphSetConditional(graph, 1);
@@ -203,23 +207,74 @@ template<int Phase> __global__ void batch_stamp(BatchControl *control) {
             g.offsets[i + 1] = g.offsets[i] + (g.pairs[i].fresh ? g.pairs[i].query.work->groups : 0);
     }
 }
+constexpr int parallel_sort_limit = 1024;
+__global__ void batch_sort_tiles(BatchControl *control) {
+    auto &g = *control;
+    auto &p = g.pairs[blockIdx.y];
+    auto &w = *p.query.work;
+    const int first = 32 * blockIdx.x, count = static_cast<int>(w.count);
+    if (!batch_enabled(g, p.fresh && count > 32 && count <= parallel_sort_limit && first < count)) return;
+    __shared__ Suggestion tile[32];
+    const int lane = threadIdx.x, length = min(32, count - first);
+    if (lane < length) tile[lane] = w.proposals[first + lane];
+    __syncwarp();
+    sort_proposals(BatchWarp{}, tile, length);
+    if (lane < length) w.proposals[first + lane] = tile[lane];
+}
+__global__ void batch_sort_merge(BatchControl *control) {
+    auto &g = *control;
+    auto &p = g.pairs[blockIdx.y];
+    auto &w = *p.query.work;
+    const int count = static_cast<int>(w.count), index = blockIdx.x * blockDim.x + threadIdx.x;
+    if (g.scene.control->status || !p.fresh || count <= 32 || count > parallel_sort_limit || index >= count) return;
+    const auto candidate = w.proposals[index];
+    int rank = index % 32;
+    for (int first = 0; first < count; first += 32) {
+        if (first == index - index % 32) continue;
+        int lo = 0, hi = min(32, count - first);
+        while (lo < hi) {
+            const int middle = (lo + hi) / 2;
+            const auto other = w.proposals[first + middle];
+            // Original indices make equal entries distinct, so output ranks
+            // are unique and require neither atomics nor block barriers.
+            if (before(other, candidate) || (!before(candidate, other) && first + middle < index)) lo = middle + 1;
+            else hi = middle;
+        }
+        rank += lo;
+    }
+    w.sorted_proposals[rank] = candidate;
+}
 __global__ void batch_sort(BatchControl *control) {
     auto &g = *control;
     const int pair = blockIdx.x;
     if (!batch_enabled(g, g.pairs[pair].fresh)) return;
-    detect_sort(cooperative_groups::this_thread_block(), g.pairs[pair].query, g.scene.cache[pair]);
+    auto &q = g.pairs[pair].query;
+    auto &w = *q.work;
+    const bool merged = w.count > 32 && w.count <= parallel_sort_limit;
+    if (merged && !threadIdx.x) {
+        auto *previous = w.proposals; w.proposals = w.sorted_proposals; w.sorted_proposals = previous;
+    }
+    __syncwarp();
+    // Group construction is ordered, but its keys can be loaded collectively.
+    // Avoid a serial global-memory walk after the parallel merge scattered the
+    // complete proposals. This copies integer IDs only, preserving group order.
+    __shared__ Faces keys[parallel_sort_limit];
+    if (merged) {
+        for (int i = threadIdx.x; i < w.count; i += 32) keys[i] = w.proposals[i].faces;
+        __syncwarp();
+    }
+    detect_sort(BatchWarp{}, q, g.scene.cache[pair], merged, merged ? keys : nullptr);
 }
 __global__ void batch_search(BatchControl *control) {
     auto &g = *control;
     if (!batch_enabled(g)) return;
-    __shared__ SearchBatch scratch;
     for (int job = blockIdx.x; job < g.offsets[g.scene.np]; job += gridDim.x) {
         int pair = batch_owner(g.offsets, g.scene.np, job), id = job - g.offsets[pair];
         auto &q = g.pairs[pair].query;
         auto &w = *q.work;
-        const bool hit = q.find<128>(w.group[id], g.scene.cache[pair], w.confirmed[id], &scratch);
+        const bool hit = q.find<32>(w.group[id], g.scene.cache[pair], w.confirmed[id]);
         if (!threadIdx.x) w.valid[id] = hit;
-        __syncthreads();
+        __syncwarp();
     }
 }
 // Expand independent projections across the device, then consume their results
@@ -274,13 +329,12 @@ __device__ bool same_hit(const Hit &a, const Hit &b) {
 __global__ void batch_search_audit(BatchControl *control) {
     auto &g = *control;
     if (!batch_enabled(g)) return;
-    __shared__ SearchBatch scratch;
     __shared__ Witness expected;
     for (int job = blockIdx.x; job < g.offsets[g.scene.np]; job += gridDim.x) {
         const int pair = batch_owner(g.offsets, g.scene.np, job), id = job - g.offsets[pair];
         const auto &q = g.pairs[pair].query;
         auto &w = *q.work;
-        const bool hit = q.find<128>(w.group[id], g.scene.cache[pair], expected, &scratch);
+        const bool hit = q.find<32>(w.group[id], g.scene.cache[pair], expected);
         if (!threadIdx.x) {
             const auto &a = w.confirmed[id];
             bool same = hit == bool(w.valid[id]);
@@ -295,7 +349,7 @@ __global__ void batch_search_audit(BatchControl *control) {
             if (!same) q.fail(14);
             atomicAdd(&g.audited_groups, 1ULL);
         }
-        __syncthreads();
+        __syncwarp();
     }
 }
 __device__ void batch_integral_start(BatchControl &g) {
@@ -744,14 +798,16 @@ void build_batch_graphs(StepGraph &schedule, BatchControl *g, BatchControl &host
     f.kernel(batch_window_offsets, 1, 1, g);
     f.kernel(batch_candidates, sms * 4, 128, g);
     f.kernel(batch_stamp<0>, 1, 1, g);
-    f.kernel(batch_sort, pairs, 128, g);
+    f.kernel(batch_sort_tiles, dim3(parallel_sort_limit / 32, pairs), 32, g);
+    f.kernel(batch_sort_merge, dim3(parallel_sort_limit / 128, pairs), 128, g);
+    f.kernel(batch_sort, pairs, 32, g);
     f.kernel(batch_stamp<1>, 1, 1, g);
     if (wavefront) {
         f.kernel(batch_search_seeds, sms * 2, 1, g);
         f.kernel(batch_search_proposals, dim3(sms * 4, pairs), 32, g);
         f.kernel(batch_search_ready, sms * 2, 32, g);
-        if (audit) f.kernel(batch_search_audit, sms * 2, 128, g);
-    } else f.kernel(batch_search, sms * 2, 128, g);
+        if (audit) f.kernel(batch_search_audit, sms * 2, 32, g);
+    } else f.kernel(batch_search, sms * 2, 32, g);
     f.kernel(batch_found, 1, 1, g);
     auto l = f.loop(host.link_graph);
     l.kernel(batch_links, pairs * connection_batch, 32, g);

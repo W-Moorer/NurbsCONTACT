@@ -1,0 +1,41 @@
+{
+  "runtime_sha256": "1b43cf20273001159175ce6624ac6f2d0eb247499d8944945b20eaa6738c20cf",
+  "attempt": {
+    "name": "racecheck-wavefront",
+    "command": [
+      "..\\cad-batch-runs\\tools\\cuda_sanitizer_api-windows-x86_64-13.5.25-archive\\compute-sanitizer\\compute-sanitizer.exe",
+      "--tool",
+      "racecheck",
+      "--error-exitcode",
+      "97",
+      "--log-file",
+      "results\\aes\\cuda-graph-sync\\racecheck-wavefront.log",
+      "..\\cad-sync-runs\\runtime.exe",
+      "../github-cpu-recheck/00d0f2a2/inputs/scene/common-200.scene",
+      "0",
+      ".0001",
+      ".005",
+      "1",
+      "..\\cad-sync-runs\\racecheck-wavefront\\response",
+      "--method",
+      "cad-compiled",
+      "--device",
+      "cuda-resident",
+      "--solver",
+      "penalty",
+      "--penalty-stiffness",
+      "shared",
+      "--geometry-update",
+      "predictor",
+      "--spectral-radius",
+      "0",
+      "--region-reduction",
+      "audit",
+      "--gpu-execution",
+      "wavefront"
+    ],
+    "exit_code": 3221225477,
+    "process_s": 71.91222639998887,
+    "zero_errors": true
+  }
+}

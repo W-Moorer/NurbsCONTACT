@@ -1,0 +1,2 @@
+# Preserve sanitizer output verbatim, including its trailing-space separators.
+*.log -text -whitespace

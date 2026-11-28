@@ -1,0 +1,1 @@
+graph=while sync=warp threads=128 count=80 expected=80 bad=0
